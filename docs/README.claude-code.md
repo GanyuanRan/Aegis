@@ -1,0 +1,170 @@
+# Aegis for Claude Code
+
+Guide for using Aegis with Claude Code through Claude Code's plugin marketplace flow.
+
+This page only covers the Claude Code host install path. For the current
+`Aegis Method Pack` authority order, release gate, host compatibility status,
+and known limitations, read:
+
+- `docs/current/README.md`
+- `docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md`
+- `docs/current/AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md`
+- `docs/current/AEGIS_KNOWN_LIMITATIONS.md`
+
+## Current Verdict
+
+Aegis has a Claude Code plugin distribution skeleton:
+
+- `.claude-plugin/plugin.json`
+- `.claude-plugin/marketplace.json`
+- `skills/`
+- `agents/`
+- `commands/`
+- `hooks/`
+
+This means Claude Code is a supported product target. It does **not** mean
+Claude Code has current release-level fresh smoke evidence yet. The current
+compatibility matrix still records Claude Code as pending broader host rollout.
+
+## Private Repository Prerequisite
+
+While `https://github.com/GanyuanRan/Aegis` is private, Claude Code installation
+requires GitHub read access to the repository.
+
+Verify access before installing:
+
+```bash
+git ls-remote https://github.com/GanyuanRan/Aegis.git
+```
+
+If this fails, fix GitHub authentication first. Do not paste personal access
+tokens into documentation, shell history, or Claude Code settings.
+
+## Marketplace Installation
+
+Inside Claude Code, add the private marketplace repository:
+
+```text
+/plugin marketplace add GanyuanRan/Aegis
+```
+
+Then install Aegis from the marketplace name declared in
+`.claude-plugin/marketplace.json`:
+
+```text
+/plugin install aegis@aegis-dev --scope user
+```
+
+Reload plugins or restart Claude Code:
+
+```text
+/reload-plugins
+```
+
+Equivalent CLI form:
+
+```bash
+claude plugin marketplace add GanyuanRan/Aegis
+claude plugin install aegis@aegis-dev --scope user
+```
+
+Use `--scope project` only when you intentionally want the project to record
+the plugin in `.claude/settings.json`. Use `--scope local` for machine-local
+testing.
+
+## Local Development Installation
+
+For local development or private smoke testing from a checked-out copy:
+
+```bash
+claude --plugin-dir /path/to/Aegis
+```
+
+On Windows PowerShell:
+
+```powershell
+claude --plugin-dir "X:\path\to\Aegis"
+```
+
+This loads the local plugin for that Claude Code session without installing it
+into the user or project plugin cache.
+
+## Verification
+
+After installation, verify the plugin is visible:
+
+```text
+/help
+```
+
+Then test one namespaced skill:
+
+```text
+/aegis:using-aegis
+```
+
+You can also ask:
+
+```text
+Tell me about your Aegis skills and which one you would use before debugging a failing test.
+```
+
+Expected result:
+
+- Claude Code can see the `aegis` plugin namespace.
+- Aegis skills are listed or callable under the `aegis:` namespace.
+- Claude Code does not present Aegis as a full runtime platform or final
+  completion authority.
+
+## Updating
+
+Marketplace-installed plugins are copied into Claude Code's plugin cache.
+Update from Claude Code's plugin manager or reinstall after the repository
+changes.
+
+For local development with `--plugin-dir`, restart Claude Code or run:
+
+```text
+/reload-plugins
+```
+
+## Uninstalling
+
+```bash
+claude plugin uninstall aegis@aegis-dev --scope user
+```
+
+If you installed with another scope, pass the same scope when uninstalling.
+
+## Troubleshooting
+
+### No plugin commands
+
+If Claude Code does not recognize `/plugin`, update Claude Code to a version
+that supports plugins.
+
+### Marketplace cannot be added
+
+1. Verify private repo access with `git ls-remote`.
+2. Confirm `.claude-plugin/marketplace.json` exists in the repository root.
+3. Confirm the marketplace name is `aegis-dev`.
+
+### Plugin installs but skills are not visible
+
+1. Run `/reload-plugins`.
+2. Check `/help` for `aegis:` entries.
+3. Confirm the installed plugin cache contains the `skills/` directory.
+
+### Windows hook behavior
+
+Claude Code hooks on Windows use the wrapper documented in:
+
+- `docs/windows/polyglot-hooks.md`
+
+Git for Windows should be installed so the wrapper can find Git Bash.
+
+## Official Claude Code References
+
+- https://code.claude.com/docs/en/plugins
+- https://code.claude.com/docs/en/plugin-marketplaces
+- https://code.claude.com/docs/en/plugins-reference

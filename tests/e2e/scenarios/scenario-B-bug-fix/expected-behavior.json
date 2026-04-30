@@ -1,0 +1,15 @@
+{
+  "skillSequence": [
+    "systematic-debugging",
+    "verification-before-completion"
+  ],
+  "mustContain": [
+    "root cause",
+    "fix track",
+    "retirement track"
+  ],
+  "mustNotContain": [
+    "completion granted",
+    "final governance decision"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "skillSequence": [
+    "brainstorming",
+    "writing-plans",
+    "requesting-code-review"
+  ],
+  "mustContain": [
+    "scope",
+    "impact",
+    "evidence"
+  ],
+  "mustNotContain": [
+    "completion granted",
+    "authoritative gate decision"
+  ]
+}

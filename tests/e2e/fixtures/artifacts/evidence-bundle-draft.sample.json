@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "phase5-bootstrap",
+  "type": "document-and-test-bootstrap",
+  "source": "repo workspace",
+  "summary": "Bootstrap slice aligns authority docs and adds runnable Layer 1 plus planned Layer 2/3 owners.",
+  "verifier": "manual repo readback"
+}

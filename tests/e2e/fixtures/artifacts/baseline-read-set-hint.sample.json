@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "candidateDocs": [
+    "docs/current/README.md",
+    "docs/current/AEGIS_PHASE4_COMPLETION_RECORD.md",
+    "docs/current/AEGIS_PHASE5_E2E_VERIFICATION_ATOMIC_PLAN.md"
+  ],
+  "whyRelevant": "These docs define the current authority map, the previous closeout evidence, and the active Phase 5 plan.",
+  "missingAuthority": []
+}

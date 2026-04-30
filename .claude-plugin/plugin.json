@@ -1,0 +1,19 @@
+{
+  "name": "aegis",
+  "description": "Core skills library for Claude Code: TDD, debugging, collaboration patterns, and proven techniques",
+  "version": "5.0.7",
+  "author": {
+    "name": "Aegis Maintainers"
+  },
+  "homepage": "https://github.com/GanyuanRan/Aegis",
+  "repository": "https://github.com/GanyuanRan/Aegis",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "tdd",
+    "debugging",
+    "collaboration",
+    "best-practices",
+    "workflows"
+  ]
+}

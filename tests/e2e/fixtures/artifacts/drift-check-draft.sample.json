@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "taskId": "scenario-D-interrupted-long-task",
+  "taskIntentRef": "tests/e2e/fixtures/artifacts/task-intent-draft.sample.json",
+  "baselineRefs": [
+    "docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md",
+    "docs/current/AEGIS_LONG_TASK_CONTINUATION_DESIGN.md"
+  ],
+  "scopeStatus": "within-method-pack-protocol-scope",
+  "compatStatus": "no-host-install-surface-change",
+  "retirementStatus": "no-new-execution-owner",
+  "newRiskSignals": [],
+  "decision": "needs-verification"
+}

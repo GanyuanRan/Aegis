@@ -1,0 +1,1 @@
+We're starting work on this project and I want to make sure we have a shared vocabulary. Can you help me set up a glossary of the core domain terms we should agree on — what each term means, and what we should avoid calling it? I want to avoid the agent and me using different words for the same concept.

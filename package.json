@@ -1,0 +1,6 @@
+{
+  "name": "aegis",
+  "version": "5.0.7",
+  "type": "module",
+  "main": ".opencode/plugins/aegis.js"
+}

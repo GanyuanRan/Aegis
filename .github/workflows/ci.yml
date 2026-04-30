@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - dev
+  pull_request:
+
+jobs:
+  method-pack-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate artifact schema fixtures
+        run: bash tests/e2e/artifact-schema-check.sh
+
+      - name: Validate method-pack boundary
+        run: bash tests/e2e/boundary-compliance-check.sh
+
+      - name: Run OpenCode base compatibility suite
+        run: bash tests/opencode/run-tests.sh
+
+      - name: Run Codex plugin sync regression
+        run: bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh
+
+      - name: Run Phase 5 static aggregate
+        # Live Codex host smoke requires a configured Codex CLI; keep default CI host-neutral.
+        run: bash tests/e2e/run-all.sh --full --host-profile none

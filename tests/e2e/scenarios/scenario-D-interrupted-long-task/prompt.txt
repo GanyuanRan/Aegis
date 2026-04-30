@@ -1,0 +1,1 @@
+Implement a multi-step workflow change, pause after the first slice, then resume from the latest checkpoint. Before continuing, read the checkpoint, original task intent, and baseline refs. Report remaining todo state, drift status, and evidence needed before any completion claim.

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "baselineRefs": [
+    "docs/current/README.md",
+    "docs/current/AEGIS_TARGET_STATE.md"
+  ],
+  "impactStatement": "tests/e2e bootstrap only; no runtime authority expansion",
+  "compatPlan": "preserve existing Codex and OpenCode compatibility checks as Layer 1 inputs",
+  "retirementPlan": "retire ad hoc verification notes after structured E2E evidence exists",
+  "evidenceBundle": [
+    "phase4-closeout",
+    "bootstrap-readback"
+  ]
+}

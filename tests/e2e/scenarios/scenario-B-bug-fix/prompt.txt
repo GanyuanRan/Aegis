@@ -1,0 +1,1 @@
+Diagnose and plan a bug fix. Show the likely root cause, preserve evidence, and make both the fix track and the retirement track explicit before claiming the issue is understood.

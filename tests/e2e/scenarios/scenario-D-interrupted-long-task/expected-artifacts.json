@@ -1,0 +1,17 @@
+{
+  "requiredArtifacts": [
+    "TaskIntentDraft",
+    "BaselineReadSetHint",
+    "ImpactStatementDraft",
+    "TodoCheckpointDraft",
+    "ResumeStateHint",
+    "DriftCheckDraft",
+    "EvidenceBundleDraft",
+    "GateInputPack"
+  ],
+  "forbiddenDecisions": [
+    "gate-passed",
+    "completion-granted",
+    "authoritatively-safe"
+  ]
+}

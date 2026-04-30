@@ -1,0 +1,1 @@
+Use the same narrow change request across two hosts. Keep the behavior advisory-first, preserve baseline-first reading, and avoid authority claims.

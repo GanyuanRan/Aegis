@@ -1,0 +1,13 @@
+One parser test started failing after a recent refactor, and I do not want a guessed patch.
+
+Please help me reproduce the failure, trace the bad value back to its source, compare the broken path with the working pattern, and only then tell me the smallest justified fix.
+
+Current failure:
+
+```text
+FAIL src/utils/parser.test.ts
+  Parser > should handle nested objects
+  TypeError: Cannot read properties of undefined (reading 'value')
+    at parse (src/utils/parser.ts:42:18)
+    at Object.<anonymous> (src/utils/parser.test.ts:28:20)
+```

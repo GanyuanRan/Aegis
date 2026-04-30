@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "requestedOutcome": "Implement a narrow bootstrap verification slice.",
+  "scope": "tests/e2e skeleton and supporting authority docs",
+  "changeKinds": [
+    "docs",
+    "tests"
+  ],
+  "riskHints": [
+    "authority drift",
+    "phase state mismatch"
+  ]
+}

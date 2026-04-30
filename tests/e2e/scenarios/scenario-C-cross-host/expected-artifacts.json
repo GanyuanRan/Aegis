@@ -1,0 +1,7 @@
+{
+  "requiredArtifacts": [
+    "TaskIntentDraft",
+    "ImpactStatementDraft"
+  ],
+  "environmentDependent": true
+}

@@ -1,0 +1,5 @@
+I want to explore a possible new host-health summary feature before anybody implements anything.
+
+Please help me clarify the user intent, requirements, constraints, and shape of the feature, compare 2-3 safe design approaches, explain the trade-offs, and recommend the best option.
+
+Do not write code. Do not write an implementation plan yet. I only want the design discussion and recommendation first.

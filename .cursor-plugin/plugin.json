@@ -1,0 +1,24 @@
+{
+  "name": "aegis",
+  "displayName": "Aegis",
+  "description": "Core skills library: TDD, debugging, collaboration patterns, and proven techniques",
+  "version": "5.0.7",
+  "author": {
+    "name": "Aegis Maintainers"
+  },
+  "homepage": "https://github.com/GanyuanRan/Aegis",
+  "repository": "https://github.com/GanyuanRan/Aegis",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "tdd",
+    "debugging",
+    "collaboration",
+    "best-practices",
+    "workflows"
+  ],
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "commands": "./commands/",
+  "hooks": "./hooks/hooks-cursor.json"
+}

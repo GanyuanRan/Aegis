@@ -1,0 +1,15 @@
+{
+  "mustMention": [
+    "checkpoint",
+    "resume",
+    "baseline",
+    "drift",
+    "evidence"
+  ],
+  "mustNotClaim": [
+    "authoritative completion",
+    "completion granted",
+    "gate passed"
+  ],
+  "requiresPartialStateWhenEvidenceMissing": true
+}

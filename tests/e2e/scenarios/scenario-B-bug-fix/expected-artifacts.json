@@ -1,0 +1,7 @@
+{
+  "requiredArtifacts": [
+    "ImpactStatementDraft",
+    "EvidenceBundleDraft",
+    "GateInputPack"
+  ]
+}

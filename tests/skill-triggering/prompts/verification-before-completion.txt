@@ -1,0 +1,3 @@
+I think the parser fix is ready, but I do not want anyone to claim it passes without fresh evidence.
+
+Please identify the exact command that proves the fix, run that full check now, read the output carefully, tell me what it proves, tell me what is still unverified, and only then say whether this is ready to be claimed as complete.

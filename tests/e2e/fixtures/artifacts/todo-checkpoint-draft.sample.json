@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "taskId": "scenario-D-interrupted-long-task",
+  "currentTodo": "Resume from the latest checkpoint before continuing implementation.",
+  "completedTodos": [
+    "Read baseline refs",
+    "Created initial TaskIntentDraft"
+  ],
+  "activeSlice": "Add long-task continuation protocol fixtures",
+  "evidenceRefs": [
+    "tests/e2e/fixtures/artifacts/task-intent-draft.sample.json"
+  ],
+  "blockedOn": [],
+  "nextStep": "Run artifact schema validation and update DriftCheckDraft.",
+  "updatedAt": "2026-04-30T00:00:00Z"
+}

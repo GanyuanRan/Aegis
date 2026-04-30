@@ -1,0 +1,5 @@
+{"type":"user","message":{"content":[{"type":"text","text":"Diagnose and plan a bug fix with clear evidence."}]}}
+{"type":"user","toolUseResult":{"name":"Skill","skill":"systematic-debugging","prompt":"Use systematic-debugging to isolate the root cause."}}
+{"type":"assistant","message":{"content":[{"type":"text","text":"The root cause should be isolated with evidence first. The fix track and retirement track will both be explicit, and ImpactStatementDraft will be updated."}]}}
+{"type":"user","toolUseResult":{"name":"Skill","skill":"verification-before-completion","prompt":"Use verification-before-completion before claiming the bug is fixed."}}
+{"type":"assistant","message":{"content":[{"type":"text","text":"EvidenceBundleDraft and GateInputPack will stay advisory. Verification will confirm the root cause and the fix track before any closeout."}]}}

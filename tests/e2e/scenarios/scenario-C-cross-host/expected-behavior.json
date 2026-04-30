@@ -1,0 +1,16 @@
+{
+  "skillSequence": [
+    "brainstorming",
+    "writing-plans"
+  ],
+  "mustContain": [
+    "baseline",
+    "scope",
+    "compatibility"
+  ],
+  "mustNotContain": [
+    "completion granted",
+    "completion authority"
+  ],
+  "environmentDependent": true
+}

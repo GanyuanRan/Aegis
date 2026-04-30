@@ -1,0 +1,1 @@
+Design and plan a narrow new feature change. Keep lightweight drafts for task intent, baseline reads, and impact. Then move into implementation planning and review discipline without claiming final authority.

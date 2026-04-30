@@ -1,0 +1,22 @@
+# Default repository owner
+* @GanyuanRan
+
+# Current authority docs
+/docs/current/ @GanyuanRan
+/docs/adr/ @GanyuanRan
+
+# Skills and shared behavior
+/skills/ @GanyuanRan
+/agents/ @GanyuanRan
+/commands/ @GanyuanRan
+/hooks/ @GanyuanRan
+
+# Distribution and host integration
+/.claude-plugin/ @GanyuanRan
+/.codex-plugin/ @GanyuanRan
+/.cursor-plugin/ @GanyuanRan
+/.opencode/ @GanyuanRan
+/scripts/ @GanyuanRan
+
+# Tests
+/tests/ @GanyuanRan

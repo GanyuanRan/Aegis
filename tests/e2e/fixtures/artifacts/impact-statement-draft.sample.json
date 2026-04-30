@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "affectedLayers": [
+    "authority docs",
+    "test harness"
+  ],
+  "owners": [
+    "docs/current/README.md",
+    "docs/current/AEGIS_TRANSFORMATION_EXECUTION_PLAN.md",
+    "tests/e2e"
+  ],
+  "invariants": [
+    "plugin-installable distribution remains intact",
+    "method pack does not claim runtime authority"
+  ],
+  "compatBoundary": "No host-specific runtime behavior is introduced by the bootstrap slice.",
+  "nonGoals": [
+    "future runtime core",
+    "host adapter implementation",
+    "full Layer 2 or Layer 3 activation"
+  ]
+}

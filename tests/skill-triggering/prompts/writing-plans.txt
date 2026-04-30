@@ -1,0 +1,9 @@
+We need an implementation plan before anyone touches code.
+
+Requirements for the currently approved Wave 2 slice in this repo:
+- upgrade `skills/writing-plans/SKILL.md` with stronger planning outputs for impact, compatibility, verification, and repair/retirement expectations
+- upgrade `skills/requesting-code-review/SKILL.md` with evidence sufficiency, architecture drift checks, and authority boundary language
+- keep the plugin-installable distribution model working
+- verify the slice with exact Codex smoke commands plus the plugin compatibility checks already used in this repo
+
+Please turn this approved scope into a concrete implementation plan with exact files, exact verification commands, compatibility boundaries, and what old wording, fallback paths, or duplicate guidance would stay or retire as the work lands.

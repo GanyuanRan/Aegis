@@ -1,0 +1,8 @@
+{
+  "requiredArtifacts": [
+    "TaskIntentDraft",
+    "BaselineReadSetHint",
+    "ImpactStatementDraft",
+    "GateInputPack"
+  ]
+}
