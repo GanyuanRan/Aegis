@@ -1,5 +1,11 @@
 # Aegis
 
+## 极简安装
+
+如果你正在使用 AI 编程 agent，可以直接把下面这段话复制给它：
+
+> 请仔细阅读 https://github.com/GanyuanRan/Aegis 这个仓库的安装说明，识别我当前使用的 AI 编程宿主，为我完成全局安装；如果需要重启或重新加载宿主，请明确告诉我；安装后请验证 Aegis skills 是否已经可以被发现和使用。
+
 `Aegis` 是一个面向 AI 编程代理的架构驱动开发（Architecture-Driven Development, ADD）方法包。
 
 它基于原始 `superpowers` 方法论继续演进，加入了证据驱动治理、TLREF 执行流程，以及“修复轨 + 退役轨”的双轨规则。

@@ -2,6 +2,12 @@
 
 中文版本：[README.zh-CN.md](README.zh-CN.md)
 
+## Minimal Install
+
+If you are using an AI coding agent, you can ask it to install Aegis for you:
+
+> Please read the installation instructions in https://github.com/GanyuanRan/Aegis carefully, identify the correct path for my AI coding host, install Aegis globally, restart or reload the host if needed, and verify that the Aegis skills are discoverable.
+
 `Aegis` is an Architecture-Driven Development (ADD) method pack for AI coding agents.
 
 It builds on the original `superpowers` methodology and adds evidence-driven governance, TLREF execution flow, and dual-track repair/retirement rules.

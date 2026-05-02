@@ -80,15 +80,24 @@ digraph tdd_cycle {
 
 Before writing or changing tests, state the observable behavior:
 
+- User or business value protected by this behavior
 - Input and output
 - Boundary conditions and error cases
 - Compatibility requirements
 - Acceptance criteria
 - Interface, data contract, or cross-module invariants affected
 
+For user-visible work, also state the main user journey and any experience or
+operational floor that must hold (for example loading, empty, error, recovery,
+accessibility, performance, security, or observability). If a dimension does not
+apply, say so briefly instead of expanding a fake checklist.
+
 Then check whether existing tests already cover that behavior. If they do, run
 the target tests first to establish a baseline. If coverage is missing, add the
-smallest failing test that expresses the desired behavior.
+smallest failing test that expresses the desired behavior and protects the
+approved value. Minimal code means the smallest implementation that satisfies
+the approved value, acceptance criteria, and compatibility boundary; not merely
+the smallest code that satisfies a narrow assertion.
 
 ### RED - Write Failing Test
 
@@ -133,6 +142,8 @@ Vague name, tests mock not code
 - Real code (no mocks unless unavoidable)
 - If a new feature changes user-observable behavior, prefer one minimal
   end-to-end or integration test for the main path before narrower unit tests
+- For user-visible work, cover the main journey and the highest-risk experience
+  or operational floor before treating unit tests as sufficient
 - Add unit tests for core rules, boundary conditions, and error branches
 
 ### Verify RED - Watch It Fail
@@ -373,12 +384,16 @@ Extract validation for multiple fields if needed.
 Before marking work complete:
 
 - [ ] Defined input, output, boundaries, compatibility, and acceptance criteria
+- [ ] For user-visible work, defined protected user/business value, main journey,
+      and any applicable experience or operational floor
 - [ ] Checked existing tests and ran target baseline when coverage existed
 - [ ] Every new function/method has a test
 - [ ] Watched each test fail before implementing
 - [ ] Each test failed for expected reason (feature missing, not typo)
 - [ ] Wrote minimal code to pass each test
 - [ ] Feature work has an end-to-end or integration test when user-observable behavior changed
+- [ ] User-visible completion claims are backed by main-journey evidence, or the
+      unverified journey is explicitly reported as residual risk
 - [ ] Contract, shared module, cross-module, or core logic changes ran related regression tests
 - [ ] All tests pass
 - [ ] Output pristine (no errors, warnings)

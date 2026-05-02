@@ -100,7 +100,8 @@ Before you leave this workflow, the written plan must make these items answerabl
 - Test: `tests/exact/path/to/test.py`
 
 **Why this task exists:**
-- [Which requirement, invariant, or risk this task addresses]
+- [Which user/business value, requirement, invariant, or risk this task addresses]
+- [For user-visible work: the main journey or experience floor this task protects]
 
 **Impact / Compatibility:**
 - [Affected layers, owners, contracts, and what must not break]
@@ -173,6 +174,10 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - Exact commands with expected output
 - DRY, YAGNI, TDD, frequent commits
 - Call out impact, compatibility, and verification explicitly
+- Tie each task to user/business value or a concrete risk; do not justify work
+  with technical motion alone
+- For user-visible work, include main-journey verification or explicitly mark the
+  unverified journey as residual risk
 - If the work alters old logic, say what retires and what remains
 
 ## Self-Review

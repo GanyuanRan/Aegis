@@ -52,7 +52,8 @@ Before you leave this workflow, you must be able to state:
 7. **Whether this is verified evidence only, or also an authoritative completion signal**
 8. **Which target test and related regression tests were run, or why they could not run**
 9. **What manual verification steps reproduce the check when automation is blocked**
-10. **For long tasks, what latest `TodoCheckpointDraft` and `DriftCheckDraft` say about remaining work, blockers, and drift risk**
+10. **For user-visible work, whether the main user journey was verified and what experience or operational floor remains unverified**
+11. **For long tasks, what latest `TodoCheckpointDraft` and `DriftCheckDraft` say about remaining work, blockers, and drift risk**
 
 Method-pack default: you provide verified evidence and advisory judgment. Do not imply that verification alone grants authoritative completion unless the governing runtime explicitly says so.
 
@@ -134,6 +135,13 @@ Method-pack default: you provide verified evidence and advisory judgment. Do not
 ❌ "Tests pass, phase complete"
 ```
 
+**User-visible work:**
+```
+✅ Verify main journey (E2E, integration, Playwright, screenshot, or reproducible manual steps) → state what was proven
+✅ If main journey was not verified → claim only the narrower verified scope and report the journey as residual risk
+❌ "Unit tests pass, feature complete"
+```
+
 **QA closure:**
 ```
 ✅ Verify command(s) → Read output → Check side effects / rollback surface → State confidence and unknowns
@@ -183,6 +191,8 @@ After the raw verification step passes, perform a short QA pass:
 2. **Evidence Bundle**
    - Capture the exact command, scope, exit status, and key output
    - State what the evidence covers and what it does not cover
+   - For user-visible work, state whether the main journey and applicable
+     experience or operational floor were verified
    - Prefer compact, runtime-ready reporting over vague success language
 
 3. **Confidence Grade**
