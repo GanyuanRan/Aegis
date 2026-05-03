@@ -8,6 +8,12 @@ If you are using an AI coding agent, you can ask it to install Aegis for you:
 
 > Please read the installation instructions in https://github.com/GanyuanRan/Aegis carefully, identify the correct path for my AI coding host, install Aegis globally, restart or reload the host if needed, and verify that the Aegis skills are discoverable.
 
+## Updating Aegis
+
+If Aegis is already installed, you can ask your AI coding agent to update it for you:
+
+> Please update my installed Aegis to the latest main branch version from https://github.com/GanyuanRan/Aegis, using the correct update path for my current AI coding host, then restart or reload the host if needed and verify Aegis skills are discoverable.
+
 `Aegis` is an Architecture-Driven Development (ADD) method pack for AI coding agents.
 
 It builds on the original `superpowers` methodology and adds evidence-driven governance, TLREF execution flow, and dual-track repair/retirement rules.
@@ -274,6 +280,19 @@ The method pack is organized around agent workflows:
    - review for behavioral risks, regressions, and missing tests
 6. **Verification Before Completion**
    - no completion claim without fresh verification evidence
+
+Aegis routes work by complexity before implementation:
+
+- Low-complexity tasks can proceed with a concise intent, baseline check, TDD, and verification.
+- Medium-complexity tasks require a baseline read set, plan, and atomic tasks before TDD.
+- High-complexity tasks require a spec/design and plan first, with user review where the workflow calls for it.
+
+When a project needs persistent Aegis records, Aegis creates a lightweight
+project workspace lazily. The default minimum is `docs/aegis/README.md` and
+`docs/aegis/INDEX.md`; task process records live under
+`docs/aegis/work/YYYY-MM-DD-<task-slug>/`. Reusable outputs are promoted to
+`baseline/`, `adr/`, `specs/`, or `plans/` only when needed. Existing project
+docs and ADRs remain the preferred authority.
 
 For bug fixes, architecture changes, contract work, and governance cleanup, Aegis requires:
 

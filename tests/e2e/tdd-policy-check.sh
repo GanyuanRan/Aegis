@@ -33,12 +33,34 @@ echo "=== TDD Policy Check ==="
 tdd_skill="skills/test-driven-development/SKILL.md"
 using_aegis="skills/using-aegis/SKILL.md"
 verification_skill="skills/verification-before-completion/SKILL.md"
+brainstorming_skill="skills/brainstorming/SKILL.md"
+writing_plans_skill="skills/writing-plans/SKILL.md"
+discipline_ref="skills/using-aegis/references/skill-discipline.md"
+process_baseline="docs/current/AEGIS_PROCESS_BASELINE.md"
 
 assert_contains "$using_aegis" "contract|cross-module|shared module|core logic" \
     "using-aegis routes contract and cross-module changes into TDD"
+assert_contains "$using_aegis" "classify task complexity" \
+    "using-aegis classifies task complexity before implementation"
+assert_contains "$using_aegis" "medium/high-complexity work needs planning" \
+    "using-aegis prevents medium/high-complexity work from entering TDD first"
+assert_contains "$using_aegis" "Aegis Project Workspace lazily" \
+    "using-aegis defines lazy task-scoped Aegis workspace records"
+assert_contains "$discipline_ref" "Low complexity|Medium complexity|High complexity" \
+    "discipline reference details task complexity levels"
+assert_contains "$discipline_ref" "TDD is the implementation discipline.*atomic tasks" \
+    "discipline reference keeps TDD after planning for medium/high-complexity work"
+assert_contains "$discipline_ref" "docs/aegis/work" \
+    "discipline reference details task-scoped workspace records"
 
 assert_contains "$tdd_skill" "contract|cross-module|shared module|core logic" \
     "TDD applies to contracts, cross-module changes, and core logic"
+assert_contains "$tdd_skill" "Preflight Gate" \
+    "TDD has a preflight gate before implementation"
+assert_contains "$tdd_skill" "baseline read-set, plan, and atomic tasks before TDD" \
+    "TDD requires planning artifacts before medium/high-complexity implementation"
+assert_contains "$tdd_skill" "multiple files, modules, pages, screens, services, or owners" \
+    "TDD detects multi-owner work as planning-gated"
 assert_contains "$tdd_skill" "input.*output|output.*input" \
     "TDD requires defining input and output before tests"
 assert_contains "$tdd_skill" "existing test|baseline" \
@@ -56,6 +78,15 @@ assert_contains "$verification_skill" "target test|related regression" \
     "verification asks for target test and related regression evidence"
 assert_contains "$verification_skill" "manual verification|manual steps" \
     "verification asks for manual steps when automation is blocked"
+
+assert_contains "$brainstorming_skill" "Aegis Project Workspace" \
+    "brainstorming writes specs through the lazy Aegis workspace boundary"
+assert_contains "$writing_plans_skill" "Aegis Project Workspace" \
+    "writing-plans defines the lazy Aegis workspace structure"
+assert_contains "$writing_plans_skill" "40-atomic-tasks" \
+    "writing-plans records atomic task decomposition"
+assert_contains "$process_baseline" "TDD.*not.*first entrypoint|TDD.*不是.*第一入口" \
+    "process baseline states TDD is not the first entrypoint for medium/high-complexity tasks"
 
 if (( failures > 0 )); then
     echo ""

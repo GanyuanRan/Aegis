@@ -36,6 +36,47 @@ Write the test first. Watch it fail. Write minimal code to pass.
 
 Thinking "skip TDD just this once"? Stop. That's rationalization.
 
+## Preflight Gate
+
+TDD is the implementation discipline for an approved behavior or atomic task.
+It is not a substitute for task routing, product clarification, or planning.
+
+Before writing tests or production code, stop and route to brainstorming or
+writing-plans if the current request has any medium- or high-complexity signal:
+
+- multiple files, modules, pages, screens, services, or owners
+- user-visible flows such as navigation, onboarding, checkout, lifecycle, or
+  recovery paths
+- state transitions, routing rules, API or data contracts, compatibility
+  boundaries, migrations, permissions, or persistence
+- more than one acceptance path or manual/visual verification requirement
+- unclear product behavior, competing constraints, or long-running execution
+
+For these tasks, require a baseline read-set, plan, and atomic tasks before TDD.
+High-complexity or ambiguous tasks also need a spec/design review before
+planning. Only proceed directly with TDD for low-complexity work whose intent,
+owner, compatibility boundary, and verification path are already clear.
+
+When a medium- or high-complexity task needs project records, use the Aegis
+Project Workspace lazily:
+
+```text
+docs/aegis/
+  README.md
+  INDEX.md
+  work/YYYY-MM-DD-<task-slug>/
+    00-intent.md
+    10-baseline-readset.md
+    30-plan.md
+    40-atomic-tasks.md
+    50-evidence.md
+```
+
+Do not create empty global folders such as `baseline/`, `adr/`, `specs/`, or
+`plans/` just in case. Promote reusable project facts, decisions, specs, or
+plans into those directories only when the workflow needs them and no existing
+project authority already owns them.
+
 ## The Iron Law
 
 ```

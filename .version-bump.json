@@ -13,6 +13,8 @@
       "RELEASE-NOTES.md",
       "node_modules",
       ".git",
+      "brainstorm-server",
+      "test-subagent-driven-development-integration.sh",
       ".version-bump.json",
       "scripts/bump-version.sh"
     ]

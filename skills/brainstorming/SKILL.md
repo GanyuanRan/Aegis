@@ -130,8 +130,19 @@ digraph brainstorming {
 
 **Documentation:**
 
+- Before writing project artifacts, initialize the Aegis Project Workspace lazily:
+  - If the project already has docs/ADR/baseline authority, reference it instead
+    of duplicating it.
+  - If no Aegis workspace exists and this task needs records, create only
+    `docs/aegis/README.md` and `docs/aegis/INDEX.md` first.
+  - For this task's process trail, create
+    `docs/aegis/work/YYYY-MM-DD-<task-slug>/` only when the task is medium or
+    high complexity.
 - Write the validated design (spec) to `docs/aegis/specs/YYYY-MM-DD-<topic>-design.md`
   - (User preferences for spec location override this default)
+  - If the design is task-specific and not reusable, it may live as
+    `docs/aegis/work/YYYY-MM-DD-<task-slug>/20-spec.md` instead. Promote it to
+    `specs/` only when future tasks should treat it as a reusable reference.
 - Use elements-of-style:writing-clearly-and-concisely skill if available
 - Commit the design document to git
 - Include the latest `TaskIntentDraft`, `BaselineReadSetHint`, and `ImpactStatementDraft` inline or in an appendix when they materially shaped the design.

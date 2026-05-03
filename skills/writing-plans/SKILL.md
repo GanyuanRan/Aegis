@@ -19,6 +19,12 @@ This skill is the canonical planning workflow for multi-step implementation work
 
 **Save plans to:** `docs/aegis/plans/YYYY-MM-DD-<feature-name>.md`
 - (User preferences for plan location override this default)
+- For task-specific plans that do not need to become reusable project
+  references, save the plan in
+  `docs/aegis/work/YYYY-MM-DD-<task-slug>/30-plan.md` and record atomic tasks in
+  `docs/aegis/work/YYYY-MM-DD-<task-slug>/40-atomic-tasks.md`.
+- Promote a plan to `docs/aegis/plans/` only when future tasks should reuse it
+  as a stable implementation reference.
 
 ## Scope Check
 
@@ -32,6 +38,43 @@ Before writing tasks, explicitly check:
 - whether this plan includes bugfix / refactor / contract work that must carry repair track + retirement track expectations
 
 If authority or scope is unclear, say so before drafting the plan.
+
+## Aegis Project Workspace
+
+Use a lazy, task-scoped workspace. Do not create directories or files just in
+case.
+
+Default minimum when project records are needed:
+
+```text
+docs/aegis/
+  README.md
+  INDEX.md
+```
+
+For medium-complexity implementation tasks:
+
+```text
+docs/aegis/work/YYYY-MM-DD-<task-slug>/
+  00-intent.md
+  10-baseline-readset.md
+  30-plan.md
+  40-atomic-tasks.md
+  50-evidence.md
+```
+
+For high-complexity or reusable work, add only the directories that are
+actually justified:
+
+- `baseline/` when the project lacks a baseline and the user agrees to create
+  one, or when project facts must be maintained here.
+- `adr/` when the task creates a durable architecture decision.
+- `specs/` when a design/spec should be reused across tasks.
+- `plans/` when an implementation plan should be reused across tasks.
+
+If the project already has `docs/adr/`, architecture docs, README/AGENTS
+authority, or another baseline owner, link to those from `INDEX.md` or the
+baseline read-set instead of duplicating them under `docs/aegis/`.
 
 ## File Structure
 

@@ -6,6 +6,12 @@
 
 > 请仔细阅读 https://github.com/GanyuanRan/Aegis 这个仓库的安装说明，识别我当前使用的 AI 编程宿主，为我完成全局安装；如果需要重启或重新加载宿主，请明确告诉我；安装后请验证 Aegis skills 是否已经可以被发现和使用。
 
+## 更新 Aegis
+
+如果你已经安装过 Aegis，可以直接把下面这段话复制给你的 AI 编程 agent：
+
+> 请将我已安装的 Aegis 更新到 https://github.com/GanyuanRan/Aegis 的最新 main 分支版本；请根据我当前使用的 AI 编程宿主选择正确的更新路径；如果需要重启或重新加载宿主，请明确告诉我；更新后请验证 Aegis skills 是否已经可以被发现和使用。
+
 `Aegis` 是一个面向 AI 编程代理的架构驱动开发（Architecture-Driven Development, ADD）方法包。
 
 它基于原始 `superpowers` 方法论继续演进，加入了证据驱动治理、TLREF 执行流程，以及“修复轨 + 退役轨”的双轨规则。
@@ -255,6 +261,18 @@ Aegis 不是 daemon、后台 runner，也不是 authoritative runtime core。它
    - 优先检查行为风险、回归风险与缺失测试
 6. **Verification Before Completion**
    - 没有 fresh verification evidence，就不声明完成
+
+Aegis 会在实施前先按复杂度路由：
+
+- 低复杂度任务：简短 intent、baseline check、TDD 与验证即可。
+- 中复杂度任务：必须先有 baseline read set、plan 和 atomic tasks，再进入 TDD。
+- 高复杂度任务：必须先有 spec/design 和 plan；workflow 要求用户确认时不能跳过确认。
+
+当项目需要持久化 Aegis 记录时，Aegis 会懒创建轻量项目工作区。默认最小结构是
+`docs/aegis/README.md` 和 `docs/aegis/INDEX.md`；任务过程记录放在
+`docs/aegis/work/YYYY-MM-DD-<task-slug>/`。只有可复用产物才提升到
+`baseline/`、`adr/`、`specs/` 或 `plans/`。已有项目文档和 ADR 仍优先作为
+authority。
 
 对 bug 修复、架构变更、contract 工作与治理清理，Aegis 要求：
 

@@ -110,6 +110,39 @@ Examples:
 - "Let's build X" -> brainstorming first, then implementation skills
 - "Fix this bug" -> debugging first, then domain-specific skills
 
+## Complexity Routing
+
+Before implementation, classify the task:
+
+- **Low complexity:** one local owner, clear behavior, small bug/doc/config
+  change. TDD may be the first implementation skill after concise intent,
+  authority/baseline check, and verification target.
+- **Medium complexity:** multi-file or multi-module work, user-visible
+  behavior, routing/state flow, API/contract touch, compatibility boundary, or
+  multiple acceptance checks. Create a baseline read-set, plan, and atomic tasks
+  before TDD.
+- **High complexity:** architecture, data model, permissions, migrations,
+  cross-system contracts, long-running work, or ambiguous product behavior. Use
+  brainstorming/specification and writing-plans before TDD; get user review
+  where the workflow requires it.
+
+TDD is the implementation discipline for approved atomic tasks, not the first
+entrypoint for medium- or high-complexity work.
+
+## Project Workspace
+
+Use the Aegis Project Workspace lazily:
+
+- Do not create project files during global install.
+- If the project already has docs, ADRs, architecture docs, or baseline
+  authority, reference those instead of duplicating them.
+- When a workflow must write project artifacts, start with the minimum:
+  `docs/aegis/README.md` and `docs/aegis/INDEX.md`.
+- Task-scoped records belong under
+  `docs/aegis/work/YYYY-MM-DD-<task-slug>/`.
+- Promote reusable outputs to `baseline/`, `adr/`, `specs/`, or `plans/` only
+  when they are genuinely needed.
+
 ## Skill Types
 
 **Rigid** skills such as TDD and debugging must be followed exactly.

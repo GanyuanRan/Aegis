@@ -1,4 +1,36 @@
-# Superpowers Release Notes
+# Aegis Release Notes
+
+## v1.0.0 (2026-05-03)
+
+### Aegis Method Pack 1.0
+
+- **Aegis version reset** — reset public package and plugin manifests to
+  `1.0.0` for the Aegis Method Pack release line.
+- **Complexity routing before implementation** — `using-aegis` now directs
+  agents to classify task complexity before coding. Medium- and
+  high-complexity work must produce planning artifacts and atomic tasks before
+  TDD; high-complexity work may require spec/design review first.
+- **TDD preflight gate** — `test-driven-development` is now explicitly framed
+  as the implementation discipline for approved atomic tasks, not the first
+  entrypoint for multi-file, multi-flow, contract, migration, or ambiguous
+  product work.
+- **Lazy Aegis Project Workspace** — `brainstorming` and `writing-plans` now
+  describe task-scoped `docs/aegis/work/...` records and only promote reusable
+  outputs into `baseline/`, `adr/`, `specs/`, or `plans/` when needed. Global
+  installation still does not write project files.
+- **Update prompt docs** — README files now include a copyable prompt users can
+  give their AI coding agent to update an installed Aegis checkout from the
+  latest `main` branch.
+
+### Verification
+
+- `bash tests/e2e/tdd-policy-check.sh`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/run-all.sh --bootstrap`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh`
+
+## Legacy Superpowers Release Notes
 
 ## v5.0.7 (2026-03-31)
 

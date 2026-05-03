@@ -210,16 +210,58 @@ todo 复述循环必须贯穿标准路径。
 
 ---
 
-## 11. 对现有 skills 的投影目标
+## 11. Project Workspace 与复杂度路由
+
+`Aegis` 可以在具体项目中维护轻量 project workspace，但必须遵循：
+
+- 懒创建：全局安装不写入用户项目；只有项目内 workflow 需要落盘产物时才创建。
+- 先沿用：已有 `docs/`、ADR、architecture docs、README、AGENTS 或 baseline owner 时，优先引用现有 authority，不复制一套权威。
+- 按任务生成：中高复杂度任务的过程记录默认进入 `docs/aegis/work/YYYY-MM-DD-<task-slug>/`。
+- 按价值提升：只有可复用的项目事实、长期决策、设计或计划，才提升到 `baseline/`、`adr/`、`specs/` 或 `plans/`。
+
+默认最小结构是：
+
+```text
+docs/aegis/
+  README.md
+  INDEX.md
+```
+
+中复杂度任务的默认过程包是：
+
+```text
+docs/aegis/work/YYYY-MM-DD-<task-slug>/
+  00-intent.md
+  10-baseline-readset.md
+  30-plan.md
+  40-atomic-tasks.md
+  50-evidence.md
+```
+
+复杂度路由约束：
+
+- 低复杂度任务可以在简短 intent 与 baseline check 后进入 TDD。
+- 中复杂度任务必须先有 baseline read-set、plan 与 atomic tasks，再进入 TDD。
+- 高复杂度任务必须先有 spec/design 与 plan；需要用户确认时不得跳过确认。
+
+`TDD` 是实现纪律，不是中高复杂度任务的第一入口。
+
+---
+
+## 12. 对现有 skills 的投影目标
 
 本流程基线后续应优先投影到以下 skills：
 
 - `brainstorming`
   - 增加 TLREF 的问题界定与范围判断
+- `using-aegis`
+  - 增加复杂度路由与 project workspace 懒创建边界
 - `systematic-debugging`
   - 显式覆盖“现象 -> 逻辑 -> 系统 -> 架构”四层诊断
 - `writing-plans`
   - 引入 impact、compat、retirement 与 verification 视角
+- `test-driven-development`
+  - 将 TDD 定位为 approved atomic task 的实现纪律，避免中高复杂度任务绕过计划
 - `requesting-code-review`
   - 增加证据充分性与架构漂移检查
 - `verification-before-completion`
@@ -227,7 +269,7 @@ todo 复述循环必须贯穿标准路径。
 
 ---
 
-## 12. 当前约束
+## 13. 当前约束
 
 后续所有 skill 改造都必须满足以下要求：
 

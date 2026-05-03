@@ -12,8 +12,13 @@ smoothly, but it does not turn Aegis into a runtime core or final authority.
   user explicitly names a skill.
 - Before implementation, identify task intent, scope, non-goals, baseline
   references, impact hints, and verification targets.
+- Route by task complexity before implementation. Medium- and high-complexity
+  work needs a baseline read set, plan, and atomic tasks before TDD; high
+  complexity may also need a spec/design review.
 - If the target project has no clear baseline, state that gap and establish a
   lightweight baseline before major implementation work.
+- Create Aegis project records lazily. Prefer existing project docs and only
+  create minimal `docs/aegis/` task records when the workflow needs them.
 - Prefer the current repository's authority docs, local conventions, and
   existing patterns before introducing new structure.
 - Keep facts, assumptions, and unknowns separate. Do not present inference as
