@@ -26,10 +26,11 @@ This means Claude Code is a supported product target. It does **not** mean
 Claude Code has current release-level fresh smoke evidence yet. The current
 compatibility matrix still records Claude Code as pending broader host rollout.
 
-## Private Repository Prerequisite
+## Repository Access Prerequisite
 
-While `https://github.com/GanyuanRan/Aegis` is private, Claude Code installation
-requires GitHub read access to the repository.
+Claude Code installation requires GitHub read access to the repository. Public
+repository installs normally need no special access beyond standard network and
+GitHub availability. Private forks still require the relevant GitHub access.
 
 Verify access before installing:
 
@@ -42,7 +43,7 @@ tokens into documentation, shell history, or Claude Code settings.
 
 ## Marketplace Installation
 
-Inside Claude Code, add the private marketplace repository:
+Inside Claude Code, add the repository-backed marketplace:
 
 ```text
 /plugin marketplace add GanyuanRan/Aegis
@@ -74,7 +75,7 @@ testing.
 
 ## Local Development Installation
 
-For local development or private smoke testing from a checked-out copy:
+For local development or smoke testing from a checked-out copy:
 
 ```bash
 claude --plugin-dir /path/to/Aegis
@@ -145,7 +146,7 @@ that supports plugins.
 
 ### Marketplace cannot be added
 
-1. Verify private repo access with `git ls-remote`.
+1. Verify repository access with `git ls-remote`.
 2. Confirm `.claude-plugin/marketplace.json` exists in the repository root.
 3. Confirm the marketplace name is `aegis-dev`.
 

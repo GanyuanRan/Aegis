@@ -54,6 +54,8 @@ Before you leave this workflow, you must be able to state:
 9. **What manual verification steps reproduce the check when automation is blocked**
 10. **For user-visible work, whether the main user journey was verified and what experience or operational floor remains unverified**
 11. **For long tasks, what latest `TodoCheckpointDraft` and `DriftCheckDraft` say about remaining work, blockers, and drift risk**
+12. **For governance, cleanup, migration, compatibility, namespace cutover, public release, deprecation, policy boundary, or retirement work, whether the final response preserved the governance closure contract**
+13. **When prompt hygiene affected the work, which evidence was summarized, which raw payloads were not loaded, and what readback remains available**
 
 Method-pack default: you provide verified evidence and advisory judgment. Do not imply that verification alone grants authoritative completion unless the governing runtime explicitly says so.
 
@@ -195,21 +197,78 @@ After the raw verification step passes, perform a short QA pass:
      experience or operational floor were verified
    - Prefer compact, runtime-ready reporting over vague success language
 
-3. **Confidence Grade**
+3. **Prompt Hygiene Boundary**
+   - Apply this when external tool output, logs, memories, search results,
+     transcripts, screenshots, OCR/document extraction, or large command output
+     shaped the judgment.
+   - Report whether the work used summaries, raw excerpts, or fresh
+     verification.
+   - Name any large raw payloads intentionally not loaded into prompt context.
+   - If the summary was insufficient, either read back the smallest relevant
+     excerpt or lower the claim to `unknown`, `partial`, or
+     `needs-verification`.
+   - When relevant, include this compact evidence boundary:
+
+   ```text
+   Evidence Used:
+   - summary: ...
+   - raw excerpt: ...
+
+   Not Loaded:
+   - full log / full transcript / full search results / full tool output
+
+   Confidence:
+   - A / B / C, with why
+
+   Next Evidence:
+   - ...
+   ```
+
+4. **Confidence Grade**
    - `A` = direct evidence plus meaningful regression coverage; no material unknowns remain
    - `B` = direct evidence for the core claim, with bounded residual risk
    - `C` = partial or indirect evidence only; do not present as fully closed
 
-4. **Authority Boundary**
+5. **Authority Boundary**
    - `verified evidence` means the claimed check passed
    - `authoritative completion` requires whatever higher-level owner, runtime, or governance process defines final completion
    - Never collapse those two ideas into one sentence unless the authority chain is explicit
 
-5. **Long-Task Checkpoint Review**
+6. **Long-Task Checkpoint Review**
    - If the task used long-task-continuation, re-read the latest checkpoint.
    - Confirm every todo has a status.
    - Confirm no drift check is still `blocked`, `pause-for-user`, `needs-baseline-readback`, or `needs-verification`.
    - If any checkpoint item is unresolved, report partial status instead of completion.
+
+7. **Governance Closure Contract**
+   - Apply this for governance, cleanup, migration, compatibility, namespace
+     cutover, public release, deprecation, policy boundary, or retirement work.
+   - Do not skip this structure just because the implementation was small. If
+     the task belongs to a governance or retirement category, compress the
+     content, but preserve the tracks.
+   - Localize section labels and prose to the user's language. Keep stable
+     internal concepts in English only when they are product terms or
+     file/path identifiers.
+
+   Required final-response shape:
+
+   ```text
+   Repair Track:
+   - repaired object
+   - action taken
+   - impact scope
+   - verification evidence
+
+   Retirement Track:
+   - retired object
+   - retirement action
+   - retained boundary
+   - future retirement trigger
+
+   Residual Risk:
+   - unverified items
+   - intentionally deferred items
+   ```
 
 ## Red Flags - QA Drift
 
@@ -219,6 +278,8 @@ After the raw verification step passes, perform a short QA pass:
 - Saying "verified" when the command was narrow but the claim is broad
 - Presenting method-pack verification as if it grants final authority
 - Adding new verification branches without saying what old check or fallback now retires
+- Closing governance or retirement work without Repair Track, Retirement Track,
+  and Residual Risk, even when the change was small
 
 ## Minimal Reporting Shape
 

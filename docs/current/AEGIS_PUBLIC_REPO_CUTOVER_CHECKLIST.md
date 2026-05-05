@@ -65,10 +65,12 @@ owner：
 2. `迁移后保留` 内容进入“待改写/待清洗”集合
 3. `归档` 内容不进入公开主叙事
 4. `仅开发仓保留` 内容不进入公开发行主仓
+5. `tests/local/` 仅允许说明文件进入公开仓，本地开发测试 case 不进入公开仓候选集合
 
 stop condition：
 
-- 若 `Aegis_Fork_Bootstrap_Pack/`、`docs/plans/`、`docs/superpowers/plans/` 仍被当作公开主内容，不进入下一步
+- 若 `Aegis_Fork_Bootstrap_Pack/`、`docs/plans/` 或已移除的 upstream-specific historical design/spec subtree 仍被当作公开主内容，不进入下一步
+- 若 `tests/local/` 下的本地开发测试 case 被纳入公开 CI、release gate 或公开主叙事，不进入下一步
 
 ### Step 3：执行去本机化清理
 
@@ -83,6 +85,7 @@ owner：
 3. 清理只用于本机排障的临时说明
 4. 清理临时缓存与本地依赖产物
 5. 将仍需本地保留、但不应公开的内容迁入 `.local/`
+6. 将测试域内仍需本地保留、但不应公开的测试 case 迁入 `tests/local/`
 
 stop condition：
 

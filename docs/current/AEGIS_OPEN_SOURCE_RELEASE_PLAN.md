@@ -226,7 +226,7 @@ stop condition：
 1. `AGENTS_RULES.md`
 2. `Aegis_Fork_Bootstrap_Pack/`
 3. `docs/plans/`
-4. `docs/superpowers/plans/`
+4. upstream-specific historical design/spec subtree
 
 处理方式：
 

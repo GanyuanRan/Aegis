@@ -76,7 +76,7 @@
 | `commands/` | `保留` | method-pack 组成部分 |
 | `hooks/` | `保留` | method-pack 组成部分 |
 | `scripts/` | `迁移后保留` | 保留公开发布仍需要的脚本，去掉只适合本机/私有流程的辅助脚本 |
-| `tests/` | `迁移后保留` | 保留可复现公开质量的测试 owner；去掉不必要的本机绝对路径痕迹 |
+| `tests/` | `迁移后保留` | 保留可复现公开质量的测试 owner；`tests/local/` 仅保留 README，实际本地开发测试默认不进入公开仓 |
 | `assets/` | `保留` | 公开品牌/图标资产 |
 | `docs/current/` | `保留` | 当前 authority baseline 主体 |
 | `docs/adr/` | `保留` | 结构性决策 owner |
@@ -84,7 +84,7 @@
 | `docs/README.opencode.md` | `保留` | 对外 host 安装说明 |
 | `docs/testing.md` | `保留` | 对外测试入口 |
 | `docs/plans/` | `归档` | 历史计划，不应作为公开 baseline |
-| `docs/superpowers/plans/` | `归档` | 历史计划/执行材料，不应作为公开 baseline |
+| upstream-specific historical design/spec subtree | `已移除` | 不作为公开仓用户可见内容，也不作为公开 baseline |
 | `Aegis_Fork_Bootstrap_Pack/` | `仅开发仓保留` | 迁移输入价值高，但不适合作为公开发行主仓主内容 |
 
 ---
@@ -105,6 +105,7 @@
 1. `docs/current/AEGIS_PHASE5_E2E_BASELINE_RUN.md`
 2. `Aegis_Fork_Bootstrap_Pack/README.md`
 3. `tests/helpers/test_parse_codex_skills.py`
+4. `tests/local/` 下除 README 之外的开发期测试输入与临时 case
 
 这些位置不一定都要从公开仓删除，但至少需要：
 
@@ -168,8 +169,9 @@ stop condition：
 
 1. `Aegis_Fork_Bootstrap_Pack/`
 2. `docs/plans/`
-3. `docs/superpowers/plans/`
+3. upstream-specific historical design/spec subtree
 4. 任何 `.tmp/`、`.serena/`、`node_modules/`、平台缓存与本机依赖产物
+5. `tests/local/` 下除 `tests/local/README.md` 之外的本地开发测试 case
 
 ---
 

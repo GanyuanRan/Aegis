@@ -88,10 +88,12 @@ run_step() {
 
 if [[ "$MODE" == "bootstrap" ]]; then
     run_step "Layer 1 Fast Check" bash "$SCRIPT_DIR/layer1-fast-check.sh" --host-profile none
+    run_step "Governance Completion Contract Check" bash "$SCRIPT_DIR/governance-completion-contract-check.sh"
     run_step "Layer 2 Behavior Check Skeleton" bash "$SCRIPT_DIR/layer2-behavior-check.sh" --bootstrap-status
     run_step "Layer 3 Scenario Check Skeleton" bash "$SCRIPT_DIR/layer3-scenario-check.sh" --bootstrap-status
 else
     run_step "Layer 1 Fast Check" bash "$SCRIPT_DIR/layer1-fast-check.sh" --host-profile "$HOST_PROFILE"
+    run_step "Governance Completion Contract Check" bash "$SCRIPT_DIR/governance-completion-contract-check.sh"
     run_step "Layer 2 Behavior Check" bash "$SCRIPT_DIR/layer2-behavior-check.sh"
     run_step "Layer 3 Scenario Check" bash "$SCRIPT_DIR/layer3-scenario-check.sh"
 fi

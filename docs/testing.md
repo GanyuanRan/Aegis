@@ -9,6 +9,15 @@ For the current `Aegis Method Pack` authority order, release gate, and known lim
 - `docs/current/AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md`
 - `docs/current/AEGIS_KNOWN_LIMITATIONS.md`
 
+For the repository test surface split, read:
+
+- `tests/README.md`
+
+Tracked suites under `tests/` are the public quality verification surface unless
+their README marks them as optional host integration checks. Development-only or
+machine-specific test cases belong in `tests/local/`; that directory is ignored
+by git except for its README and must not be used by public CI or release gates.
+
 ## Overview
 
 Testing skills that involve subagents, workflows, and complex interactions requires running actual Claude Code sessions in headless mode and verifying their behavior through session transcripts.

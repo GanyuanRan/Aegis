@@ -13,6 +13,8 @@ pytest-cache-files-*/
 *.pyc
 .local/*
 !.local/README.md
+tests/local/*
+!tests/local/README.md
 /.opencode/node_modules/
 /.opencode/package.json
 /.opencode/bun.lock

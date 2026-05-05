@@ -89,8 +89,8 @@
   - naive prompt smoke 在当前超时窗口内不稳定
 
 **观察指标**
-- `env SUPERPOWERS_TEST_CLI=codex bash tests/explicit-skill-requests/run-test.sh brainstorming ...`
-- `env SUPERPOWERS_TEST_CLI=codex bash tests/skill-triggering/run-test.sh brainstorming ...`
+- `env AEGIS_TEST_CLI=codex bash tests/explicit-skill-requests/run-test.sh brainstorming ...`
+- `env AEGIS_TEST_CLI=codex bash tests/skill-triggering/run-test.sh brainstorming ...`
 - `tests/helpers/codex-cli.sh` 的桥接与 parser 行为
 
 **退役时机**

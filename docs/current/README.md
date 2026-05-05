@@ -80,7 +80,8 @@
 5. 迁移输入材料与草稿，包括：
    - 根目录 `AGENTS_RULES.md`
    - `Aegis_Fork_Bootstrap_Pack/`
-   - 旧 `docs/plans/` 与 `docs/superpowers/` 下的历史设计文档
+   - 旧 `docs/plans/` 下的历史设计文档
+   - 已从用户可见仓库内容中移除的 upstream-specific 历史设计文档
 
 解释规则：
 
@@ -102,6 +103,7 @@
 - `docs/current/AEGIS_PRODUCT_REQUIREMENTS.md`
 - `docs/current/AEGIS_PRODUCT_BASELINE.md`
 - `docs/current/AEGIS_PROCESS_BASELINE.md`
+- `docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md`
 - `docs/current/AEGIS_RULE_LAYERING.md`
 - `docs/current/AEGIS_DUAL_TRACK_GOVERNANCE.md`
 - `docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md`
@@ -142,7 +144,7 @@
 
 - 任意未落盘的 IDE 草稿
 - `docs/plans/` 下的实施计划
-- `docs/superpowers/` 下的旧 design/spec 文档
+- 已从用户可见仓库内容中移除的 upstream-specific 旧 design/spec 文档
 - `Aegis_Fork_Bootstrap_Pack/` 中尚未迁入当前体系的内容
 - `docs/current/AEGIS_LONG_TASK_CONTINUATION_DESIGN.md`，当前为长任务协议 reviewed design input，尚未批准为 authoritative baseline
 
@@ -194,6 +196,12 @@
 - `Aegis` 对外分发的方法层总流程
 - TLREF / DIVE / Reflection / QA 的最小约束
 - 输出契约与证据要求
+
+`docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md` 负责：
+
+- 外部工具输出、日志、记忆与搜索结果如何进入 prompt
+- raw evidence、summary、index 与 readback 的边界
+- 在减少常驻上下文时如何保持 baseline-first 与 evidence-before-claims 能力
 
 `docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md` 负责：
 

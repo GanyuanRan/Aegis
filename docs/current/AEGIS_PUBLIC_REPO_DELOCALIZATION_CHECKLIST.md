@@ -58,11 +58,13 @@
 
 1. `tests/helpers/test_parse_codex_skills.py`
 2. 其它包含显式开发机盘符、用户主目录或 `.tmp` 测试输出路径断言的测试
+3. `tests/local/` 下除 README 之外的开发期测试 case
 
 处理目标：
 
 - 将路径断言改成相对路径、模式匹配或平台中立断言
 - 避免把当前开发机目录结构硬编码成公开质量门禁
+- 将仅适合本机开发过程的测试 case 保留在 `tests/local/`，并确认它们不进入公开仓
 
 ### 3.3 目录与历史输入类
 
@@ -70,7 +72,7 @@
 
 1. `Aegis_Fork_Bootstrap_Pack/`
 2. `docs/plans/`
-3. `docs/superpowers/plans/`
+3. upstream-specific historical design/spec subtree
 
 处理目标：
 
@@ -119,6 +121,9 @@
 3. `tests/helpers/test_parse_codex_skills.py`
    - 原命中：含真实本机仓路径、真实用户名路径与 `.tmp` 测试输出路径
    - 处理：已改为平台中立的 fixture 路径样本，保留 parser 回归覆盖
+4. `tests/local/`
+   - 原命中：缺少测试域内的 local-only 分流 owner
+   - 处理：新增 `tests/local/README.md` 与 git ignore 规则；除 README 外，本地开发测试 case 默认不进入公开仓
 
 这些样本已完成第一轮真实去本机化清理。后续 cutover 前仍应重新扫描公开候选集合，防止新增本机化内容。
 

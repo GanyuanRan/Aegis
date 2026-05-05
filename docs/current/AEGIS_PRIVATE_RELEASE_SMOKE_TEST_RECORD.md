@@ -32,7 +32,7 @@ Private staging 发布事实：
 - 推送目标：`private Aegis staging repository`
 - 推送分支：`main`
 - 远端 HEAD：`current staging HEAD at precheck time`
-- 发布包排除：`.tmp/`、`.serena/`、`.local/`、`Aegis_Fork_Bootstrap_Pack/`、`docs/plans/`、`docs/superpowers/plans/`、`AGENTS_RULES.md`
+- 发布包排除：`.tmp/`、`.serena/`、`.local/`、`Aegis_Fork_Bootstrap_Pack/`、`docs/plans/`、`AGENTS_RULES.md`
 
 已执行并通过：
 

@@ -125,7 +125,7 @@ Using superpowers:writing-plans
 
 兼容边界：
 
-- 旧 `docs/superpowers/` 作为历史归档可以保留
+- 旧 upstream-specific historical docs subtree 已从公开用户可见内容移除
 - 已存在 completion records 中的历史 evidence 不改写
 - upstream thanks 不删除
 

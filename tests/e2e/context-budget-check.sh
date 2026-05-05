@@ -48,6 +48,8 @@ echo "=== Context Budget Check ==="
 
 using_aegis="skills/using-aegis/SKILL.md"
 discipline_ref="skills/using-aegis/references/skill-discipline.md"
+prompt_hygiene_doc="docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md"
+verification_skill="skills/verification-before-completion/SKILL.md"
 max_hot_path_chars=2500
 
 if [[ ! -f "$using_aegis" ]]; then
@@ -73,6 +75,29 @@ assert_contains "$using_aegis" "session|transcript|history|log" \
     "using-aegis hot path includes history/log search guardrail"
 assert_contains "$using_aegis" "limit|bounded|scope|time" \
     "using-aegis hot path requires bounded historical searches"
+assert_contains "$using_aegis" "candidates, not prompt payloads" \
+    "using-aegis treats external outputs as evidence candidates"
+
+if [[ -f "$prompt_hygiene_doc" ]]; then
+    pass "prompt hygiene canonical doc exists"
+    assert_contains "$prompt_hygiene_doc" "Evidence Index Before Evidence Payload" \
+        "prompt hygiene requires evidence index before raw payload"
+    assert_contains "$prompt_hygiene_doc" "readbackNeeded" \
+        "prompt hygiene defines readback-needed evidence indexing"
+    assert_contains "$prompt_hygiene_doc" "PROMPT_POLICY_WARNING" \
+        "prompt hygiene symbolises repeated policy warning text"
+    assert_contains "$prompt_hygiene_doc" "Serena|semantic retrieval|MCP" \
+        "prompt hygiene covers MCP and semantic retrieval output"
+    assert_contains "$prompt_hygiene_doc" "不是污染源|not.*pollution source|not.*contamination source" \
+        "prompt hygiene distinguishes tools from prompt payload contamination"
+    assert_contains "$prompt_hygiene_doc" "完整错误文案.*反复回流|full error text.*reflow|full error text.*repeated" \
+        "prompt hygiene prevents repeated full policy warning text from re-entering context"
+else
+    fail "prompt hygiene canonical doc exists"
+fi
+
+assert_contains "$verification_skill" "Evidence Used|Not Loaded|Next Evidence|prompt hygiene" \
+    "verification gate reports prompt hygiene evidence boundary when relevant"
 
 assert_not_contains "hooks/session-start" "full content of your 'aegis:using-aegis' skill" \
     "Claude/Cursor/Copilot bootstrap does not advertise full skill injection"

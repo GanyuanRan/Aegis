@@ -1,5 +1,39 @@
 # Aegis Release Notes
 
+## v1.0.6 (2026-05-05)
+
+### Public Repository Hardening
+
+- **Prompt hygiene boundary** — added a current authority document for how
+  external tools, logs, memories, transcripts, and search results enter prompt
+  context. Large raw payloads are treated as evidence candidates, summarized
+  first, and read back only when needed for verification.
+- **Governance completion contract** — strengthened the completion gate for
+  cleanup, migration, compatibility, namespace cutover, public release,
+  deprecation, policy boundary, and retirement work. Governance closeout now
+  requires repair track, retirement track, residual risk, and verification
+  evidence in the user's language.
+- **Public surface cleanup** — removed upstream-specific historical specs from
+  the user-visible docs tree and narrowed stale `superpowers` references away
+  from active paths.
+- **Contributor guidance refresh** — rewrote `AGENTS.md`, `CLAUDE.md`, and
+  Claude Code guidance for public repository use instead of private workflow
+  assumptions.
+- **Test surface split** — documented tracked public quality verification
+  suites and added `tests/local/` as an ignored home for development-only test
+  cases.
+
+### Verification
+
+- `git diff --check`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/governance-completion-contract-check.sh`
+- `bash tests/e2e/tdd-policy-check.sh`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/run-all.sh --bootstrap`
+
 ## v1.0.0 (2026-05-03)
 
 ### Aegis Method Pack 1.0

@@ -59,6 +59,13 @@
 
 - `.local/`
 
+测试域内允许一个窄例外：
+
+- `tests/local/`
+
+`tests/local/` 只用于开发期测试 case 分流。它不替代 `.local/` 作为通用
+local-only overlay，也不属于公开质量验证 surface。
+
 建议子目录：
 
 - `.local/docs/`
@@ -70,7 +77,9 @@
 
 1. `.local/README.md` 可以被跟踪，用于说明约定
 2. `.local/` 其他内容默认不应被跟踪
-3. 若某内容被证明具有公开复用价值，应迁出 `.local/`，放入正式 owner 路径
+3. `tests/local/README.md` 可以被跟踪，用于说明测试域内的本地分流约定
+4. `tests/local/` 其他内容默认不应被跟踪
+5. 若某内容被证明具有公开复用价值，应迁出 `.local/` 或 `tests/local/`，放入正式 owner 路径
 
 ---
 
@@ -88,6 +97,12 @@
 2. 若不应公开，再判断是否仍有本地开发价值
 3. 若仍有本地价值，则迁入 `.local/`
 4. 若无本地价值，则删除或归档
+
+测试 case 的窄分流规则：
+
+1. 可复现、可公开、能支撑质量契约的测试留在 `tests/` 的公开套件中
+2. 本机化、私有化、探索性或临时复现测试放入 `tests/local/`
+3. `tests/local/` 不得被公开 CI、release checklist、README 命令或 current authority docs 依赖
 
 ---
 

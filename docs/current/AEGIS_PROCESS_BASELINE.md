@@ -41,10 +41,25 @@
 - 最小必要改动：优先局部、最短路径、避免无必要实体增长
 - 向后兼容优先：变更默认保留既有行为
 - 阶段验证：每次重要变更后必须做回归验证与架构回望
+- Prompt hygiene：外部工具输出、日志、记忆和搜索结果默认是候选证据，不是常驻 prompt payload
 
 ---
 
-## 4. Todo 复述循环
+## 4. Prompt Hygiene 与证据注入边界
+
+当前流程基线采用 `docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md` 作为 prompt hygiene 的 canonical owner。
+
+最小规则：
+
+- 外部工具输出、日志、记忆和搜索结果默认先摘要，再按需引用原文片段。
+- 大型 raw output 默认隔离在原始来源中，只把 source、scope、summary、refs 与 unknowns 带入 prompt。
+- 如果摘要不足以支撑判断，必须回读最小原文片段或运行 fresh verification，而不是降低判断标准。
+- 如果仍缺少信息，结论必须降级为 `unknown`、`partial` 或 `needs-verification`。
+- 减少常驻上下文不得削弱 baseline-first、evidence-before-claims、impact review、root-cause-first debugging 或 verification-before-completion。
+
+---
+
+## 5. Todo 复述循环
 
 对标准路径任务，必须显式执行 todo 复述循环：
 
@@ -57,11 +72,11 @@ todo 复述循环的目标不是形式化打卡，而是防止任务在分析、
 
 ---
 
-## 5. TLREF：路径选择
+## 6. TLREF：路径选择
 
 `Aegis` 当前采用三层反思执行框架中的路径选择层：
 
-### 5.1 快速路径
+### 6.1 快速路径
 
 适用任务：
 
@@ -76,7 +91,7 @@ todo 复述循环的目标不是形式化打卡，而是防止任务在分析、
 - 结果验证
 - 必须保留事实证据
 
-### 5.2 标准路径
+### 6.2 标准路径
 
 适用任务：
 
@@ -97,7 +112,7 @@ todo 复述循环必须贯穿标准路径。
 
 ---
 
-## 6. DIVE：标准路径最小循环
+## 7. DIVE：标准路径最小循环
 
 对标准路径任务，当前最小执行循环为：
 
@@ -106,7 +121,7 @@ todo 复述循环必须贯穿标准路径。
 - `Validate`
 - `Evolve`
 
-### 6.1 Define
+### 7.1 Define
 
 至少覆盖：
 
@@ -114,7 +129,7 @@ todo 复述循环必须贯穿标准路径。
 - 当前环境与可复现基线
 - 成功标准与验收方式
 
-### 6.2 Investigate
+### 7.2 Investigate
 
 至少覆盖：
 
@@ -123,7 +138,7 @@ todo 复述循环必须贯穿标准路径。
 - 特殊情况是业务必需还是历史补丁
 - 局部问题是否已上升到架构层
 
-### 6.3 Validate
+### 7.3 Validate
 
 至少覆盖：
 
@@ -131,7 +146,7 @@ todo 复述循环必须贯穿标准路径。
 - 实施后是否满足验收
 - 是否引入新的风险、漂移或隐性缺口
 
-### 6.4 Evolve
+### 7.4 Evolve
 
 至少覆盖：
 
@@ -140,7 +155,7 @@ todo 复述循环必须贯穿标准路径。
 
 ---
 
-## 7. Reflection Checklist
+## 8. Reflection Checklist
 
 对标准路径任务，每一轮都必须完成最小 reflection：
 
@@ -158,7 +173,7 @@ todo 复述循环必须贯穿标准路径。
 
 ---
 
-## 8. 质量保证
+## 9. 质量保证
 
 对标准路径任务，退出 reflection loop 后必须进入质量保证：
 
@@ -174,7 +189,7 @@ todo 复述循环必须贯穿标准路径。
 
 ---
 
-## 9. 测试失败铁律
+## 10. 测试失败铁律
 
 当前流程基线明确拒绝以下行为：
 
@@ -190,7 +205,7 @@ todo 复述循环必须贯穿标准路径。
 
 ---
 
-## 10. 最终输出契约
+## 11. 最终输出契约
 
 当前 `Aegis` 对外输出最少必须包含：
 
@@ -210,7 +225,7 @@ todo 复述循环必须贯穿标准路径。
 
 ---
 
-## 11. Project Workspace 与复杂度路由
+## 12. Project Workspace 与复杂度路由
 
 `Aegis` 可以在具体项目中维护轻量 project workspace，但必须遵循：
 
@@ -248,14 +263,14 @@ docs/aegis/work/YYYY-MM-DD-<task-slug>/
 
 ---
 
-## 12. 对现有 skills 的投影目标
+## 13. 对现有 skills 的投影目标
 
 本流程基线后续应优先投影到以下 skills：
 
 - `brainstorming`
   - 增加 TLREF 的问题界定与范围判断
 - `using-aegis`
-  - 增加复杂度路由与 project workspace 懒创建边界
+  - 增加复杂度路由、project workspace 懒创建边界与 prompt hygiene hot path
 - `systematic-debugging`
   - 显式覆盖“现象 -> 逻辑 -> 系统 -> 架构”四层诊断
 - `writing-plans`
@@ -269,7 +284,7 @@ docs/aegis/work/YYYY-MM-DD-<task-slug>/
 
 ---
 
-## 13. 当前约束
+## 14. 当前约束
 
 后续所有 skill 改造都必须满足以下要求：
 
