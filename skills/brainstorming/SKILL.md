@@ -3,6 +3,16 @@ name: brainstorming
 description: "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation."
 ---
 
+# Execute
+
+→ Creative work (feature, component, behavior change)? → **Design first. No code until design approved.**
+  1. Explore project context → read authority docs, check for existing patterns
+  2. Ask clarifying questions one at a time (prefer multiple choice)
+  3. Propose 2-3 approaches with trade-offs and your recommendation
+  4. Present design sections → get user approval after each
+  5. Write spec → self-review → user review → transition to writing-plans
+→ HARD GATE: Do NOT write code, scaffold projects, or invoke implementation skills until design is approved.
+
 # Brainstorming Ideas Into Designs
 
 Help turn ideas into fully formed designs and specs through natural collaborative dialogue.
@@ -21,110 +31,39 @@ Every project goes through this process. A todo list, a single-function utility,
 
 You MUST create a task for each of these items and complete them in order:
 
-1. **Explore project context** — check files, docs, recent commits, any authority docs that define the current boundary, and CONTEXT.md (if it exists) for domain terminology
-2. **Choose the path and scope** — decide whether this is a real design task, a diagnosis/refactor task that should route elsewhere, or a request that must be decomposed before brainstorming continues
-3. **Offer visual companion** (if topic will involve visual questions) — this is its own message, not combined with a clarifying question. See the Visual Companion section below.
-4. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria. When the user uses vague or overloaded terms, propose a precise canonical term. If CONTEXT.md exists, check against its glossary first; if the term is new, offer to add it after the user confirms
-5. **Draft the working artifacts** — keep lightweight `TaskIntentDraft`, `BaselineReadSetHint`, and `ImpactStatementDraft` notes as design inputs
+1. **Explore project context** — check files, docs, recent commits, authority docs, CONTEXT.md
+2. **Choose the path and scope** — real design? diagnosis? route accordingly or decompose first
+3. **Offer visual companion** (if visual questions ahead) — own message, no other content
+4. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
+5. **Draft working artifacts** — `TaskIntentDraft`, `BaselineReadSetHint`, `ImpactStatementDraft`
 6. **Propose 2-3 approaches** — with trade-offs and your recommendation
-7. **Present design** — in sections scaled to their complexity, get user approval after each section
-8. **Write design doc** — save to `docs/aegis/specs/YYYY-MM-DD-<topic>-design.md` and commit. If the design includes an architectural decision, verify it meets the 3 conditions in `docs/adr/ADR-CREATION-GATE.md` before creating a new ADR
-9. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
-10. **User reviews written spec** — ask user to review the spec file before proceeding
-11. **Transition to implementation** — invoke writing-plans skill to create implementation plan
+7. **Present design** — in sections scaled to complexity, get user approval after each
+8. **Write design doc** — save to `docs/aegis/specs/YYYY-MM-DD-<topic>-design.md` and commit
+9. **Spec self-review** — check for placeholders, contradictions, ambiguity, scope, boundary
+10. **User reviews written spec** — ask user to review before proceeding
+11. **Transition to implementation** — invoke writing-plans skill (terminal state)
 
-## Process Flow
-
-```dot
-digraph brainstorming {
-    "Explore project context" [shape=box];
-    "Design task in scope?" [shape=diamond];
-    "Route or decompose first" [shape=box];
-    "Visual questions ahead?" [shape=diamond];
-    "Offer Visual Companion\n(own message, no other content)" [shape=box];
-    "Ask clarifying questions" [shape=box];
-    "Draft working artifacts" [shape=box];
-    "Propose 2-3 approaches" [shape=box];
-    "Present design sections" [shape=box];
-    "User approves design?" [shape=diamond];
-    "Write design doc" [shape=box];
-    "Spec self-review\n(fix inline)" [shape=box];
-    "User reviews spec?" [shape=diamond];
-    "Invoke writing-plans skill" [shape=doublecircle];
-
-    "Explore project context" -> "Design task in scope?";
-    "Design task in scope?" -> "Route or decompose first" [label="no"];
-    "Design task in scope?" -> "Visual questions ahead?" [label="yes"];
-    "Visual questions ahead?" -> "Offer Visual Companion\n(own message, no other content)" [label="yes"];
-    "Visual questions ahead?" -> "Ask clarifying questions" [label="no"];
-    "Offer Visual Companion\n(own message, no other content)" -> "Ask clarifying questions";
-    "Ask clarifying questions" -> "Draft working artifacts";
-    "Draft working artifacts" -> "Propose 2-3 approaches";
-    "Propose 2-3 approaches" -> "Present design sections";
-    "Present design sections" -> "User approves design?";
-    "User approves design?" -> "Present design sections" [label="no, revise"];
-    "User approves design?" -> "Write design doc" [label="yes"];
-    "Write design doc" -> "Spec self-review\n(fix inline)";
-    "Spec self-review\n(fix inline)" -> "User reviews spec?";
-    "User reviews spec?" -> "Write design doc" [label="changes requested"];
-    "User reviews spec?" -> "Invoke writing-plans skill" [label="approved"];
-}
-```
-
-**The terminal state is invoking writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill. The ONLY skill you invoke after brainstorming is writing-plans.
+**The terminal state is invoking writing-plans.** Do NOT invoke any other implementation skill.
 
 ## The Process
 
 **Understanding the idea:**
+- Check current project state first (files, docs, recent commits)
+- Read relevant authority docs before asking deep questions
+- If the request is diagnosis/root-cause/follow-up to an approved plan → route to correct workflow
+- If the request spans multiple independent subsystems → flag and decompose first
+- Ask clarifying questions one at a time, prefer multiple choice
+- Separate facts, assumptions, unknowns while exploring
 
-- Check out the current project state first (files, docs, recent commits)
-- Read the smallest relevant authority set before asking deep questions. In repos with baselines or ADRs, load them first and treat them as constraints, not optional context.
-- Separate facts, assumptions, and unknowns while exploring. If you do not have enough authority or evidence to design safely, say so before moving on.
-- Decide whether this is really a design task. If the request is actually diagnosis, root-cause work, or a narrow implementation follow-up to an approved plan, say that directly and route to the correct workflow instead of forcing a fake brainstorm.
-- Before asking detailed questions, assess scope: if the request describes multiple independent subsystems (e.g., "build a platform with chat, file storage, billing, and analytics"), flag this immediately. Don't spend questions refining details of a project that needs to be decomposed first.
-- If the project is too large for a single spec, help the user decompose into sub-projects: what are the independent pieces, how do they relate, what order should they be built? Then brainstorm the first sub-project through the normal design flow. Each sub-project gets its own spec → plan → implementation cycle.
-- For appropriately-scoped projects, ask questions one at a time to refine the idea
-- Prefer multiple choice questions when possible, but open-ended is fine too
-- Only one question per message - if a topic needs more exploration, break it into multiple questions
-- Focus on understanding: purpose, constraints, success criteria
+**Working artifacts:** Keep three drafts: `TaskIntentDraft` (outcome, scope, risks), `BaselineReadSetHint` (candidate docs, authority gaps), `ImpactStatementDraft` (affected layers, owners, invariants, compat, non-goals). Refresh when scope changes.
 
-**Working artifacts:**
+**Exploring approaches:** Propose 2-3 approaches with trade-offs and recommendation. Make scope boundary explicit: what's in, what's deferred, what belongs elsewhere.
 
-- Keep three lightweight working drafts during the conversation:
-  - `TaskIntentDraft`: requested outcome, scope, change kinds, risk hints
-  - `BaselineReadSetHint`: candidate docs or files, why they matter, what authority may still be missing
-  - `ImpactStatementDraft`: affected layers, likely owners, invariants, compatibility boundary, non-goals
-- These are draft inputs for the design, not final authority. Never present them as authoritative gate decisions or completion grants.
-- Refresh these drafts whenever scope changes or a new constraint appears.
+**Presenting the design:** Scale sections to complexity. Cover: architecture, components, data flow, error handling, testing, compatibility boundary. Get approval after each section.
 
-**Exploring approaches:**
+**Design for isolation:** Each unit = one clear purpose, well-defined interface, testable independently. Can someone understand it without reading internals? Can you change internals without breaking consumers?
 
-- Propose 2-3 different approaches with trade-offs
-- Present options conversationally with your recommendation and reasoning
-- Lead with your recommended option and explain why
-- Make the boundary explicit: which parts are in scope now, which parts are deferred, and which parts belong to another layer or owner
-
-**Presenting the design:**
-
-- Once you believe you understand what you're building, present the design
-- Scale each section to its complexity: a few sentences if straightforward, up to 200-300 words if nuanced
-- Ask after each section whether it looks right so far
-- Cover: architecture, components, data flow, error handling, testing, compatibility boundary, and baseline refs that materially shaped the design
-- Be ready to go back and clarify if something doesn't make sense
-
-**Design for isolation and clarity:**
-
-- Break the system into smaller units that each have one clear purpose, communicate through well-defined interfaces, and can be understood and tested independently
-- For each unit, you should be able to answer: what does it do, how do you use it, and what does it depend on?
-- Can someone understand what a unit does without reading its internals? Can you change the internals without breaking consumers? If not, the boundaries need work.
-- Smaller, well-bounded units are also easier for you to work with - you reason better about code you can hold in context at once, and your edits are more reliable when files are focused. When a file grows large, that's often a signal that it's doing too much.
-
-**Working in existing codebases:**
-
-- Explore the current structure before proposing changes. Follow existing patterns.
-- Where existing code has problems that affect the work (e.g., a file that's grown too large, unclear boundaries, tangled responsibilities), include targeted improvements as part of the design - the way a good developer improves code they're working in.
-- Don't propose unrelated refactoring. Stay focused on what serves the current goal.
-- If the design touches contracts, compatibility, old fallbacks, or duplicated owners, call that out directly. A design that adds new structure without stating what old structure stays, shrinks, or retires is incomplete.
+**Existing codebases:** Follow existing patterns. Include targeted improvements only when they serve the current goal. If the design touches contracts, compat, fallbacks, or duplicated owners → call it out directly.
 
 ## After the Design
 

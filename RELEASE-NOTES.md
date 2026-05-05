@@ -1,5 +1,34 @@
 # Aegis Release Notes
 
+## v1.0.9 (2026-05-05)
+
+### Skill File Cognitive Load Reduction
+
+- **Execute summaries** — added top-level `# Execute` blocks to 6 core skill files
+  (`systematic-debugging`, `test-driven-development`, `verification-before-completion`,
+  `brainstorming`, `subagent-driven-development`, `writing-plans`). Each block is a
+  5-8 line condensed decision tree that agents can scan without reading the full
+  reference prose.
+- **Content deduplication** — removed narrative prose that repeated executable
+  instructions already present in the Execute block, and removed motivational text,
+  dot diagrams, and redundant rationalization tables that added cognitive load
+  without improving decision quality.
+- **51% total line reduction** across the 6 files (from 1,452 to 712 lines) while
+  preserving all rule semantics, compliance-check phrases, and dual-track governance
+  requirements.
+- **Verification** — all Layer 1 fast checks, context budget checks, governance
+  completion contract checks, TDD policy checks, and Codex plugin sync tests pass.
+
+### Verification
+
+- `git diff --check`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/governance-completion-contract-check.sh`
+- `bash tests/e2e/tdd-policy-check.sh`
+
 ## v1.0.8 (2026-05-05)
 
 ### Context Control And Explicit Activation
