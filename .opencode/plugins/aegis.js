@@ -83,6 +83,24 @@ const ensureSkillMirror = (sourceDir, targetDir) => {
   return mirrored;
 };
 
+const readConfigActivationMode = (homeDir) => {
+  const configPath = path.join(homeDir, '.config/aegis/config.toml');
+  if (!fs.existsSync(configPath)) return 'auto';
+
+  const content = fs.readFileSync(configPath, 'utf8');
+  const lines = content.split(/\r?\n/);
+  let configured = null;
+
+  for (const line of lines) {
+    const match = line.match(/^\s*activation_mode\s*=\s*([^#]+)/);
+    if (match) configured = match[1].trim().replace(/^["']|["']$/g, '');
+  }
+
+  return configured === 'explicit' || configured === 'auto' ? configured : 'auto';
+};
+
+const activationMode = (homeDir) => process.env.AEGIS_ACTIVATION_MODE || readConfigActivationMode(homeDir);
+
 export const AegisPlugin = async ({ client, directory }) => {
   const homeDir = os.homedir();
   const aegisSkillsDir = path.resolve(__dirname, '../../skills');
@@ -142,6 +160,7 @@ ${toolMapping}
     //   1. Token bloat from system messages repeated every turn (#750)
     //   2. Multiple system messages breaking Qwen and other models (#894)
     'experimental.chat.messages.transform': async (_input, output) => {
+      if (activationMode(homeDir) === 'explicit') return;
       const bootstrap = getBootstrapContent();
       if (!bootstrap || !output.messages.length) return;
       const firstUser = output.messages.find(m => m.info.role === 'user');

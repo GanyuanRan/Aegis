@@ -73,6 +73,40 @@ Use `--scope project` only when you intentionally want the project to record
 the plugin in `.claude/settings.json`. Use `--scope local` for machine-local
 testing.
 
+### Activation Mode
+
+Aegis defaults to automatic mode. To switch Claude Code to explicit mode, edit:
+
+```text
+~/.config/aegis/config.toml
+```
+
+Windows:
+
+```text
+%USERPROFILE%\.config\aegis\config.toml
+```
+
+If the file does not exist, create it manually. Add:
+
+```toml
+activation_mode = "explicit"
+```
+
+Then restart Claude Code or reload the plugin session. `AEGIS_ACTIVATION_MODE`
+remains available as an environment-variable override for one-off runs:
+
+```bash
+AEGIS_ACTIVATION_MODE=explicit claude
+```
+
+It is not a field in this repository's plugin metadata. Environment variables
+override the user-local config when both are set.
+
+In `explicit` mode, the hook does not inject the compact `using-aegis`
+bootstrap. The plugin and skills remain installed, so users can still call
+`/aegis:using-aegis` or another Aegis skill directly.
+
 ## Local Development Installation
 
 For local development or smoke testing from a checked-out copy:
@@ -163,6 +197,11 @@ Claude Code hooks on Windows use the wrapper documented in:
 - `docs/windows/polyglot-hooks.md`
 
 Git for Windows should be installed so the wrapper can find Git Bash.
+
+### Bootstrap intentionally absent
+
+If Aegis skills are installed but the startup reminder is missing, check whether
+`AEGIS_ACTIVATION_MODE=explicit` is set. In explicit mode this is expected.
 
 ## Official Claude Code References
 

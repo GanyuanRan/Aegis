@@ -24,6 +24,49 @@ OpenCode's global `~/.config/opencode/skills/` discovery path, and injects the b
 
 Verify by asking: "Tell me about your aegis"
 
+### Activation Mode
+
+Aegis defaults to automatic mode. To switch OpenCode to explicit mode, edit:
+
+```text
+~/.config/aegis/config.toml
+```
+
+Windows:
+
+```text
+%USERPROFILE%\.config\aegis\config.toml
+```
+
+If the file does not exist, create it manually. Add:
+
+```toml
+activation_mode = "explicit"
+```
+
+Then restart OpenCode.
+
+`AEGIS_ACTIVATION_MODE` is still available as an environment-variable override
+for one-off runs:
+
+```bash
+AEGIS_ACTIVATION_MODE=explicit opencode
+```
+
+PowerShell one-off run:
+
+```powershell
+$env:AEGIS_ACTIVATION_MODE = "explicit"
+opencode
+```
+
+It is not a field in `opencode.json`. Environment variables override the
+user-local config when both are set.
+
+In `explicit` mode, the plugin still mirrors Aegis skills into OpenCode's skill
+discovery path, but it does not prepend the compact bootstrap. Use OpenCode's
+native `skill` tool or name an Aegis skill directly when you want Aegis.
+
 Before running runtime checks or integration tests, verify the CLI itself is runnable:
 
 ```bash
@@ -176,6 +219,8 @@ Override `OPENCODE_TEST_MODEL` to a model/provider pair that is valid on your ma
 
 1. Check OpenCode version supports the `experimental.chat.messages.transform` hook
 2. Restart OpenCode after config changes
+3. Check whether `AEGIS_ACTIVATION_MODE=explicit` is set; explicit mode
+   intentionally disables automatic bootstrap injection
 
 ## Getting Help
 

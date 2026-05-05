@@ -103,6 +103,7 @@
 - `docs/current/AEGIS_PRODUCT_REQUIREMENTS.md`
 - `docs/current/AEGIS_PRODUCT_BASELINE.md`
 - `docs/current/AEGIS_PROCESS_BASELINE.md`
+- `docs/current/AEGIS_ACTIVATION_MODE.md`
 - `docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md`
 - `docs/current/AEGIS_RULE_LAYERING.md`
 - `docs/current/AEGIS_DUAL_TRACK_GOVERNANCE.md`
@@ -196,6 +197,12 @@
 - `Aegis` 对外分发的方法层总流程
 - TLREF / DIVE / Reflection / QA 的最小约束
 - 输出契约与证据要求
+
+`docs/current/AEGIS_ACTIVATION_MODE.md` 负责：
+
+- `AEGIS_ACTIVATION_MODE=auto|explicit` 的模式语义
+- 自动 bootstrap 注入与显式 skill 调用的边界
+- method-pack、host profile 与 future runtime core 的 owner 切分
 
 `docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md` 负责：
 

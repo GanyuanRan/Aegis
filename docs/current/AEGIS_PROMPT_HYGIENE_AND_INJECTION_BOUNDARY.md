@@ -121,6 +121,53 @@ Aegis 的能力来自：
 
 不得把“没有读完整材料”伪装成“材料支持结论”。
 
+### 3.6 Host Context Intake Discipline
+
+`Host Context Intake Discipline` 是宿主侧上下文摄入纪律。它的稳定
+owner 是 `bounded evidence intake`：
+
+> 大输入先建索引，再读窗口，最后只带入必要摘录。
+
+标准顺序是：
+
+1. `index`：先定位 source、pattern、match line、command scope、时间或版本。
+2. `window`：只读取命中位置附近的最小行号窗口。
+3. `excerpt`：只把当前判断必须依赖的原文片段带入 prompt。
+4. `expand`：窗口不足时有理由地扩大范围；扩大后仍不足则降级为
+   `unknown` 或 `needs-verification`。
+
+这条纪律适用于 Codex、Claude Code、OpenCode、Copilot、Gemini CLI
+等宿主中的高风险输入面，包括：
+
+- `.codex/log`、`.codex/sessions`、`history.jsonl`
+- `~/.claude/projects`、host transcript、chat history
+- CI / pytest / build / server 完整输出
+- 大型 `git diff`、连续 `apply_patch` 输出、长时间轮询日志
+- 搜索结果、memory、MCP 或 semantic retrieval 的大量候选输出
+
+默认禁止用 broad directory search 读取历史材料，例如直接扫整个
+`.codex`、`.claude` 或宿主 projects 目录。只有用户明确要求、测试需要，
+或它们是直接证据源时才读取，并且必须同时具备：
+
+- 具体文件路径或严格文件集合
+- 关键词或时间 / request / thread scope
+- 行号窗口或结果数量上限
+- 输出上限或明确的摘要优先策略
+
+触发以下任一条件时，应优先切换到新会话、压缩上下文，或把状态写成
+`ResumeStateHint` 后继续：
+
+- 单次请求输入已明显接近宿主或模型上下文上限
+- 已经连续读取大日志、history、session 或 transcript
+- 同一会话中连续多次执行大 patch、大 diff 或大测试输出
+- 已出现 `PROMPT_POLICY_WARNING`、`Invalid prompt` 或等价宿主警告
+- 当前判断开始依赖旧错误全文，而不是依赖 evidence index
+
+该纪律不要求少取证。它要求少常驻原文，多保留可回读引用。
+future runtime core 可以在此基础上做真正的 budget enforcement；
+当前 method pack 只提供 workflow discipline、helper scripts 与
+runtime-ready hints。
+
 ---
 
 ## 4. 能力保护规则

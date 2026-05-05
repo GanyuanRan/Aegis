@@ -43,6 +43,28 @@ authority order, release gate, and known limitations, read:
    multi_agent = true
    ```
 
+## Activation Mode
+
+`AEGIS_ACTIVATION_MODE=auto|explicit` is the cross-host Aegis activation
+profile. It is an environment variable read by host processes that have an
+Aegis bootstrap hook; it is not a Codex config file field. Codex uses native
+skill discovery, so this environment variable does not override Codex's own
+semantic matcher by itself. For an explicit-only Codex setup, keep Aegis skills
+available for direct calls and avoid installing an automatic entry profile that
+asks Codex to start every conversation with Aegis.
+
+For hook-based hosts, the recommended user-local config is:
+
+```text
+~/.config/aegis/config.toml
+```
+
+with:
+
+```toml
+activation_mode = "explicit"
+```
+
 ## Verify
 
 ```bash

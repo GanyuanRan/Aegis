@@ -50,6 +50,7 @@ using_aegis="skills/using-aegis/SKILL.md"
 discipline_ref="skills/using-aegis/references/skill-discipline.md"
 prompt_hygiene_doc="docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md"
 verification_skill="skills/verification-before-completion/SKILL.md"
+log_window_script="scripts/log-window.sh"
 max_hot_path_chars=2500
 
 if [[ ! -f "$using_aegis" ]]; then
@@ -92,8 +93,49 @@ if [[ -f "$prompt_hygiene_doc" ]]; then
         "prompt hygiene distinguishes tools from prompt payload contamination"
     assert_contains "$prompt_hygiene_doc" "完整错误文案.*反复回流|full error text.*reflow|full error text.*repeated" \
         "prompt hygiene prevents repeated full policy warning text from re-entering context"
+    assert_contains "$prompt_hygiene_doc" "Host Context Intake Discipline" \
+        "prompt hygiene defines host context intake discipline"
+    assert_contains "$prompt_hygiene_doc" "bounded evidence intake" \
+        "prompt hygiene names bounded evidence intake as the stable owner"
+    assert_contains "$prompt_hygiene_doc" "index.*window.*excerpt|索引.*窗口.*摘录" \
+        "prompt hygiene uses index-window-excerpt flow for large inputs"
 else
     fail "prompt hygiene canonical doc exists"
+fi
+
+if [[ -f "$log_window_script" ]]; then
+    pass "bounded log window helper exists"
+
+    tmp_log="$(mktemp)"
+    tmp_out="$(mktemp)"
+    trap 'rm -f "$tmp_log" "$tmp_out"' EXIT
+    cat > "$tmp_log" <<'EOF'
+line one
+first Invalid prompt
+line three
+latest Invalid prompt
+line five
+EOF
+
+    if bash "$log_window_script" "$tmp_log" "Invalid prompt" 1 > "$tmp_out"; then
+        assert_contains "$tmp_out" "match_line=4 window=3,5" \
+            "bounded log window helper finds latest match and reports a small window"
+        assert_contains "$tmp_out" "latest Invalid prompt" \
+            "bounded log window helper includes matching line"
+        assert_not_contains "$tmp_out" "line one" \
+            "bounded log window helper does not emit unrelated log prefix"
+    else
+        fail "bounded log window helper runs on a file"
+    fi
+
+    if bash "$log_window_script" "." "Invalid prompt" 1 > "$tmp_out" 2>&1; then
+        fail "bounded log window helper refuses directory input"
+    else
+        assert_contains "$tmp_out" "Refusing directory input" \
+            "bounded log window helper refuses directory input"
+    fi
+else
+    fail "bounded log window helper exists"
 fi
 
 assert_contains "$verification_skill" "Evidence Used|Not Loaded|Next Evidence|prompt hygiene" \

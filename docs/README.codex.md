@@ -94,6 +94,47 @@ description: Use when [condition] - [what it does]
 
 The `description` field is how Codex decides when to activate a skill automatically — write it as a clear trigger condition.
 
+## Activation Mode
+
+`AEGIS_ACTIVATION_MODE=auto|explicit` is the cross-host Aegis activation
+profile. It is an environment variable read by host processes that have an
+Aegis bootstrap hook; it is not a Codex config file field.
+
+Codex uses native skill discovery rather than an Aegis bootstrap hook. That
+means `AEGIS_ACTIVATION_MODE=explicit` does not override Codex's own semantic
+skill matcher by itself. To use an explicit-only Codex setup, keep Aegis
+available for direct calls but avoid installing an automatic entry skill/profile
+that tells Codex to start every conversation with Aegis. You can still invoke
+Aegis directly by naming a skill, such as `aegis:using-aegis` or
+`aegis:brainstorming`.
+
+For hook-based hosts, the recommended user-local config is:
+
+```text
+~/.config/aegis/config.toml
+```
+
+with:
+
+```toml
+activation_mode = "explicit"
+```
+
+For hosts with bootstrap hooks, the one-time terminal shape is:
+
+```bash
+AEGIS_ACTIVATION_MODE=explicit opencode
+AEGIS_ACTIVATION_MODE=explicit claude
+```
+
+PowerShell:
+
+```powershell
+$env:AEGIS_ACTIVATION_MODE = "explicit"
+opencode
+# or: claude
+```
+
 ## Updating
 
 ```bash

@@ -7,6 +7,37 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
+read_config_activation_mode() {
+    local config_file="${HOME}/.config/aegis/config.toml"
+    if [ ! -f "$config_file" ]; then
+        printf 'auto'
+        return
+    fi
+
+    local configured=""
+    configured="$(sed -n 's/^[[:space:]]*activation_mode[[:space:]]*=[[:space:]]*//p' "$config_file" | tail -n 1)"
+    configured="${configured%%#*}"
+    configured="${configured//\"/}"
+    configured="${configured//\'/}"
+    configured="$(printf '%s' "$configured" | tr -d '[:space:]')"
+
+    case "$configured" in
+        auto|explicit)
+            printf '%s' "$configured"
+            ;;
+        *)
+            printf 'auto'
+            ;;
+    esac
+}
+
+activation_mode="${AEGIS_ACTIVATION_MODE:-$(read_config_activation_mode)}"
+
+if [ "$activation_mode" = "explicit" ]; then
+  printf '{}\n'
+  exit 0
+fi
+
 # Check if legacy skills directory exists and build warning
 warning_message=""
 legacy_skills_dir="${HOME}/.config/aegis/skills"

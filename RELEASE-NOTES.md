@@ -1,5 +1,33 @@
 # Aegis Release Notes
 
+## v1.0.8 (2026-05-05)
+
+### Context Control And Explicit Activation
+
+- **Explicit activation mode** — added a cross-host `auto|explicit` activation
+  profile. Supported bootstrap hooks now read `AEGIS_ACTIVATION_MODE` or the
+  user-local `~/.config/aegis/config.toml`; `explicit` mode stops automatic
+  bootstrap injection while keeping direct Aegis skill calls available.
+- **Host documentation updates** — documented the activation mode flow in the
+  root README files and Codex, OpenCode, and Claude Code install guides, with
+  host-specific caveats where native skill routing remains host-controlled.
+- **Bounded context intake** — added host context intake discipline to the
+  prompt hygiene boundary: large logs, transcripts, histories, diffs, and test
+  output should flow through index -> window -> excerpt instead of broad raw
+  prompt ingestion.
+- **Log window helper** — added `scripts/log-window.sh` for small-window log
+  inspection, including directory refusal and bounded window limits.
+- **Guardrail tests** — added activation mode checks to the Layer 1 fast suite
+  and expanded context budget checks for the bounded evidence intake workflow.
+
+### Verification
+
+- `bash scripts/bump-version.sh --check`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+- `bash tests/opencode/run-tests.sh --integration`
+- `bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh`
+- `git diff --check`
+
 ## v1.0.6 (2026-05-05)
 
 ### Public Repository Hardening

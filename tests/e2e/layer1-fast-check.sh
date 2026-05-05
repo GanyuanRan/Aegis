@@ -96,6 +96,7 @@ run_check "boundary compliance" bash "$SCRIPT_DIR/boundary-compliance-check.sh"
 run_check "artifact schema fixtures" bash "$SCRIPT_DIR/artifact-schema-check.sh"
 run_check "long-task continuation scenario fixtures" bash "$SCRIPT_DIR/long-task-continuation-check.sh"
 run_check "context budget guardrails" bash "$SCRIPT_DIR/context-budget-check.sh"
+run_check "activation mode guardrails" bash "$SCRIPT_DIR/activation-mode-check.sh"
 run_check "TDD policy guardrails" bash "$SCRIPT_DIR/tdd-policy-check.sh"
 
 case "$HOST_PROFILE" in

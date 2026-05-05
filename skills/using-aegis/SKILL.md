@@ -30,14 +30,14 @@ normally.
    create only minimal `docs/aegis/` task-scoped artifacts.
 4. Load only the skills and references needed for the current task. Do not
    preload broad reference trees.
-5. Treat external tool outputs, logs, memories, and search results as evidence
-   candidates, not prompt payloads. Summarize before injection; include raw
-   excerpts only when needed for verification.
-6. Do not search or read historical sessions, transcripts, `history.jsonl`,
-   `.codex/sessions`, `~/.claude/projects`, or large log files by default.
-   Search them only when the user asks, a test explicitly requires it, or they
-   are the direct evidence source. Always bound such searches by scope, time,
-   filename, or result limit.
+5. Treat tool outputs, logs, memories, and search results as evidence
+   candidates, not prompt payloads: summarize first, then use index -> window
+   -> excerpt for large inputs.
+6. Do not read historical sessions, transcripts, `history.jsonl`,
+   `.codex/sessions`, `~/.claude/projects`, or large logs by default. Only do
+   so when requested, required by a test, or they are direct evidence; bound by
+   scope, time, filename, result limit, or line window. After host prompt
+   warnings, checkpoint/compress or start fresh instead of reloading history.
 7. If unsure how to map Aegis skill tool names to the current host, read the
    smallest relevant mapping in `references/`.
 

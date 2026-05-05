@@ -20,6 +20,33 @@ If Aegis is already installed, you can ask your AI coding agent to update it for
 
 > Please update my installed Aegis to the latest main branch version from https://github.com/GanyuanRan/Aegis, using the correct update path for my current AI coding host, then restart or reload the host if needed and verify Aegis skills are discoverable.
 
+## Activation Mode
+
+Aegis defaults to automatic mode. To switch to manual mode, edit:
+
+```text
+~/.config/aegis/config.toml
+```
+
+Windows:
+
+```text
+%USERPROFILE%\.config\aegis\config.toml
+```
+
+If the file does not exist, create it manually. Add:
+
+```toml
+activation_mode = "explicit"
+```
+
+To return to automatic mode, set `activation_mode = "auto"` or delete the file.
+
+Then restart the host. In explicit mode, supported bootstrap hooks stop
+injecting Aegis automatically, while direct skill calls such as
+`aegis:using-aegis` remain available. Host caveats are documented in
+[docs/current/AEGIS_ACTIVATION_MODE.md](docs/current/AEGIS_ACTIVATION_MODE.md).
+
 `Aegis` is an Architecture-Driven Development (ADD) method pack for AI coding agents.
 
 It builds on the original `superpowers` methodology and adds evidence-driven governance, TLREF execution flow, and dual-track repair/retirement rules.

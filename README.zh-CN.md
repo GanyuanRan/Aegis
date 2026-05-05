@@ -18,6 +18,32 @@
 
 > 请将我已安装的 Aegis 更新到 https://github.com/GanyuanRan/Aegis 的最新 main 分支版本；请根据我当前使用的 AI 编程宿主选择正确的更新路径；如果需要重启或重新加载宿主，请明确告诉我；更新后请验证 Aegis skills 是否已经可以被发现和使用。
 
+## 激活模式
+
+Aegis 默认自动模式。要切换为手动模式，编辑：
+
+```text
+~/.config/aegis/config.toml
+```
+
+Windows：
+
+```text
+%USERPROFILE%\.config\aegis\config.toml
+```
+
+如果没有这个文件，需要手动创建。写入：
+
+```toml
+activation_mode = "explicit"
+```
+
+要切回自动模式，写 `activation_mode = "auto"`，或删除该文件。
+
+然后重启宿主。显式模式下，已支持该开关的 bootstrap hook 不再自动注入
+Aegis，但 `aegis:using-aegis` 等显式 skill 调用仍可使用。详细宿主注意事项见
+[docs/current/AEGIS_ACTIVATION_MODE.md](docs/current/AEGIS_ACTIVATION_MODE.md)。
+
 `Aegis` 是一个面向 AI 编程代理的架构驱动开发（Architecture-Driven Development, ADD）方法包。
 
 它基于原始 `superpowers` 方法论继续演进，加入了证据驱动治理、TLREF 执行流程，以及“修复轨 + 退役轨”的双轨规则。

@@ -26,6 +26,33 @@ OpenCode's global `~/.config/opencode/skills/` discovery path, and injects the b
 
 Verify by asking: "Tell me about your aegis"
 
+### Activation Mode
+
+Aegis defaults to automatic mode. To switch OpenCode to explicit mode, edit:
+
+```text
+~/.config/aegis/config.toml
+```
+
+Windows:
+
+```text
+%USERPROFILE%\.config\aegis\config.toml
+```
+
+If the file does not exist, create it manually. Add:
+
+```toml
+activation_mode = "explicit"
+```
+
+Then restart OpenCode. `AEGIS_ACTIVATION_MODE` remains available as an
+environment-variable override for one-off runs:
+
+```bash
+AEGIS_ACTIVATION_MODE=explicit opencode
+```
+
 Before running runtime checks or integration tests, verify the CLI itself is runnable:
 
 ```bash
