@@ -67,6 +67,14 @@ assert_contains "$session_hook" "AEGIS_ACTIVATION_MODE" \
     "session hook reads activation mode"
 assert_contains "$session_hook" "explicit" \
     "session hook handles explicit activation mode"
+if [[ -x "$session_hook" ]]; then
+    pass "session hook is executable"
+elif git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
+    && git ls-files -s "$session_hook" | grep -q '^100755 '; then
+    pass "session hook is executable in git index"
+else
+    fail "session hook is executable"
+fi
 
 assert_contains "$opencode_plugin" "AEGIS_ACTIVATION_MODE" \
     "OpenCode plugin reads activation mode"
