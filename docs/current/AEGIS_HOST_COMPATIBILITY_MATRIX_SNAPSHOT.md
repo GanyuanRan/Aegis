@@ -21,7 +21,7 @@
 
 ## 2. Snapshot Date
 
-当前快照基于 `2026-04-30` 已落盘的 fresh evidence 与 current docs。
+当前快照基于 `2026-05-06` 已落盘的 fresh evidence 与 current docs。
 
 ---
 
@@ -39,8 +39,16 @@
 | Host | Current Status | Why Not Yet |
 | --- | --- | --- |
 | `Claude Code` | 已有安装引导与 plugin skeleton；尚无当前 release-level fresh smoke verdict | `docs/README.claude-code.md` 已建立，但真实宿主回归仍后置 |
-| `Cursor` | 尚无当前 fresh release-level verdict | 未进入当前切片 |
+| `Cursor` | 已有 `.cursor/INSTALL.md` 安装引导；尚无当前 release-level fresh smoke verdict | 结构化目标已建立，尚未进入当前宿主回归切片 |
+| `Windsurf` | 已有 `.windsurf/INSTALL.md` 安装引导；尚无当前 release-level fresh smoke verdict | 结构化目标已建立，尚未进入当前宿主回归切片 |
 | `Gemini CLI` | 尚无当前 fresh release-level verdict | 未进入当前切片 |
+
+### 3.3 无需独立适配器的宿主
+
+| Host | Current Status | Rationale |
+| --- | --- | --- |
+| `Kimi Code CLI` | 极简安装提示词即用；无需独立 adapter | Kimi Code CLI 原生 auto-discovers `.agents/skills/`（与 Codex 同路径），Aegis Codex 安装即为 Kimi 安装 |
+| `Warp` | 无需独立 adapter | Warp 作为终端宿主，运行第三方 CLI agent（Claude Code / Codex / OpenCode），不提供自有 skills 系统 |
 
 ---
 
@@ -49,8 +57,11 @@
 当前快照只说明：
 
 1. `Codex` 与 `OpenCode` 是当前最有 fresh evidence 的两条主链
-2. 当前 method-pack 仍保留跨宿主安装目标
-3. “支持所有 plugin host” 仍是产品目标，不等于“所有宿主都已有当前 fresh closeout”
+2. `Kimi Code CLI` 复用 Codex 路径（`.agents/skills/`），Aegis 极简安装提示词即可生效
+3. `Cursor` 与 `Windsurf` 已有结构化安装引导，尚未进入 release-level fresh smoke
+4. `Warp` 作为终端宿主，本身无需独立 adapter
+5. 当前 method-pack 仍保留跨宿主安装目标
+6. “支持所有 plugin host” 仍是产品目标，不等于”所有宿主都已有当前 fresh closeout”
 
 ---
 
@@ -64,6 +75,8 @@
 4. `docs/README.claude-code.md`
 5. `docs/README.codex.md`
 6. `docs/README.opencode.md`
+7. `.windsurf/INSTALL.md`
+8. `.cursor/INSTALL.md`
 
 ---
 

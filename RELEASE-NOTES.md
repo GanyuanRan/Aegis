@@ -1,5 +1,42 @@
 # Aegis Release Notes
 
+## v1.0.10 (2026-05-06)
+
+### Host Adapter Expansion
+
+- **Windsurf host adapter** — added `.windsurf/INSTALL.md` with global and
+  workspace install paths (macOS / Linux / Windows). Windsurf discovers
+  skills via agentskills.io native discovery at `.windsurf/skills/` (workspace)
+  or `~/.codeium/windsurf/skills/` (global). Each Aegis skill symlinked with
+  `aegis-` prefix, invocable via `@aegis-<skill-name>` in Cascade.
+- **Cursor host adapter** — added `.cursor/INSTALL.md` with skills symlink
+  install as the primary path and VS Code extension registration as an
+  alternative. Cursor discovers skills from `.cursor/skills/` and supports the
+  `.cursor-plugin/plugin.json` extension manifest.
+- **Kimi Code CLI compatibility confirmed** — Kimi Code CLI auto-discovers
+  skills from `.agents/skills/` (same path as Codex). The existing Aegis
+  minimal-install prompt works directly; no separate adapter needed.
+  Configuration supports 6 provider types: `kimi`, `openai_legacy`,
+  `openai_responses`, `anthropic`, `gemini`, and `vertexai`.
+- **Warp compatibility confirmed** — Warp hosts third-party CLI agents
+  (Claude Code, Codex, OpenCode) rather than providing its own skills system.
+  Users install Aegis on their chosen CLI agent; no separate adapter needed.
+- **Host compatibility matrix updated** — `AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md`
+  now reflects all 8 hosts (Codex, OpenCode, Claude Code, Cursor, Windsurf,
+  Gemini CLI, Kimi Code CLI, Warp), with evidence levels and adapter status.
+- **AGENTS.md** — added `.cursor/` and `.windsurf/` to the plugin-installable
+  surface list.
+
+### Verification
+
+- `git diff --check`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/governance-completion-contract-check.sh`
+- Verified: 17 `aegis-*` symlinks created for both Windsurf and Cursor paths
+
 ## v1.0.9 (2026-05-05)
 
 ### Skill File Cognitive Load Reduction
