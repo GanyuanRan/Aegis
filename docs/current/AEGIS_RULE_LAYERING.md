@@ -1,81 +1,81 @@
 # Aegis Rule Layering
 
-状态：`Approved`
+Status: `Approved`
 
-## 1. 文档定位
+## 1. Document Scope
 
-本文档定义 `Aegis` 当前规则体系的分层边界。
+This document defines the layered boundaries of the current `Aegis` rule system.
 
-本文档只负责回答以下问题：
+This document is only responsible for answering the following questions:
 
-- 哪些规则属于可迁移的方法层核心
-- 哪些规则属于宿主 / profile 偏好
-- 哪些规则属于当前仓的贡献约束
+- Which rules belong to the portable method layer core
+- Which rules belong to host / profile preferences
+- Which rules belong to the current repository's contribution constraints
 
 ---
 
-## 2. 三层规则模型
+## 2. Three-Layer Rule Model
 
 ### 2.1 Portable Method Rules
 
-适合进入 `Aegis Method Pack` 核心的规则包括：
+Rules suitable for entry into the `Aegis Method Pack` core include:
 
 - TLREF
 - DIVE
 - Reflection
 - QA
-- 证据驱动
-- 双轨治理
-- 输出契约
+- Evidence-Driven
+- Dual-Track Governance
+- Output Contract
 
 ### 2.2 Host / Profile Rules
 
-不应直接写入通用 method-pack baseline 的规则包括：
+Rules that should not be directly written into the general method-pack baseline include:
 
 - `sequential-thinking`
-- 优先 `serena` / `context7`
-- 宿主特有 tool routing
-- 某个插件平台独有的装配方式
+- Preferring `serena` / `context7`
+- Host-specific tool routing
+- Assembly methods unique to a particular plugin platform
 
-这些规则应进入：
+These rules should enter:
 
-- host adapter docs
-- host-specific profile
-- install / usage guide
+- Host adapter docs
+- Host-specific profile
+- Install / usage guide
 
 ### 2.3 Repo Contribution Rules
 
-只约束当前仓贡献与本地实现的规则包括：
+Rules that only constrain current repository contributions and local implementation include:
 
-- 文件长度限制
-- 命名约定
-- 本仓安全与提交约束
-- 文档落点约束
+- File length limits
+- Naming conventions
+- Repository security and commit constraints
+- Document placement constraints
 
-这些规则不应自动提升为跨宿主通用方法论。
-
----
-
-## 3. 当前母稿的分层结论
-
-根部 `AGENTS_RULES.md` 当前应视为：
-
-> 尚未完全拆层的规则母稿
-
-后续迁移原则：
-
-- 方法论核心迁入 `docs/current/` 与 skills
-- 宿主偏好迁入 host-facing docs
-- 仓库约束迁入 repo contribution docs
+These rules should not be automatically elevated to cross-host general methodology.
 
 ---
 
-## 4. 设计约束
+## 3. Layering Conclusion for the Current Master Draft
 
-后续任何规则新增，都必须先回答：
+The root `AGENTS_RULES.md` should currently be regarded as:
 
-1. 它是否可跨宿主迁移
-2. 它是否依赖特定工具能力
-3. 它是否只服务当前仓贡献
+> A rule master draft not yet fully de-layered
 
-只有第一类，才允许进入 method-pack core。
+Subsequent migration principles:
+
+- Methodology core migrates into `docs/current/` and skills
+- Host preferences migrate into host-facing docs
+- Repository constraints migrate into repo contribution docs
+
+---
+
+## 4. Design Constraints
+
+Any subsequent rule addition must first answer:
+
+1. Is it portable across hosts
+2. Does it depend on specific tool capabilities
+3. Does it only serve current repository contributions
+
+Only the first category is permitted to enter the method-pack core.

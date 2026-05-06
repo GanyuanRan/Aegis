@@ -1,6 +1,6 @@
 # Aegis Repository Agent Guide
 
-状态：`Approved`
+Status: `Approved`
 
 ## 1. Purpose
 

@@ -1,180 +1,179 @@
 # Aegis Known Limitations
 
-状态：`Reviewed`
+Status: `Reviewed`
 
-## 1. 文档定位
+## 1. Document Scope
 
-本文档记录当前 `Aegis Method Pack` 的已知限制、兼容 fallback、保留原因与退役触发条件。
+This document records the current known limitations, compatibility fallbacks, retention reasons, and retirement triggers of the `Aegis Method Pack`.
 
-它只记录当前 fresh evidence 支撑的限制项，不做未来推测。
-
----
-
-## 2. 当前已知限制
-
-### 2.1 当前仓不是完整平台
-
-**保留对象**
-- `Method Pack` 与 future `Host Adapters + Runtime Core` 的分层边界
-
-**保留原因**
-- 当前仓的正式定位就是 `Aegis Method Pack (runtime-ready)`，不是 full platform
-
-**观察指标**
-- current docs 是否仍把 outputs 限定为 `draft / hint / projection`
-
-**退役时机**
-- 只有未来完整平台在新的 approved plan 中独立展开后，才进入下一层，不是“删除此限制”
+It only records limitations supported by current fresh evidence and does not speculate about the future.
 
 ---
 
-### 2.2 真实环境回归已后置
+## 2. Current Known Limitations
 
-**保留对象**
-- 多宿主 release-level fresh install 回归
-- 真实团队任务 live 样本验证
+### 2.1 Current Repository Is Not a Complete Platform
 
-**保留原因**
-- 当前优先目标是 method-pack strengthening 与开源准备，不是立即宣布日常生产 rollout
+**Retained Item**
+- The layered boundary between `Method Pack` and future `Host Adapters + Runtime Core`
 
-**观察指标**
-- release checklist 与 host compatibility snapshot 是否仍明确区分 method-pack
-  readiness 与 production rollout readiness
+**Retention Reason**
+- The current repository's formal scope is `Aegis Method Pack (runtime-ready)`, not a full platform
 
-**退役时机**
-- 当用户明确要求进入 production rollout 准备时
+**Observation Metric**
+- Whether current docs still constrain outputs to `draft / hint / projection`
+
+**Retirement Trigger**
+- Only when a future complete platform is independently unfolded in a new approved plan does this enter the next layer; this is not about "deleting this limitation"
 
 ---
 
-### 2.3 OpenCode config fallback 仍保留
+### 2.2 Real-Environment Regression Is Deferred
 
-**保留对象**
+**Retained Item**
+- Multi-host release-level fresh install regression
+- Real team task live sample verification
+
+**Retention Reason**
+- The current priority is method-pack strengthening and open-source preparation, not immediately declaring daily production rollout
+
+**Observation Metric**
+- Whether the release checklist and host compatibility snapshot still clearly distinguish method-pack readiness from production rollout readiness
+
+**Retirement Trigger**
+- When the user explicitly requests entry into production rollout preparation
+
+---
+
+### 2.3 OpenCode Config Fallback Is Still Retained
+
+**Retained Item**
 - OpenCode `config.skills.paths` compatibility fallback
 
-**保留原因**
-- 当前 canonical chain 已切到宿主官方支持的全局 skills path，但仍缺跨版本证据证明 fallback 完全没有兼容价值
+**Retention Reason**
+- The current canonical chain has already switched to the host's officially supported global skills path, but cross-version evidence that the fallback has zero compatibility value is still lacking
 
-**观察指标**
+**Observation Metric**
 - `bash tests/opencode/run-tests.sh --integration`
-- 真实 fresh install 验证
+- Real fresh install verification
 
-**退役时机**
-- 当目标 OpenCode 版本集合已证明 native global skills path 足够稳定时
-
----
-
-### 2.4 当前 host snapshot 不是全宿主 release verdict
-
-**保留对象**
-- 当前只对 `Codex` 与 `OpenCode` 给出 fresh-evidence 驱动的主链 verdict
-
-**保留原因**
-- 其它宿主当前不在本切片验证范围内
-
-**观察指标**
-- `AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md` 是否仍明确区分“有 fresh evidence”与“尚未形成 current verdict”
-
-**退役时机**
-- 当其它宿主进入单独 approved slice 并完成 fresh closeout 时
+**Retirement Trigger**
+- When the target OpenCode version set has proven that the native global skills path is sufficiently stable
 
 ---
 
-### 2.5 Git Bash 下的 Codex smoke 时延与稳定性仍需单独观察
+### 2.4 Current Host Snapshot Is Not a Full-Host Release Verdict
 
-**保留对象**
-- Git Bash / MSYS2 环境下的 Codex representative smoke
+**Retained Item**
+- Currently only `Codex` and `OpenCode` have fresh-evidence-driven mainline verdicts
 
-**保留原因**
-- 当前已确认 Git Bash 下的 working-dir / cmd bridge 问题可以被收敛，但 representative Codex smoke 仍可能表现为：
-  - explicit skill request 可通过，但耗时偏长
-  - naive prompt smoke 在当前超时窗口内不稳定
+**Retention Reason**
+- Other hosts are currently outside the verification scope of this slice
 
-**观察指标**
+**Observation Metric**
+- Whether `AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md` still clearly distinguishes "has fresh evidence" from "current verdict not yet formed"
+
+**Retirement Trigger**
+- When other hosts enter a separate approved slice and complete fresh closeout
+
+---
+
+### 2.5 Codex Smoke Under Git Bash: Latency and Stability Require Separate Observation
+
+**Retained Item**
+- Codex representative smoke under Git Bash / MSYS2 environment
+
+**Retention Reason**
+- It has been confirmed that the working-dir / cmd bridge issues under Git Bash can be converged, but representative Codex smoke may still exhibit:
+  - explicit skill requests may pass but take longer than expected
+  - naive prompt smoke is unstable within the current timeout window
+
+**Observation Metric**
 - `env AEGIS_TEST_CLI=codex bash tests/explicit-skill-requests/run-test.sh brainstorming ...`
 - `env AEGIS_TEST_CLI=codex bash tests/skill-triggering/run-test.sh brainstorming ...`
-- `tests/helpers/codex-cli.sh` 的桥接与 parser 行为
+- Bridge and parser behavior of `tests/helpers/codex-cli.sh`
 
-**退役时机**
-- 当 Git Bash 下 representative Codex smoke 在当前 runner 超时窗口内稳定通过时
-
----
-
-### 2.6 INDEX.md 追加依赖工作流步骤
-
-**保留对象**
-- `docs/aegis/INDEX.md` 的完整性依赖各 skill 文件写入步骤显式执行追加操作
-
-**保留原因**
-- 当前三个入口 skill（brainstorming、writing-plans、systematic-debugging）已覆盖 INDEX.md 追加指令，但未来新增 skill 若写入 docs/aegis/ 而未包含追加指令，INDEX.md 将出现遗漏
-
-**观察指标**
-- 新增 skill 的 code-review 中检查是否包含 INDEX.md 追加逻辑
-
-**退役时机**
-- 当所有写入 docs/aegis/ 的 skill 都自动化 INDEX.md 维护时（例如通过共享的 workspace helper）
+**Retirement Trigger**
+- When representative Codex smoke under Git Bash passes stably within the current runner timeout window
 
 ---
 
-### 2.7 低复杂度任务跳过 workspace 的窗口期
+### 2.6 INDEX.md Append Dependency on Workflow Steps
 
-**保留对象**
-- 低复杂度任务不触发 workspace 创建，若后续升级为中复杂度，在 using-aegis hot path Rule 2 的中途升级触发之前存在短暂无 workspace 窗口
+**Retained Item**
+- The completeness of `docs/aegis/INDEX.md` depends on each skill file's write step explicitly performing the append operation
 
-**保留原因**
-- 低复杂度任务的定义本身就是"不需要 workspace 产物"，过早创建会产生噪音文件。中途升级触发是当前最简补救方案
+**Retention Reason**
+- The current three entry skills (brainstorming, writing-plans, systematic-debugging) already cover the INDEX.md append instruction, but if a future new skill writes to docs/aegis/ without including the append instruction, INDEX.md will have omissions
 
-**观察指标**
-- 中途升级触发在实际使用中的命中频率；若频繁命中则说明初始复杂度分类阈值需调整
+**Observation Metric**
+- During code review of new skills, check whether INDEX.md append logic is included
 
-**退役时机**
-- 当有足够的实际使用数据支撑更精确的初始复杂度判定时
-
----
-
-### 2.8 BASELINE-GOVERNANCE.md 模板依赖 agent 正确执行
-
-**保留对象**
-- BASELINE-GOVERNANCE.md 的内容质量依赖 agent 按模板正确填充所有字段
-
-**保留原因**
-- 模板提供了结构与字段定义，但无法强制 agent 完整填充。当前无自动化 completeness check
-
-**观察指标**
-- 实际创建的 BASELINE-GOVERNANCE.md 中字段填充率
-
-**退役时机**
-- 当 verification-before-completion 中增加 BASELINE-GOVERNANCE.md 完整性检查时
+**Retirement Trigger**
+- When all skills that write to docs/aegis/ have automated INDEX.md maintenance (e.g., via a shared workspace helper)
 
 ---
 
-### 2.9 架构回望 7 维度部分依赖 agent 定性判断
+### 2.7 Low-Complexity Task Skips Workspace: Gap Window
 
-**保留对象**
-- 7 维度中的部分维度（尤其是 Entropy flow、Cascade proliferation）依赖 agent 的定性判断，无量化度量工具
+**Retained Item**
+- Low-complexity tasks do not trigger workspace creation; if later upgraded to medium complexity, there is a brief no-workspace window before the using-aegis hot path Rule 2 mid-stream upgrade trigger fires
 
-**保留原因**
-- 量化架构度量需要专门的静态分析工具链，当前超出 method-pack scope
+**Retention Reason**
+- The definition of low-complexity tasks itself is "no workspace artifacts needed"; premature creation would produce noise files. The mid-stream upgrade trigger is the current simplest remediation
 
-**观察指标**
-- 实际架构回望中定性判断的一致性；若频繁出现争议性判断则需引入量化基线
+**Observation Metric**
+- The hit frequency of the mid-stream upgrade trigger in actual usage; if hit frequently, the initial complexity classification threshold needs adjustment
 
-**退役时机**
-- 当有可集成的量化架构度量工具时
+**Retirement Trigger**
+- When sufficient actual usage data supports a more precise initial complexity determination
+
+---
+
+### 2.8 BASELINE-GOVERNANCE.md Template Depends on Correct Agent Execution
+
+**Retained Item**
+- The content quality of BASELINE-GOVERNANCE.md depends on the agent correctly filling all fields per the template
+
+**Retention Reason**
+- The template provides structure and field definitions, but cannot force the agent to fill completely. There is currently no automated completeness check
+
+**Observation Metric**
+- Field fill rate in actually created BASELINE-GOVERNANCE.md files
+
+**Retirement Trigger**
+- When a BASELINE-GOVERNANCE.md completeness check is added to verification-before-completion
+
+---
+
+### 2.9 Architecture Review: 7 Dimensions Partially Depend on Agent Qualitative Judgment
+
+**Retained Item**
+- Some dimensions among the 7 (especially Entropy flow, Cascade proliferation) depend on agent qualitative judgment and have no quantitative measurement tools
+
+**Retention Reason**
+- Quantitative architecture measurement requires specialized static analysis toolchains, currently beyond the method-pack scope
+
+**Observation Metric**
+- Consistency of qualitative judgments in actual architecture reviews; if contentious judgments appear frequently, quantitative baselines need to be introduced
+
+**Retirement Trigger**
+- When integrable quantitative architecture measurement tools become available
 
 ---
 
 ## 3. Default Reading Rule
 
-如果某个 limitation 同时出现在 README、host docs 或测试说明中，以本文件作为当前阅读入口。
+If a limitation appears simultaneously in README, host docs, or test descriptions, use this document as the current reading entry point.
 
 ---
 
 ## 4. Architecture Review
 
-当前 limitation 管理的核心要求是：
+The core requirements for current limitation management are:
 
-1. 不隐瞒限制
-2. 不把 limitation 写成永久缺陷
-3. 不为了掩盖 limitation 而新增无退役计划的 fallback
+1. Do not conceal limitations
+2. Do not write limitations as permanent defects
+3. Do not add fallbacks without retirement plans in order to mask limitations
 
-对于架构回望的 7 维度操作定义与 defect/drift 判定标准，见 `AEGIS_PROCESS_BASELINE.md` §15-§17。
+For the 7-dimension operational definitions and defect/drift judgment criteria for architecture review, see `AEGIS_PROCESS_BASELINE.md` §15-§17.

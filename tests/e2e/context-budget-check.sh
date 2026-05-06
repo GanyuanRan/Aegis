@@ -91,7 +91,7 @@ if [[ -f "$prompt_hygiene_doc" ]]; then
         "prompt hygiene covers MCP and semantic retrieval output"
     assert_contains "$prompt_hygiene_doc" "不是污染源|not.*pollution source|not.*contamination source" \
         "prompt hygiene distinguishes tools from prompt payload contamination"
-    assert_contains "$prompt_hygiene_doc" "完整错误文案.*反复回流|full error text.*reflow|full error text.*repeated" \
+    assert_contains "$prompt_hygiene_doc" "complete error text.*repeatedly|full error text.*reflow|full error text.*repeated" \
         "prompt hygiene prevents repeated full policy warning text from re-entering context"
     assert_contains "$prompt_hygiene_doc" "Host Context Intake Discipline" \
         "prompt hygiene defines host context intake discipline"

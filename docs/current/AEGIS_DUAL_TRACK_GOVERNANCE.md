@@ -1,87 +1,87 @@
 # Aegis Dual-Track Governance
 
-状态：`Approved`
+Status: `Approved`
 
-## 1. 文档定位
+## 1. Document Scope
 
-本文档定义 `Aegis` 当前生效的“修复轨 + 退役轨”双轨治理规则。
-
----
-
-## 2. 适用范围
-
-以下任务默认必须按双轨执行：
-
-- bug 修复
-- 架构重构
-- 链路治理
-- contract 调整
+This document defines the currently effective "Repair Track + Retirement Track" dual-track governance rules for `Aegis`.
 
 ---
 
-## 3. 双轨定义
+## 2. Applicability Scope
 
-### 3.1 修复轨
+The following types of tasks must be executed under dual-track governance by default:
 
-必须回答：
-
-1. 真实根因
-2. 唯一 canonical owner
-3. 最小必要改动
-4. 兼容边界
-5. 验证方式
-
-### 3.2 退役轨
-
-退役轨默认行为是删除旧逻辑，保留需要明确举证。
-
-执行顺序：
-
-1. 定位：当前重复 owner / 旧 fallback / 历史补丁在哪里
-2. **生效检查**：是否仍在主链生效
-   - 若已失效 → 直接删除，跳到第5步
-   - 若仍生效 → 继续执行第3步
-3. **默认操作**：确认安全删除路径，执行删除
-4. **例外**（仅在经验证的依赖阻断导致无法删除时）：
-   - 记录：保留对象、保留原因、观察指标、退役时机
-   - 在当前切片交付回望中重新评估
-5. **验证**：删除后旧逻辑不再生效，无遗留引用
+- Bug fixes
+- Architecture refactoring
+- Chain governance
+- Contract adjustments
 
 ---
 
-## 4. 强约束
+## 3. Dual-Track Definition
 
-- 严禁只新增代码而不交代旧逻辑去留
-- 严禁新增 provider / fallback / prompt 分支 / adapter 却没有对应退役计划
-- 冗余代码、死代码、失效 fallback、过时兼容层默认在同一切片内删除
-- 仅在经验证的依赖阻断下允许转为保留+记录，且交付回望中必须重新评估
-- 若暂不能删除，必须记录：`保留对象`、`保留原因`、`观察指标`、`退役时机`
-- 新增 canonical owner 时，应优先迁移旧逻辑，再把旧逻辑降级为兼容层
+### 3.1 Repair Track
+
+Must answer:
+
+1. True root cause
+2. Unique canonical owner
+3. Minimum necessary change
+4. Compatibility boundary
+5. Verification method
+
+### 3.2 Retirement Track
+
+The default behavior of the Retirement Track is to delete old logic; retention requires explicit justification.
+
+Execution order:
+
+1. **Locate**: Where is the current duplicate owner / old fallback / historical patch
+2. **Effectiveness Check**: Is it still active on the main chain
+   - If already inactive → delete directly, skip to step 5
+   - If still active → continue to step 3
+3. **Default Operation**: Confirm a safe deletion path, execute deletion
+4. **Exception** (only when verified dependency blockage prevents deletion):
+   - Record: retained object, retention reason, observation metrics, retirement timing
+   - Re-evaluate during the current slice's Pre-Delivery Review
+5. **Verification**: After deletion, old logic is no longer active and no lingering references remain
 
 ---
 
-## 5. 交付前回望
+## 4. Hard Constraints
 
-每个切片交付前必须完成：
-
-- 修复回望
-  - 是否真正消除了根因，而不是对样例打补丁
-- 退役回望
-  - 是否减少了分支、重复 owner、过时 fallback、无效契约
+- It is strictly forbidden to add new code without accounting for the disposition of old logic
+- It is strictly forbidden to add new providers / fallbacks / prompt branches / adapters without a corresponding retirement plan
+- Redundant code, dead code, inactive fallbacks, and obsolete compatibility layers shall be deleted within the same slice by default
+- Only under verified dependency blockage is retention+recording permitted, and it must be re-evaluated in the Pre-Delivery Review
+- If deletion cannot be performed yet, the following must be recorded: `Retained Object`, `Retention Reason`, `Observation Metrics`, `Retirement Timing`
+- When adding a new canonical owner, prefer migrating old logic first, then downgrading the old logic to a compatibility layer
 
 ---
 
-## 6. 方法层定位
+## 5. Pre-Delivery Review
 
-双轨治理属于：
+Before each slice delivery, the following must be completed:
 
-- `Aegis Method Pack` 的核心治理流程
+- Repair Review
+  - Whether the root cause was truly eliminated, rather than patching against samples
+- Retirement Review
+  - Whether branches, duplicate owners, obsolete fallbacks, and invalid contracts were reduced
 
-它可以：
+---
 
-- 组织分析与交付结构
-- 要求明确退役计划
+## 6. Method-Layer Positioning
 
-它不可以：
+Dual-track governance belongs to:
 
-- 越权替代 future runtime core 的 authoritative decision
+- The core governance process of `Aegis Method Pack`
+
+It can:
+
+- Organize analysis and delivery structure
+- Require explicit retirement plans
+
+It cannot:
+
+- Overstep to replace the authoritative decision of a future runtime core

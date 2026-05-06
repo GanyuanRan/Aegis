@@ -1,5 +1,42 @@
 # Aegis Release Notes
 
+## v1.0.13 (2026-05-06)
+
+### Method Baseline Convergence
+
+- **Current authority docs normalized** — aligned the public current baseline
+  docs to a single English-first structure (`Status`, `Document Scope`,
+  `Bottom Line Up Front`, and consistent section naming) so product boundary,
+  process baseline, activation mode, runtime-ready boundary, host snapshot,
+  limitations, and rule layering now read as one coherent method-pack surface.
+- **Dual-track governance docs simplified** — retired the separate public
+  Chinese duplicate of dual-track governance and kept the public current set on
+  one canonical document path.
+- **Repository guide sync** — updated `AGENTS.md` and `docs/current/README.md`
+  so the public authority map matches the trimmed current-doc surface.
+
+### Prompt Hygiene And Debugging Tightening
+
+- **Prompt hygiene baseline refined** — strengthened the wording around bounded
+  evidence intake, repeated error-text re-entry, and host-side context
+  discipline so Aegis stays evidence-rich without encouraging raw context
+  inflation.
+- **Systematic debugging closure clarified** — tightened the
+  `systematic-debugging` skill around stop conditions, hard-signal placement,
+  differential diagnosis, repair vs retirement closure, and confidence rules.
+- **TDD / context-budget assertions synced** — updated the e2e checks so the
+  policy tests match the refreshed baseline wording instead of stale phrasing.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.0.13`
+- `git diff --check`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/tdd-policy-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/run-all.sh --full --host-profile none`
+
 ## v1.0.12 (2026-05-06)
 
 ### Aegis Project Workspace — Ecosystem Closed Loop

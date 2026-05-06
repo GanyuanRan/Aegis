@@ -1,23 +1,23 @@
 # Aegis Artifact Schema Baseline
 
-状态：`Approved`
+Status: `Approved`
 
-## 1. 文档定位
+## 1. Document Scope
 
-本文档定义 `Aegis Method Pack` 当前 runtime-ready artifacts 的最小 schema baseline。
+This document defines the minimum schema baseline for the current runtime-ready artifacts of the `Aegis Method Pack`.
 
 ---
 
-## 2. 通用约束
+## 2. General Constraints
 
-- 每个 artifact 必须可版本化
-- 每个 artifact 必须有稳定名称
-- 每个 artifact 必须区分：
+- Every artifact must be versionable
+- Every artifact must have a stable name
+- Every artifact must distinguish among:
   - method-pack produced
   - host-provided
   - future-runtime-authoritative
 
-当前 schema version 统一为：
+The current schema version is uniformly:
 
 - `aegis.schema.v0`
 
@@ -27,7 +27,7 @@
 
 ### 3.1 `TaskIntentDraft`
 
-必填字段：
+Required fields:
 
 - `schemaVersion`
 - `requestedOutcome`
@@ -35,26 +35,26 @@
 - `changeKinds`
 - `riskHints`
 
-当前 owner：
+Current owner:
 
 - method pack
 
 ### 3.2 `BaselineReadSetHint`
 
-必填字段：
+Required fields:
 
 - `schemaVersion`
 - `candidateDocs`
 - `whyRelevant`
 - `missingAuthority`
 
-当前 owner：
+Current owner:
 
 - method pack
 
 ### 3.3 `ImpactStatementDraft`
 
-必填字段：
+Required fields:
 
 - `schemaVersion`
 - `affectedLayers`
@@ -63,13 +63,13 @@
 - `compatBoundary`
 - `nonGoals`
 
-当前 owner：
+Current owner:
 
 - method pack
 
 ### 3.4 `EvidenceBundleDraft`
 
-必填字段：
+Required fields:
 
 - `schemaVersion`
 - `artifactKey`
@@ -78,13 +78,13 @@
 - `summary`
 - `verifier`
 
-当前 owner：
+Current owner:
 
 - method pack / host projection
 
 ### 3.5 `GateInputPack`
 
-必填字段：
+Required fields:
 
 - `schemaVersion`
 - `baselineRefs`
@@ -93,14 +93,14 @@
 - `retirementPlan`
 - `evidenceBundle`
 
-当前 owner：
+Current owner:
 
 - method pack assembles
 - future runtime core consumes
 
 ### 3.6 `TodoCheckpointDraft`
 
-必填字段：
+Required fields:
 
 - `schemaVersion`
 - `taskId`
@@ -112,13 +112,13 @@
 - `nextStep`
 - `updatedAt`
 
-当前 owner：
+Current owner:
 
 - method pack
 
 ### 3.7 `ResumeStateHint`
 
-必填字段：
+Required fields:
 
 - `schemaVersion`
 - `taskId`
@@ -128,13 +128,13 @@
 - `mustReadBeforeContinuing`
 - `unsafeToAssume`
 
-当前 owner：
+Current owner:
 
 - method pack / host projection
 
 ### 3.8 `DriftCheckDraft`
 
-必填字段：
+Required fields:
 
 - `schemaVersion`
 - `taskId`
@@ -146,7 +146,7 @@
 - `newRiskSignals`
 - `decision`
 
-允许的 `decision`：
+Allowed `decision` values:
 
 - `continue`
 - `pause-for-user`
@@ -154,7 +154,7 @@
 - `needs-verification`
 - `blocked`
 
-当前 owner：
+Current owner:
 
 - method pack
 
@@ -162,13 +162,13 @@
 
 ## 4. Authority Boundary
 
-以下 artifacts 当前只允许是：
+The following artifacts are currently only permitted to be:
 
 - draft
 - hint
 - projection input
 
-不允许被 method pack 直接写成：
+Not permitted to be directly written by the method pack as:
 
 - authoritative `BaselineRef[]`
 - authoritative `PolicySnapshot`

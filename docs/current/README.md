@@ -1,6 +1,6 @@
 # Aegis Current Docs
 
-状态：`Approved`
+Status: `Approved`
 
 ## 1. Purpose
 
@@ -55,7 +55,6 @@ The public current set is:
 - `docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md`
 - `docs/current/AEGIS_RULE_LAYERING.md`
 - `docs/current/AEGIS_DUAL_TRACK_GOVERNANCE.md`
-- `docs/current/AEGIS_DUAL_TRACK_GOVERNANCE_ZH.md`
 - `docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md`
 - `docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md`
 - `docs/current/AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md`
@@ -83,7 +82,7 @@ The public current set is:
 `AEGIS_RULE_LAYERING.md`
 : Method, host, and repo rule layering.
 
-`AEGIS_DUAL_TRACK_GOVERNANCE.md` / `AEGIS_DUAL_TRACK_GOVERNANCE_ZH.md`
+`AEGIS_DUAL_TRACK_GOVERNANCE.md`
 : Repair track plus retirement track governance.
 
 `AEGIS_ARTIFACT_SCHEMA_BASELINE.md`

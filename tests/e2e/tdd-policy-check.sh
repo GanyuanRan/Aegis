@@ -85,7 +85,7 @@ assert_contains "$writing_plans_skill" "Aegis Project Workspace" \
     "writing-plans defines the Aegis workspace structure"
 assert_contains "$writing_plans_skill" "INDEX.md" \
     "writing-plans records workspace initialization steps"
-assert_contains "$process_baseline" "TDD.*不是.*第一入口|TDD.*实现纪律" \
+assert_contains "$process_baseline" "TDD is the implementation discipline.*not the first entry" \
     "process baseline states TDD is the implementation discipline, not the first entrypoint"
 
 if (( failures > 0 )); then

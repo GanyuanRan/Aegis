@@ -1,79 +1,79 @@
 # Aegis Host Compatibility Matrix Snapshot
 
-状态：`Reviewed`
+Status: `Reviewed`
 
-## 1. 文档定位
+## 1. Document Scope
 
-本文档记录当前 `Aegis Method Pack` 的宿主兼容性快照。
+This document records the current host compatibility snapshot of the `Aegis Method Pack`.
 
-它回答的是：
+It answers:
 
-- 哪些宿主已有 fresh evidence
-- 哪些宿主只有结构性目标，没有当前 fresh verification
-- 当前 compatibility verdict 的读取顺序是什么
+- Which hosts have fresh evidence
+- Which hosts only have structural goals without current fresh verification
+- What is the reading order for the current compatibility verdict
 
-它不回答：
+It does not answer:
 
-- 所有宿主的永久支持承诺
-- 完整平台级别的运行时兼容性
+- Permanent support commitments for all hosts
+- Complete platform-level runtime compatibility
 
 ---
 
 ## 2. Snapshot Date
 
-当前快照基于 `2026-05-06` 已落盘的 fresh evidence 与 current docs。
+The current snapshot is based on fresh evidence and current docs landed as of `2026-05-06`.
 
 ---
 
 ## 3. Current Verdict
 
-### 3.1 已有 fresh evidence 的宿主
+### 3.1 Hosts With Fresh Evidence
 
 | Host | Current Verdict | Evidence Owner |
 | --- | --- | --- |
-| `Codex` | representative smoke 主链可用；Git Bash 下 naive smoke 仍需观察 | `docs/testing.md`, `tests/skill-triggering/*`, `tests/explicit-skill-requests/*`, `docs/current/AEGIS_KNOWN_LIMITATIONS.md` |
-| `OpenCode` | base suite 与 integration closeout 已通过 | `docs/testing.md`, `tests/opencode/*`, `docs/README.opencode.md` |
+| `Codex` | Representative smoke mainline available; naive smoke under Git Bash still requires observation | `docs/testing.md`, `tests/skill-triggering/*`, `tests/explicit-skill-requests/*`, `docs/current/AEGIS_KNOWN_LIMITATIONS.md` |
+| `OpenCode` | Base suite and integration closeout passed | `docs/testing.md`, `tests/opencode/*`, `docs/README.opencode.md` |
 
-### 3.2 仍未形成当前 fresh release verdict 的宿主
+### 3.2 Hosts Without a Current Fresh Release Verdict
 
 | Host | Current Status | Why Not Yet |
 | --- | --- | --- |
-| `Claude Code` | 已有安装引导与 plugin skeleton；尚无当前 release-level fresh smoke verdict | `docs/README.claude-code.md` 已建立，但真实宿主回归仍后置 |
-| `CodeBuddy` | 已有 `.codebuddy-plugin/` skeleton 与原生 `SKILL.md` 手动安装说明；尚无当前 release-level fresh smoke verdict | `docs/README.codebuddy.md` 已建立；证据来自 CodeBuddy skills/plugin docs 与本仓 `.codebuddy-plugin/`，真实宿主回归仍后置 |
-| `DeepSeek-TUI` | 原生 `SKILL.md` discovery 支持手动安装；尚无当前 release-level fresh smoke verdict | `docs/README.deepseek-tui.md` 已建立；证据来自 DeepSeek-TUI README/source 的 discovery contract，真实宿主回归仍后置 |
-| `Trae` | 原生 `SKILL.md` discovery 支持手动安装；尚无当前 release-level fresh smoke verdict | `docs/README.trae.md` 已建立；证据来自 Trae skills docs，真实宿主回归仍后置 |
-| `Cursor` | 已有 `.cursor/INSTALL.md` 安装引导；尚无当前 release-level fresh smoke verdict | 结构化目标已建立，尚未进入当前宿主回归切片 |
-| `Windsurf` | 已有 `.windsurf/INSTALL.md` 安装引导；尚无当前 release-level fresh smoke verdict | 结构化目标已建立，尚未进入当前宿主回归切片 |
-| `Gemini CLI` | 尚无当前 fresh release-level verdict | 未进入当前切片 |
+| `Claude Code` | Has install guide and plugin skeleton; no current release-level fresh smoke verdict | `docs/README.claude-code.md` established, but real host regression is still deferred |
+| `CodeBuddy` | Has `.codebuddy-plugin/` skeleton and native `SKILL.md` manual install instructions; no current release-level fresh smoke verdict | `docs/README.codebuddy.md` established; evidence from CodeBuddy skills/plugin docs and this repo's `.codebuddy-plugin/`; real host regression still deferred |
+| `DeepSeek-TUI` | Native `SKILL.md` discovery supports manual installation; no current release-level fresh smoke verdict | `docs/README.deepseek-tui.md` established; evidence from DeepSeek-TUI README/source discovery contract; real host regression still deferred |
+| `Trae` | Native `SKILL.md` discovery supports manual installation; no current release-level fresh smoke verdict | `docs/README.trae.md` established; evidence from Trae skills docs; real host regression still deferred |
+| `Cursor` | Has `.cursor/INSTALL.md` install guide; no current release-level fresh smoke verdict | Structural goal established; not yet entered the current host regression slice |
+| `Windsurf` | Has `.windsurf/INSTALL.md` install guide; no current release-level fresh smoke verdict | Structural goal established; not yet entered the current host regression slice |
+| `Gemini CLI` | No current fresh release-level verdict | Not entered the current slice |
 
-### 3.3 无需独立适配器的宿主
+### 3.3 Hosts Requiring No Independent Adapter
 
 | Host | Current Status | Rationale |
 | --- | --- | --- |
-| `Kimi Code CLI` | 极简安装提示词即用；无需独立 adapter | Kimi Code CLI 原生 auto-discovers `.agents/skills/`（与 Codex 同路径），Aegis Codex 安装即为 Kimi 安装 |
-| `Warp` | 无需独立 adapter | Warp 作为终端宿主，运行第三方 CLI agent（Claude Code / Codex / OpenCode），不提供自有 skills 系统 |
+| `Kimi Code CLI` | Minimal install prompt suffices; no independent adapter needed | Kimi Code CLI natively auto-discovers `.agents/skills/` (same path as Codex); Aegis Codex installation is Kimi installation |
+| `Warp` | No independent adapter needed | As a terminal host, Warp runs third-party CLI agents (Claude Code / Codex / OpenCode) and does not provide its own skills system |
 
 ---
 
 ## 4. What This Snapshot Means
 
-当前快照只说明：
+The current snapshot only states:
 
-1. `Codex` 与 `OpenCode` 是当前最有 fresh evidence 的两条主链
-2. `Kimi Code CLI` 复用 Codex 路径（`.agents/skills/`），Aegis 极简安装提示词即可生效
-3. `CodeBuddy` 可通过 `.codebuddy-plugin/` 或原生 `SKILL.md` discovery 安装 Aegis，但本机 CLI live smoke 仍未形成有效证据
-4. `DeepSeek-TUI` 可通过原生 `SKILL.md` discovery 手动安装 Aegis skills，但 `/skill install github:GanyuanRan/Aegis` 不是当前 canonical path
-5. `Trae` 可通过原生 `SKILL.md` discovery 手动安装 Aegis skills；`.agents/skills/` 作为 Trae 可选能力，不是 Aegis 的 Trae canonical path
-6. `Cursor` 与 `Windsurf` 已有结构化安装引导，尚未进入 release-level fresh smoke
-7. `Warp` 作为终端宿主，本身无需独立 adapter
-8. 当前 method-pack 仍保留跨宿主安装目标
-9. “支持所有 plugin host” 仍是产品目标，不等于”所有宿主都已有当前 fresh closeout”
+1. `Codex` and `OpenCode` are the two mainlines with the most fresh evidence
+2. `Kimi Code CLI` reuses the Codex path (`.agents/skills/`); Aegis takes effect via a minimal install prompt
+3. `CodeBuddy` can install Aegis via `.codebuddy-plugin/` or native `SKILL.md` discovery, but local CLI live smoke has not yet formed valid evidence
+4. `DeepSeek-TUI` can manually install Aegis skills via native `SKILL.md` discovery, but `/skill install github:GanyuanRan/Aegis` is not the current canonical path
+5. `Trae` can manually install Aegis skills via native `SKILL.md` discovery; `.agents/skills/` is an optional Trae capability, not Aegis's canonical Trae path
+6. `Cursor` and `Windsurf` have structured install guides but have not yet entered release-level fresh smoke
+7. `Warp`, as a terminal host, does not itself need an independent adapter
+8. The current method-pack still retains the cross-host installation goal
+9. "Support all plugin hosts" remains a product goal, not equivalent to "all hosts have current fresh closeout"
 
 ---
 
 ## 5. Evidence Sources
 
-读取当前宿主 verdict 时，按以下顺序：
+When reading the current host verdict, follow this order:
 
 1. `docs/testing.md`
 2. `docs/README.claude-code.md`
@@ -89,24 +89,24 @@
 
 ## 6. Compatibility Boundary
 
-当前 snapshot 只覆盖：
+The current snapshot only covers:
 
-- method-pack 安装与分发
-- skill discovery / representative triggering
-- plugin loading / priority / distribution sync
+- Method-pack installation and distribution
+- Skill discovery / representative triggering
+- Plugin loading / priority / distribution sync
 
-当前 snapshot 不覆盖：
+The current snapshot does not cover:
 
-- runtime core integration
-- host adapter event normalization
-- 完整 live production workflow orchestration
+- Runtime core integration
+- Host adapter event normalization
+- Complete live production workflow orchestration
 
 ---
 
 ## 7. Architecture Review
 
-阅读本快照时必须避免三种误判：
+Three misjudgments must be avoided when reading this snapshot:
 
-1. 把 `Codex + OpenCode` 的当前通过，误判成“全宿主都已正式 closeout”
-2. 把 current smoke / integration verdict，误判成 full-platform readiness
-3. 把宿主兼容性工作反向提升成 method-pack authority
+1. Mistaking the current pass of `Codex + OpenCode` for "all hosts have been formally closed out"
+2. Mistaking current smoke / integration verdicts for full-platform readiness
+3. Mistaking host compatibility work for elevating method-pack authority

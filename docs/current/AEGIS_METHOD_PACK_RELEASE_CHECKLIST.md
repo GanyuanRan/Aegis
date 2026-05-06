@@ -1,19 +1,19 @@
 # Aegis Method Pack Release Checklist
 
-状态：`Reviewed`
+Status: `Reviewed`
 
-## 1. 文档定位
+## 1. Document Scope
 
-本文档定义当前 `Aegis Method Pack` 在开源发布或受控发布前的最小 release checklist。
+This document defines the minimum release checklist for the current `Aegis Method Pack` prior to an open-source release or controlled release.
 
-本文档只适用于：
+This document applies only to:
 
 - `Aegis Method Pack (runtime-ready)`
-- 多宿主 plugin-installable 分发骨架
+- Multi-host plugin-installable distribution skeleton
 
-本文档不适用于：
+This document does not apply to:
 
-- 完整 `Aegis Platform`
+- The full `Aegis Platform`
 - `Host Adapters`
 - `Runtime Core`
 
@@ -21,18 +21,18 @@
 
 ## 2. Release Gate
 
-在执行任何正式 release 前，必须逐项确认：
+Before executing any formal release, the following must be confirmed item by item:
 
-1. 当前 release 目标仍是 `Aegis Method Pack`
-2. 当前 authority docs 没有把本仓误写成 full platform
-3. 当前宿主安装说明与测试说明可回指到真实 owner
-4. 当前 known limitations 已回写，而不是藏在会话结论里
+1. The current release target is still `Aegis Method Pack`
+2. Current authority docs do not misrepresent this repository as a full platform
+3. Current host installation instructions and testing instructions can point back to the real owner
+4. Current known limitations have been written back, rather than hidden in session conclusions
 
 ---
 
 ## 3. Baseline Readback
 
-发布前必须回读：
+The following must be re-read before release:
 
 1. `docs/current/README.md`
 2. `docs/current/AEGIS_TARGET_STATE.md`
@@ -41,38 +41,38 @@
 5. `docs/current/AEGIS_KNOWN_LIMITATIONS.md`
 6. `docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md`
 
-如果这些文档之间有冲突，以 `docs/current/README.md` 的 authority order 裁决。
+If there are conflicts among these documents, resolve them according to the authority order in `docs/current/README.md`.
 
 ---
 
 ## 4. Required Verification
 
-当前 method-pack release 的最低 fresh verification：
+Minimum fresh verification for the current method-pack release:
 
 ```bash
 bash tests/e2e/run-all.sh --full --host-profile fast
 ```
 
-如果本次发布明确包含 OpenCode runtime 侧变更，建议补：
+If this release explicitly includes OpenCode runtime-side changes, it is recommended to supplement with:
 
 ```bash
 bash tests/opencode/run-tests.sh --integration
 ```
 
-如果本次发布明确包含 Codex 分发链变更，建议补：
+If this release explicitly includes Codex distribution chain changes, it is recommended to supplement with:
 
 ```bash
 bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh
 ```
 
-如果当前机器默认 `bash` 指向 WSL launcher 而不是可用的 Git Bash，或 Git Bash 下已知 smoke 时延仍存在，
-应把它记录进 `AEGIS_KNOWN_LIMITATIONS.md`，不要把环境与时延 blocker 误判成 method-pack 边界退化。
+If the current machine's default `bash` points to the WSL launcher rather than a usable Git Bash, or if known smoke latency still exists under Git Bash,
+record it in `AEGIS_KNOWN_LIMITATIONS.md`; do not misdiagnose environment and latency blockers as method-pack boundary regressions.
 
 ---
 
 ## 5. Required Doc Checks
 
-发布前必须回读以下宿主文档：
+The following host documentation must be re-read before release:
 
 1. `docs/README.codex.md`
 2. `docs/README.opencode.md`
@@ -82,27 +82,27 @@ bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh
 6. `docs/README.trae.md`
 7. `docs/testing.md`
 
-确认：
+Confirm:
 
-- 安装方式没有引用过时路径
-- host-specific fallback 没有被误写成 canonical chain
-- testing docs 与 current owners 的命名一致
-- CodeBuddy 仍区分 `.codebuddy-plugin/` skeleton、manual `SKILL.md` install 与未完成 live smoke
-- DeepSeek-TUI 仍描述为 manual `SKILL.md` copy install，而不是多 skill 仓库的一键 GitHub installer
-- Trae 仍描述为 manual `.trae/skills` / `~/.trae/skills` install，不把 `.agents/skills/` 可选能力写成 canonical chain
+- Installation methods do not reference obsolete paths
+- Host-specific fallbacks are not misrepresented as the canonical chain
+- Testing docs are consistent with the naming of current owners
+- CodeBuddy still distinguishes between `.codebuddy-plugin/` skeleton, manual `SKILL.md` install, and incomplete live smoke
+- DeepSeek-TUI is still described as manual `SKILL.md` copy install, not a one-click GitHub installer for multi-skill repos
+- Trae is still described as manual `.trae/skills` / `~/.trae/skills` install, and the `.agents/skills/` optional capability is not written as the canonical chain
 
 ---
 
 ## 6. Artifact / Boundary Checks
 
-发布前必须确认：
+The following must be confirmed before release:
 
-1. `Aegis` 产出的仍是 `draft / hint / projection`
-2. 没有新增 authoritative `GateDecision`
-3. 没有新增 authoritative `completion authority`
-4. 没有把单宿主实现逻辑抬成 baseline
+1. `Aegis` still produces `draft / hint / projection`
+2. No new authoritative `GateDecision` has been added
+3. No new authoritative `completion authority` has been added
+4. No single-host implementation logic has been elevated to baseline
 
-可直接依赖以下检查：
+The following checks may be directly relied upon:
 
 ```bash
 bash tests/e2e/boundary-compliance-check.sh
@@ -113,34 +113,34 @@ bash tests/e2e/artifact-schema-check.sh
 
 ## 7. Release Output Package
 
-一次 method-pack release 至少要同时包含：
+A single method-pack release must include at minimum:
 
-1. 可安装仓库状态
-2. 宿主安装说明
-3. testing docs
-4. compatibility snapshot
-5. known limitations
-6. release notes or tag notes
+1. Installable repository state
+2. Host installation instructions
+3. Testing docs
+4. Compatibility snapshot
+5. Known limitations
+6. Release notes or tag notes
 
 ---
 
 ## 8. Stop Conditions
 
-出现以下任一情况时，本次 release 应停止：
+The release shall be stopped if any of the following occurs:
 
-1. `tests/e2e/run-all.sh --full --host-profile fast` 失败
-2. 权威文档对当前仓定位出现冲突
-3. README 与 testing docs 明显背离当前 canonical owners
-4. 当前 release 想要承诺完整平台能力
+1. `tests/e2e/run-all.sh --full --host-profile fast` fails
+2. Authority documents have conflicts regarding the current repository positioning
+3. README and testing docs clearly deviate from current canonical owners
+4. The current release attempts to promise full platform capabilities
 
 ---
 
 ## 9. Architecture Review
 
-发布前最后一次架构回望要回答：
+The final architecture review before release must answer:
 
-- 当前 release 是否仍只发布 `Method Pack`
-- 当前 release 是否维持了 plugin-installable 属性
-- 当前 release 是否把真实环境回归后置项误包装成“已完成”
+- Does the current release still only ship `Method Pack`
+- Does the current release maintain plugin-installable properties
+- Has the current release misrepresented real-environment regression follow-ups as "completed"
 
-只有这三个问题都能得到明确的 `yes / no` 结论，并且没有 authority drift，才允许继续。
+Only when all three questions can be answered with a clear `yes / no` conclusion and there is no authority drift may the release proceed.

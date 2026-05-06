@@ -1,159 +1,149 @@
 # Aegis Activation Mode
 
-状态：`Approved`
+Status: `Approved`
 
-## 1. 文档定位
+## 1. Document Scope
 
-本文档定义 `Aegis Method Pack` 的宿主激活模式。
+This document defines the host activation mode for `Aegis Method Pack`.
 
-本文档只负责回答以下问题：
+This document is only responsible for answering the following questions:
 
-- Aegis 是否默认自动注入启动纪律
-- 用户如何关闭自动注入但保留显式调用
-- 该开关属于 method-pack / host profile / runtime core 哪一层
+- Whether Aegis injects startup discipline automatically by default
+- How users disable automatic injection while preserving explicit invocation
+- Which layer the switch belongs to: method-pack / host profile / runtime core
 
-本文档不负责回答以下问题：
+This document is not responsible for answering the following questions:
 
-- future runtime core 的最终 policy enforcement
-- 每个宿主内部的 token 预算实现
-- 宿主原生 skill matcher 是否会在未注入 bootstrap 时仍自动匹配某个 skill
+- Final policy enforcement of a future runtime core
+- Per-host internal token budget implementation
+- Whether the host-native skill matcher still auto-matches a skill when bootstrap is not injected
 
 ---
 
-## 2. 结论先行
+## 2. Bottom Line Up Front
 
-Aegis 的宿主侧激活模式由用户本地配置和环境变量共同定义：
+Aegis host-side activation mode is jointly defined by the user's local configuration and environment variables:
 
-- `auto`：默认模式。Aegis 可以自动注入 compact bootstrap，并参与 skill
-  routing discipline。
-- `explicit`：显式模式。Aegis 不自动注入 bootstrap；agent 只有在用户显式
-  调用 Aegis 或某个 Aegis skill 时才使用 Aegis。
+- `auto`: Default mode. Aegis may automatically inject a compact bootstrap and participate in skill routing discipline.
+- `explicit`: Explicit mode. Aegis does not automatically inject bootstrap; the agent only uses Aegis when the user explicitly invokes Aegis or a specific Aegis skill.
 
-默认不需要配置文件；没有配置时等同于：
+No configuration file is required by default; the absence of configuration is equivalent to:
 
 ```text
 activation_mode = "auto"
 ```
 
-当前只定义 `auto` 与 `explicit`。`off` 暂不定义，避免把“关闭自动介入”
-误解成“卸载或隐藏所有 skills”。
+Currently only `auto` and `explicit` are defined. `off` is not defined for now, to avoid confusing "disable automatic intervention" with "uninstall or hide all skills."
 
 ---
 
-## 3. 显式调用语义
+## 3. Explicit Invocation Semantics
 
-推荐配置方式是用户本地配置文件：
+The recommended configuration method is a user-local configuration file:
 
 ```text
 ~/.config/aegis/config.toml
 ```
 
-Windows：
+Windows:
 
 ```text
 %USERPROFILE%\.config\aegis\config.toml
 ```
 
-安装不会自动创建该文件。需要显式模式时，手动创建目录和文件，并写入：
+Installation does not automatically create this file. When explicit mode is needed, manually create the directory and file, and write:
 
 ```toml
 activation_mode = "explicit"
 ```
 
-改回自动模式时，写入：
+To switch back to auto mode, write:
 
 ```toml
 activation_mode = "auto"
 ```
 
-也可以删除该文件，回到默认 `auto`。
+You may also delete the file to return to the default `auto`.
 
-高级临时覆盖方式是环境变量 `AEGIS_ACTIVATION_MODE`。它必须在宿主进程启动前
-进入该进程的 environment，并且优先级高于用户本地配置文件。
+The advanced temporary override method is the environment variable `AEGIS_ACTIVATION_MODE`. It must be present in the process environment before the host process starts, and takes precedence over the user-local configuration file.
 
-一次性终端启动示例：
+One-shot terminal launch examples:
 
 ```bash
 AEGIS_ACTIVATION_MODE=explicit opencode
 AEGIS_ACTIVATION_MODE=explicit claude
 ```
 
-PowerShell 一次性启动示例：
+PowerShell one-shot launch examples:
 
 ```powershell
 $env:AEGIS_ACTIVATION_MODE = "explicit"
 opencode
-# 或：claude
+# or: claude
 ```
 
-长期生效方式：
+Long-term configuration methods:
 
-- bash/zsh 用户可把 `export AEGIS_ACTIVATION_MODE=explicit` 写入 `~/.zshrc`
-  或 `~/.bashrc`
-- PowerShell 用户可把 `$env:AEGIS_ACTIVATION_MODE = "explicit"` 写入
-  `$PROFILE`，或用 `[Environment]::SetEnvironmentVariable(...)` 设置系统 /
-  用户环境变量
-- GUI 启动的宿主必须从已经带有该环境变量的 launcher、shell 或系统环境启动
-- 修改后需要重启或重新加载宿主，已经运行的 session 通常不会自动继承新值
+- bash/zsh users may write `export AEGIS_ACTIVATION_MODE=explicit` into `~/.zshrc` or `~/.bashrc`
+- PowerShell users may write `$env:AEGIS_ACTIVATION_MODE = "explicit"` into `$PROFILE`, or use `[Environment]::SetEnvironmentVariable(...)` to set a system / user environment variable
+- GUI-launched hosts must be started from a launcher, shell, or system environment that already carries the environment variable
+- After modification, the host must be restarted or reloaded; an already-running session typically does not automatically inherit the new value
 
-读取优先级：
+Read priority:
 
 1. `AEGIS_ACTIVATION_MODE`
 2. `~/.config/aegis/config.toml`
-3. 默认 `auto`
+3. Default `auto`
 
-在 `explicit` 模式下，以下输入仍应允许 Aegis 被使用：
+In `explicit` mode, the following inputs should still allow Aegis to be used:
 
 - `use aegis`
 - `用 Aegis`
 - `aegis:using-aegis`
 - `use aegis:brainstorming`
 - `调用 aegis:test-driven-development`
-- 宿主支持的其他直接 skill 调用形式
+- Other direct skill invocation forms supported by the host
 
-`explicit` 只关闭自动 bootstrap 注入；它不删除 Aegis skills，不卸载插件，
-也不禁止用户点名调用。
-
----
-
-## 4. 分层边界
-
-该开关属于 host / profile rule：
-
-- method-pack 定义模式语义
-- host install surface 负责读取变量并调整 bootstrap 注入
-- future host adapter 可以把它升级为更正式的 profile 配置
-- future runtime core 才能承担 authoritative enforcement
-
-因此，`explicit` 模式不能被写成最终 `GateDecision`、`PolicySnapshot` 或
-completion authority。
+`explicit` only disables automatic bootstrap injection; it does not remove Aegis skills, uninstall the plugin, or prohibit the user from invoking Aegis by name.
 
 ---
 
-## 5. 宿主行为
+## 4. Layering Boundary
 
-支持自动 bootstrap 注入的宿主应遵循：
+This switch belongs to the host / profile rule layer:
 
-1. `auto` 或未设置：维持现有自动注入行为。
-2. `explicit`：不自动注入 `using-aegis` bootstrap。
-3. 未识别值：保守回退到 `auto`，避免静默禁用 Aegis。
+- The method-pack defines the mode semantics
+- The host install surface is responsible for reading the variable and adjusting bootstrap injection
+- A future host adapter may upgrade it to a more formal profile configuration
+- Only a future runtime core can assume authoritative enforcement
 
-仅依赖宿主原生 skill discovery 的宿主，应在安装文档中说明：
-
-- Aegis 可以被显式调用
-- 宿主自己的 semantic skill matcher 可能仍由宿主控制
-- 如果用户需要强制显式模式，应使用宿主支持的 profile / install 配置隐藏
-  或不安装自动入口 skill
+Therefore, `explicit` mode must not be written as a final `GateDecision`, `PolicySnapshot`, or completion authority.
 
 ---
 
-## 6. 验证边界
+## 5. Host Behavior
 
-最低验证包括：
+Hosts that support automatic bootstrap injection should follow these rules:
 
-- `auto` 模式仍注入 bootstrap
-- `explicit` 模式不注入 bootstrap
-- Aegis skills 仍保持安装和发现路径
-- 文档明确说明显式调用仍可用
+1. `auto` or unset: maintain existing automatic injection behavior.
+2. `explicit`: do not automatically inject `using-aegis` bootstrap.
+3. Unrecognized value: conservatively fall back to `auto`, to avoid silently disabling Aegis.
 
-这些验证只是 method-pack evidence，不授予 authoritative runtime completion。
+Hosts that rely solely on host-native skill discovery should state in installation docs:
+
+- Aegis can be explicitly invoked
+- The host's own semantic skill matcher may still be controlled by the host
+- If the user needs to enforce explicit mode, they should use host-supported profile / install configuration to hide or not install the auto-entry skill
+
+---
+
+## 6. Verification Boundary
+
+Minimum verification includes:
+
+- `auto` mode still injects bootstrap
+- `explicit` mode does not inject bootstrap
+- Aegis skills remain installed and discoverable
+- Documentation clearly states that explicit invocation is still available
+
+These verifications are method-pack evidence only and do not grant authoritative runtime completion.
