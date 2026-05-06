@@ -237,12 +237,16 @@ You MUST complete each phase before proceeding to the next.
 
 Before you claim debugging is complete:
 
-1. **Hard signal re-check** — re-run H1-H6, T1-T4, D0-D4 from Phase 1 Step 6.
+1. **Workspace check** — if this is a non-trivial task (medium+ complexity,
+   multi-component, or architecture-touching) and `docs/aegis/` does not exist,
+   initialize it now: `README.md` + `INDEX.md` + `BASELINE-GOVERNANCE.md`.
+   Create `docs/aegis/work/YYYY-MM-DD-<slug>/` for the process trail.
+2. **Hard signal re-check** — re-run H1-H6, T1-T4, D0-D4 from Phase 1 Step 6.
    Any H-class hit → not done. All D-class must pass. T-class hit → mitigation mode, not fix mode.
-2. Re-run the latest Reflection checklist (Goal / DeeperCause / Evidence / Risk/Unknown / Decision)
-3. Confirm the fix addressed the source, not just the sample
-4. Confirm whether the retirement surface shrank, stayed, or grew
-5. State confidence:
+3. Re-run the latest Reflection checklist (Goal / DeeperCause / Evidence / Risk/Unknown / Decision)
+4. Confirm the fix addressed the source, not just the sample
+5. Confirm whether the retirement surface shrank, stayed, or grew
+6. State confidence:
    - `A` = direct evidence and regression coverage support the root-cause conclusion
    - `B` = strong evidence, limited coverage or some bounded unknowns remain
    - `C` = partial evidence only; do not present as fully resolved

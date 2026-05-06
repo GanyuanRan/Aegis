@@ -131,17 +131,33 @@ entrypoint for medium- or high-complexity work.
 
 ## Project Workspace
 
-Use the Aegis Project Workspace lazily:
+Hard binary rule:
+- Global install (plugin registration, version query, skill listing):
+  NEVER write project files.
+- Active project (user has a codebase loaded): workspace creation triggered by
+  brainstorming checklist item 8, writing-plans save step, or
+  systematic-debugging Quality Gate (non-trivial tasks).
+  When triggered and `docs/aegis/` missing → create immediately, do not ask.
+  If `docs/aegis/` already exists → use it, do not recreate.
 
-- Do not create project files during global install.
-- If the project already has docs, ADRs, architecture docs, or baseline
-  authority, reference those instead of duplicating them.
-- When a workflow must write project artifacts, start with the minimum:
-  `docs/aegis/README.md` and `docs/aegis/INDEX.md`.
-- Task-scoped records belong under
-  `docs/aegis/work/YYYY-MM-DD-<task-slug>/`.
-- Promote reusable outputs to `baseline/`, `adr/`, `specs/`, or `plans/` only
-  when they are genuinely needed.
+Directory structure:
+```
+docs/aegis/
+├── README.md + INDEX.md
+├── BASELINE-GOVERNANCE.md    # constitution
+├── adr/                      # architecture decisions
+├── baseline/                 # architecture snapshots
+├── specs/                    # design docs (brainstorming output)
+├── plans/                    # implementation plans (writing-plans output)
+└── work/<slug>/              # process trail (medium+ tasks only)
+    ├── 10-intent.md
+    ├── 20-checkpoint.md
+    ├── 90-evidence.md
+    └── 99-reflection.md
+```
+
+Mid-task complexity escalation: pause, init workspace if missing, backfill
+required artifacts, then continue.
 
 ## Skill Types
 

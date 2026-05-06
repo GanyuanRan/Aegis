@@ -18,7 +18,13 @@ Aegis is structured as a multi-harness plugin:
 - OpenAI Codex
 - OpenCode
 - Cursor
+- Windsurf
 - Gemini CLI
+- CodeBuddy
+- DeepSeek-TUI
+- Trae
+- Kimi Code CLI
+- Warp (terminal host, no adapter needed)
 
 Current product boundary:
 

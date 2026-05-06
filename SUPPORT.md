@@ -17,7 +17,9 @@ Before asking for help, read:
 1. `docs/current/README.md`
 2. `docs/current/AEGIS_KNOWN_LIMITATIONS.md`
 3. `docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md`
-4. `docs/README.codex.md` or `docs/README.opencode.md`
+4. the relevant host guide, such as `docs/README.codex.md`,
+   `docs/README.opencode.md`, `docs/README.codebuddy.md`,
+   `docs/README.deepseek-tui.md`, or `docs/README.trae.md`
 5. `docs/testing.md`
 
 ## How to get help

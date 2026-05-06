@@ -21,7 +21,9 @@ It does not replace:
 - task-specific baseline docs in `docs/current/`
 - installed Aegis skills and workflows
 - host-specific installation docs such as `docs/README.codex.md`,
-  `docs/README.opencode.md`, and `docs/README.claude-code.md`
+  `docs/README.opencode.md`, `docs/README.claude-code.md`,
+  `docs/README.codebuddy.md`, `docs/README.deepseek-tui.md`, and
+  `docs/README.trae.md`
 
 ## 2. Authority Order
 
@@ -120,6 +122,7 @@ verification evidence. State what was tested and what remains unknown.
 Changes must not silently break supported host distribution surfaces, including:
 
 - `.claude-plugin/`
+- `.codebuddy-plugin/`
 - `.codex-plugin/`
 - `.opencode/`
 - `.cursor-plugin/`

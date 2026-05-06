@@ -55,6 +55,21 @@ Key rules:
 - **writing-plans**: Uses CONTEXT.md terms in plan task descriptions
 - **systematic-debugging**: References CONTEXT.md for canonical component names
 
+## Boundary: CONTEXT.md vs baseline/
+
+CONTEXT.md and `docs/aegis/baseline/` serve different purposes:
+
+| | CONTEXT.md | baseline/ |
+|---|-----------|-----------|
+| What | Domain language, ubiquitous terminology | Technical architecture snapshot |
+| Audience | Domain experts + agents | Agents + developers |
+| Content | Terms, definitions, resolved ambiguities | Ownership, contracts, dependencies, anti-patterns |
+| Updates | Immediately on term resolution | After architecture review or material change |
+| Trigger | establishing-project-context skill | brainstorming, writing-plans, code-review, systematic-debugging |
+
+Do NOT put implementation details in CONTEXT.md.
+Do NOT put domain glossary terms in baseline/.
+
 ## Red Flags
 
 - Don't turn CONTEXT.md into architecture documentation (that's ADRs)

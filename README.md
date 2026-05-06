@@ -138,6 +138,9 @@ Current host-facing status:
 | `Codex` | Representative smoke path verified; Git Bash naive smoke still has known observation items |
 | `OpenCode` | Base suite and integration closeout have passed in the current method-pack scope |
 | `Claude Code` | Plugin skeleton and install guide exist; release-level fresh host smoke is still pending |
+| `CodeBuddy` | Plugin skeleton and native `SKILL.md` manual install guide exist; release-level fresh host smoke is still pending |
+| `DeepSeek-TUI` | Native `SKILL.md` discovery supports manual Aegis skill install; release-level fresh host smoke is still pending |
+| `Trae` | Native `SKILL.md` discovery supports manual Aegis skill install; release-level fresh host smoke is still pending |
 
 Other hosts remain product targets, but are not yet current release-level verdicts.
 
@@ -238,11 +241,84 @@ claude --plugin-dir ~/aegis
 
 Inside Claude Code, run `/reload-plugins`, then try `/aegis:using-aegis`.
 
+### CodeBuddy
+
+CodeBuddy supports both plugin metadata and native `SKILL.md` skill discovery.
+For the transparent manual path:
+
+macOS / Linux:
+
+```bash
+git clone https://github.com/GanyuanRan/Aegis.git ~/.codebuddy/aegis
+mkdir -p ~/.codebuddy/skills
+cp -R ~/.codebuddy/aegis/skills/* ~/.codebuddy/skills/
+```
+
+Windows PowerShell:
+
+```powershell
+git clone https://github.com/GanyuanRan/Aegis.git "$env:USERPROFILE\.codebuddy\aegis"
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.codebuddy\skills"
+Copy-Item -Recurse -Force "$env:USERPROFILE\.codebuddy\aegis\skills\*" "$env:USERPROFILE\.codebuddy\skills\"
+```
+
+Aegis also ships `.codebuddy-plugin/` metadata for CodeBuddy plugin flows.
+Restart CodeBuddy, then ask it to describe its Aegis skills.
+
+### DeepSeek-TUI
+
+DeepSeek-TUI discovers skills from `SKILL.md` directories. Install Aegis by
+copying its skill directories into DeepSeek-TUI's global skills path:
+
+macOS / Linux:
+
+```bash
+git clone https://github.com/GanyuanRan/Aegis.git ~/.deepseek/aegis
+mkdir -p ~/.deepseek/skills
+cp -R ~/.deepseek/aegis/skills/* ~/.deepseek/skills/
+```
+
+Windows PowerShell:
+
+```powershell
+git clone https://github.com/GanyuanRan/Aegis.git "$env:USERPROFILE\.deepseek\aegis"
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.deepseek\skills"
+Copy-Item -Recurse -Force "$env:USERPROFILE\.deepseek\aegis\skills\*" "$env:USERPROFILE\.deepseek\skills\"
+```
+
+Restart DeepSeek-TUI, then verify with `/skills` and `/skill using-aegis`.
+
+### Trae
+
+Trae discovers skills from `SKILL.md` directories. Install Aegis by copying its
+skill directories into Trae's global skills path:
+
+macOS / Linux:
+
+```bash
+git clone https://github.com/GanyuanRan/Aegis.git ~/.trae/aegis
+mkdir -p ~/.trae/skills
+cp -R ~/.trae/aegis/skills/* ~/.trae/skills/
+```
+
+Windows PowerShell:
+
+```powershell
+git clone https://github.com/GanyuanRan/Aegis.git "$env:USERPROFILE\.trae\aegis"
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.trae\skills"
+Copy-Item -Recurse -Force "$env:USERPROFILE\.trae\aegis\skills\*" "$env:USERPROFILE\.trae\skills\"
+```
+
+Restart Trae, then ask it to describe its Aegis skills.
+
 Full host guides:
 
 - [Claude Code](docs/README.claude-code.md)
+- [CodeBuddy](docs/README.codebuddy.md)
 - [Codex](docs/README.codex.md)
+- [DeepSeek-TUI](docs/README.deepseek-tui.md)
 - [OpenCode](docs/README.opencode.md)
+- [Trae](docs/README.trae.md)
 
 The project still preserves the broader multi-host distribution skeleton inherited from `superpowers`, including Cursor and Gemini-related package surfaces. Those surfaces should not be interpreted as current fresh release-level closeout unless the compatibility matrix says so.
 
@@ -278,6 +354,12 @@ Automatic behavior:
 - OpenCode loads the Aegis plugin, mirrors skills into OpenCode's global skills path,
   and injects compact bootstrap context.
 - Claude Code loads Aegis through its plugin namespace or a local plugin directory.
+- CodeBuddy discovers copied Aegis skill directories from native `SKILL.md`
+  skill paths, or loads Aegis through `.codebuddy-plugin/` metadata.
+- DeepSeek-TUI discovers copied Aegis skill directories from its native
+  `SKILL.md` skill paths.
+- Trae discovers copied Aegis skill directories from its native `SKILL.md`
+  skill paths.
 - `using-aegis` tells the agent to check whether a task-specific skill applies before responding.
 - In day-to-day use, you do not need to manually name a skill for every request;
   explicit commands are the override path when you want a specific method.
@@ -289,6 +371,9 @@ Explicit use:
   or `aegis:verification-before-completion`.
 - In OpenCode, use the native `skill` tool, for example: `use skill tool to load aegis/brainstorming`.
 - In Claude Code, use the plugin namespace, for example: `/aegis:using-aegis`.
+- In CodeBuddy, ask it to load an Aegis skill such as `systematic-debugging`.
+- In DeepSeek-TUI, use the native skill command, for example: `/skill systematic-debugging`.
+- In Trae, ask it to load an Aegis skill such as `systematic-debugging`.
 
 Long-task behavior:
 

@@ -230,39 +230,52 @@ todo 复述循环必须贯穿标准路径。
 
 ## 12. Project Workspace 与复杂度路由
 
-`Aegis` 可以在具体项目中维护轻量 project workspace，但必须遵循：
+### 12.1 创建规则（硬二进制）
 
-- 懒创建：全局安装不写入用户项目；只有项目内 workflow 需要落盘产物时才创建。
-- 先沿用：已有 `docs/`、ADR、architecture docs、README、AGENTS 或 baseline owner 时，优先引用现有 authority，不复制一套权威。
-- 按任务生成：中高复杂度任务的过程记录默认进入 `docs/aegis/work/YYYY-MM-DD-<task-slug>/`。
-- 按价值提升：只有可复用的项目事实、长期决策、设计或计划，才提升到 `baseline/`、`adr/`、`specs/` 或 `plans/`。
+- 全局安装（插件注册、版本查询、skill 列表）：禁止写入项目文件
+- 活跃项目（用户已加载代码库）：workspace 创建由以下 workflow 文件写入步骤触发：
+  * brainstorming checklist item 8（写入 design doc）
+  * writing-plans save step（写入 plan file）
+  * systematic-debugging Quality Gate（非平凡任务）
+  触发时若 `docs/aegis/` 不存在，立即创建最小 workspace，不询问、不推迟。
+  若 `docs/aegis/` 已存在，直接使用，不重建。
 
-默认最小结构是：
+### 12.2 目录结构
 
 ```text
 docs/aegis/
-  README.md
-  INDEX.md
+├── README.md                   # workspace 用途与结构说明
+├── INDEX.md                    # 所有文件的带日期索引
+├── BASELINE-GOVERNANCE.md      # 宪法：defect/drift 规则、检查协议、硬边界
+├── adr/                        # Aegis 触发的架构决策记录
+│   └── YYYY-MM-DD-<title>.md
+├── baseline/                   # 架构快照（按任务/阶段）
+│   └── YYYY-MM-DD-<scope>-baseline.md
+├── specs/                      # 设计文档（brainstorming 输出，唯一 canonical）
+│   └── YYYY-MM-DD-<topic>-design.md
+├── plans/                      # 实现计划（writing-plans 输出，唯一 canonical）
+│   └── YYYY-MM-DD-<feature>.md
+└── work/                       # 过程轨迹（仅中高复杂度任务）
+    └── YYYY-MM-DD-<slug>/
+        ├── 10-intent.md
+        ├── 20-checkpoint.md
+        ├── 90-evidence.md
+        └── 99-reflection.md
 ```
 
-中复杂度任务的默认过程包是：
+### 12.3 复杂度路由
 
-```text
-docs/aegis/work/YYYY-MM-DD-<task-slug>/
-  00-intent.md
-  10-baseline-readset.md
-  30-plan.md
-  40-atomic-tasks.md
-  50-evidence.md
-```
+- 低复杂度：简短 intent + baseline check → TDD，不创建 work/
+- 中复杂度：baseline read-set + plan + atomic tasks → TDD，创建 work/
+- 高复杂度：spec/design + plan + 用户确认 → TDD，创建 work/
 
-复杂度路由约束：
+中途复杂度升级：暂停实现，初始化 workspace（如缺失），回填所需产物后继续。
 
-- 低复杂度任务可以在简短 intent 与 baseline check 后进入 TDD。
-- 中复杂度任务必须先有 baseline read-set、plan 与 atomic tasks，再进入 TDD。
-- 高复杂度任务必须先有 spec/design 与 plan；需要用户确认时不得跳过确认。
+TDD 是实现纪律，不是中高复杂度任务的第一入口。
 
-`TDD` 是实现纪律，不是中高复杂度任务的第一入口。
+### 12.4 INDEX.md 维护
+
+每次在 `docs/aegis/` 下创建新文件时，必须追加条目到 `INDEX.md`。
 
 ---
 
@@ -294,3 +307,86 @@ docs/aegis/work/YYYY-MM-DD-<task-slug>/
 - 规则要可触发、可执行，而不是哲学化长文
 - 过程约束尽量落入具体 workflow，而不是仅停留在总纲口号
 - method pack 可以组织推理与产物，但不能越权宣布 authoritative completion
+
+---
+
+## 15. 架构回望 — 7 维度操作定义
+
+每次非平凡变更完成后，必须执行以下 7 维度检查：
+
+| # | 维度 | 检查问题 | 通过标准 |
+|---|------|----------|----------|
+| 1 | Ownership integrity | 每个组件是否有且仅有一个 canonical owner？是否出现新的重复 owner？ | 无新增重复 owner |
+| 2 | Module boundaries | 是否存在未授权的跨模块耦合？新代码是否遵循既有模块边界？ | 边界无侵蚀 |
+| 3 | Contract changes | API/签名/行为契约是否有变更？是否已记录？是否向后兼容？ | 变更已记录，兼容或显式中断 |
+| 4 | Cascade proliferation | 是否引入了新的级联依赖链？单点变更是否波及超出预期的范围？ | 波及范围 ≤ 预期 |
+| 5 | Dependency direction | 依赖方向是否朝向稳定层？是否出现循环依赖或反向依赖？ | 无循环，方向正确 |
+| 6 | Retirement completeness | 旧 owner/fallback/path 是否已删除或排期？是否出现"只增不减"？ | 退役轨道显式 |
+| 7 | Entropy flow | 净复杂度是降低还是升高？是否有无理由的新实体、新分支、新适配器？ | 熵减或持平 |
+
+若任一维度不通过 → 记录为架构发现 → 决定：立即修 / 排期修 / 记录为已知限制。
+
+此 7 维度检查结果必须填入 Reflection 的 Risk/Unknown 字段（映射规则见 §17）。
+
+---
+
+## 16. 架构缺陷与架构漂移
+
+### 16.1 架构缺陷（Architecture Defect）
+
+定义：baseline 本身存在确认的错误、缺口或内部矛盾。
+
+判定标准：
+- baseline 中记录的所有权映射与实际代码结构矛盾
+- baseline 中声明的契约与实现不一致（且实现是正确的）
+- baseline 中记录的依赖方向约定被 baseline 自身违反
+- 两个 baseline 文档之间存在未解决的矛盾
+
+处理流程：
+1. 确认 baseline 是错误方（非实现漂移）
+2. 修正 baseline 文档
+3. 若实现因错误 baseline 而偏离 → 将实现对齐到修正后的 baseline
+4. 严禁在实现侧打补丁来迁就错误 baseline
+
+### 16.2 架构漂移（Architecture Drift）
+
+定义：实现已偏离确认正确且未变更的 baseline。
+
+判定标准：
+- 新代码引入了 baseline 中未记录的新 owner
+- 新代码修改了 baseline 中记录的契约但未更新契约文档
+- 新代码违反了 baseline 中记录的依赖方向约定
+- 新代码重复了 baseline 中已有 canonical owner 的职责
+
+处理流程：
+1. 确认 baseline 是正确的（非 baseline 缺陷）
+2. 将实现回归到 baseline，走最简路径
+3. 若漂移是有意为之 → 先更新 baseline（走 ADR 流程），再对齐实现
+4. 严禁"把 baseline 更新到匹配漂移"而不经显式 review
+
+### 16.3 Baseline 检查协议
+
+每次非平凡变更前：
+1. 读取 `baseline/` 中最新快照
+2. 对比当前代码结构与 ownership mapping
+3. 对比当前契约与 contract inventory
+4. 检查 known anti-patterns 是否出现新实例
+5. 报告：aligned / minor drift (self-correctable) / material drift (needs review)
+
+---
+
+## 17. 架构回望 → Reflection Risk/Unknown 映射
+
+7 维度检查结果到 Reflection checklist 的显式映射：
+
+| 架构维度 | Reflection 字段 | 映射规则 |
+|----------|----------------|---------|
+| Ownership integrity | Risk/Unknown | 新重复 owner → 记录为 Risk |
+| Module boundaries | Risk/Unknown | 边界侵蚀 → 记录为 Risk |
+| Contract changes | Evidence | 契约变更 → 作为 Evidence 引用 |
+| Cascade proliferation | Risk/Unknown | 超出预期的波及 → 记录为 Unknown |
+| Dependency direction | Risk/Unknown | 循环/反向 → 记录为 Risk |
+| Retirement completeness | Risk/Unknown | 未退役 → 记录为 Risk，标注排期 |
+| Entropy flow | DeeperCause | 熵增 → 检查是否存在未分析的深层诱因 |
+
+此映射确保架构回望的发现不会在 Reflection 阶段被遗漏。

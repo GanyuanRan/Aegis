@@ -99,6 +99,70 @@
 
 ---
 
+### 2.6 INDEX.md 追加依赖工作流步骤
+
+**保留对象**
+- `docs/aegis/INDEX.md` 的完整性依赖各 skill 文件写入步骤显式执行追加操作
+
+**保留原因**
+- 当前三个入口 skill（brainstorming、writing-plans、systematic-debugging）已覆盖 INDEX.md 追加指令，但未来新增 skill 若写入 docs/aegis/ 而未包含追加指令，INDEX.md 将出现遗漏
+
+**观察指标**
+- 新增 skill 的 code-review 中检查是否包含 INDEX.md 追加逻辑
+
+**退役时机**
+- 当所有写入 docs/aegis/ 的 skill 都自动化 INDEX.md 维护时（例如通过共享的 workspace helper）
+
+---
+
+### 2.7 低复杂度任务跳过 workspace 的窗口期
+
+**保留对象**
+- 低复杂度任务不触发 workspace 创建，若后续升级为中复杂度，在 using-aegis hot path Rule 2 的中途升级触发之前存在短暂无 workspace 窗口
+
+**保留原因**
+- 低复杂度任务的定义本身就是"不需要 workspace 产物"，过早创建会产生噪音文件。中途升级触发是当前最简补救方案
+
+**观察指标**
+- 中途升级触发在实际使用中的命中频率；若频繁命中则说明初始复杂度分类阈值需调整
+
+**退役时机**
+- 当有足够的实际使用数据支撑更精确的初始复杂度判定时
+
+---
+
+### 2.8 BASELINE-GOVERNANCE.md 模板依赖 agent 正确执行
+
+**保留对象**
+- BASELINE-GOVERNANCE.md 的内容质量依赖 agent 按模板正确填充所有字段
+
+**保留原因**
+- 模板提供了结构与字段定义，但无法强制 agent 完整填充。当前无自动化 completeness check
+
+**观察指标**
+- 实际创建的 BASELINE-GOVERNANCE.md 中字段填充率
+
+**退役时机**
+- 当 verification-before-completion 中增加 BASELINE-GOVERNANCE.md 完整性检查时
+
+---
+
+### 2.9 架构回望 7 维度部分依赖 agent 定性判断
+
+**保留对象**
+- 7 维度中的部分维度（尤其是 Entropy flow、Cascade proliferation）依赖 agent 的定性判断，无量化度量工具
+
+**保留原因**
+- 量化架构度量需要专门的静态分析工具链，当前超出 method-pack scope
+
+**观察指标**
+- 实际架构回望中定性判断的一致性；若频繁出现争议性判断则需引入量化基线
+
+**退役时机**
+- 当有可集成的量化架构度量工具时
+
+---
+
 ## 3. Default Reading Rule
 
 如果某个 limitation 同时出现在 README、host docs 或测试说明中，以本文件作为当前阅读入口。
@@ -112,3 +176,5 @@
 1. 不隐瞒限制
 2. 不把 limitation 写成永久缺陷
 3. 不为了掩盖 limitation 而新增无退役计划的 fallback
+
+对于架构回望的 7 维度操作定义与 defect/drift 判定标准，见 `AEGIS_PROCESS_BASELINE.md` §15-§17。

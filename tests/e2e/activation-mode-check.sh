@@ -126,6 +126,18 @@ assert_contains "docs/README.claude-code.md" "PowerShell" \
     "Claude Code guide includes PowerShell usage"
 assert_contains "docs/README.codex.md" "explicit" \
     "Codex guide documents explicit activation caveat"
+assert_contains "docs/README.codebuddy.md" "AEGIS_ACTIVATION_MODE=explicit" \
+    "CodeBuddy guide documents explicit activation caveat"
+assert_contains "docs/README.codebuddy.md" "does not override CodeBuddy" \
+    "CodeBuddy guide clarifies activation mode does not control native matcher"
+assert_contains "docs/README.deepseek-tui.md" "AEGIS_ACTIVATION_MODE=explicit" \
+    "DeepSeek-TUI guide documents explicit activation caveat"
+assert_contains "docs/README.deepseek-tui.md" "does not override DeepSeek-TUI" \
+    "DeepSeek-TUI guide clarifies activation mode does not control native matcher"
+assert_contains "docs/README.trae.md" "AEGIS_ACTIVATION_MODE=explicit" \
+    "Trae guide documents explicit activation caveat"
+assert_contains "docs/README.trae.md" "does not override Trae" \
+    "Trae guide clarifies activation mode does not control native matcher"
 assert_contains "README.md" "~/.config/aegis/config.toml" \
     "English README gives concise user-local config path"
 assert_contains "README.zh-CN.md" "~/.config/aegis/config.toml" \

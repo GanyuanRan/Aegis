@@ -44,13 +44,13 @@ assert_contains "$using_aegis" "classify task complexity" \
     "using-aegis classifies task complexity before implementation"
 assert_contains "$using_aegis" "medium/high-complexity work needs planning" \
     "using-aegis prevents medium/high-complexity work from entering TDD first"
-assert_contains "$using_aegis" "Aegis Project Workspace lazily" \
-    "using-aegis defines lazy task-scoped Aegis workspace records"
+assert_contains "$using_aegis" "Aegis Project Workspace.*hard binary rule" \
+    "using-aegis defines hard binary workspace creation rule"
 assert_contains "$discipline_ref" "Low complexity|Medium complexity|High complexity" \
     "discipline reference details task complexity levels"
 assert_contains "$discipline_ref" "TDD is the implementation discipline.*atomic tasks" \
     "discipline reference keeps TDD after planning for medium/high-complexity work"
-assert_contains "$discipline_ref" "docs/aegis/work" \
+assert_contains "$discipline_ref" "work/<slug>" \
     "discipline reference details task-scoped workspace records"
 
 assert_contains "$tdd_skill" "contract|cross-module|shared module|core logic" \
@@ -80,13 +80,13 @@ assert_contains "$verification_skill" "manual verification|manual steps" \
     "verification asks for manual steps when automation is blocked"
 
 assert_contains "$brainstorming_skill" "Aegis Project Workspace" \
-    "brainstorming writes specs through the lazy Aegis workspace boundary"
+    "brainstorming writes specs through the Aegis workspace boundary"
 assert_contains "$writing_plans_skill" "Aegis Project Workspace" \
-    "writing-plans defines the lazy Aegis workspace structure"
-assert_contains "$writing_plans_skill" "40-atomic-tasks" \
-    "writing-plans records atomic task decomposition"
-assert_contains "$process_baseline" "TDD.*not.*first entrypoint|TDD.*不是.*第一入口" \
-    "process baseline states TDD is not the first entrypoint for medium/high-complexity tasks"
+    "writing-plans defines the Aegis workspace structure"
+assert_contains "$writing_plans_skill" "INDEX.md" \
+    "writing-plans records workspace initialization steps"
+assert_contains "$process_baseline" "TDD.*不是.*第一入口|TDD.*实现纪律" \
+    "process baseline states TDD is the implementation discipline, not the first entrypoint"
 
 if (( failures > 0 )); then
     echo ""

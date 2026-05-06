@@ -39,7 +39,9 @@ When public docs conflict, use this order:
 3. approved ADRs in `docs/adr/`
 4. task-relevant docs in `docs/current/`
 5. host-specific docs such as `docs/README.codex.md`,
-   `docs/README.opencode.md`, and `docs/README.claude-code.md`
+   `docs/README.opencode.md`, `docs/README.claude-code.md`,
+   `docs/README.codebuddy.md`, `docs/README.deepseek-tui.md`, and
+   `docs/README.trae.md`
 6. tests and fixtures
 
 ## 4. Public Current Baseline

@@ -45,7 +45,9 @@ EXCLUDES=(
   # Dotfiles and infra — top-level only
   "/.claude/"
   "/.claude-plugin/"
+  "/.codebuddy-plugin/"
   "/.codex/"
+  "/.cursor/"
   "/.cursor-plugin/"
   "/.git/"
   "/.gitattributes"
@@ -53,6 +55,7 @@ EXCLUDES=(
   "/.gitignore"
   "/.opencode/"
   "/.version-bump.json"
+  "/.windsurf/"
   "/.worktrees/"
   ".DS_Store"
 

@@ -39,6 +39,9 @@
 | Host | Current Status | Why Not Yet |
 | --- | --- | --- |
 | `Claude Code` | 已有安装引导与 plugin skeleton；尚无当前 release-level fresh smoke verdict | `docs/README.claude-code.md` 已建立，但真实宿主回归仍后置 |
+| `CodeBuddy` | 已有 `.codebuddy-plugin/` skeleton 与原生 `SKILL.md` 手动安装说明；尚无当前 release-level fresh smoke verdict | `docs/README.codebuddy.md` 已建立；证据来自 CodeBuddy skills/plugin docs 与本仓 `.codebuddy-plugin/`，真实宿主回归仍后置 |
+| `DeepSeek-TUI` | 原生 `SKILL.md` discovery 支持手动安装；尚无当前 release-level fresh smoke verdict | `docs/README.deepseek-tui.md` 已建立；证据来自 DeepSeek-TUI README/source 的 discovery contract，真实宿主回归仍后置 |
+| `Trae` | 原生 `SKILL.md` discovery 支持手动安装；尚无当前 release-level fresh smoke verdict | `docs/README.trae.md` 已建立；证据来自 Trae skills docs，真实宿主回归仍后置 |
 | `Cursor` | 已有 `.cursor/INSTALL.md` 安装引导；尚无当前 release-level fresh smoke verdict | 结构化目标已建立，尚未进入当前宿主回归切片 |
 | `Windsurf` | 已有 `.windsurf/INSTALL.md` 安装引导；尚无当前 release-level fresh smoke verdict | 结构化目标已建立，尚未进入当前宿主回归切片 |
 | `Gemini CLI` | 尚无当前 fresh release-level verdict | 未进入当前切片 |
@@ -58,10 +61,13 @@
 
 1. `Codex` 与 `OpenCode` 是当前最有 fresh evidence 的两条主链
 2. `Kimi Code CLI` 复用 Codex 路径（`.agents/skills/`），Aegis 极简安装提示词即可生效
-3. `Cursor` 与 `Windsurf` 已有结构化安装引导，尚未进入 release-level fresh smoke
-4. `Warp` 作为终端宿主，本身无需独立 adapter
-5. 当前 method-pack 仍保留跨宿主安装目标
-6. “支持所有 plugin host” 仍是产品目标，不等于”所有宿主都已有当前 fresh closeout”
+3. `CodeBuddy` 可通过 `.codebuddy-plugin/` 或原生 `SKILL.md` discovery 安装 Aegis，但本机 CLI live smoke 仍未形成有效证据
+4. `DeepSeek-TUI` 可通过原生 `SKILL.md` discovery 手动安装 Aegis skills，但 `/skill install github:GanyuanRan/Aegis` 不是当前 canonical path
+5. `Trae` 可通过原生 `SKILL.md` discovery 手动安装 Aegis skills；`.agents/skills/` 作为 Trae 可选能力，不是 Aegis 的 Trae canonical path
+6. `Cursor` 与 `Windsurf` 已有结构化安装引导，尚未进入 release-level fresh smoke
+7. `Warp` 作为终端宿主，本身无需独立 adapter
+8. 当前 method-pack 仍保留跨宿主安装目标
+9. “支持所有 plugin host” 仍是产品目标，不等于”所有宿主都已有当前 fresh closeout”
 
 ---
 
@@ -73,8 +79,11 @@
 2. `docs/README.claude-code.md`
 3. `docs/README.codex.md`
 4. `docs/README.opencode.md`
-5. `.windsurf/INSTALL.md`
-6. `.cursor/INSTALL.md`
+5. `docs/README.codebuddy.md`
+6. `docs/README.deepseek-tui.md`
+7. `docs/README.trae.md`
+8. `.windsurf/INSTALL.md`
+9. `.cursor/INSTALL.md`
 
 ---
 

@@ -69,23 +69,29 @@ You MUST create a task for each of these items and complete them in order:
 
 **Documentation:**
 
-- Before writing project artifacts, initialize the Aegis Project Workspace lazily:
-  - If the project already has docs/ADR/baseline authority, reference it instead
-    of duplicating it.
-  - If no Aegis workspace exists and this task needs records, create only
-    `docs/aegis/README.md` and `docs/aegis/INDEX.md` first.
-  - For this task's process trail, create
-    `docs/aegis/work/YYYY-MM-DD-<task-slug>/` only when the task is medium or
-    high complexity.
-- Write the validated design (spec) to `docs/aegis/specs/YYYY-MM-DD-<topic>-design.md`
-  - (User preferences for spec location override this default)
-  - If the design is task-specific and not reusable, it may live as
-    `docs/aegis/work/YYYY-MM-DD-<task-slug>/20-spec.md` instead. Promote it to
-    `specs/` only when future tasks should treat it as a reusable reference.
-- Use elements-of-style:writing-clearly-and-concisely skill if available
-- Commit the design document to git
-- Include the latest `TaskIntentDraft`, `BaselineReadSetHint`, and `ImpactStatementDraft` inline or in an appendix when they materially shaped the design.
-- Record explicit non-goals and compatibility boundaries so the later implementation plan does not drift.
+1. **Aegis Project Workspace initialization (first creation only):**
+   If `docs/aegis/` does not exist:
+   a. Create `docs/aegis/README.md` — describes workspace purpose and structure
+   b. Create `docs/aegis/INDEX.md` — empty index, will be appended below
+   c. Create `docs/aegis/BASELINE-GOVERNANCE.md` from the template in
+      "BASELINE-GOVERNANCE.md Template" section below
+   d. If the project has existing code, create an initial baseline snapshot:
+      `docs/aegis/baseline/YYYY-MM-DD-initial-baseline.md` using the
+      "Initial Baseline Snapshot Template" below
+   If `docs/aegis/` already exists, use it — do not recreate.
+
+2. **Write the validated design (spec):**
+   Save to `docs/aegis/specs/YYYY-MM-DD-<topic>-design.md`.
+   Spec always goes to `specs/` — never to `work/`.
+
+3. **Update INDEX.md:**
+   Append the new spec entry to `docs/aegis/INDEX.md`.
+
+4. Commit the design document to git.
+
+5. Include the latest `TaskIntentDraft`, `BaselineReadSetHint`, and `ImpactStatementDraft` inline or in an appendix when they materially shaped the design.
+
+6. Record explicit non-goals and compatibility boundaries so the later implementation plan does not drift.
 
 **Spec Self-Review:**
 After writing the spec document, look at it with fresh eyes:
@@ -137,3 +143,60 @@ A question about a UI topic is not automatically a visual question. "What does p
 
 If they agree to the companion, read the detailed guide before proceeding:
 `skills/brainstorming/visual-companion.md`
+
+## BASELINE-GOVERNANCE.md Template
+
+When creating `docs/aegis/BASELINE-GOVERNANCE.md` for the first time, use this template:
+
+```markdown
+# Baseline Governance
+
+## 1. Architecture Defect
+A confirmed error, gap, or contradiction IN the baseline itself.
+- Fix baseline first, then align implementation to corrected baseline.
+- Do NOT patch implementation around a defective baseline.
+
+## 2. Architecture Drift
+Implementation has deviated from a confirmed, correct baseline.
+- Return to baseline via the simplest path.
+- Do NOT "update baseline to match drift" without explicit review.
+
+## 3. Baseline Check Protocol
+Before non-trivial changes:
+1. Read the latest baseline snapshot in `baseline/`
+2. Compare current code structure against ownership map
+3. Compare current contracts against contract inventory
+4. Check for new anti-patterns not recorded in known list
+5. Report: aligned / minor drift (self-correctable) / material drift (needs review)
+
+## 4. Architecture Review — 7 Dimensions
+After each non-trivial change:
+1. **Ownership integrity** — every component has exactly one canonical owner
+2. **Module boundaries** — no unauthorized cross-module coupling
+3. **Contract changes** — all API/signature/behavior contract changes documented
+4. **Cascade proliferation** — no new cascading dependency chains
+5. **Dependency direction** — dependencies flow toward stability
+6. **Retirement completeness** — old owners/fallbacks/paths removed or scheduled
+7. **Entropy flow** — net complexity decreased or stayed; no unjustified new entities
+
+## 5. Hard Boundaries
+- BASELINE-GOVERNANCE.md is the constitution for THIS project's Aegis workspace
+- Baseline snapshots in `baseline/` are evidence, not authority
+- ADRs in `adr/` record decisions; they do not replace baseline governance
+- This file is NEVER auto-updated — changes require explicit user review
+```
+
+## Initial Baseline Snapshot Template
+
+When creating the first `docs/aegis/baseline/YYYY-MM-DD-initial-baseline.md`:
+
+1. **Project structure** — top-level directory map, key entry points
+2. **Tech stack** — language, framework, database, key dependencies
+3. **Ownership mapping** — component → canonical owner file/module
+4. **Contract inventory** — public APIs, published interfaces, data contracts
+5. **Dependency direction convention** — which layers depend on which
+6. **Test system** — framework, coverage baseline, test categories
+7. **Build & deploy** — build system, CI pipeline, deploy targets
+8. **Known anti-patterns** — patterns to avoid, previously identified issues
+9. **Last review findings** — date, reviewer, key findings, open items
+10. **Compatibility boundaries** — what must NOT break

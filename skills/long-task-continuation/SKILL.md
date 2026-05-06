@@ -40,15 +40,20 @@ For short direct answers or one-command checks, do not force this protocol.
 
 ## Required Artifacts
 
-Maintain lightweight notes for:
+Maintain artifacts under `docs/aegis/work/YYYY-MM-DD-<slug>/`:
 
-- `TaskIntentDraft`
-- `BaselineReadSetHint`
-- `ImpactStatementDraft`
-- `TodoCheckpointDraft`
-- `ResumeStateHint` when pausing or handing off
-- `DriftCheckDraft`
-- `EvidenceBundleDraft`
+| Artifact | File | When |
+|----------|------|------|
+| TaskIntentDraft | `10-intent.md` | Start protocol |
+| BaselineReadSetHint | `10-intent.md` (inline) | Start protocol |
+| ImpactStatementDraft | `10-intent.md` (inline) | Start protocol |
+| TodoCheckpointDraft | `20-checkpoint.md` | Each checkpoint |
+| ResumeStateHint | `20-checkpoint.md` (inline) | Each pause/handoff |
+| DriftCheckDraft | `20-checkpoint.md` (inline) | Per-slice protocol |
+| EvidenceBundleDraft | `90-evidence.md` | Per-slice protocol |
+| Reflection | `99-reflection.md` | Completion candidate |
+
+For medium+ complexity tasks only. Low-complexity tasks skip work/.
 
 These are draft / hint / projection inputs. They are not authoritative runtime records.
 

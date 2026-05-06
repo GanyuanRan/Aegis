@@ -1,5 +1,60 @@
 # Aegis Release Notes
 
+## v1.0.12 (2026-05-06)
+
+### Aegis Project Workspace — Ecosystem Closed Loop
+
+- **Hard binary workspace creation** — replaced the ambiguous "lazy creation"
+  policy with explicit triggers: brainstorming design doc write, writing-plans
+  save, and systematic-debugging Quality Gate for non-trivial tasks. Global
+  install never writes project files; active projects create workspace
+  immediately when a trigger fires.
+- **Single canonical paths** — eliminated the dual-path ambiguity (`work/` vs
+  `specs/`/`plans/`). Spec always goes to `specs/`, plan always to `plans/`,
+  process trail stays in `work/<slug>/`. No more "promote to" uncertainty.
+- **BASELINE-GOVERNANCE.md** — each project gets a constitution-level governance
+  file defining architecture defect vs drift, baseline check protocol, and 7
+  dimensions of architecture review. Triggered on first workspace creation by
+  any entry path.
+- **7-dimension architecture review** — operationalized the architecture
+  retrospective across 7 measurable dimensions: ownership integrity, module
+  boundaries, contract changes, cascade proliferation, dependency direction,
+  retirement completeness, and entropy flow. Results mapped to Reflection
+  checklist to prevent findings from being lost.
+- **Mid-task complexity escalation** — if a task escalates from low to medium
+  complexity mid-stream, the agent pauses, initializes workspace, and backfills
+  required artifacts before continuing.
+- **CONTEXT.md vs baseline/ boundary** — clarified separation: CONTEXT.md owns
+  domain language, baseline/ owns technical architecture snapshots. Both
+  skills (establishing-project-context, brainstorming) updated accordingly.
+- **code-reviewer agent 7-dimension alignment** — code-reviewer now reports
+  architecture review findings per dimension (PASS/FINDING/RISK) with severity
+  and recommended action.
+
+### Host Adapter Expansion
+
+- **CodeBuddy** — added `.codebuddy-plugin/` skeleton with plugin metadata and
+  marketplace manifest. Native `SKILL.md` discovery supports manual install.
+  Installation guide in `docs/README.codebuddy.md`.
+- **DeepSeek-TUI** — confirmed native `SKILL.md` discovery compatible. Manual
+  install via skill directory copy. Installation guide in
+  `docs/README.deepseek-tui.md`.
+- **Trae** — confirmed native `SKILL.md` discovery compatible. Manual install
+  via `.trae/skills/` directory. Installation guide in
+  `docs/README.trae.md`.
+- **Host compatibility matrix** — updated with CodeBuddy, DeepSeek-TUI, and
+  Trae status entries. Release checklist and authority docs sync'd.
+- **sync-to-codex-plugin.sh** — added `.codebuddy-plugin/`, `.cursor/`, and
+  `.windsurf/` to EXCLUDES to prevent cross-host file leakage.
+- **version-bump.json** — added `.codebuddy-plugin/` entries for consistent
+  version management across all host manifests.
+
+### Known Limitations
+
+- Recorded 4 new known limitations: INDEX.md append dependency on workflow
+  steps, low-complexity task workspace window, BASELINE-GOVERNANCE.md template
+  quality dependency, and 7-dimension qualitative judgment dependency.
+
 ## v1.0.11 (2026-05-06)
 
 ### Systematic Debugging Depth Upgrade

@@ -76,13 +76,20 @@ bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh
 
 1. `docs/README.codex.md`
 2. `docs/README.opencode.md`
-3. `docs/testing.md`
+3. `docs/README.claude-code.md`
+4. `docs/README.codebuddy.md`
+5. `docs/README.deepseek-tui.md`
+6. `docs/README.trae.md`
+7. `docs/testing.md`
 
 确认：
 
 - 安装方式没有引用过时路径
 - host-specific fallback 没有被误写成 canonical chain
 - testing docs 与 current owners 的命名一致
+- CodeBuddy 仍区分 `.codebuddy-plugin/` skeleton、manual `SKILL.md` install 与未完成 live smoke
+- DeepSeek-TUI 仍描述为 manual `SKILL.md` copy install，而不是多 skill 仓库的一键 GitHub installer
+- Trae 仍描述为 manual `.trae/skills` / `~/.trae/skills` install，不把 `.agents/skills/` 可选能力写成 canonical chain
 
 ---
 

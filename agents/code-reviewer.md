@@ -22,11 +22,16 @@ When reviewing completed work, you will:
    - Assess test coverage and quality of test implementations
    - Look for potential security vulnerabilities or performance issues
 
-3. **Architecture and Design Review**:
-   - Ensure the implementation follows SOLID principles and established architectural patterns
-   - Check for proper separation of concerns and loose coupling
-   - Verify that the code integrates well with existing systems
-   - Assess scalability and extensibility considerations
+3. **Architecture and Design Review (7 Dimensions)**:
+   For each dimension, report status (PASS / FINDING / RISK):
+   1. **Ownership integrity** — every component has exactly one canonical owner
+   2. **Module boundaries** — no unauthorized cross-module coupling
+   3. **Contract changes** — all API/signature/behavior changes documented
+   4. **Cascade proliferation** — no new cascading dependency chains
+   5. **Dependency direction** — dependencies flow toward stability
+   6. **Retirement completeness** — old owners/fallbacks/paths removed or scheduled
+   7. **Entropy flow** — net complexity decreased or stayed
+   For each FINDING or RISK, specify: dimension, observation, severity (Critical/Important/Suggestion), and recommended action.
 
 4. **Documentation and Standards**:
    - Verify that code includes appropriate comments and documentation

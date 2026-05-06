@@ -28,13 +28,14 @@ This skill is the canonical planning workflow for multi-step implementation work
 **Context:** This should be run in a dedicated worktree (created by brainstorming skill).
 
 **Save plans to:** `docs/aegis/plans/YYYY-MM-DD-<feature-name>.md`
-- (User preferences for plan location override this default)
-- For task-specific plans that do not need to become reusable project
-  references, save the plan in
-  `docs/aegis/work/YYYY-MM-DD-<task-slug>/30-plan.md` and record atomic tasks in
-  `docs/aegis/work/YYYY-MM-DD-<task-slug>/40-atomic-tasks.md`.
-- Promote a plan to `docs/aegis/plans/` only when future tasks should reuse it
-  as a stable implementation reference.
+Plan always goes to `plans/` — never to `work/`.
+(User preferences for plan location override this default.)
+
+If `docs/aegis/` does not exist, initialize the workspace first:
+  1. Create `docs/aegis/README.md` and `docs/aegis/INDEX.md`
+  2. Create `docs/aegis/BASELINE-GOVERNANCE.md` from template
+  3. If the project has code, create `docs/aegis/baseline/YYYY-MM-DD-initial-baseline.md`
+Then save the plan and append to `docs/aegis/INDEX.md`.
 
 ## Scope Check
 
@@ -42,7 +43,7 @@ If the spec covers multiple independent subsystems, suggest breaking into separa
 
 ## Aegis Project Workspace
 
-Create lazily, only when records are needed. Default minimum: `docs/aegis/README.md` + `INDEX.md`. For medium tasks: `docs/aegis/work/YYYY-MM-DD-<task-slug>/` with intent, baseline-readset, plan, atomic-tasks, evidence. If the project already has docs/adr/, architecture docs, or other baseline owners, link to them instead of duplicating.
+Workspace creation is triggered by the plan save step. See `using-aegis/SKILL.md` Rule 3 for the hard binary rule. If the project already has docs/adr/ or architecture docs, reference them — do not duplicate authority.
 
 ## File Structure
 

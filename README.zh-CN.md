@@ -133,6 +133,9 @@ Aegis 保留多宿主 plugin-installable 目标。
 | `Codex` | representative smoke 主链已验证；Git Bash naive smoke 仍有观察项 |
 | `OpenCode` | 当前 method-pack 范围内 base suite 与 integration closeout 已通过 |
 | `Claude Code` | 已有 plugin skeleton 与安装说明；release-level fresh host smoke 仍待补证 |
+| `CodeBuddy` | 已有 plugin skeleton 与原生 `SKILL.md` 手动安装说明；release-level fresh host smoke 仍待补证 |
+| `DeepSeek-TUI` | 原生 `SKILL.md` discovery 支持手动安装 Aegis skills；release-level fresh host smoke 仍待补证 |
+| `Trae` | 原生 `SKILL.md` discovery 支持手动安装 Aegis skills；release-level fresh host smoke 仍待补证 |
 
 其它宿主仍是产品目标，但还不是当前 release-level verdict。
 
@@ -229,11 +232,84 @@ claude --plugin-dir ~/aegis
 
 在 Claude Code 中运行 `/reload-plugins`，然后尝试 `/aegis:using-aegis`。
 
+### CodeBuddy
+
+CodeBuddy 同时支持 plugin metadata 和原生 `SKILL.md` skill discovery。
+如果走最透明的手动路径：
+
+macOS / Linux：
+
+```bash
+git clone https://github.com/GanyuanRan/Aegis.git ~/.codebuddy/aegis
+mkdir -p ~/.codebuddy/skills
+cp -R ~/.codebuddy/aegis/skills/* ~/.codebuddy/skills/
+```
+
+Windows PowerShell：
+
+```powershell
+git clone https://github.com/GanyuanRan/Aegis.git "$env:USERPROFILE\.codebuddy\aegis"
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.codebuddy\skills"
+Copy-Item -Recurse -Force "$env:USERPROFILE\.codebuddy\aegis\skills\*" "$env:USERPROFILE\.codebuddy\skills\"
+```
+
+Aegis 也提供 `.codebuddy-plugin/` 元数据给 CodeBuddy plugin flow 使用。
+重启 CodeBuddy，然后询问它有哪些 Aegis skills。
+
+### DeepSeek-TUI
+
+DeepSeek-TUI 会从 `SKILL.md` 目录发现 skills。安装 Aegis 时，把 Aegis 的
+skill 目录复制到 DeepSeek-TUI 的全局 skills 路径：
+
+macOS / Linux：
+
+```bash
+git clone https://github.com/GanyuanRan/Aegis.git ~/.deepseek/aegis
+mkdir -p ~/.deepseek/skills
+cp -R ~/.deepseek/aegis/skills/* ~/.deepseek/skills/
+```
+
+Windows PowerShell：
+
+```powershell
+git clone https://github.com/GanyuanRan/Aegis.git "$env:USERPROFILE\.deepseek\aegis"
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.deepseek\skills"
+Copy-Item -Recurse -Force "$env:USERPROFILE\.deepseek\aegis\skills\*" "$env:USERPROFILE\.deepseek\skills\"
+```
+
+重启 DeepSeek-TUI，然后用 `/skills` 和 `/skill using-aegis` 验证。
+
+### Trae
+
+Trae 会从 `SKILL.md` 目录发现 skills。安装 Aegis 时，把 Aegis 的 skill
+目录复制到 Trae 的全局 skills 路径：
+
+macOS / Linux：
+
+```bash
+git clone https://github.com/GanyuanRan/Aegis.git ~/.trae/aegis
+mkdir -p ~/.trae/skills
+cp -R ~/.trae/aegis/skills/* ~/.trae/skills/
+```
+
+Windows PowerShell：
+
+```powershell
+git clone https://github.com/GanyuanRan/Aegis.git "$env:USERPROFILE\.trae\aegis"
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.trae\skills"
+Copy-Item -Recurse -Force "$env:USERPROFILE\.trae\aegis\skills\*" "$env:USERPROFILE\.trae\skills\"
+```
+
+重启 Trae，然后询问它有哪些 Aegis skills。
+
 完整宿主说明：
 
 - [Claude Code](docs/README.claude-code.md)
+- [CodeBuddy](docs/README.codebuddy.md)
 - [Codex](docs/README.codex.md)
+- [DeepSeek-TUI](docs/README.deepseek-tui.md)
 - [OpenCode](docs/README.opencode.md)
+- [Trae](docs/README.trae.md)
 
 本项目仍保留继承自 `superpowers` 的多宿主分发骨架，包括 Cursor、Gemini 等相关包面。但除非兼容性矩阵明确说明，不应把这些目标理解为已经完成当前 fresh release-level closeout。
 
@@ -262,6 +338,9 @@ Aegis 不是 daemon、后台 runner，也不是 authoritative runtime core。它
 - Codex 启动时从配置好的 skills 目录发现 Aegis skills。
 - OpenCode 加载 Aegis plugin，将 skills 镜像到 OpenCode 全局 skills 路径，并注入紧凑 bootstrap context。
 - Claude Code 通过 plugin namespace 或本地 plugin directory 加载 Aegis。
+- CodeBuddy 从原生 `SKILL.md` skill 路径发现已复制的 Aegis skill 目录，也可以通过 `.codebuddy-plugin/` 元数据加载 Aegis。
+- DeepSeek-TUI 从原生 `SKILL.md` skill 路径发现已复制的 Aegis skill 目录。
+- Trae 从原生 `SKILL.md` skill 路径发现已复制的 Aegis skill 目录。
 - `using-aegis` 会要求 agent 在回应前判断当前任务是否需要加载任务专属 skill。
 - 日常使用不需要每次手动点名 skill；显式命令主要用于你想强制指定某个方法时。
 
@@ -271,6 +350,9 @@ Aegis 不是 daemon、后台 runner，也不是 authoritative runtime core。它
   `aegis:long-task-continuation`、`aegis:verification-before-completion`。
 - 在 OpenCode 中使用原生 `skill` tool，例如：`use skill tool to load aegis/brainstorming`。
 - 在 Claude Code 中使用 plugin namespace，例如：`/aegis:using-aegis`。
+- 在 CodeBuddy 中要求它加载某个 Aegis skill，例如 `systematic-debugging`。
+- 在 DeepSeek-TUI 中使用原生 skill 命令，例如：`/skill systematic-debugging`。
+- 在 Trae 中要求它加载某个 Aegis skill，例如 `systematic-debugging`。
 
 长任务行为：
 
