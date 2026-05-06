@@ -4,7 +4,7 @@
   "taskIntentRef": "tests/e2e/fixtures/artifacts/task-intent-draft.sample.json",
   "baselineRefs": [
     "docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md",
-    "docs/current/AEGIS_LONG_TASK_CONTINUATION_DESIGN.md"
+    "docs/current/AEGIS_PROCESS_BASELINE.md"
   ],
   "scopeStatus": "within-method-pack-protocol-scope",
   "compatStatus": "no-host-install-surface-change",

@@ -10,9 +10,11 @@ Current status:
 - `layer3-scenario-check.sh` is runnable now with fixture-backed scenario orchestration and cross-host comparison
 - scenario definitions, artifact fixtures, and transcript fixtures exist as advisory verification inputs, not as final authority
 
-Authoritative plan:
+Current public baselines:
 
-- `docs/current/AEGIS_PHASE5_E2E_VERIFICATION_ATOMIC_PLAN.md`
+- `docs/current/README.md`
+- `docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md`
+- `docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md`
 
 Bootstrap entrypoints:
 

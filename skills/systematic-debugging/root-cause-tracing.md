@@ -108,18 +108,21 @@ Runs tests one-by-one, stops at first polluter. See script for usage.
 
 ## Real Example: Empty projectDir
 
-**Symptom:** `.git` created in `packages/core/` (source code)
+**Symptom:** `.git` created in `packages/core/` (source tree polluted)
 
-**Trace chain:**
-1. `git init` runs in `process.cwd()` ← empty cwd parameter
-2. WorktreeManager called with empty projectDir
-3. Session.create() passed empty string
-4. Test accessed `context.tempDir` before beforeEach
-5. setupCoreTest() returns `{ tempDir: '' }` initially
+**5-level trace (mapped to diagnostic layers):**
 
-**Root cause:** Top-level variable initialization accessing empty value
+| Level | Diagnostic layer | Finding |
+| --- | --- | --- |
+| L1 | Symptom | `.git` directory appears in `packages/core/` (source code) |
+| L2 | Logic | `git init` received empty `cwd` → `process.cwd()` resolves as fallback |
+| L3 | System | `WorktreeManager` passed empty `projectDir` across component boundary |
+| L4 | System | `Session.create()` passed empty string — the ownership seam |
+| L5 | Root | Test accessed `context.tempDir` before `beforeEach` lifecycle completed |
 
-**Fix:** Made tempDir a getter that throws if accessed before beforeEach
+**Root cause:** top-level variable initialization accessing value before lifecycle ready
+
+**Fix:** made `tempDir` a getter that throws if accessed before `beforeEach`
 
 **Also added defense-in-depth:**
 - Layer 1: Project.create() validates directory

@@ -8,7 +8,7 @@
     "The long-task artifact fixtures are being added"
   ],
   "mustReadBeforeContinuing": [
-    "docs/current/AEGIS_LONG_TASK_CONTINUATION_DESIGN.md",
+    "docs/current/AEGIS_PROCESS_BASELINE.md",
     "docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md"
   ],
   "unsafeToAssume": [

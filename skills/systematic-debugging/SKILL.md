@@ -6,11 +6,15 @@ description: Use when encountering any bug, test failure, or unexpected behavior
 # Execute
 
 → Bug? Test failure? Unexpected behavior? → **Find root cause first. No fixes without evidence.**
-  1. Isolate: read error → reproduce → check git diff → cover 4 layers (symptom / logic / system / architecture)
+  1. Isolate: read error → reproduce → check git diff → drill down through diagnostic layers:
+     L1 symptom → L2 logic → L3 system → L4 architecture →
+     L5 cross-system contract → L6 platform constraint → L7 spec gap.
+     Stop when: no deeper "why" remains OR terminal unactionable (T1-T4).
   2. Identify owner: compare with working code → locate canonical owner → flag duplicate owners as a finding
-  3. Prove: one hypothesis → minimal test → iterate. 3+ failed hypotheses = question architecture, do not attempt #4.
-  4. Fix: failing test → minimal code at canonical owner → verify → repair track + retirement track
-→ Done when: confidence ≥ B, both tracks explicit, DeeperCause answered "no" with evidence.
+  3. Prove: one hypothesis → minimal test → iterate. 3+ failed fixes = question architecture, do not attempt #4.
+     After fix, if any symptom persists → differential diagnosis (Phase 4 Step 4bis).
+  4. Fix: failing test → minimal code at canonical owner → hard signal check (H/T/D) → verify → Reflection + 架构回望 → repair + retirement track
+→ Done when: confidence ≥ B, both tracks explicit, DeeperCause answered "no" with evidence, no H-class hard signal still active.
 
 # Systematic Debugging
 
@@ -73,13 +77,51 @@ You MUST complete each phase before proceeding to the next.
     - Keep tracing up until you find the source
     - Fix at source, not at symptom
 
-6. **Cover the Four Diagnostic Layers**
-   - **Symptom layer**: what visibly failed, where, and under what reproduction steps?
-   - **Logic layer**: which branch, contract, invariant, or state transition is wrong?
-   - **System layer**: which component boundary, dependency, config, or ownership seam allowed it?
-   - **Architecture layer**: what design choice, duplicated owner, fallback, or compatibility layer made the issue possible?
+6. **Drill Down Through Diagnostic Layers**
 
-   If you have not checked all four layers, you are not done diagnosing.
+   Start at L1. Exhaust all "why" questions at each layer before descending.
+   The chain is open-ended — architecture is not the endpoint.
+
+   ```
+   L1 Symptom:     what failed? where? exact reproduction?
+   L2 Logic:       which branch, invariant, or state transition is wrong?
+   L3 System:      which component boundary, dependency, or ownership seam?
+   L4 Architecture: what design choice, duplicated owner, or fallback chain?
+   L5 Cross-system: which API / SLA / timing contract between systems?
+   L6 Platform:    what runtime / OS / framework constraint?
+   L7 Spec gap:    who never defined correct behavior for this case?
+   ```
+
+   **Hard Signal Check** — apply after each fix attempt. These are countable facts, not judgments.
+
+   Must continue drilling (H-class — ANY hit = NOT done):
+   - **H1** — fix added a conditional branch (`if` / `switch` / `catch` / `try`)
+   - **H2** — fix touched multiple sites but only 1 covered by failing test
+   - **H3** — fix is at consumer/caller, not canonical owner
+   - **H4** — same bug pattern exists elsewhere in repo (grep for it)
+   - **H5** — original reproduction still produces any anomaly
+   - **H6** — `git log --grep` shows this symptom was "fixed" before
+     → Read that commit's diff. Understand why it failed. Do not repeat the same patch pattern.
+
+   Terminal unactionable (T-class — any hit = stop drilling, switch to mitigation):
+   - **T1** — required change is outside this repo's boundary
+   - **T2** — would break published API contract with no migration path
+   - **T3** — root is undefined spec behavior (nobody defined correctness)
+   - **T4** — required permission or information is unavailable
+   → On T-class trigger: record root cause + system boundary + 架构回望:
+     what boundary vulnerability did this expose? can the system be made
+     more resilient to this class of external failure?
+
+   Depth sufficient (D-class — ALL must pass before claiming done):
+   - **D0** — fix eliminated ≥1 code path (paths after ≤ paths before)
+   - **D1** — fix eliminated ≥1 conditional branch (not added a fallback)
+   - **D2** — fix is at canonical owner
+   - **D3** — original reproduction steps no longer trigger any anomaly
+   - **D4** — no same-pattern occurrences remain unaddressed in repo
+
+   After hard signals pass, complete standard Reflection + 架构回望.
+   The Reflection checklist already covers longevity, stability, conformance,
+   and minimal-necessary-change — no separate soft check is needed.
 
 ### Phase 2: Pattern Analysis
 
@@ -128,8 +170,32 @@ You MUST complete each phase before proceeding to the next.
    - STOP
    - Count: How many fixes have you tried?
    - If < 3: Return to Phase 1, re-analyze with new information
-   - **If ≥ 3: STOP and question the architecture (step 5 below)**
+   - **If ≥ 3: STOP and question the architecture (step 6 below)**
    - DON'T attempt Fix #4 without architectural discussion
+
+4bis. **Post-Fix Differential Diagnosis**
+
+   After applying a fix, if ANY symptom persists:
+
+   **STOP. Do NOT attempt another fix without diagnosis.**
+
+   1. Isolate the residual symptom precisely — what exactly remains?
+   2. Trace its causal chain independently (fresh Phase 1 run).
+   3. Compare with the causal chain of the fixed symptom:
+
+   | Residual pattern | Diagnosis | Action |
+   | --- | --- | --- |
+   | Same reproduction conditions as fixed symptom | Fix is incomplete | Continue drilling from same source |
+   | Different reproduction conditions, chains converge to same source | Fix was at wrong depth | Re-drill from the shared source |
+   | Different reproduction conditions, chains diverge | Compound root cause (≥2 independent roots) | Each root needs its own fix — these are independent bugs that surfaced together |
+   | Same symptom, reduced but not eliminated | Fix was a downstream patch | Re-drill from source |
+
+   4. If uncertain whether convergent or divergent: **escalate. Do not guess.**
+
+   **Compound root cause forms:**
+   - True compound — ≥2 independent bugs surfaced together
+   - Single-root multi-symptom — 1 root, ≥2 symptom paths → fix root, all resolve
+   - Chain causal — A causes B causes C → fix A, B and C auto-resolve
 
 5. **If 3+ Fixes Failed: Question Architecture**
 
@@ -171,10 +237,12 @@ You MUST complete each phase before proceeding to the next.
 
 Before you claim debugging is complete:
 
-1. Re-run the latest Reflection checklist
-2. Confirm the fix addressed the source, not just the sample
-3. Confirm whether the retirement surface shrank, stayed, or grew
-4. State confidence:
+1. **Hard signal re-check** — re-run H1-H6, T1-T4, D0-D4 from Phase 1 Step 6.
+   Any H-class hit → not done. All D-class must pass. T-class hit → mitigation mode, not fix mode.
+2. Re-run the latest Reflection checklist (Goal / DeeperCause / Evidence / Risk/Unknown / Decision)
+3. Confirm the fix addressed the source, not just the sample
+4. Confirm whether the retirement surface shrank, stayed, or grew
+5. State confidence:
    - `A` = direct evidence and regression coverage support the root-cause conclusion
    - `B` = strong evidence, limited coverage or some bounded unknowns remain
    - `C` = partial evidence only; do not present as fully resolved
@@ -197,10 +265,15 @@ If you catch yourself thinking:
 - **Each fix reveals new problem in different place**
 - **"Let's just add another fallback"**
 - **"We can keep both owners for now" without a retirement condition**
+- **"The fix partially worked — let me try another change"** (without differential diagnosis)
+- **"It's the same symptom as before but less severe now"**
+- **"This is outside our codebase, nothing we can do"** (without checking T1-T4 and mitigation strategy)
+- **H1-H6 hit but proceeding anyway "because the tests pass now"**
 
 **ALL of these mean: STOP. Return to Phase 1.**
 
-**If 3+ fixes failed:** Question the architecture (see Phase 4.5)
+**If 3+ fixes failed:** Question the architecture (see Phase 4 Step 5)
+**If symptoms persist after fix:** Run differential diagnosis (see Phase 4 Step 4bis)
 
 ## Human Partner Signals
 
@@ -210,10 +283,10 @@ If you hear "Is that not happening?", "Will it show us...?", "Stop guessing", "U
 
 | Phase | Key Activities | Success Criteria |
 |-------|---------------|------------------|
- | **1. Root Cause** | Read errors, reproduce, check changes, gather evidence, cover symptom/logic/system/architecture | Understand WHAT, WHY, and WHERE the true owner is |
+ | **1. Root Cause** | Read errors, reproduce, check changes, drill down L1-L7, hard signal check (H/T/D) | Understand WHAT, WHY, WHERE the true owner is, and which layer holds the root |
  | **2. Pattern** | Find working examples, compare, identify canonical owner | Identify differences and duplicated ownership |
  | **3. Hypothesis** | Form theory, test minimally, run Reflection | Confirmed or new hypothesis with explicit evidence |
- | **4. Implementation** | Create test, fix, verify, close fix+retirement tracks | Bug resolved, tests pass, and retirement surface is explicit |
+ | **4. Implementation** | Create test, fix, differential diagnosis if partial, verify, hard signal re-check, close fix+retirement tracks | Bug resolved, hard signals all clear, tests pass, retirement surface explicit |
 
 ## When Process Reveals "No Root Cause"
 

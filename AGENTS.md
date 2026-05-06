@@ -54,8 +54,6 @@ Add these when relevant:
   `docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md`
 - public release readiness:
   `docs/current/AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md`
-- fallback retirement:
-  `docs/current/AEGIS_FALLBACK_RETIREMENT_PREPARATION.md`
 - Claude Code-specific work:
   `CLAUDE.md` and `docs/README.claude-code.md`
 

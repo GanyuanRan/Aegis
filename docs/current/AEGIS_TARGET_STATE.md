@@ -15,8 +15,7 @@
 如果需要细节，回到对应 authoritative docs：
 
 - 产品定位：`docs/current/AEGIS_PRODUCT_BASELINE.md`
-- 总体设计：`docs/current/AEGIS_TRANSFORMATION_ARCHITECTURE.md`
-- 产品需求：`docs/current/AEGIS_PRODUCT_REQUIREMENTS.md`
+- 方法流程：`docs/current/AEGIS_PROCESS_BASELINE.md`
 - 边界约束：`docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md`
 
 ---

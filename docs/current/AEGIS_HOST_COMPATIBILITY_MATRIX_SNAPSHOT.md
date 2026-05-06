@@ -69,14 +69,12 @@
 
 读取当前宿主 verdict 时，按以下顺序：
 
-1. `docs/current/AEGIS_PHASE4_COMPLETION_RECORD.md`
-2. `docs/current/AEGIS_PHASE5_COMPLETION_RECORD.md`
-3. `docs/testing.md`
-4. `docs/README.claude-code.md`
-5. `docs/README.codex.md`
-6. `docs/README.opencode.md`
-7. `.windsurf/INSTALL.md`
-8. `.cursor/INSTALL.md`
+1. `docs/testing.md`
+2. `docs/README.claude-code.md`
+3. `docs/README.codex.md`
+4. `docs/README.opencode.md`
+5. `.windsurf/INSTALL.md`
+6. `.cursor/INSTALL.md`
 
 ---
 

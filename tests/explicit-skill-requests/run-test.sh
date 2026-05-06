@@ -59,8 +59,7 @@ if [ "$TEST_CLI" = "codex" ]; then
     mkdir -p "$PROJECT_DIR/docs/current" "$PROJECT_DIR/docs/adr" "$PROJECT_DIR/skills"
     cp "$PLUGIN_DIR/docs/current/README.md" "$PROJECT_DIR/docs/current/README.md"
     cp "$PLUGIN_DIR/docs/current/AEGIS_TARGET_STATE.md" "$PROJECT_DIR/docs/current/AEGIS_TARGET_STATE.md"
-    cp "$PLUGIN_DIR/docs/current/AEGIS_PHASE2_WAVE1_ATOMIC_PLAN.md" "$PROJECT_DIR/docs/current/AEGIS_PHASE2_WAVE1_ATOMIC_PLAN.md"
-    cp "$PLUGIN_DIR/docs/current/AEGIS_PHASE3_WAVE2_ATOMIC_PLAN.md" "$PROJECT_DIR/docs/current/AEGIS_PHASE3_WAVE2_ATOMIC_PLAN.md"
+    cp "$PLUGIN_DIR/docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md" "$PROJECT_DIR/docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md"
     cp "$PLUGIN_DIR/docs/adr/ADR-0001-aegis-method-pack-is-not-runtime-core.md" "$PROJECT_DIR/docs/adr/ADR-0001-aegis-method-pack-is-not-runtime-core.md"
     cp -R "$PLUGIN_DIR/skills/using-aegis" "$PROJECT_DIR/skills/using-aegis"
     if [ -d "$PLUGIN_DIR/skills/$SKILL_NAME" ]; then

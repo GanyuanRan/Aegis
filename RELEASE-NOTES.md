@@ -1,5 +1,48 @@
 # Aegis Release Notes
 
+## v1.0.11 (2026-05-06)
+
+### Systematic Debugging Depth Upgrade
+
+- **Open-ended diagnostic chain** — upgraded `systematic-debugging` from a fixed
+  four-layer check into a deeper L1-L7 diagnostic chain: symptom, logic, system,
+  architecture, cross-system contract, platform/framework constraint, and spec
+  gap. Architecture is no longer treated as the automatic endpoint; the chain
+  stops at the deepest evidence-backed root cause or a terminal boundary.
+- **Hard signal gate** — added H/T/D hard signals to debugging completion:
+  H-class signals force further drilling, T-class signals switch the work into
+  mitigation mode, and D-class signals define the minimum depth needed before a
+  fix can be presented as complete.
+- **Post-fix differential diagnosis** — added a required diagnosis step when a
+  fix only partially resolves a symptom, separating incomplete fixes, wrong-depth
+  patches, compound root causes, and chain-causal failures.
+- **Process baseline alignment** — updated the method-layer process baseline and
+  root-cause tracing reference so the debugging workflow, examples, and current
+  authority docs all describe the same diagnostic model.
+
+### Public Current Docs Trim
+
+- **Smaller public current surface** — reduced `docs/current` to the public
+  baseline docs needed by users, contributors, host installs, and release
+  verification.
+- **Local archive retired from git** — moved internal implementation records,
+  private smoke notes, cutover plans, and migration checklists into local
+  `docs/archive/`, then ignored that directory so those records stay out of the
+  public repository.
+- **Reference cleanup** — updated public docs, e2e fixtures, and explicit skill
+  request tests so they reference the retained current baseline instead of
+  archived process records.
+
+### Verification
+
+- `git diff --check`
+- `bash -n tests/explicit-skill-requests/run-test.sh`
+- `bash tests/e2e/artifact-schema-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/tdd-policy-check.sh`
+- `bash tests/e2e/run-all.sh --full --host-profile none`
+
 ## v1.0.10 (2026-05-06)
 
 ### Host Adapter Expansion

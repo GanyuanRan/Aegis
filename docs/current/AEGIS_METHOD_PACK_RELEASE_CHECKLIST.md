@@ -36,10 +36,10 @@
 
 1. `docs/current/README.md`
 2. `docs/current/AEGIS_TARGET_STATE.md`
-3. `docs/current/AEGIS_TRANSFORMATION_EXECUTION_PLAN.md`
-4. `docs/current/AEGIS_PRODUCTION_READINESS_GAPS.md`
-5. `docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md`
-6. `docs/current/AEGIS_KNOWN_LIMITATIONS.md`
+3. `docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md`
+4. `docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md`
+5. `docs/current/AEGIS_KNOWN_LIMITATIONS.md`
+6. `docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md`
 
 如果这些文档之间有冲突，以 `docs/current/README.md` 的 authority order 裁决。
 
@@ -113,7 +113,7 @@ bash tests/e2e/artifact-schema-check.sh
 3. testing docs
 4. compatibility snapshot
 5. known limitations
-6. rollback checklist
+6. release notes or tag notes
 
 ---
 

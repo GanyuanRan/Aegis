@@ -6,7 +6,7 @@
   ],
   "owners": [
     "docs/current/README.md",
-    "docs/current/AEGIS_TRANSFORMATION_EXECUTION_PLAN.md",
+    "docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md",
     "tests/e2e"
   ],
   "invariants": [

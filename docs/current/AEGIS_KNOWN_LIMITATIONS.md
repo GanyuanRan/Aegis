@@ -38,7 +38,8 @@
 - 当前优先目标是 method-pack strengthening 与开源准备，不是立即宣布日常生产 rollout
 
 **观察指标**
-- `AEGIS_PRODUCTION_READINESS_GAPS.md` 中的后置项是否仍明确
+- release checklist 与 host compatibility snapshot 是否仍明确区分 method-pack
+  readiness 与 production rollout readiness
 
 **退役时机**
 - 当用户明确要求进入 production rollout 准备时
@@ -100,13 +101,7 @@
 
 ## 3. Default Reading Rule
 
-如果某个 limitation 同时出现在：
-
-- completion record
-- production gaps
-- 本文档
-
-以本文件作为“当前阅读入口”，以 completion record 作为“证据来源”。
+如果某个 limitation 同时出现在 README、host docs 或测试说明中，以本文件作为当前阅读入口。
 
 ---
 
