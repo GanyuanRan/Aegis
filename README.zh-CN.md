@@ -382,11 +382,24 @@ Aegis 会在实施前先按复杂度路由：
 - 中复杂度任务：必须先有 baseline read set、plan 和 atomic tasks，再进入 TDD。
 - 高复杂度任务：必须先有 spec/design 和 plan；workflow 要求用户确认时不能跳过确认。
 
-当项目需要持久化 Aegis 记录时，Aegis 会懒创建轻量项目工作区。默认最小结构是
-`docs/aegis/README.md` 和 `docs/aegis/INDEX.md`；任务过程记录放在
-`docs/aegis/work/YYYY-MM-DD-<task-slug>/`。只有可复用产物才提升到
-`baseline/`、`adr/`、`specs/` 或 `plans/`。已有项目文档和 ADR 仍优先作为
-authority。
+当项目需要持久化 Aegis 记录时，Aegis 会懒创建轻量项目工作区。默认工作区包含
+`docs/aegis/` 下的 `README.md`、`INDEX.md`、`BASELINE-GOVERNANCE.md`，
+以及标准的 `adr/`、`baseline/`、`specs/`、`plans/`、`work/` 目录。任务过程记录放在
+`docs/aegis/work/YYYY-MM-DD-<task-slug>/`。已有项目文档和 ADR 仍优先作为
+authority；可复用的 Aegis 产物只在 workflow 需要时提升。
+
+给 host 或 workflow 作者使用时，本仓提供一个零依赖 helper 来操作目标项目工作区：
+
+```bash
+python scripts/aegis-workspace.py init --root /path/to/target-project
+python scripts/aegis-workspace.py check --root /path/to/target-project
+python scripts/aegis-workspace.py append-index --root /path/to/target-project --path docs/aegis/specs/example.md --kind spec --title "Example"
+python scripts/aegis-workspace.py validate-artifact --type TaskIntentDraft --file /path/to/target-project/docs/aegis/work/example/task-intent-draft.json
+```
+
+该 helper 只写入调用时显式传入的目标项目根目录。Aegis method-pack 仓库自身不预置
+live `docs/aegis/` 工作区。Artifact validation 只检查 JSON sidecar 结构，不判断
+evidence sufficiency，也不授予 completion authority。
 
 对 bug 修复、架构变更、contract 工作与治理清理，Aegis 要求：
 

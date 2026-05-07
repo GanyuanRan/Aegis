@@ -44,18 +44,55 @@ Maintain artifacts under `docs/aegis/work/YYYY-MM-DD-<slug>/`:
 
 | Artifact | File | When |
 |----------|------|------|
-| TaskIntentDraft | `10-intent.md` | Start protocol |
+| TaskIntentDraft | `10-intent.md` and optional `task-intent-draft.json` | Start protocol |
 | BaselineReadSetHint | `10-intent.md` (inline) | Start protocol |
 | ImpactStatementDraft | `10-intent.md` (inline) | Start protocol |
-| TodoCheckpointDraft | `20-checkpoint.md` | Each checkpoint |
+| TodoCheckpointDraft | `20-checkpoint.md` and optional `todo-checkpoint-draft.json` | Each checkpoint |
 | ResumeStateHint | `20-checkpoint.md` (inline) | Each pause/handoff |
-| DriftCheckDraft | `20-checkpoint.md` (inline) | Per-slice protocol |
-| EvidenceBundleDraft | `90-evidence.md` | Per-slice protocol |
+| DriftCheckDraft | `20-checkpoint.md` (inline) and optional `drift-check-draft.json` | Per-slice protocol |
+| EvidenceBundleDraft | `90-evidence.md` and optional `evidence-bundle-draft.json` | Per-slice protocol |
 | Reflection | `99-reflection.md` | Completion candidate |
 
 For medium+ complexity tasks only. Low-complexity tasks skip work/.
 
 These are draft / hint / projection inputs. They are not authoritative runtime records.
+
+## Workspace Helper Protocol
+
+When `scripts/aegis-workspace.py` is available in the active method-pack
+checkout, use it for the target project workspace:
+
+1. Initialize before writing work records:
+
+   ```bash
+   python scripts/aegis-workspace.py init --root <target-project-root>
+   ```
+
+2. After creating each work file, append it to `INDEX.md`:
+
+   ```bash
+   python scripts/aegis-workspace.py append-index --root <target-project-root> --path docs/aegis/work/YYYY-MM-DD-<slug>/10-intent.md --kind work --title "<title>"
+   python scripts/aegis-workspace.py append-index --root <target-project-root> --path docs/aegis/work/YYYY-MM-DD-<slug>/20-checkpoint.md --kind work --title "<title>"
+   python scripts/aegis-workspace.py append-index --root <target-project-root> --path docs/aegis/work/YYYY-MM-DD-<slug>/90-evidence.md --kind work --title "<title>"
+   python scripts/aegis-workspace.py append-index --root <target-project-root> --path docs/aegis/work/YYYY-MM-DD-<slug>/99-reflection.md --kind work --title "<title>"
+   ```
+
+3. If JSON sidecars are written, validate them structurally:
+
+   ```bash
+   python scripts/aegis-workspace.py validate-artifact --type TodoCheckpointDraft --file <target-project-root>/docs/aegis/work/YYYY-MM-DD-<slug>/todo-checkpoint-draft.json
+   python scripts/aegis-workspace.py validate-artifact --type DriftCheckDraft --file <target-project-root>/docs/aegis/work/YYYY-MM-DD-<slug>/drift-check-draft.json
+   ```
+
+4. Before pause, handoff, or completion candidate, check the workspace:
+
+   ```bash
+   python scripts/aegis-workspace.py check --root <target-project-root>
+   ```
+
+These helper checks validate workspace structure, index coverage, and JSON
+sidecar shape only. They do not determine evidence sufficiency, do not produce
+authoritative `GateDecision`, and do not grant completion authority.
 
 ## Start Protocol
 
@@ -72,6 +109,8 @@ Before long-task execution:
    - blocked-on items
    - next step
 5. If baseline refs are missing, pause in `needs-baseline-readback`.
+6. If the workspace helper is available, append new `docs/aegis/work/` files to
+   `INDEX.md` and run `check --root <target-project-root>` before continuing.
 
 ## Per-Slice Protocol
 
@@ -90,6 +129,9 @@ After each work slice, update:
 3. blockers
 4. next step
 5. drift check
+6. optional JSON sidecars such as `todo-checkpoint-draft.json` and
+   `drift-check-draft.json`, then run `validate-artifact` when the helper is
+   available
 
 If no fresh evidence exists, the state is `needs-verification` or `partial`.
 
@@ -139,7 +181,9 @@ Before saying work is complete:
 3. Confirm blockers are resolved or externalized.
 4. Confirm evidence refs cover the acceptance criteria.
 5. Confirm drift check has no blocking state.
-6. Assemble `GateInputPack` if useful.
+6. Run `python scripts/aegis-workspace.py check --root <target-project-root>`
+   if the helper is available and the task wrote `docs/aegis/` records.
+7. Assemble `GateInputPack` if useful.
 
 Method Pack output is verified evidence and advisory judgment only. It is not authoritative completion.
 

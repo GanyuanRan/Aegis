@@ -239,6 +239,14 @@ Extended by task type:
   * systematic-debugging Quality Gate (non-trivial task)
   When triggered and `docs/aegis/` is missing, create the minimum workspace immediately. Do not ask. Do not defer.
   If `docs/aegis/` already exists, use it — do not recreate.
+- When `scripts/aegis-workspace.py` is available in the active Aegis
+  method-pack checkout, prefer it for target-project workspace initialization
+  and validation:
+  `python scripts/aegis-workspace.py init --root <target-project-root>` and
+  `python scripts/aegis-workspace.py check --root <target-project-root>`.
+- The Aegis method-pack repository itself must not ship a precreated live
+  `docs/aegis/` workspace; that directory belongs to the concrete target
+  project where Aegis records are being written.
 
 ### 12.2 Directory Structure
 
@@ -276,6 +284,24 @@ TDD is the implementation discipline, not the first entry point for medium- or h
 ### 12.4 INDEX.md Maintenance
 
 Every time a new file is created under `docs/aegis/`, an entry MUST be appended to `INDEX.md`.
+
+When available, use the workspace helper:
+
+```bash
+python scripts/aegis-workspace.py append-index --root <target-project-root> --path docs/aegis/<subpath>.md --kind <kind> --title "<title>"
+```
+
+`verification-before-completion` should run `python scripts/aegis-workspace.py
+check --root <target-project-root>` when a task created or modified a
+`docs/aegis/` workspace. The helper also validates recognizable JSON sidecar
+artifacts under `docs/aegis/` against
+`docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md`; this is only a structure
+check, not a completion or evidence-sufficiency decision.
+
+For long-task continuation records under `docs/aegis/work/YYYY-MM-DD-<slug>/`,
+`long-task-continuation` should prefer the helper for initialization,
+`INDEX.md` append, optional JSON sidecar validation, and pause/handoff
+workspace checks.
 
 ---
 

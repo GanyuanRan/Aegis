@@ -26,6 +26,22 @@ for path in "${required_files[@]}"; do
     fi
 done
 
+skill_text="$(cat skills/long-task-continuation/SKILL.md)"
+
+for pattern in \
+    "aegis-workspace.py init" \
+    "aegis-workspace.py append-index" \
+    "aegis-workspace.py check" \
+    "validate-artifact" \
+    "todo-checkpoint-draft.json" \
+    "drift-check-draft.json"
+do
+    if [[ "$skill_text" != *"$pattern"* ]]; then
+        echo "long-task-continuation skill missing helper integration pattern: $pattern"
+        exit 1
+    fi
+done
+
 if command -v python3 >/dev/null 2>&1 && python3 -V >/dev/null 2>&1; then
     PYTHON_CMD=python3
 elif command -v py >/dev/null 2>&1 && py -3 -V >/dev/null 2>&1; then

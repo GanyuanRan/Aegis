@@ -1,5 +1,54 @@
 # Aegis Release Notes
 
+## v1.0.14 (2026-05-07)
+
+### Workspace Helper And Integrity Checks
+
+- **Target-project workspace helper** — added `scripts/aegis-workspace.py`
+  with `init`, `check`, `append-index`, and `validate-artifact` commands for
+  target-project `docs/aegis/` workspaces.
+- **Workspace completeness checks** — the helper now validates required
+  workspace files, `BASELINE-GOVERNANCE.md` headings, `INDEX.md` coverage for
+  markdown artifacts, and rejects unsafe/outside-path index entries.
+- **No repository-local live workspace** — the Aegis method-pack repository
+  still does not pre-create a root `docs/aegis/`; that workspace belongs to the
+  user's target project.
+
+### Runtime-Ready Artifact Validation
+
+- **JSON sidecar validation** — added structural validation for the current
+  runtime-ready artifact schemas:
+  `TaskIntentDraft`, `BaselineReadSetHint`, `ImpactStatementDraft`,
+  `EvidenceBundleDraft`, `GateInputPack`, `TodoCheckpointDraft`,
+  `ResumeStateHint`, and `DriftCheckDraft`.
+- **Advisory boundary retained** — artifact validation checks shape,
+  `schemaVersion`, and boundary-sensitive fields only. It does not determine
+  evidence sufficiency, produce authoritative `GateDecision`, or grant
+  `completion authority`.
+
+### Skill And Test Integration
+
+- **Long-task continuation helper path** — `long-task-continuation` now routes
+  `docs/aegis/work/<slug>/` records through the shared workspace helper and
+  documents optional checkpoint, resume, drift, and evidence sidecars.
+- **Workflow docs aligned** — brainstorming, writing-plans, TDD,
+  verification-before-completion, and using-aegis guidance now point to the
+  helper-backed workspace path where relevant.
+- **Release gates expanded** — added `tests/e2e/aegis-workspace-check.sh` and
+  wired it into the fast e2e layer.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.0.14`
+- `git diff --check`
+- `python -m py_compile scripts/aegis-workspace.py`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/aegis-workspace-check.sh`
+- `bash tests/e2e/long-task-continuation-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+
 ## v1.0.13 (2026-05-06)
 
 ### Method Baseline Convergence

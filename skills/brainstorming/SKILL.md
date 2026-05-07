@@ -70,7 +70,10 @@ You MUST create a task for each of these items and complete them in order:
 **Documentation:**
 
 1. **Aegis Project Workspace initialization (first creation only):**
-   If `docs/aegis/` does not exist:
+   If `docs/aegis/` does not exist and `scripts/aegis-workspace.py` is
+   available in the active method-pack checkout, initialize the target project:
+   `python scripts/aegis-workspace.py init --root <target-project-root>`.
+   If the helper is unavailable, create it manually:
    a. Create `docs/aegis/README.md` — describes workspace purpose and structure
    b. Create `docs/aegis/INDEX.md` — empty index, will be appended below
    c. Create `docs/aegis/BASELINE-GOVERNANCE.md` from the template in
@@ -85,7 +88,10 @@ You MUST create a task for each of these items and complete them in order:
    Spec always goes to `specs/` — never to `work/`.
 
 3. **Update INDEX.md:**
-   Append the new spec entry to `docs/aegis/INDEX.md`.
+   Prefer the helper: `python scripts/aegis-workspace.py append-index --root
+   <target-project-root> --path docs/aegis/specs/<filename>.md --kind spec
+   --title "<title>"`. If the helper is unavailable, append the new spec entry
+   to `docs/aegis/INDEX.md` manually.
 
 4. Commit the design document to git.
 

@@ -101,16 +101,17 @@ It only records limitations supported by current fresh evidence and does not spe
 ### 2.6 INDEX.md Append Dependency on Workflow Steps
 
 **Retained Item**
-- The completeness of `docs/aegis/INDEX.md` depends on each skill file's write step explicitly performing the append operation
+- The completeness of `docs/aegis/INDEX.md` still depends on workflows using the shared workspace helper or explicitly performing the append operation
 
 **Retention Reason**
-- The current three entry skills (brainstorming, writing-plans, systematic-debugging) already cover the INDEX.md append instruction, but if a future new skill writes to docs/aegis/ without including the append instruction, INDEX.md will have omissions
+- `scripts/aegis-workspace.py append-index` now provides an automated append path and `check` detects unindexed markdown, but a workflow that writes to `docs/aegis/` must still call the helper or manually append the entry
 
 **Observation Metric**
-- During code review of new skills, check whether INDEX.md append logic is included
+- `bash tests/e2e/aegis-workspace-check.sh`
+- During code review of new skills, check whether workspace helper usage or equivalent INDEX.md append logic is included
 
 **Retirement Trigger**
-- When all skills that write to docs/aegis/ have automated INDEX.md maintenance (e.g., via a shared workspace helper)
+- When all skills that write to docs/aegis/ invoke the shared workspace helper and verification-before-completion checks helper output for touched workspaces
 
 ---
 
@@ -133,16 +134,17 @@ It only records limitations supported by current fresh evidence and does not spe
 ### 2.8 BASELINE-GOVERNANCE.md Template Depends on Correct Agent Execution
 
 **Retained Item**
-- The content quality of BASELINE-GOVERNANCE.md depends on the agent correctly filling all fields per the template
+- The content quality of BASELINE-GOVERNANCE.md still depends on the agent or workflow choosing the correct target project and preserving project-specific review
 
 **Retention Reason**
-- The template provides structure and field definitions, but cannot force the agent to fill completely. There is currently no automated completeness check
+- `scripts/aegis-workspace.py init` now writes the standard baseline governance template and `check` verifies required headings and boundary phrases, but it cannot judge whether a target project's later edits are semantically sufficient
 
 **Observation Metric**
-- Field fill rate in actually created BASELINE-GOVERNANCE.md files
+- `bash tests/e2e/aegis-workspace-check.sh`
+- Field fill rate and semantic usefulness in actually created BASELINE-GOVERNANCE.md files
 
 **Retirement Trigger**
-- When a BASELINE-GOVERNANCE.md completeness check is added to verification-before-completion
+- When verification-before-completion consistently runs the helper check for touched workspaces and real target-project usage shows the generated template is semantically sufficient
 
 ---
 

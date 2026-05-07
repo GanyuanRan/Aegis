@@ -138,6 +138,8 @@ Hard binary rule:
   brainstorming checklist item 8, writing-plans save step, or
   systematic-debugging Quality Gate (non-trivial tasks).
   When triggered and `docs/aegis/` missing → create immediately, do not ask.
+  Prefer `python scripts/aegis-workspace.py init --root <target-project-root>`
+  when the helper is available in the active method-pack checkout.
   If `docs/aegis/` already exists → use it, do not recreate.
 
 Directory structure:

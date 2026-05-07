@@ -42,7 +42,13 @@ Before ANY success/completion claim, expression of satisfaction, commit, PR, tas
 4. **Confidence**: A (direct + regression, no unknowns) | B (direct, bounded risk) | C (partial only, not closed)
 5. **Authority**: verified evidence ≠ authoritative completion. Keep distinct.
 6. **Long-Task**: re-read checkpoint, confirm every todo has status, no drift check unresolved.
-7. **Governance Closure**: for governance/cleanup/migration/compatibility/retirement work → final response must include. Do not skip this structure just because the implementation was small. Localize section labels and prose to the user's language; keep internal concepts in English only when they are product terms or file/path identifiers.
+7. **Workspace Integrity**: if the task created or modified a target project's
+   `docs/aegis/` workspace and `scripts/aegis-workspace.py` is available, run
+   `python scripts/aegis-workspace.py check --root <target-project-root>` and
+   include the result in the evidence bundle. This check validates method-pack
+   workspace structure, index coverage, and recognizable JSON artifact sidecars
+   only; it does not judge evidence sufficiency or grant completion authority.
+8. **Governance Closure**: for governance/cleanup/migration/compatibility/retirement work → final response must include. Do not skip this structure just because the implementation was small. Localize section labels and prose to the user's language; keep internal concepts in English only when they are product terms or file/path identifiers.
 
    ```
    Repair Track: repaired object | action | impact | verification

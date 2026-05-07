@@ -406,11 +406,27 @@ Aegis routes work by complexity before implementation:
 - High-complexity tasks require a spec/design and plan first, with user review where the workflow calls for it.
 
 When a project needs persistent Aegis records, Aegis creates a lightweight
-project workspace lazily. The default minimum is `docs/aegis/README.md` and
-`docs/aegis/INDEX.md`; task process records live under
-`docs/aegis/work/YYYY-MM-DD-<task-slug>/`. Reusable outputs are promoted to
-`baseline/`, `adr/`, `specs/`, or `plans/` only when needed. Existing project
-docs and ADRs remain the preferred authority.
+project workspace lazily. The default workspace includes `README.md`,
+`INDEX.md`, `BASELINE-GOVERNANCE.md`, and standard `adr/`, `baseline/`,
+`specs/`, `plans/`, and `work/` directories under `docs/aegis/`. Task process
+records live under `docs/aegis/work/YYYY-MM-DD-<task-slug>/`. Existing project
+docs and ADRs remain the preferred authority; reusable Aegis outputs are
+promoted only when the workflow needs them.
+
+For host or workflow authors, this repository includes a zero-dependency helper
+for target-project workspace operations:
+
+```bash
+python scripts/aegis-workspace.py init --root /path/to/target-project
+python scripts/aegis-workspace.py check --root /path/to/target-project
+python scripts/aegis-workspace.py append-index --root /path/to/target-project --path docs/aegis/specs/example.md --kind spec --title "Example"
+python scripts/aegis-workspace.py validate-artifact --type TaskIntentDraft --file /path/to/target-project/docs/aegis/work/example/task-intent-draft.json
+```
+
+The helper writes only to the explicit target project root. The Aegis
+method-pack repository itself does not ship a precreated live `docs/aegis/`
+workspace. Artifact validation checks JSON sidecar structure only; it does not
+judge evidence sufficiency or grant completion authority.
 
 For bug fixes, architecture changes, contract work, and governance cleanup, Aegis requires:
 

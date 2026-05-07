@@ -21,6 +21,16 @@ The current schema version is uniformly:
 
 - `aegis.schema.v0`
 
+When `scripts/aegis-workspace.py` is available, it may validate JSON sidecar
+artifacts against this minimum field baseline:
+
+```bash
+python scripts/aegis-workspace.py validate-artifact --type TaskIntentDraft --file <artifact.json>
+```
+
+That validation is structural only. It does not determine evidence sufficiency,
+produce authoritative `GateDecision`, or grant completion authority.
+
 ---
 
 ## 3. Artifact Definitions

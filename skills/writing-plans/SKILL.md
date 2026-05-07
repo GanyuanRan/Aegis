@@ -31,11 +31,22 @@ This skill is the canonical planning workflow for multi-step implementation work
 Plan always goes to `plans/` — never to `work/`.
 (User preferences for plan location override this default.)
 
-If `docs/aegis/` does not exist, initialize the workspace first:
+If `docs/aegis/` does not exist and `scripts/aegis-workspace.py` is available
+in the active method-pack checkout, initialize the target project first:
+
+```bash
+python scripts/aegis-workspace.py init --root <target-project-root>
+```
+
+If the helper is unavailable, initialize the workspace manually:
   1. Create `docs/aegis/README.md` and `docs/aegis/INDEX.md`
   2. Create `docs/aegis/BASELINE-GOVERNANCE.md` from template
   3. If the project has code, create `docs/aegis/baseline/YYYY-MM-DD-initial-baseline.md`
-Then save the plan and append to `docs/aegis/INDEX.md`.
+Then save the plan and append to `docs/aegis/INDEX.md`. Prefer:
+
+```bash
+python scripts/aegis-workspace.py append-index --root <target-project-root> --path docs/aegis/plans/<filename>.md --kind plan --title "<title>"
+```
 
 ## Scope Check
 

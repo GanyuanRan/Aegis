@@ -47,24 +47,29 @@ planning. Only proceed directly with TDD for low-complexity work whose intent,
 owner, compatibility boundary, and verification path are already clear.
 
 When a medium- or high-complexity task needs project records, use the Aegis
-Project Workspace lazily:
+Project Workspace lazily. Prefer
+`python scripts/aegis-workspace.py init --root <target-project-root>` when the
+helper is available in the active method-pack checkout:
 
 ```text
 docs/aegis/
   README.md
   INDEX.md
+  BASELINE-GOVERNANCE.md
+  adr/
+  baseline/
+  specs/
+  plans/
   work/YYYY-MM-DD-<task-slug>/
-    00-intent.md
-    10-baseline-readset.md
-    30-plan.md
-    40-atomic-tasks.md
-    50-evidence.md
+    10-intent.md
+    20-checkpoint.md
+    90-evidence.md
+    99-reflection.md
 ```
 
-Do not create empty global folders such as `baseline/`, `adr/`, `specs/`, or
-`plans/` just in case. Promote reusable project facts, decisions, specs, or
-plans into those directories only when the workflow needs them and no existing
-project authority already owns them.
+Do not promote reusable project facts, decisions, specs, or plans into those
+directories unless the workflow needs them and no existing project authority
+already owns them.
 
 ## Red-Green-Refactor
 
