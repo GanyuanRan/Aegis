@@ -104,14 +104,15 @@ It only records limitations supported by current fresh evidence and does not spe
 - The completeness of `docs/aegis/INDEX.md` still depends on workflows using the shared workspace helper or explicitly performing the append operation
 
 **Retention Reason**
-- `scripts/aegis-workspace.py append-index` now provides an automated append path and `check` detects unindexed markdown, but a workflow that writes to `docs/aegis/` must still call the helper or manually append the entry
+- `scripts/aegis-workspace.py` now provides lifecycle commands (`new-work`, `add-checkpoint`, `add-evidence`, `add-drift-check`, `bundle`) and `append-index`, and `check` detects unindexed markdown. A workflow that writes to `docs/aegis/` must still call the helper or manually append the entry
 
 **Observation Metric**
 - `bash tests/e2e/aegis-workspace-check.sh`
+- `bash tests/e2e/workspace-helper-wiring-check.sh`
 - During code review of new skills, check whether workspace helper usage or equivalent INDEX.md append logic is included
 
 **Retirement Trigger**
-- When all skills that write to docs/aegis/ invoke the shared workspace helper and verification-before-completion checks helper output for touched workspaces
+- When all skills that write to docs/aegis/ invoke the shared workspace helper and verification-before-completion checks helper output for touched workspaces in real target-project usage
 
 ---
 

@@ -92,6 +92,9 @@ You MUST create a task for each of these items and complete them in order:
    <target-project-root> --path docs/aegis/specs/<filename>.md --kind spec
    --title "<title>"`. If the helper is unavailable, append the new spec entry
    to `docs/aegis/INDEX.md` manually.
+   After the append, run `python scripts/aegis-workspace.py check --root
+   <target-project-root>` when the helper is available. This validates
+   structure and index coverage only; it does not grant completion authority.
 
 4. Commit the design document to git.
 

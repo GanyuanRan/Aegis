@@ -49,7 +49,10 @@ owner, compatibility boundary, and verification path are already clear.
 When a medium- or high-complexity task needs project records, use the Aegis
 Project Workspace lazily. Prefer
 `python scripts/aegis-workspace.py init --root <target-project-root>` when the
-helper is available in the active method-pack checkout:
+helper is available in the active method-pack checkout. If the task needs a
+process trail under `work/`, prefer `python scripts/aegis-workspace.py new-work --root <target-project-root> ...`
+so the intent, checkpoint, drift, and evidence paths are indexed and
+structurally checkable:
 
 ```text
 docs/aegis/

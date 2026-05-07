@@ -140,6 +140,12 @@ Hard binary rule:
   When triggered and `docs/aegis/` missing → create immediately, do not ask.
   Prefer `python scripts/aegis-workspace.py init --root <target-project-root>`
   when the helper is available in the active method-pack checkout.
+  For medium+ process trails, prefer `python scripts/aegis-workspace.py
+  new-work --root <target-project-root> ...`; update slices with
+  `add-checkpoint`, `add-evidence`, and `add-drift-check`; assemble
+  review/handoff records with `bundle`; run `check` before pause, handoff, or
+  completion candidate. These helper outputs are method-pack records only, not
+  authoritative gates.
   If `docs/aegis/` already exists → use it, do not recreate.
 
 Directory structure:

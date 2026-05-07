@@ -240,10 +240,12 @@ Extended by task type:
   When triggered and `docs/aegis/` is missing, create the minimum workspace immediately. Do not ask. Do not defer.
   If `docs/aegis/` already exists, use it — do not recreate.
 - When `scripts/aegis-workspace.py` is available in the active Aegis
-  method-pack checkout, prefer it for target-project workspace initialization
-  and validation:
-  `python scripts/aegis-workspace.py init --root <target-project-root>` and
-  `python scripts/aegis-workspace.py check --root <target-project-root>`.
+  method-pack checkout, prefer it for target-project workspace initialization,
+  task lifecycle records, proof-bundle assembly, and validation:
+  `python scripts/aegis-workspace.py init --root <target-project-root>`,
+  `python scripts/aegis-workspace.py new-work --root <target-project-root> ...`,
+  `python scripts/aegis-workspace.py bundle --root <target-project-root> --work YYYY-MM-DD-<slug>`,
+  and `python scripts/aegis-workspace.py check --root <target-project-root>`.
 - The Aegis method-pack repository itself must not ship a precreated live
   `docs/aegis/` workspace; that directory belongs to the concrete target
   project where Aegis records are being written.
@@ -268,7 +270,9 @@ docs/aegis/
         ├── 10-intent.md
         ├── 20-checkpoint.md
         ├── 90-evidence.md
-        └── 99-reflection.md
+        ├── 99-reflection.md
+        ├── *-draft.json / *-hint.json / gate-input-pack.json
+        └── proof-bundle.md
 ```
 
 ### 12.3 Complexity Routing
@@ -299,9 +303,20 @@ artifacts under `docs/aegis/` against
 check, not a completion or evidence-sufficiency decision.
 
 For long-task continuation records under `docs/aegis/work/YYYY-MM-DD-<slug>/`,
-`long-task-continuation` should prefer the helper for initialization,
-`INDEX.md` append, optional JSON sidecar validation, and pause/handoff
-workspace checks.
+`long-task-continuation` should prefer helper-backed lifecycle commands:
+
+```bash
+python scripts/aegis-workspace.py new-work --root <target-project-root> ...
+python scripts/aegis-workspace.py add-checkpoint --root <target-project-root> --work YYYY-MM-DD-<slug> ...
+python scripts/aegis-workspace.py add-evidence --root <target-project-root> --work YYYY-MM-DD-<slug> ...
+python scripts/aegis-workspace.py add-drift-check --root <target-project-root> --work YYYY-MM-DD-<slug> ...
+python scripts/aegis-workspace.py bundle --root <target-project-root> --work YYYY-MM-DD-<slug>
+python scripts/aegis-workspace.py check --root <target-project-root>
+```
+
+The generated proof bundle is a structural review/handoff package. It is not a
+final evidence-sufficiency decision, not an authoritative `GateDecision`, and
+not completion authority.
 
 ---
 

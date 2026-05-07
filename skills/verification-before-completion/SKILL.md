@@ -44,10 +44,13 @@ Before ANY success/completion claim, expression of satisfaction, commit, PR, tas
 6. **Long-Task**: re-read checkpoint, confirm every todo has status, no drift check unresolved.
 7. **Workspace Integrity**: if the task created or modified a target project's
    `docs/aegis/` workspace and `scripts/aegis-workspace.py` is available, run
+   `python scripts/aegis-workspace.py bundle --root <target-project-root> --work YYYY-MM-DD-<slug>`
+   when a `work/` record exists, then run
    `python scripts/aegis-workspace.py check --root <target-project-root>` and
-   include the result in the evidence bundle. This check validates method-pack
-   workspace structure, index coverage, and recognizable JSON artifact sidecars
-   only; it does not judge evidence sufficiency or grant completion authority.
+   include the result in the evidence bundle. The generated proof bundle and
+   workspace check validate method-pack structure, index coverage, and
+   recognizable JSON artifact sidecars only; they do not judge evidence
+   sufficiency and do not grant completion authority.
 8. **Governance Closure**: for governance/cleanup/migration/compatibility/retirement work → final response must include. Do not skip this structure just because the implementation was small. Localize section labels and prose to the user's language; keep internal concepts in English only when they are product terms or file/path identifiers.
 
    ```

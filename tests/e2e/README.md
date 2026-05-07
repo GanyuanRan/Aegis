@@ -24,6 +24,7 @@ Bootstrap entrypoints:
 - `boundary-compliance-check.sh`
 - `artifact-schema-check.sh`
 - `aegis-workspace-check.sh`
+- `workspace-helper-wiring-check.sh`
 - `long-task-continuation-check.sh`
 - `analyze-transcript.sh`
 
@@ -51,5 +52,10 @@ Workspace helper coverage:
   target project root passed by the caller.
 - The helper validates recognizable JSON sidecar artifacts structurally, but it
   does not judge evidence sufficiency or grant completion authority.
+- The helper can create helper-backed task lifecycle records and assemble a
+  structural proof bundle for review or handoff. The bundle is still advisory
+  method-pack evidence, not a final gate.
+- `workspace-helper-wiring-check.sh` verifies that skills which write
+  `docs/aegis/` records route through the shared helper or run helper checks.
 - `long-task-continuation-check.sh` verifies that long-task `work/<slug>/`
   records are routed through the workspace helper discipline.

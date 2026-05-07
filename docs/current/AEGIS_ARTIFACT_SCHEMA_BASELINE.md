@@ -28,6 +28,17 @@ artifacts against this minimum field baseline:
 python scripts/aegis-workspace.py validate-artifact --type TaskIntentDraft --file <artifact.json>
 ```
 
+It may also create and assemble helper-backed task lifecycle artifacts under a
+target project's `docs/aegis/work/YYYY-MM-DD-<slug>/` directory:
+
+```bash
+python scripts/aegis-workspace.py new-work --root <target-project-root> ...
+python scripts/aegis-workspace.py add-checkpoint --root <target-project-root> --work YYYY-MM-DD-<slug> ...
+python scripts/aegis-workspace.py add-evidence --root <target-project-root> --work YYYY-MM-DD-<slug> ...
+python scripts/aegis-workspace.py add-drift-check --root <target-project-root> --work YYYY-MM-DD-<slug> ...
+python scripts/aegis-workspace.py bundle --root <target-project-root> --work YYYY-MM-DD-<slug>
+```
+
 That validation is structural only. It does not determine evidence sufficiency,
 produce authoritative `GateDecision`, or grant completion authority.
 

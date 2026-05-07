@@ -164,6 +164,20 @@ Especially under time pressure, when "just one quick fix" seems obvious, after m
 
 Before you claim debugging is complete:
 
+0. **Workspace record for non-trivial debugging** — if this is medium+ complexity
+   or it writes `docs/aegis/` records, initialize/check through the helper when
+   available:
+
+   ```bash
+   python scripts/aegis-workspace.py init --root <target-project-root>
+   python scripts/aegis-workspace.py new-work --root <target-project-root> ...
+   python scripts/aegis-workspace.py add-evidence --root <target-project-root> --work <YYYY-MM-DD-slug> ...
+   python scripts/aegis-workspace.py check --root <target-project-root>
+   ```
+
+   These records are method-pack evidence trails only. They do not grant
+   authoritative completion.
+
 1. **Stop-when review** — re-read the diagnostic layer where you stopped. Did you reach "no deeper why remains" or a T-class terminal boundary? If the chain ended at L1-L2 and the evidence is conclusive, that is a valid endpoint. If there are still unexplained "why" questions, continue drilling before claiming done.
 2. **Hard signal check** — apply these countable facts, not judgments:
 

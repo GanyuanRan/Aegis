@@ -158,6 +158,117 @@ rm "$BROKEN_ARTIFACT" "$BAD_SCHEMA" "$BAD_DECISION"
 "${PYTHON_CMD[@]}" "$HELPER" check --root "$TARGET_ROOT" >/dev/null
 pass "check ignores unrecognized project-local JSON files"
 
+WORK_DIR="$TARGET_ROOT/docs/aegis/work/2026-05-07-helper-lifecycle"
+"${PYTHON_CMD[@]}" "$HELPER" new-work \
+    --root "$TARGET_ROOT" \
+    --date 2026-05-07 \
+    --slug helper-lifecycle \
+    --title "Helper lifecycle" \
+    --requested-outcome "Exercise helper-backed task lifecycle records." \
+    --scope "temporary target project" \
+    --change-kind test \
+    --risk-hint advisory-only >/dev/null
+
+if "${PYTHON_CMD[@]}" "$HELPER" new-work \
+    --root "$TARGET_ROOT" \
+    --date 2026-05-07 \
+    --slug helper-lifecycle \
+    --title "Helper lifecycle duplicate" \
+    --requested-outcome "Duplicate work record should not overwrite." \
+    --scope "temporary target project" \
+    --change-kind test >/tmp/aegis-workspace-duplicate.out 2>&1; then
+    fail "new-work must reject an existing work lifecycle directory"
+fi
+if ! grep -q "work lifecycle already exists" /tmp/aegis-workspace-duplicate.out; then
+    fail "duplicate new-work error should explain the existing lifecycle directory"
+fi
+
+if "${PYTHON_CMD[@]}" "$HELPER" new-work \
+    --root "$TARGET_ROOT" \
+    --date 2026-05-07 \
+    --slug "nested/path" \
+    --title "Nested work" \
+    --requested-outcome "Nested work record should be rejected." \
+    --scope "temporary target project" \
+    --change-kind test >/tmp/aegis-workspace-nested.out 2>&1; then
+    fail "new-work must reject nested work slugs"
+fi
+if ! grep -q "work slug must be a single directory name" /tmp/aegis-workspace-nested.out; then
+    fail "nested new-work error should explain the single-directory slug rule"
+fi
+
+for path in \
+    "$WORK_DIR/10-intent.md" \
+    "$WORK_DIR/20-checkpoint.md" \
+    "$WORK_DIR/90-evidence.md" \
+    "$WORK_DIR/99-reflection.md" \
+    "$WORK_DIR/task-intent-draft.json" \
+    "$WORK_DIR/baseline-read-set-hint.json" \
+    "$WORK_DIR/impact-statement-draft.json" \
+    "$WORK_DIR/todo-checkpoint-draft.json" \
+    "$WORK_DIR/drift-check-draft.json"
+do
+    if [[ ! -f "$path" ]]; then
+        fail "new-work must create lifecycle file: $path"
+    fi
+done
+pass "new-work creates helper-backed lifecycle records"
+
+"${PYTHON_CMD[@]}" "$HELPER" add-checkpoint \
+    --root "$TARGET_ROOT" \
+    --work 2026-05-07-helper-lifecycle \
+    --current-todo "Implement helper lifecycle commands" \
+    --completed-todo "Created work record" \
+    --active-slice "P0 lifecycle" \
+    --evidence-ref "docs/aegis/work/2026-05-07-helper-lifecycle/10-intent.md" \
+    --blocked-on "none" \
+    --next-step "Assemble proof bundle" \
+    --resume-instruction "Read checkpoint and proof bundle before continuing" >/dev/null
+
+"${PYTHON_CMD[@]}" "$HELPER" add-evidence \
+    --root "$TARGET_ROOT" \
+    --work 2026-05-07-helper-lifecycle \
+    --artifact-key workspace-check \
+    --type test \
+    --source "bash tests/e2e/aegis-workspace-check.sh" \
+    --summary "Lifecycle commands were exercised in a temporary target project." \
+    --verifier "aegis-workspace-check" >/dev/null
+
+"${PYTHON_CMD[@]}" "$HELPER" add-drift-check \
+    --root "$TARGET_ROOT" \
+    --work 2026-05-07-helper-lifecycle \
+    --decision needs-verification \
+    --scope-status aligned \
+    --compat-status unchanged \
+    --retirement-status none \
+    --baseline-ref docs/current/AEGIS_PROCESS_BASELINE.md \
+    --new-risk-signal "proof bundle still needs assembly" >/dev/null
+
+"${PYTHON_CMD[@]}" "$HELPER" bundle \
+    --root "$TARGET_ROOT" \
+    --work 2026-05-07-helper-lifecycle >/dev/null
+
+for path in \
+    "$WORK_DIR/evidence-bundle-draft-workspace-check.json" \
+    "$WORK_DIR/resume-state-hint.json" \
+    "$WORK_DIR/gate-input-pack.json" \
+    "$WORK_DIR/proof-bundle.md"
+do
+    if [[ ! -f "$path" ]]; then
+        fail "lifecycle commands must create proof-bundle file: $path"
+    fi
+done
+
+if ! grep -q "Method Pack Boundary" "$WORK_DIR/proof-bundle.md"; then
+    fail "proof bundle must state the Method Pack boundary"
+fi
+
+"${PYTHON_CMD[@]}" "$HELPER" validate-artifact \
+    --type GateInputPack \
+    --file "$WORK_DIR/gate-input-pack.json" >/dev/null
+"${PYTHON_CMD[@]}" "$HELPER" check --root "$TARGET_ROOT" >/dev/null
+pass "lifecycle commands assemble a structural proof bundle"
+
 COUNT="$(grep -c 'docs/aegis/specs/2026-05-07-helper-design.md' "$TARGET_ROOT/docs/aegis/INDEX.md")"
 if [[ "$COUNT" != "1" ]]; then
     fail "append-index must not duplicate an existing path"

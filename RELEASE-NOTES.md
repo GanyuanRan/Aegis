@@ -1,5 +1,53 @@
 # Aegis Release Notes
 
+## v1.0.15 (2026-05-07)
+
+### Helper-Backed Task Lifecycle
+
+- **Workspace helper v2** — extended `scripts/aegis-workspace.py` with
+  `new-work`, `add-checkpoint`, `add-evidence`, `add-drift-check`, and
+  `bundle` commands for target-project `docs/aegis/work/YYYY-MM-DD-<slug>/`
+  records.
+- **Structural proof bundle** — the helper can assemble `gate-input-pack.json`
+  and `proof-bundle.md` as review / handoff packages for future runtime input.
+  They remain advisory Method Pack records, not authoritative gate decisions.
+- **Safer lifecycle creation** — `new-work` rejects duplicate work directories
+  and nested work slugs so existing target-project records are not silently
+  overwritten.
+
+### Skill Wiring And Integrity Gates
+
+- **High-value writer paths routed through the helper** — `using-aegis`,
+  `brainstorming`, `writing-plans`, `test-driven-development`,
+  `systematic-debugging`, `long-task-continuation`, and
+  `verification-before-completion` now point to helper-backed workspace
+  creation, lifecycle updates, bundle assembly, or workspace checks where
+  relevant.
+- **Current docs updated** — process, artifact schema, and known-limitations
+  docs now describe helper-backed lifecycle records and retain the
+  method-pack/runtime-core authority boundary.
+- **Wiring regression added** — `workspace-helper-wiring-check.sh` verifies that
+  skills writing `docs/aegis/` records keep routing through the shared helper or
+  run helper checks.
+
+### README Link Cleanup
+
+- Updated the Linux.do badge link in both English and Chinese README files to
+  point at the project topic page.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.0.15`
+- `git diff --check`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/aegis-workspace-check.sh`
+- `bash tests/e2e/workspace-helper-wiring-check.sh`
+- `bash tests/e2e/long-task-continuation-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/artifact-schema-check.sh`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+
 ## v1.0.14 (2026-05-07)
 
 ### Workspace Helper And Integrity Checks

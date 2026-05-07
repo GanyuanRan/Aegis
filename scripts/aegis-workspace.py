@@ -199,8 +199,7 @@ def write_if_missing(path: Path, content: str) -> bool:
     return True
 
 
-def command_init(args: argparse.Namespace) -> int:
-    root = resolve_root(args.root)
+def initialize_workspace(root: Path) -> list[str]:
     ws = workspace(root)
     ws.mkdir(parents=True, exist_ok=True)
 
@@ -214,6 +213,12 @@ def command_init(args: argparse.Namespace) -> int:
         created.append("INDEX.md")
     if write_if_missing(ws / "BASELINE-GOVERNANCE.md", BASELINE_GOVERNANCE_TEXT):
         created.append("BASELINE-GOVERNANCE.md")
+    return created
+
+
+def command_init(args: argparse.Namespace) -> int:
+    root = resolve_root(args.root)
+    created = initialize_workspace(root)
 
     if created:
         print(f"Initialized {WORKSPACE_REL.as_posix()} in {root}")
@@ -261,8 +266,13 @@ def escape_cell(value: str) -> str:
     return value.replace("|", "\\|").strip()
 
 
-def command_append_index(args: argparse.Namespace) -> int:
-    root = resolve_root(args.root)
+def append_index_entry(
+    root: Path,
+    input_path: str,
+    kind: str,
+    title: str,
+    entry_date: str | None = None,
+) -> bool:
     ws = workspace(root)
     if not ws.exists():
         raise WorkspaceError(f"workspace does not exist: {ws}")
@@ -270,22 +280,30 @@ def command_append_index(args: argparse.Namespace) -> int:
     if not index_path.exists():
         raise WorkspaceError(f"INDEX.md does not exist: {index_path}")
 
-    rel_path, file_path = normalize_workspace_path(root, args.path)
+    rel_path, file_path = normalize_workspace_path(root, input_path)
     if not file_path.is_file():
         raise WorkspaceError(f"path is not a file: {file_path}")
 
     indexed_paths = read_index_paths(index_path)
     if rel_path in indexed_paths:
-        print(f"Index already contains {rel_path}")
-        return 0
+        return False
 
-    entry_date = args.date or date.today().isoformat()
     entry = (
-        f"| {escape_cell(entry_date)} | {escape_cell(args.kind)} | "
-        f"{escape_cell(rel_path)} | {escape_cell(args.title)} |\n"
+        f"| {escape_cell(entry_date or date.today().isoformat())} | "
+        f"{escape_cell(kind)} | {escape_cell(rel_path)} | {escape_cell(title)} |\n"
     )
     with index_path.open("a", encoding="utf-8", newline="\n") as handle:
         handle.write(entry)
+    return True
+
+
+def command_append_index(args: argparse.Namespace) -> int:
+    root = resolve_root(args.root)
+    rel_path, file_path = normalize_workspace_path(root, args.path)
+    if not append_index_entry(root, str(file_path), args.kind, args.title, args.date):
+        print(f"Index already contains {rel_path}")
+        return 0
+
     print(f"Indexed {rel_path}")
     return 0
 
@@ -356,6 +374,359 @@ def command_validate_artifact(args: argparse.Namespace) -> int:
         return 1
 
     print(f"{artifact_type} structure check passed: {path}")
+    return 0
+
+
+def write_json(path: Path, data: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(data, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+
+def read_json_dict(path: Path) -> dict:
+    data = load_json_file(path)
+    if not isinstance(data, dict):
+        raise WorkspaceError(f"{path}: expected JSON object")
+    return data
+
+
+def list_arg(values: list[str] | None) -> list[str]:
+    return list(values or [])
+
+
+def optional_none(value: str | None) -> str | None:
+    if value in (None, "", "none", "None"):
+        return None
+    return value
+
+
+def work_dir(root: Path, work: str) -> Path:
+    work_name = Path(work).name
+    if work != work_name or work_name in ("", ".", ".."):
+        raise WorkspaceError(f"work slug must be a single directory name: {work}")
+    ws = workspace(root).resolve()
+    candidate = ws / "work" / work
+    candidate = candidate.resolve()
+    try:
+        candidate.relative_to(ws / "work")
+    except ValueError as exc:
+        raise WorkspaceError(f"work slug must stay inside docs/aegis/work: {work}") from exc
+    return candidate
+
+
+def work_rel(work_path: Path) -> str:
+    return (WORKSPACE_REL / "work" / work_path.name).as_posix()
+
+
+def ensure_work_exists(root: Path, work: str) -> Path:
+    path = work_dir(root, work)
+    if not path.is_dir():
+        raise WorkspaceError(f"work directory does not exist: {path}")
+    return path
+
+
+def append_work_file(root: Path, path: Path, kind: str, title: str, entry_date: str | None = None) -> None:
+    append_index_entry(root, str(path), kind, title, entry_date)
+
+
+def markdown_list(items: list[str]) -> str:
+    if not items:
+        return "- none\n"
+    return "".join(f"- {item}\n" for item in items)
+
+
+def command_new_work(args: argparse.Namespace) -> int:
+    root = resolve_root(args.root)
+    initialize_workspace(root)
+
+    work_name = f"{args.date}-{args.slug}"
+    target = work_dir(root, work_name)
+    if target.exists():
+        raise WorkspaceError(f"work lifecycle already exists: {target}")
+    target.mkdir(parents=True, exist_ok=True)
+
+    task_id = args.task_id or work_name
+    risk_hints = list_arg(args.risk_hint)
+    change_kinds = list_arg(args.change_kind)
+    candidate_docs = list_arg(args.baseline_ref)
+    affected_layers = list_arg(args.affected_layer)
+    owners = list_arg(args.owner)
+    invariants = list_arg(args.invariant)
+    compat_boundary = args.compat_boundary or "Compatibility boundary not yet refined."
+    non_goals = list_arg(args.non_goal)
+
+    task_intent = {
+        "schemaVersion": SCHEMA_VERSION,
+        "requestedOutcome": args.requested_outcome,
+        "scope": args.scope,
+        "changeKinds": change_kinds,
+        "riskHints": risk_hints,
+    }
+    baseline_hint = {
+        "schemaVersion": SCHEMA_VERSION,
+        "candidateDocs": candidate_docs,
+        "whyRelevant": args.why_relevant or "Baseline read-set requires agent review.",
+        "missingAuthority": list_arg(args.missing_authority),
+    }
+    impact = {
+        "schemaVersion": SCHEMA_VERSION,
+        "affectedLayers": affected_layers,
+        "owners": owners,
+        "invariants": invariants,
+        "compatBoundary": compat_boundary,
+        "nonGoals": non_goals,
+    }
+    checkpoint = {
+        "schemaVersion": SCHEMA_VERSION,
+        "taskId": task_id,
+        "currentTodo": args.current_todo or "Define first execution slice.",
+        "completedTodos": [],
+        "activeSlice": args.active_slice or "initial",
+        "evidenceRefs": [],
+        "blockedOn": optional_none(args.blocked_on),
+        "nextStep": args.next_step or "Read baseline refs and start the next safe slice.",
+        "updatedAt": args.date,
+    }
+    drift = {
+        "schemaVersion": SCHEMA_VERSION,
+        "taskId": task_id,
+        "taskIntentRef": f"{work_rel(target)}/task-intent-draft.json",
+        "baselineRefs": candidate_docs,
+        "scopeStatus": "not-yet-verified",
+        "compatStatus": "not-yet-verified",
+        "retirementStatus": "not-yet-verified",
+        "newRiskSignals": risk_hints,
+        "decision": "needs-baseline-readback" if candidate_docs else "needs-verification",
+    }
+
+    write_json(target / "task-intent-draft.json", task_intent)
+    write_json(target / "baseline-read-set-hint.json", baseline_hint)
+    write_json(target / "impact-statement-draft.json", impact)
+    write_json(target / "todo-checkpoint-draft.json", checkpoint)
+    write_json(target / "drift-check-draft.json", drift)
+
+    (target / "10-intent.md").write_text(
+        f"# {args.title} - Intent\n\n"
+        "## TaskIntentDraft\n\n"
+        f"- Requested outcome: {args.requested_outcome}\n"
+        f"- Scope: {args.scope}\n"
+        f"- Change kinds:\n{markdown_list(change_kinds)}"
+        f"- Risk hints:\n{markdown_list(risk_hints)}"
+        "\n## BaselineReadSetHint\n\n"
+        f"{markdown_list(candidate_docs)}"
+        "\n## ImpactStatementDraft\n\n"
+        f"- Compatibility boundary: {compat_boundary}\n"
+        f"- Affected layers:\n{markdown_list(affected_layers)}"
+        f"- Owners:\n{markdown_list(owners)}"
+        f"- Invariants:\n{markdown_list(invariants)}"
+        f"- Non-goals:\n{markdown_list(non_goals)}"
+        "\nThese records are Method Pack drafts / hints, not authoritative runtime decisions.\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    (target / "20-checkpoint.md").write_text(
+        f"# {args.title} - Checkpoint\n\n"
+        f"- Task ID: {task_id}\n"
+        f"- Current todo: {checkpoint['currentTodo']}\n"
+        f"- Active slice: {checkpoint['activeSlice']}\n"
+        f"- Blocked on: {checkpoint['blockedOn'] or 'none'}\n"
+        f"- Next step: {checkpoint['nextStep']}\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    (target / "90-evidence.md").write_text(
+        f"# {args.title} - Evidence\n\n"
+        "No evidence has been recorded yet.\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    (target / "99-reflection.md").write_text(
+        f"# {args.title} - Reflection\n\n"
+        "Completion reflection has not been recorded yet.\n\n"
+        "Method Pack output does not grant completion authority.\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    for filename, kind, title in (
+        ("10-intent.md", "work", f"{args.title} intent"),
+        ("20-checkpoint.md", "work", f"{args.title} checkpoint"),
+        ("90-evidence.md", "work", f"{args.title} evidence"),
+        ("99-reflection.md", "work", f"{args.title} reflection"),
+        ("task-intent-draft.json", "artifact", f"{args.title} task intent draft"),
+        ("baseline-read-set-hint.json", "artifact", f"{args.title} baseline read-set hint"),
+        ("impact-statement-draft.json", "artifact", f"{args.title} impact statement draft"),
+        ("todo-checkpoint-draft.json", "artifact", f"{args.title} todo checkpoint draft"),
+        ("drift-check-draft.json", "artifact", f"{args.title} drift check draft"),
+    ):
+        append_work_file(root, target / filename, kind, title, args.date)
+
+    print(f"Created work lifecycle: {target}")
+    return 0
+
+
+def command_add_checkpoint(args: argparse.Namespace) -> int:
+    root = resolve_root(args.root)
+    target = ensure_work_exists(root, args.work)
+    checkpoint_path = target / "todo-checkpoint-draft.json"
+    checkpoint = read_json_dict(checkpoint_path)
+    task_id = str(checkpoint.get("taskId", args.work))
+    evidence_refs = list_arg(args.evidence_ref)
+    completed = list_arg(args.completed_todo)
+
+    checkpoint.update(
+        {
+            "schemaVersion": SCHEMA_VERSION,
+            "taskId": task_id,
+            "currentTodo": args.current_todo,
+            "completedTodos": completed,
+            "activeSlice": args.active_slice,
+            "evidenceRefs": evidence_refs,
+            "blockedOn": optional_none(args.blocked_on),
+            "nextStep": args.next_step,
+            "updatedAt": args.date or date.today().isoformat(),
+        }
+    )
+    write_json(checkpoint_path, checkpoint)
+
+    resume = {
+        "schemaVersion": SCHEMA_VERSION,
+        "taskId": task_id,
+        "lastCheckpointRef": f"{work_rel(target)}/todo-checkpoint-draft.json",
+        "resumeInstruction": args.resume_instruction,
+        "knownPartialWork": completed,
+        "mustReadBeforeContinuing": [
+            f"{work_rel(target)}/10-intent.md",
+            f"{work_rel(target)}/20-checkpoint.md",
+            f"{work_rel(target)}/todo-checkpoint-draft.json",
+        ],
+        "unsafeToAssume": list_arg(args.unsafe_to_assume),
+    }
+    write_json(target / "resume-state-hint.json", resume)
+
+    with (target / "20-checkpoint.md").open("a", encoding="utf-8", newline="\n") as handle:
+        handle.write(
+            "\n## Checkpoint Update\n\n"
+            f"- Current todo: {args.current_todo}\n"
+            f"- Active slice: {args.active_slice}\n"
+            f"- Completed todos:\n{markdown_list(completed)}"
+            f"- Evidence refs:\n{markdown_list(evidence_refs)}"
+            f"- Blocked on: {optional_none(args.blocked_on) or 'none'}\n"
+            f"- Next step: {args.next_step}\n"
+        )
+
+    append_work_file(root, target / "resume-state-hint.json", "artifact", f"{args.work} resume state hint")
+    print(f"Updated checkpoint: {checkpoint_path}")
+    return 0
+
+
+def command_add_evidence(args: argparse.Namespace) -> int:
+    root = resolve_root(args.root)
+    target = ensure_work_exists(root, args.work)
+    safe_key = "".join(ch if ch.isalnum() or ch in ("-", "_") else "-" for ch in args.artifact_key).strip("-")
+    if not safe_key:
+        raise WorkspaceError("artifact-key must contain at least one safe character")
+    path = target / f"evidence-bundle-draft-{safe_key}.json"
+    evidence = {
+        "schemaVersion": SCHEMA_VERSION,
+        "artifactKey": args.artifact_key,
+        "type": args.type,
+        "source": args.source,
+        "summary": args.summary,
+        "verifier": args.verifier,
+    }
+    write_json(path, evidence)
+    with (target / "90-evidence.md").open("a", encoding="utf-8", newline="\n") as handle:
+        handle.write(
+            "\n## EvidenceBundleDraft\n\n"
+            f"- Artifact key: {args.artifact_key}\n"
+            f"- Type: {args.type}\n"
+            f"- Source: {args.source}\n"
+            f"- Summary: {args.summary}\n"
+            f"- Verifier: {args.verifier}\n"
+        )
+    append_work_file(root, path, "artifact", f"{args.work} evidence {args.artifact_key}")
+    print(f"Added evidence bundle: {path}")
+    return 0
+
+
+def command_add_drift_check(args: argparse.Namespace) -> int:
+    root = resolve_root(args.root)
+    target = ensure_work_exists(root, args.work)
+    checkpoint = read_json_dict(target / "todo-checkpoint-draft.json")
+    drift = {
+        "schemaVersion": SCHEMA_VERSION,
+        "taskId": str(checkpoint.get("taskId", args.work)),
+        "taskIntentRef": f"{work_rel(target)}/task-intent-draft.json",
+        "baselineRefs": list_arg(args.baseline_ref),
+        "scopeStatus": args.scope_status,
+        "compatStatus": args.compat_status,
+        "retirementStatus": args.retirement_status,
+        "newRiskSignals": list_arg(args.new_risk_signal),
+        "decision": args.decision,
+    }
+    failures = validate_artifact_data("DriftCheckDraft", drift, target / "drift-check-draft.json")
+    if failures:
+        raise WorkspaceError("; ".join(failures))
+    write_json(target / "drift-check-draft.json", drift)
+    with (target / "20-checkpoint.md").open("a", encoding="utf-8", newline="\n") as handle:
+        handle.write(
+            "\n## DriftCheckDraft\n\n"
+            f"- Scope status: {args.scope_status}\n"
+            f"- Compatibility status: {args.compat_status}\n"
+            f"- Retirement status: {args.retirement_status}\n"
+            f"- New risk signals:\n{markdown_list(list_arg(args.new_risk_signal))}"
+            f"- Advisory decision: {args.decision}\n"
+        )
+    print(f"Updated drift check: {target / 'drift-check-draft.json'}")
+    return 0
+
+
+def command_bundle(args: argparse.Namespace) -> int:
+    root = resolve_root(args.root)
+    target = ensure_work_exists(root, args.work)
+    task_intent = read_json_dict(target / "task-intent-draft.json")
+    impact = read_json_dict(target / "impact-statement-draft.json")
+    drift = read_json_dict(target / "drift-check-draft.json")
+    evidence_paths = sorted(target.glob("evidence-bundle-draft*.json"))
+    evidence_refs = [f"{work_rel(target)}/{path.name}" for path in evidence_paths]
+    gate_input = {
+        "schemaVersion": SCHEMA_VERSION,
+        "baselineRefs": drift.get("baselineRefs", []),
+        "impactStatement": f"{work_rel(target)}/impact-statement-draft.json",
+        "compatPlan": impact.get("compatBoundary", ""),
+        "retirementPlan": drift.get("retirementStatus", ""),
+        "evidenceBundle": evidence_refs,
+    }
+    write_json(target / "gate-input-pack.json", gate_input)
+    append_work_file(root, target / "gate-input-pack.json", "artifact", f"{args.work} gate input pack")
+
+    proof = (
+        f"# Proof Bundle - {args.work}\n\n"
+        "## Method Pack Boundary\n\n"
+        "This proof bundle is an advisory Aegis Method Pack record. It does not "
+        "determine evidence sufficiency, produce authoritative `GateDecision`, "
+        "or grant `completion authority`.\n\n"
+        "## Task Intent\n\n"
+        f"- Requested outcome: {task_intent.get('requestedOutcome', '')}\n"
+        f"- Scope: {task_intent.get('scope', '')}\n"
+        "\n## Impact\n\n"
+        f"- Compatibility boundary: {impact.get('compatBoundary', '')}\n"
+        f"- Non-goals:\n{markdown_list(list(impact.get('nonGoals', [])))}"
+        "\n## Evidence Bundle Refs\n\n"
+        f"{markdown_list(evidence_refs)}"
+        "\n## Drift Check\n\n"
+        f"- Scope status: {drift.get('scopeStatus', '')}\n"
+        f"- Compatibility status: {drift.get('compatStatus', '')}\n"
+        f"- Retirement status: {drift.get('retirementStatus', '')}\n"
+        f"- Advisory decision: {drift.get('decision', '')}\n"
+    )
+    (target / "proof-bundle.md").write_text(proof, encoding="utf-8", newline="\n")
+    append_work_file(root, target / "proof-bundle.md", "work", f"{args.work} proof bundle")
+    print(f"Assembled proof bundle: {target / 'proof-bundle.md'}")
     return 0
 
 
@@ -455,6 +826,84 @@ def build_parser() -> argparse.ArgumentParser:
     )
     validate_parser.add_argument("--file", required=True, help="artifact JSON file")
     validate_parser.set_defaults(func=command_validate_artifact)
+
+    new_work_parser = subparsers.add_parser(
+        "new-work", help="create helper-backed work lifecycle records"
+    )
+    new_work_parser.add_argument("--root", required=True, help="target project root")
+    new_work_parser.add_argument("--date", default=date.today().isoformat(), help="work date")
+    new_work_parser.add_argument("--slug", required=True, help="work slug without date prefix")
+    new_work_parser.add_argument("--title", required=True, help="human-readable work title")
+    new_work_parser.add_argument("--task-id", help="stable task id; defaults to date-slug")
+    new_work_parser.add_argument("--requested-outcome", required=True, help="requested outcome")
+    new_work_parser.add_argument("--scope", required=True, help="task scope")
+    new_work_parser.add_argument("--change-kind", action="append", default=[], help="change kind")
+    new_work_parser.add_argument("--risk-hint", action="append", default=[], help="risk hint")
+    new_work_parser.add_argument("--baseline-ref", action="append", default=[], help="baseline ref")
+    new_work_parser.add_argument("--why-relevant", help="why baseline refs are relevant")
+    new_work_parser.add_argument("--missing-authority", action="append", default=[], help="authority gap")
+    new_work_parser.add_argument("--affected-layer", action="append", default=[], help="affected layer")
+    new_work_parser.add_argument("--owner", action="append", default=[], help="owner")
+    new_work_parser.add_argument("--invariant", action="append", default=[], help="invariant")
+    new_work_parser.add_argument("--compat-boundary", help="compatibility boundary")
+    new_work_parser.add_argument("--non-goal", action="append", default=[], help="non-goal")
+    new_work_parser.add_argument("--current-todo", help="initial current todo")
+    new_work_parser.add_argument("--active-slice", help="initial active slice")
+    new_work_parser.add_argument("--blocked-on", help="initial blocker")
+    new_work_parser.add_argument("--next-step", help="initial next step")
+    new_work_parser.set_defaults(func=command_new_work)
+
+    checkpoint_parser = subparsers.add_parser(
+        "add-checkpoint", help="update checkpoint and resume hint for a work record"
+    )
+    checkpoint_parser.add_argument("--root", required=True, help="target project root")
+    checkpoint_parser.add_argument("--work", required=True, help="work directory name under docs/aegis/work")
+    checkpoint_parser.add_argument("--date", help="checkpoint date")
+    checkpoint_parser.add_argument("--current-todo", required=True, help="current todo")
+    checkpoint_parser.add_argument("--completed-todo", action="append", default=[], help="completed todo")
+    checkpoint_parser.add_argument("--active-slice", required=True, help="active slice")
+    checkpoint_parser.add_argument("--evidence-ref", action="append", default=[], help="evidence ref")
+    checkpoint_parser.add_argument("--blocked-on", help="blocker")
+    checkpoint_parser.add_argument("--next-step", required=True, help="next step")
+    checkpoint_parser.add_argument(
+        "--resume-instruction", required=True, help="resume instruction"
+    )
+    checkpoint_parser.add_argument(
+        "--unsafe-to-assume", action="append", default=[], help="unsafe assumption"
+    )
+    checkpoint_parser.set_defaults(func=command_add_checkpoint)
+
+    evidence_parser = subparsers.add_parser(
+        "add-evidence", help="add an EvidenceBundleDraft sidecar"
+    )
+    evidence_parser.add_argument("--root", required=True, help="target project root")
+    evidence_parser.add_argument("--work", required=True, help="work directory name under docs/aegis/work")
+    evidence_parser.add_argument("--artifact-key", required=True, help="evidence key")
+    evidence_parser.add_argument("--type", required=True, help="evidence type")
+    evidence_parser.add_argument("--source", required=True, help="evidence source")
+    evidence_parser.add_argument("--summary", required=True, help="evidence summary")
+    evidence_parser.add_argument("--verifier", required=True, help="evidence verifier")
+    evidence_parser.set_defaults(func=command_add_evidence)
+
+    drift_parser = subparsers.add_parser(
+        "add-drift-check", help="update a DriftCheckDraft sidecar"
+    )
+    drift_parser.add_argument("--root", required=True, help="target project root")
+    drift_parser.add_argument("--work", required=True, help="work directory name under docs/aegis/work")
+    drift_parser.add_argument("--decision", required=True, choices=sorted(DRIFT_DECISIONS))
+    drift_parser.add_argument("--scope-status", required=True, help="scope status")
+    drift_parser.add_argument("--compat-status", required=True, help="compatibility status")
+    drift_parser.add_argument("--retirement-status", required=True, help="retirement status")
+    drift_parser.add_argument("--baseline-ref", action="append", default=[], help="baseline ref")
+    drift_parser.add_argument("--new-risk-signal", action="append", default=[], help="new risk signal")
+    drift_parser.set_defaults(func=command_add_drift_check)
+
+    bundle_parser = subparsers.add_parser(
+        "bundle", help="assemble a structural proof bundle for a work record"
+    )
+    bundle_parser.add_argument("--root", required=True, help="target project root")
+    bundle_parser.add_argument("--work", required=True, help="work directory name under docs/aegis/work")
+    bundle_parser.set_defaults(func=command_bundle)
 
     return parser
 

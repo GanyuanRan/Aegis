@@ -46,6 +46,7 @@ Then save the plan and append to `docs/aegis/INDEX.md`. Prefer:
 
 ```bash
 python scripts/aegis-workspace.py append-index --root <target-project-root> --path docs/aegis/plans/<filename>.md --kind plan --title "<title>"
+python scripts/aegis-workspace.py check --root <target-project-root>
 ```
 
 ## Scope Check
