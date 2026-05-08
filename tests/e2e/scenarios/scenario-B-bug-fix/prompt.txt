@@ -1,1 +1,5 @@
-Diagnose and plan a bug fix. Show the likely root cause, preserve evidence, and make both the fix track and the retirement track explicit before claiming the issue is understood.
+Please fix this quickly: a shared cache helper now returns stale values for one
+consumer after an export/readback change. Diagnose and plan the bug fix. Show
+the likely root cause, preserve evidence, run Ripple Signal Triage before code
+changes, and make both the fix track and the retirement track explicit before
+claiming the issue is understood.

@@ -1,5 +1,62 @@
 # Aegis Release Notes
 
+## v1.0.17 (2026-05-08)
+
+### 用户入口体验优化
+
+- **安装 / 更新提示词可直接复制** — `README.md` 与 `README.zh-CN.md`
+  中的安装和更新提示词已改为代码块，用户可以直接复制给 AI 编程 agent，
+  让它识别当前宿主、选择正确路径、完成安装或更新，并验证 Aegis skills
+  是否可发现。
+- **轻量全局规则模板** — 新增可复制的 Lite Global Rules / 轻量全局规则
+  入口，并放在“更新 Aegis”之后，帮助用户更稳定地触发 Aegis skill，
+  同时避免把完整 workflow 塞进全局规则。
+- **高级模板保留为进阶选项** — 完整全局规则模板仍然保留，适合治理要求
+  更强的团队或大型项目按需合并。
+
+### 涟漪信号分诊
+
+- **前置影响面分诊** — 新增 `Ripple Signal Triage`，作为代码修改前的
+  依赖影响面分诊入口。共享模块、跨模块行为、契约、缓存、持久化、
+  导出 / 回读、fallback、adapter、重复 owner、producer / consumer 边界等
+  信号命中时，agent 需要先分诊再进入代码更改。
+- **现有机制统一收口** — `ImpactStatementDraft` 承接涟漪分诊结果，
+  双轨治理承接旧 owner、fallback、adapter、legacy path 与退役边界，
+  `systematic-debugging` 在候选修复命中信号时先分诊再修复，
+  `test-driven-development` 扩大验证范围到 producer + consumer 或真实用户路径，
+  `writing-plans` 记录 owner、下游、契约、事实源和验证范围变化。
+- **后置复核保持轻量** — 7 维架构检查中的 `Cascade proliferation` 保留为
+  实施后的复核项，形成“实施前分诊、实施中承接、实施后复核”的闭环。
+
+### 测试护栏
+
+- **快速修 bug 场景覆盖** — Scenario B bug-fix 现在模拟“用户要求快速修
+  共享缓存 / export-readback 相关 bug”的压力场景，验证 agent 仍然会先触发
+  `Ripple Signal Triage`，而不是直接进入代码修改。
+- **assistant 侧行为断言** — `analyze-transcript.sh` 新增
+  `assistantMustContain`，确保关键行为必须出现在 assistant 输出中，避免只因
+  用户 prompt 自带关键词而误判通过。
+- **策略检查同步** — `tdd-policy-check.sh` 增加涟漪分诊相关护栏，确认流程
+  基线、系统化调试、TDD 和 Scenario B 都承接这条纪律。
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.0.17`
+- `git diff --check`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/governance-completion-contract-check.sh`
+- `bash tests/e2e/tdd-policy-check.sh`
+- `bash tests/e2e/layer2-behavior-check.sh`
+- `bash tests/e2e/layer3-scenario-check.sh`
+- `bash tests/e2e/run-all.sh --full --host-profile none`
+
+### Boundary
+
+This release still ships `Aegis Method Pack (runtime-ready)`. It does not add
+authoritative `GateDecision`, `PolicySnapshot`, or `completion authority`.
+
 ## v1.0.15 (2026-05-07)
 
 ### Helper-Backed Task Lifecycle

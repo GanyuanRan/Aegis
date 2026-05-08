@@ -11,9 +11,10 @@ description: Use when encountering any bug, test failure, or unexpected behavior
      L5 cross-system contract → L6 platform constraint → L7 spec gap.
      Stop when no deeper "why" remains OR terminal unactionable (T1-T4).
   2. Identify owner: compare with working code → locate canonical owner → flag duplicate owners as a finding
-  3. Prove: one hypothesis → minimal test → iterate. 3+ failed fixes = question architecture, do not attempt #4.
+  3. Before fixing, run Ripple Signal Triage if the candidate fix touches shared/core/cross-module behavior, contract, source-of-truth, fallback, adapter, duplicate owner, producer+consumer, or consumer-side patching.
+  4. Prove: one hypothesis → minimal test → iterate. 3+ failed fixes = question architecture, do not attempt another code fix.
      After fix, if any symptom persists → differential diagnosis (Phase 4 Step 4bis).
-  4. Fix: failing test → minimal code at canonical owner → verify → Reflection + architecture review → repair + retirement track
+  5. Fix: failing test → minimal code at canonical owner → verify → Reflection + architecture review → repair + retirement track
 → Done when: confidence ≥ B, both tracks explicit, DeeperCause answered "no" with evidence, no H-class hard signal still active.
 
 # Systematic Debugging
@@ -105,6 +106,9 @@ Especially under time pressure, when "just one quick fix" seems obvious, after m
    - Address the root cause identified. ONE change at a time.
    - No "while I'm here" improvements. No bundled refactoring.
    - Prefer changing the canonical owner instead of stacking more logic into a fallback path.
+   - If Ripple Signal Triage fired, carry its owner, downstream, contract,
+     source-of-truth, fallback, retirement, and verification findings into the
+     fix boundary before editing code.
 
 3. **Verify Fix**
    - Test passes now? No other tests broken? Issue actually resolved?

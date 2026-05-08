@@ -6,7 +6,7 @@ description: Use when you have a spec or requirements for a multi-step task, bef
 # Execute
 
 → Have approved spec/requirements? → **Write implementation plan. Assume engineer has zero context.**
-  1. Scope check: fact/assumption/unknown, baseline, compatibility boundary, dual-track needs
+  1. Scope check: fact/assumption/unknown, baseline, Ripple Signal Triage, compatibility boundary, dual-track needs
   2. File map: what files created/modified, clear boundaries, follow existing patterns
   3. Bite-sized tasks (2-5 min each): exact file paths, complete code, exact commands, expected output
   4. Self-review: spec coverage, placeholders, type consistency, compatibility, verification, dual-track
@@ -72,6 +72,7 @@ Before you leave this workflow, the written plan must make these items answerabl
 5. **What verification proves each major slice**
 6. **What risks, rollback surface, or unknowns remain**
 7. **What old owner / fallback / patch stays, shrinks, or retires when applicable**
+8. **Whether Ripple Signal Triage expands owner, downstream, contract, source-of-truth, or verification scope**
 
 ## Bite-Sized Task Granularity
 
@@ -90,7 +91,7 @@ Every plan MUST start with: Goal, Architecture, Tech Stack, Baseline/Authority R
 
 Each task: Files (create/modify/test paths), Why (user/business value), Impact/Compatibility, Verification (exact commands), then 5 checkbox steps: Write test → Verify RED → Minimal code → Verify GREEN → Commit. Every step must include complete code and exact commands.
 
-For bug fixes, refactors, contract changes, or governance cleanup, add Repair Track (root cause, canonical owner, minimal change, compat boundary, verification) and Retirement Track (old owner/fallback, active status, keep reason or deletion trigger) inside the relevant task.
+For bug fixes, refactors, contract changes, or governance cleanup, add Repair Track (root cause, canonical owner, minimal change, compat boundary, verification) and Retirement Track (old owner/fallback, active status, keep reason or deletion trigger) inside the relevant task. If Ripple Signal Triage fired, include the affected downstream consumers and expanded verification path in the same task.
 
 ## No Placeholders
 

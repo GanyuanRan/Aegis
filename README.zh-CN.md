@@ -16,13 +16,41 @@
 
 如果你正在使用 AI 编程 agent，可以直接把下面这段话复制给它：
 
-> 请仔细阅读 https://github.com/GanyuanRan/Aegis 这个仓库的安装说明，识别我当前使用的 AI 编程宿主，为我完成全局安装；如果需要重启或重新加载宿主，请明确告诉我；安装后请验证 Aegis skills 是否已经可以被发现和使用。
+```text
+请仔细阅读 https://github.com/GanyuanRan/Aegis 这个仓库的安装说明，识别我当前使用的 AI 编程宿主，为我完成全局安装；如果需要重启或重新加载宿主，请明确告诉我；安装后请验证 Aegis skills 是否已经可以被发现和使用。
+```
 
 ## 更新 Aegis
 
 如果你已经安装过 Aegis，可以直接把下面这段话复制给你的 AI 编程 agent：
 
-> 请将我已安装的 Aegis 更新到 https://github.com/GanyuanRan/Aegis 的最新 main 分支版本；请根据我当前使用的 AI 编程宿主选择正确的更新路径；如果需要重启或重新加载宿主，请明确告诉我；更新后请验证 Aegis skills 是否已经可以被发现和使用。
+```text
+请将我已安装的 Aegis 更新到 https://github.com/GanyuanRan/Aegis 的最新 main 分支版本；请根据我当前使用的 AI 编程宿主选择正确的更新路径；如果需要重启或重新加载宿主，请明确告诉我；更新后请验证 Aegis skills 是否已经可以被发现和使用。
+```
+
+## 可选：轻量全局规则
+
+为了让宿主级行为更顺滑，可把下面整个代码块复制到 AI 编程工具的全局用户规则中。
+它只负责提升 Aegis 路由和 skill 触发稳定性，不复制完整 workflow：
+
+```markdown
+# Aegis 轻量全局规则
+
+如果已安装 Aegis：
+
+- 每轮开始先判断当前任务是否匹配已安装的 Aegis skill；匹配时加载并遵循对应 skill。
+- 简单、局部、低风险任务走快速路径，不因为安装了 Aegis 就强行展开完整治理流程。
+- 复杂、诊断、架构、重构、接口、跨模块、共享模块、兼容性或长期任务，默认使用对应的 Aegis workflow。
+- 实施前先确认目标、范围、影响面和验证方式；必要时读取项目 baseline 或 authority docs。
+- 声明完成前必须有新的验证证据；无法验证时说明阻塞点和残余风险。
+- Aegis 是方法层，不是最终裁决系统；不得声明最终 gate decision 或 completion authority。
+- 用户当前明确指令和目标项目规则优先于 Aegis。
+```
+
+对于治理要求更强的团队或大型项目，也可以从完整高级模板开始，只合并需要的部分：
+
+- [中文高级模板](GLOBAL_USER_RULES_TEMPLATE.zh-CN.md)
+- [英文高级模板](GLOBAL_USER_RULES_TEMPLATE.md)
 
 ## 激活模式
 
@@ -158,11 +186,6 @@ Aegis 通过各宿主原生的 skill discovery 或 plugin 路径安装。
 安装并重启宿主后，Aegis skills 会被自动发现。日常使用时，用户可以自然描述开发任务；
 当任务匹配某个 skill 时，agent 应自动选择对应的 Aegis 方法。显式 skill 命令仍然保留，
 用于强制指定、测试或排查某个 workflow。
-
-可选：为了让宿主级行为更顺滑，可把以下全局用户规则模板复制到 AI 编程工具的全局用户规则中：
-
-- [中文模板](GLOBAL_USER_RULES_TEMPLATE.zh-CN.md)
-- [英文模板](GLOBAL_USER_RULES_TEMPLATE.md)
 
 ### Codex
 

@@ -8,6 +8,14 @@
     "fix track",
     "retirement track"
   ],
+  "assistantMustContain": [
+    "Ripple Signal Triage",
+    "shared cache",
+    "export/readback",
+    "before code changes",
+    "producer",
+    "consumer"
+  ],
   "mustNotContain": [
     "completion granted",
     "final governance decision"

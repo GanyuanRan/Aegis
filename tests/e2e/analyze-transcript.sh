@@ -97,6 +97,7 @@ def load_jsonl(path_str):
 
 def normalize_texts(entries):
     text_chunks = []
+    assistant_chunks = []
     detected_skills = []
 
     for entry in entries:
@@ -109,9 +110,15 @@ def normalize_texts(entries):
         for chunk in flatten_strings(entry):
             text_chunks.append(chunk)
 
+        if entry.get("type") == "assistant":
+            for chunk in flatten_strings(entry):
+                assistant_chunks.append(chunk)
+
     combined = "\n".join(text_chunks)
     combined_lower = combined.lower()
-    return combined, combined_lower, detected_skills
+    assistant_combined = "\n".join(assistant_chunks)
+    assistant_lower = assistant_combined.lower()
+    return combined, combined_lower, assistant_lower, detected_skills
 
 
 def check_skill_sequence(expected_sequence, detected_skills):
@@ -136,10 +143,11 @@ summary_json_path = Path(sys.argv[4]) if sys.argv[4] else None
 quiet = sys.argv[5] == "1"
 
 entries = load_jsonl(str(transcript_path))
-combined_text, combined_lower, detected_skills = normalize_texts(entries)
+combined_text, combined_lower, assistant_lower, detected_skills = normalize_texts(entries)
 
 expected_sequence = expected_behavior.get("skillSequence", [])
 must_contain = expected_behavior.get("mustContain", [])
+assistant_must_contain = expected_behavior.get("assistantMustContain", [])
 must_not_contain = expected_behavior.get("mustNotContain", [])
 required_artifacts = expected_artifacts.get("requiredArtifacts", [])
 
@@ -147,6 +155,12 @@ skill_sequence_pass, matched_sequence = check_skill_sequence(expected_sequence, 
 
 present_terms = [term for term in must_contain if term.lower() in combined_lower]
 missing_terms = [term for term in must_contain if term.lower() not in combined_lower]
+assistant_present_terms = [
+    term for term in assistant_must_contain if term.lower() in assistant_lower
+]
+assistant_missing_terms = [
+    term for term in assistant_must_contain if term.lower() not in assistant_lower
+]
 forbidden_terms = [term for term in must_not_contain if term.lower() in combined_lower]
 
 artifact_hits = [artifact for artifact in required_artifacts if artifact.lower() in combined_lower]
@@ -161,6 +175,9 @@ summary = {
     "mustContainPresent": present_terms,
     "mustContainMissing": missing_terms,
     "mustContainPass": not missing_terms,
+    "assistantMustContainPresent": assistant_present_terms,
+    "assistantMustContainMissing": assistant_missing_terms,
+    "assistantMustContainPass": not assistant_missing_terms,
     "mustNotContainHits": forbidden_terms,
     "mustNotContainPass": not forbidden_terms,
     "requiredArtifactsPresent": artifact_hits,
@@ -170,6 +187,7 @@ summary = {
 summary["overallPass"] = (
     summary["skillSequencePass"]
     and summary["mustContainPass"]
+    and summary["assistantMustContainPass"]
     and summary["mustNotContainPass"]
     and summary["artifactPass"]
 )
@@ -185,6 +203,8 @@ if not quiet:
     print(f"Matched sequence: {', '.join(matched_sequence) if matched_sequence else '(none)'}")
     print(f"Must contain present: {', '.join(present_terms) if present_terms else '(none)'}")
     print(f"Must contain missing: {', '.join(missing_terms) if missing_terms else '(none)'}")
+    print(f"Assistant must contain present: {', '.join(assistant_present_terms) if assistant_present_terms else '(none)'}")
+    print(f"Assistant must contain missing: {', '.join(assistant_missing_terms) if assistant_missing_terms else '(none)'}")
     print(f"Must not contain hits: {', '.join(forbidden_terms) if forbidden_terms else '(none)'}")
     print(f"Artifacts present: {', '.join(artifact_hits) if artifact_hits else '(none)'}")
     print(f"Artifacts missing: {', '.join(artifact_misses) if artifact_misses else '(none)'}")

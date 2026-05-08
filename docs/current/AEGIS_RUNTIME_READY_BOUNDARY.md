@@ -79,6 +79,7 @@ Minimum fields:
 Purpose:
 
 - Make high-risk tasks explicitly expose impact surface and compatibility boundaries before execution
+- Carry Ripple Signal Triage results when a pre-change signal indicates downstream, owner, source-of-truth, contract, fallback, or verification-scope risk
 
 ### 3.4 `EvidenceBundleDraft`
 

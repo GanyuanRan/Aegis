@@ -37,6 +37,8 @@ brainstorming_skill="skills/brainstorming/SKILL.md"
 writing_plans_skill="skills/writing-plans/SKILL.md"
 discipline_ref="skills/using-aegis/references/skill-discipline.md"
 process_baseline="docs/current/AEGIS_PROCESS_BASELINE.md"
+systematic_debugging_skill="skills/systematic-debugging/SKILL.md"
+scenario_b_behavior="tests/e2e/scenarios/scenario-B-bug-fix/expected-behavior.json"
 
 assert_contains "$using_aegis" "contract|cross-module|shared module|core logic" \
     "using-aegis routes contract and cross-module changes into TDD"
@@ -73,6 +75,14 @@ assert_contains "$tdd_skill" "hotfix|emergency|urgent" \
     "TDD defines emergency hotfix regression follow-up"
 assert_contains "$tdd_skill" "manual verification|manual steps" \
     "TDD defines manual verification when automation is blocked"
+assert_contains "$process_baseline" "Ripple Signal Triage" \
+    "process baseline defines Ripple Signal Triage"
+assert_contains "$systematic_debugging_skill" "Before fixing, run Ripple Signal Triage" \
+    "systematic debugging triggers Ripple Signal Triage before risky fixes"
+assert_contains "$tdd_skill" "Ripple Signal Triage fired|Ripple signal hit" \
+    "TDD broadens verification when Ripple Signal Triage fires"
+assert_contains "$scenario_b_behavior" "assistantMustContain" \
+    "scenario B verifies assistant-side ripple triage under quick bug-fix pressure"
 
 assert_contains "$verification_skill" "target test|related regression" \
     "verification asks for target test and related regression evidence"

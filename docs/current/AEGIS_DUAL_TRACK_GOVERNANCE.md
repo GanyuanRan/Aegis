@@ -6,6 +6,9 @@ Status: `Approved`
 
 This document defines the currently effective "Repair Track + Retirement Track" dual-track governance rules for `Aegis`.
 
+Ripple Signal Triage uses this document whenever the signal involves an old
+owner, duplicate owner, fallback, adapter, legacy path, or retirement boundary.
+
 ---
 
 ## 2. Applicability Scope

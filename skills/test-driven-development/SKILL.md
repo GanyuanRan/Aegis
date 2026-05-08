@@ -9,6 +9,7 @@ description: Use when implementing any feature or bugfix, before writing impleme
   Gate: medium/high complexity? → route to brainstorming or writing-plans first.
   Cycle: RED (write test → watch it fail) → GREEN (minimal code → watch it pass) → REFACTOR (clean up → keep green)
   Regression: shared module → related tests. contract change → producer + consumer. core logic → old + new tests.
+  Ripple signal hit → cover producer+consumer or real user path before claiming green.
 → Done when: all tests pass, every new function has a test that failed first, TDD preflight gate passed.
 
 # Test-Driven Development (TDD)
@@ -221,6 +222,8 @@ based on impact:
 - Interface or data contract change -> producer and consumer tests
 - Cross-module behavior change -> integration or end-to-end path
 - Core logic refactor -> old behavior regression tests plus new behavior tests
+- Ripple Signal Triage fired -> producer+consumer or real user path that proves
+  the downstream effect remains bounded
 
 If the current environment cannot run automated tests, state the blocker and provide reproducible manual verification steps.
 
@@ -293,6 +296,7 @@ Extract validation for multiple fields if needed.
 - [ ] Every new function/method has a test that failed first
 - [ ] All tests pass, output pristine
 - [ ] Regression: shared/contract/core changes ran related tests
+- [ ] Ripple signal hit: downstream or real user path covered
 - [ ] If automation blocked → blocker + manual steps documented
 
 Can't check all boxes? Start over.

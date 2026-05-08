@@ -18,13 +18,51 @@
 
 If you are using an AI coding agent, you can ask it to install Aegis for you:
 
-> Please read the installation instructions in https://github.com/GanyuanRan/Aegis carefully, identify the correct path for my AI coding host, install Aegis globally, restart or reload the host if needed, and verify that the Aegis skills are discoverable.
+```text
+Please read the installation instructions in https://github.com/GanyuanRan/Aegis carefully, identify the correct path for my AI coding host, install Aegis globally, restart or reload the host if needed, and verify that the Aegis skills are discoverable.
+```
 
 ## Updating Aegis
 
 If Aegis is already installed, you can ask your AI coding agent to update it for you:
 
-> Please update my installed Aegis to the latest main branch version from https://github.com/GanyuanRan/Aegis, using the correct update path for my current AI coding host, then restart or reload the host if needed and verify Aegis skills are discoverable.
+```text
+Please update my installed Aegis to the latest main branch version from https://github.com/GanyuanRan/Aegis, using the correct update path for my current AI coding host, then restart or reload the host if needed and verify Aegis skills are discoverable.
+```
+
+## Optional Lite Global Rules
+
+For smoother host-level behavior, copy the whole block below into your AI
+coding tool's global user rules. It improves Aegis routing and skill triggering
+without duplicating the full workflows:
+
+```markdown
+# Aegis Lite Global Rules
+
+If Aegis is installed:
+
+- At the start of each turn, check whether the task matches an installed Aegis
+  skill. If it matches, load and follow that skill.
+- Simple, local, low-risk tasks may use a fast path. Do not expand the full
+  governance workflow just because Aegis exists.
+- Complex, diagnostic, architecture, refactor, contract, cross-module, shared
+  module, compatibility, or long-running tasks should use the relevant Aegis
+  workflow by default.
+- Before implementation, identify the goal, scope, impact surface, and
+  verification method. Read project baseline or authority docs when relevant.
+- Before claiming completion, provide fresh verification evidence. If
+  verification is blocked, state the blocker and residual risk.
+- Aegis is a method layer, not a final authority system. Do not claim final
+  gate decisions or completion authority.
+- The user's current instruction and the target project's rules take priority
+  over Aegis guidance.
+```
+
+For stricter teams or governance-heavy projects, you can instead start from the
+full advanced templates and merge only the parts you need:
+
+- [Advanced English template](GLOBAL_USER_RULES_TEMPLATE.md)
+- [Advanced Chinese template](GLOBAL_USER_RULES_TEMPLATE.zh-CN.md)
 
 ## Activation Mode
 
@@ -164,12 +202,6 @@ After installation and host restart, Aegis skills are discovered automatically.
 For normal use, users can ask for development work naturally; the agent should
 select the relevant Aegis method when the task matches a skill. Explicit skill
 commands are still available when you want to force, test, or debug a workflow.
-
-Optional: for smoother host-level behavior, copy one of the global user rules
-templates into your AI coding tool's global user rules:
-
-- [English template](GLOBAL_USER_RULES_TEMPLATE.md)
-- [Chinese template](GLOBAL_USER_RULES_TEMPLATE.zh-CN.md)
 
 ### Codex
 
