@@ -42,12 +42,14 @@ scenario_b_behavior="tests/e2e/scenarios/scenario-B-bug-fix/expected-behavior.js
 
 assert_contains "$using_aegis" "contract|cross-module|shared module|core logic" \
     "using-aegis routes contract and cross-module changes into TDD"
-assert_contains "$using_aegis" "classify task complexity" \
+assert_contains "$using_aegis" "Classify before implementation" \
     "using-aegis classifies task complexity before implementation"
-assert_contains "$using_aegis" "medium/high-complexity work needs planning" \
+assert_contains "$using_aegis" "Medium/high: baseline read-set \\+ plan" \
     "using-aegis prevents medium/high-complexity work from entering TDD first"
-assert_contains "$using_aegis" "Aegis Project Workspace.*hard binary rule" \
-    "using-aegis defines hard binary workspace creation rule"
+assert_contains "$using_aegis" "Spec Brief or Design Spec only" \
+    "using-aegis keeps spec/design conditional by complexity"
+assert_contains "$using_aegis" "Workspace support is lazy" \
+    "using-aegis defines lazy workspace creation rule"
 assert_contains "$discipline_ref" "Low complexity|Medium complexity|High complexity" \
     "discipline reference details task complexity levels"
 assert_contains "$discipline_ref" "TDD is the implementation discipline.*atomic tasks" \
@@ -91,6 +93,8 @@ assert_contains "$verification_skill" "manual verification|manual steps" \
 
 assert_contains "$brainstorming_skill" "Aegis Project Workspace" \
     "brainstorming writes specs through the Aegis workspace boundary"
+assert_contains "$brainstorming_skill" "Do not force this workflow onto low-complexity work" \
+    "brainstorming no longer makes every small change a design ceremony"
 assert_contains "$writing_plans_skill" "Aegis Project Workspace" \
     "writing-plans defines the Aegis workspace structure"
 assert_contains "$writing_plans_skill" "INDEX.md" \

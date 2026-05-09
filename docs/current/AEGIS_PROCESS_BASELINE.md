@@ -262,91 +262,126 @@ Extended by task type:
 
 ---
 
-## 12. Project Workspace and Complexity Routing
+## 12. Project Workspace, Baseline Bootstrap, and Complexity Routing
 
-### 12.1 Creation Rule (Hard Binary)
+### 12.1 Project Baseline Bootstrap
 
-- **Global install** (plugin registration, version query, skill listing): NEVER write project files.
-- **Active project** (user has a codebase loaded): workspace creation is triggered by these workflow file-writing steps:
-  * brainstorming checklist item 8 (write design doc)
-  * writing-plans save step (write plan file)
-  * systematic-debugging Quality Gate (non-trivial task)
-  When triggered and `docs/aegis/` is missing, create the minimum workspace immediately. Do not ask. Do not defer.
-  If `docs/aegis/` already exists, use it — do not recreate.
-- When `scripts/aegis-workspace.py` is available in the active Aegis
-  method-pack checkout, prefer it for target-project workspace initialization,
-  task lifecycle records, proof-bundle assembly, and validation:
-  `python scripts/aegis-workspace.py init --root <target-project-root>`,
-  `python scripts/aegis-workspace.py new-work --root <target-project-root> ...`,
-  `python scripts/aegis-workspace.py bundle --root <target-project-root> --work YYYY-MM-DD-<slug>`,
-  and `python scripts/aegis-workspace.py check --root <target-project-root>`.
-- The Aegis method-pack repository itself must not ship a precreated live
-  `docs/aegis/` workspace; that directory belongs to the concrete target
-  project where Aegis records are being written.
+Project Baseline Bootstrap is the first active-project guardrail.
 
-### 12.2 Directory Structure
+When the user is inside a codebase and asks a project-related question or asks
+what to do next, Aegis should check whether a project baseline already exists
+before giving code-changing advice. Existing project authority docs, ADRs,
+README, local agent rules, and `docs/aegis/baseline/` all count as candidate
+baseline sources.
+
+If no usable baseline is found, do a bounded repo scan using an index-first
+flow:
+
+1. identify project root and git state
+2. list files with `rg --files` or equivalent
+3. ignore generated, dependency, build, vendor, and output directories
+4. read README, manifests, config, entry points, key `src` files, and tests
+5. infer stack, module owners, contracts, dependency direction, run/test commands,
+   and compatibility boundaries
+
+If there is sufficient project content, create the first baseline snapshot
+under `docs/aegis/baseline/` and continue answering the user's original
+question. If content is too sparse, do not generate an empty baseline; tell the
+user that the baseline was skipped because sufficient project content is not
+available, then still answer the original question from the evidence that
+exists.
+
+### 12.2 Lazy Workspace Support
+
+Aegis Project Workspace hard binary rule:
+
+- **Global install** (plugin registration, version query, skill listing,
+  updating Aegis itself): NEVER write target-project files.
+- **Fast path** (normal Q&A, simple explanation, version status, git status,
+  tiny wording/format edits, and low-risk single-file changes): do not create
+  `docs/aegis/` unless a workflow explicitly needs a reusable project record.
+- **Active project record needed**: initialize or use `docs/aegis/` only when
+  baseline bootstrap, spec writing, plan writing, medium/high debugging, ripple
+  triage, long-task continuation, or work evidence requires persistent files.
+
+Use configured Aegis workspace support when it is available. The current
+repository ships zero-dependency scripts for workspace initialization,
+lifecycle records, proof-bundle assembly, and structural checks, but these are
+method-pack support tools. They validate structure and index coverage only;
+they do not decide evidence sufficiency and do not grant completion authority.
+
+The Aegis method-pack repository itself must not ship a precreated live
+`docs/aegis/` workspace. That directory belongs to the concrete target project
+where Aegis records are being written.
+
+### 12.3 Workspace Shell and Task Work Record
+
+Workspace Shell is the lightweight project-local container:
 
 ```text
 docs/aegis/
-├── README.md                   # workspace purpose and structure
-├── INDEX.md                    # dated index of all files
-├── BASELINE-GOVERNANCE.md      # constitution: defect/drift rules, check protocol, hard boundaries
-├── adr/                        # Aegis-triggered architecture decision records
-│   └── YYYY-MM-DD-<title>.md
-├── baseline/                   # architecture snapshots (per task/phase)
-│   └── YYYY-MM-DD-<scope>-baseline.md
-├── specs/                      # design documents (brainstorming output, sole canonical)
-│   └── YYYY-MM-DD-<topic>-design.md
-├── plans/                      # implementation plans (writing-plans output, sole canonical)
-│   └── YYYY-MM-DD-<feature>.md
-└── work/                       # process trail (medium+ complexity tasks only)
-    └── YYYY-MM-DD-<slug>/
-        ├── 10-intent.md
-        ├── 20-checkpoint.md
-        ├── 90-evidence.md
-        ├── 99-reflection.md
-        ├── *-draft.json / *-hint.json / gate-input-pack.json
-        └── proof-bundle.md
+├── README.md
+├── INDEX.md
+├── BASELINE-GOVERNANCE.md
+├── adr/
+├── baseline/
+├── specs/
+├── plans/
+└── work/
 ```
 
-### 12.3 Complexity Routing
+Task Work Record is created only for medium/high or long-running work:
+
+```text
+docs/aegis/work/YYYY-MM-DD-<slug>/
+├── 10-intent.md
+├── 20-checkpoint.md
+├── 90-evidence.md
+├── 99-reflection.md
+├── *-draft.json / *-hint.json / gate-input-pack.json
+└── proof-bundle.md
+```
+
+Every new file under `docs/aegis/` must be indexed in `INDEX.md`.
+
+### 12.4 Spec Brief and Design Spec
+
+Use the smallest spec artifact that stabilizes the task:
+
+- **Spec Brief** (`docs/aegis/specs/YYYY-MM-DD-<topic>-brief.md`): medium tasks
+  where what/why/acceptance needs to be pinned before planning, but no formal
+  architecture design is needed.
+- **Design Spec** (`docs/aegis/specs/YYYY-MM-DD-<topic>-design.md`): high
+  complexity, architecture, contract, migration, cross-module, or ambiguous
+  product behavior that needs user review before planning.
+
+Both are advisory method-pack artifacts. Existing project docs and ADRs remain
+the preferred authority when they already own the truth.
+
+### 12.5 Complexity Routing
 
 - **Low complexity**: concise intent + baseline check → TDD, no `work/` created
-- **Medium complexity**: baseline read-set + plan + atomic tasks → TDD, `work/` created
-- **High complexity**: spec/design + plan + user confirmation → TDD, `work/` created
+- **Medium complexity**: baseline read-set + Spec Brief or requirements + plan
+  + atomic tasks → TDD; create `work/` only when a process trail is needed
+- **High complexity**: Design Spec + plan + user confirmation → TDD, `work/`
+  created
 
-Mid-stream complexity escalation: pause implementation, initialize workspace if missing, backfill required artifacts, then continue.
+Mid-stream complexity escalation: pause implementation, initialize workspace if
+missing, backfill required artifacts, then continue.
 
-TDD is the implementation discipline, not the first entry point for medium- or high-complexity tasks.
+TDD is the implementation discipline, not the first entry point for medium- or
+high-complexity tasks.
 
-### 12.4 INDEX.md Maintenance
+### 12.6 Workspace Integrity Checks
 
-Every time a new file is created under `docs/aegis/`, an entry MUST be appended to `INDEX.md`.
+When configured Aegis workspace support is available, workflows that write
+`docs/aegis/` should use the shared support path for:
 
-When available, use the workspace helper:
-
-```bash
-python scripts/aegis-workspace.py append-index --root <target-project-root> --path docs/aegis/<subpath>.md --kind <kind> --title "<title>"
-```
-
-`verification-before-completion` should run `python scripts/aegis-workspace.py
-check --root <target-project-root>` when a task created or modified a
-`docs/aegis/` workspace. The helper also validates recognizable JSON sidecar
-artifacts under `docs/aegis/` against
-`docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md`; this is only a structure
-check, not a completion or evidence-sufficiency decision.
-
-For long-task continuation records under `docs/aegis/work/YYYY-MM-DD-<slug>/`,
-`long-task-continuation` should prefer helper-backed lifecycle commands:
-
-```bash
-python scripts/aegis-workspace.py new-work --root <target-project-root> ...
-python scripts/aegis-workspace.py add-checkpoint --root <target-project-root> --work YYYY-MM-DD-<slug> ...
-python scripts/aegis-workspace.py add-evidence --root <target-project-root> --work YYYY-MM-DD-<slug> ...
-python scripts/aegis-workspace.py add-drift-check --root <target-project-root> --work YYYY-MM-DD-<slug> ...
-python scripts/aegis-workspace.py bundle --root <target-project-root> --work YYYY-MM-DD-<slug>
-python scripts/aegis-workspace.py check --root <target-project-root>
-```
+- appending `INDEX.md`
+- creating task work records
+- adding checkpoints, evidence, and drift checks
+- assembling proof bundles
+- checking workspace structure before pause, handoff, or completion candidate
 
 The generated proof bundle is a structural review/handoff package. It is not a
 final evidence-sufficiency decision, not an authoritative `GateDecision`, and
@@ -359,7 +394,13 @@ not completion authority.
 This process baseline should be projected into the following skills as a priority:
 
 - `brainstorming`
-  - Add TLREF problem definition and scope judgment
+  - Own design/spec clarification for new, ambiguous, architecture, contract,
+    cross-module, or medium/high-complexity work; do not force low-complexity
+    fast-path work through full design ceremony
+- `first-principles-review`
+  - Provide a lightweight compositional review for first-principles, Occam,
+    ambiguous direction, repeated fixes, fallback growth, duplicate owners, or
+    architecture/product direction risk; do not add it to the always-loaded hot path
 - `using-aegis`
   - Add complexity routing, project workspace creation boundary, and prompt hygiene hot path
 - `systematic-debugging`

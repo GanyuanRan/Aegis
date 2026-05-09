@@ -28,6 +28,11 @@ compatibility setting.
 This guide records structural compatibility and manual install support. It does
 not claim current release-level live smoke evidence for Trae.
 
+## Recommended Complete Installation
+
+Keep a local Aegis checkout and copy skills from it. This preserves both skill
+discovery and project workspace support verification.
+
 ## Global Installation
 
 ### macOS / Linux
@@ -51,6 +56,9 @@ The copy puts each Aegis skill directly at:
 ```text
 ~/.trae/skills/<skill-name>/SKILL.md
 ```
+
+Because the checkout remains at `~/.trae/aegis`, project workspace support can
+be verified from that method-pack root.
 
 ## Project-Local Installation
 
@@ -77,6 +85,8 @@ Expected result:
 - Trae can see Aegis skills such as `using-aegis`,
   `systematic-debugging`, and `brainstorming`.
 - Trae can load the relevant skill on demand.
+- Project workspace support can be verified when the local checkout remains
+  available.
 - Trae does not present Aegis as a full runtime platform or final completion
   authority.
 
@@ -130,6 +140,12 @@ Aegis skill folders you copied from this repository.
 2. Restart Trae or start a new session.
 3. Check Trae's Rules & Skills settings.
 4. Check whether a project-local skill with the same name is taking precedence.
+
+### Project workspace support not verified
+
+If only `skills/` were copied and the local checkout was removed, skill
+discovery may still work but complete project workspace support is not proven.
+Restore the checkout and run `python scripts/aegis-doctor.py --json`.
 
 ## Official Trae References
 

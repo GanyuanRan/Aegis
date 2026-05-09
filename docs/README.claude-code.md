@@ -148,6 +148,8 @@ Expected result:
 
 - Claude Code can see the `aegis` plugin namespace.
 - Aegis skills are listed or callable under the `aegis:` namespace.
+- Project workspace support can be verified when the installed method-pack root
+  remains available.
 - Claude Code does not present Aegis as a full runtime platform or final
   completion authority.
 
@@ -189,6 +191,13 @@ that supports plugins.
 1. Run `/reload-plugins`.
 2. Check `/help` for `aegis:` entries.
 3. Confirm the installed plugin cache contains the `skills/` directory.
+
+### Project workspace support not verified
+
+Skill visibility alone does not prove complete project workspace support.
+Confirm the installed plugin cache or local `--plugin-dir` still contains the
+repository scripts, then run `python scripts/aegis-doctor.py --json` from that
+method-pack root when filesystem access is available.
 
 ### Windows hook behavior
 

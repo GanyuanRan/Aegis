@@ -116,23 +116,41 @@ It only records limitations supported by current fresh evidence and does not spe
 
 ---
 
-### 2.7 Low-Complexity Task Skips Workspace: Gap Window
+### 2.7 Lazy Workspace Support Depends on Correct Triggering
 
 **Retained Item**
-- Low-complexity tasks do not trigger workspace creation; if later upgraded to medium complexity, there is a brief no-workspace window before the using-aegis hot path Rule 2 mid-stream upgrade trigger fires
+- Workspace records are created lazily, not for every Aegis-assisted turn
 
 **Retention Reason**
-- The definition of low-complexity tasks itself is "no workspace artifacts needed"; premature creation would produce noise files. The mid-stream upgrade trigger is the current simplest remediation
+- Normal Q&A, simple explanation, version/status checks, and low-risk small edits should not create project files. Baseline/spec/plan/work records are written only when the workflow needs persistent project evidence
 
 **Observation Metric**
-- The hit frequency of the mid-stream upgrade trigger in actual usage; if hit frequently, the initial complexity classification threshold needs adjustment
+- `bash tests/e2e/project-bootstrap-policy-check.sh`
+- Actual hit rate of mid-stream escalation into baseline/spec/plan/work records
 
 **Retirement Trigger**
-- When sufficient actual usage data supports a more precise initial complexity determination
+- When a future runtime core can observe task state and trigger workspace support without relying on method-layer judgment
 
 ---
 
-### 2.8 BASELINE-GOVERNANCE.md Template Depends on Correct Agent Execution
+### 2.8 Project Baseline Bootstrap Depends on Sufficient Project Content
+
+**Retained Item**
+- Initial project baseline semantic quality depends on bounded repo scan results and sufficient project content
+
+**Retention Reason**
+- Aegis can index files, read key docs, infer owners/contracts, and create a structured baseline, but sparse repos or placeholder-only projects do not contain enough evidence for a useful baseline
+
+**Observation Metric**
+- Whether agents skip empty baselines when content is too sparse
+- Whether generated baseline snapshots cite concrete files and commands instead of generic guesses
+
+**Retirement Trigger**
+- When real target-project usage shows the bootstrap consistently creates useful baseline snapshots or correctly declines sparse projects
+
+---
+
+### 2.9 BASELINE-GOVERNANCE.md Template Depends on Correct Agent Execution
 
 **Retained Item**
 - The content quality of BASELINE-GOVERNANCE.md still depends on the agent or workflow choosing the correct target project and preserving project-specific review
@@ -149,7 +167,24 @@ It only records limitations supported by current fresh evidence and does not spe
 
 ---
 
-### 2.9 Architecture Review: 7 Dimensions Partially Depend on Agent Qualitative Judgment
+### 2.10 Copy-Only or Skills-Only Installs Do Not Prove Complete Workspace Support
+
+**Retained Item**
+- Copy-only / skills-only install paths can prove skill discovery but may not prove complete project workspace support
+
+**Retention Reason**
+- Some hosts support only copying `skills/` into a native discovery directory. That keeps workflows usable, but the repo-local workspace support scripts may not be discoverable unless the method-pack root remains available or is configured
+
+**Observation Metric**
+- `python scripts/aegis-doctor.py --json`
+- Host docs distinguish recommended complete install from compatibility fallback
+
+**Retirement Trigger**
+- When each supported host has a verified install path that preserves both skill discovery and project workspace support
+
+---
+
+### 2.11 Architecture Review: 7 Dimensions Partially Depend on Agent Qualitative Judgment
 
 **Retained Item**
 - Some dimensions among the 7 (especially Entropy flow, Cascade proliferation) depend on agent qualitative judgment and have no quantitative measurement tools
@@ -162,6 +197,52 @@ It only records limitations supported by current fresh evidence and does not spe
 
 **Retirement Trigger**
 - When integrable quantitative architecture measurement tools become available
+
+---
+
+### 2.12 Host-Loaded Skill Freshness Depends on Install Chain
+
+**Retained Item**
+- A repository-local skill update does not prove the current AI coding host is
+  already loading that updated skill content
+
+**Retention Reason**
+- Some hosts scan skills at startup, use a copied skills directory, or resolve a
+  host-specific discovery path. Aegis can verify the method-pack checkout and
+  optional discovery root, but the host may still require restart/reload before
+  the updated hot path is active.
+
+**Observation Metric**
+- `python scripts/aegis-doctor.py --json`
+- `python scripts/aegis-doctor.py --discovery-root <host-skill-discovery-root>`
+- Host-specific restart/reload plus skill discovery smoke where available
+
+**Retirement Trigger**
+- When each supported host has a verified install/update path that proves both
+  skill discovery and current hot-path content after reload
+
+---
+
+### 2.13 Hot-Path Budget Requires Continuous Guardrails
+
+**Retained Item**
+- `using-aegis` must stay a compact router instead of becoming the container for
+  every Aegis workflow detail
+
+**Retention Reason**
+- Overloading the always-loaded entrypoint increases context pressure and can
+  reduce task quality. Detailed rules belong in task-specific skills or
+  references, not the hot path.
+
+**Observation Metric**
+- `bash tests/e2e/context-budget-check.sh`
+- `using-aegis` hot-path character count
+- Absence of helper command details and universal design/spec ceremony wording
+  in the hot path
+
+**Retirement Trigger**
+- This is an ongoing guardrail rather than a defect to delete; future runtime
+  support may replace the method-layer budget check with host/runtime telemetry.
 
 ---
 

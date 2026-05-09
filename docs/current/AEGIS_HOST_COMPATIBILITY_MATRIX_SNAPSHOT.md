@@ -92,7 +92,9 @@ When reading the current host verdict, follow this order:
 The current snapshot only covers:
 
 - Method-pack installation and distribution
-- Skill discovery / representative triggering
+- skill discovery / representative triggering
+- Project workspace support when the installed method-pack root remains
+  available and can be verified by `scripts/aegis-doctor.py`
 - Plugin loading / priority / distribution sync
 
 The current snapshot does not cover:
@@ -100,6 +102,12 @@ The current snapshot does not cover:
 - Runtime core integration
 - Host adapter event normalization
 - Complete live production workflow orchestration
+
+Skill discovery and project workspace support are related but distinct. A
+skills-only copy can make Aegis workflows visible to a host while failing to
+prove complete project workspace support. A complete install should preserve
+the method-pack root or equivalent configured support path so workspace
+bootstrap, indexing, work records, and structural checks remain available.
 
 ---
 

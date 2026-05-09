@@ -15,8 +15,10 @@ smoothly, but it does not turn Aegis into a runtime core or final authority.
 - Route by task complexity before implementation. Medium- and high-complexity
   work needs a baseline read set, plan, and atomic tasks before TDD; high
   complexity may also need a spec/design review.
-- If the target project has no clear baseline, state that gap and establish a
-  lightweight baseline before major implementation work.
+- For active project questions or "what next" requests, check baseline
+  candidates first. If none are usable, do a bounded repo scan, create a
+  lightweight baseline only when project content is sufficient, and still
+  answer the user's original question.
 - Create Aegis project records lazily. Prefer existing project docs and only
   create minimal `docs/aegis/` task records when the workflow needs them.
 - Prefer the current repository's authority docs, local conventions, and

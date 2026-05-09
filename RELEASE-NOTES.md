@@ -1,5 +1,68 @@
 # Aegis Release Notes
 
+## v1.1.0 (2026-05-09)
+
+### First-Principles Review
+
+- **New compositional skill** — added `first-principles-review` for explicit
+  first-principles / Occam's razor requests and complex decisions with
+  ambiguous goals, competing constraints, repeated fixes, fallback growth,
+  duplicate owners, or architecture / product direction risk.
+- **Compact decision surface** — the skill uses a five-line review shape:
+  `First Principle`, `Non-negotiables`, `Assumptions to Drop`,
+  `Smallest Sufficient Path`, and `Escalation Signal`.
+- **Method-pack boundary preserved** — the new skill is advisory only. It does
+  not create authoritative `GateDecision`, `PolicySnapshot`, or completion
+  authority, and it is not loaded by the always-on `using-aegis` hot path.
+
+### Leaner Routing And Project Bootstrap
+
+- **Leaner `using-aegis` hot path** — tightened the always-loaded entrypoint so
+  it stays a compact router, loads only clearly relevant skills, and avoids
+  turning every small task into a full design ceremony.
+- **Project Baseline Bootstrap** — active project questions and "what next"
+  requests now check baseline candidates first. If no usable baseline exists,
+  Aegis performs a bounded repo scan, creates an initial baseline only when
+  there is sufficient project content, and still answers the user's original
+  question.
+- **Spec scope clarified** — introduced the distinction between lightweight
+  `Spec Brief` for medium tasks and fuller `Design Spec` for high-complexity,
+  architecture, contract, migration, cross-module, or ambiguous behavior work.
+- **Lazy workspace support** — normal Q&A, status checks, tiny edits, and
+  low-risk single-file changes should not create project records. Baseline,
+  spec, plan, work, and evidence records are created only when the workflow
+  needs persistent project evidence.
+
+### Install Readiness And Host Boundaries
+
+- **Aegis doctor** — added `scripts/aegis-doctor.py` to verify key skills,
+  current hot-path content, method-pack root, workspace helper availability,
+  absence of a live `docs/aegis/` workspace in the method-pack repository, and
+  optional host skill discovery root freshness.
+- **Complete install guidance** — README and host docs now ask agents to verify
+  that Aegis is fully available, including skill discovery and project
+  workspace support.
+- **Skills-only boundary documented** — known limitations and compatibility
+  docs now distinguish skill discovery from full project workspace support.
+  Copy-only / skills-only installs can expose workflows, but they do not prove
+  complete workspace helper availability.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.1.0`
+- `git diff --check`
+- `python -m py_compile scripts/aegis-doctor.py scripts/aegis-workspace.py`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `python scripts/aegis-doctor.py --json`
+- `bash tests/e2e/first-principles-review-check.sh`
+- `bash tests/e2e/aegis-doctor-check.sh`
+- `bash tests/e2e/run-all.sh --full --host-profile none`
+
+### Boundary
+
+This release still ships `Aegis Method Pack (runtime-ready)`. It does not add
+authoritative `GateDecision`, `PolicySnapshot`, or `completion authority`.
+
 ## v1.0.17 (2026-05-08)
 
 ### 用户入口体验优化

@@ -17,7 +17,7 @@
 如果你正在使用 AI 编程 agent，可以直接把下面这段话复制给它：
 
 ```text
-请仔细阅读 https://github.com/GanyuanRan/Aegis 这个仓库的安装说明，识别我当前使用的 AI 编程宿主，为我完成全局安装；如果需要重启或重新加载宿主，请明确告诉我；安装后请验证 Aegis skills 是否已经可以被发现和使用。
+请仔细阅读 https://github.com/GanyuanRan/Aegis 这个仓库的安装说明，识别我当前使用的 AI 编程宿主，为我完成全局安装；如果需要重启或重新加载宿主，请明确告诉我；安装后请验证 Aegis 已完整可用，包括 skills 可发现，以及项目工作区能力可正常使用。
 ```
 
 ## 更新 Aegis
@@ -25,7 +25,7 @@
 如果你已经安装过 Aegis，可以直接把下面这段话复制给你的 AI 编程 agent：
 
 ```text
-请将我已安装的 Aegis 更新到 https://github.com/GanyuanRan/Aegis 的最新 main 分支版本；请根据我当前使用的 AI 编程宿主选择正确的更新路径；如果需要重启或重新加载宿主，请明确告诉我；更新后请验证 Aegis skills 是否已经可以被发现和使用。
+请将我已安装的 Aegis 更新到 https://github.com/GanyuanRan/Aegis 的最新 main 分支版本；请根据我当前使用的 AI 编程宿主选择正确的更新路径；如果需要重启或重新加载宿主，请明确告诉我；更新后请验证 Aegis 已完整可用，包括 skills 可发现，以及项目工作区能力可正常使用。
 ```
 
 ## 可选：轻量全局规则
@@ -408,8 +408,8 @@ Aegis 不是 daemon、后台 runner，也不是 authoritative runtime core。它
 Aegis 会在实施前先按复杂度路由：
 
 - 低复杂度任务：简短 intent、baseline check、TDD 与验证即可。
-- 中复杂度任务：必须先有 baseline read set、plan 和 atomic tasks，再进入 TDD。
-- 高复杂度任务：必须先有 spec/design 和 plan；workflow 要求用户确认时不能跳过确认。
+- 中复杂度任务：必须先有 baseline read set、Spec Brief 或稳定需求、plan 和 atomic tasks，再进入 TDD。
+- 高复杂度任务：必须先有 Design Spec 和 plan；workflow 要求用户确认时不能跳过确认。
 
 当项目需要持久化 Aegis 记录时，Aegis 会懒创建轻量项目工作区。默认工作区包含
 `docs/aegis/` 下的 `README.md`、`INDEX.md`、`BASELINE-GOVERNANCE.md`，
@@ -417,18 +417,18 @@ Aegis 会在实施前先按复杂度路由：
 `docs/aegis/work/YYYY-MM-DD-<task-slug>/`。已有项目文档和 ADR 仍优先作为
 authority；可复用的 Aegis 产物只在 workflow 需要时提升。
 
-给 host 或 workflow 作者使用时，本仓提供一个零依赖 helper 来操作目标项目工作区：
+推荐安装方式会保留 Aegis method-pack 根目录，以便安装后验证项目工作区能力。Aegis
+method-pack 仓库自身不预置 live `docs/aegis/` 工作区。工作区结构检查不判断
+evidence sufficiency，也不授予 completion authority。
+
+维护者可以用下面的命令验证完整安装：
 
 ```bash
-python scripts/aegis-workspace.py init --root /path/to/target-project
-python scripts/aegis-workspace.py check --root /path/to/target-project
-python scripts/aegis-workspace.py append-index --root /path/to/target-project --path docs/aegis/specs/example.md --kind spec --title "Example"
-python scripts/aegis-workspace.py validate-artifact --type TaskIntentDraft --file /path/to/target-project/docs/aegis/work/example/task-intent-draft.json
+python scripts/aegis-doctor.py --json
 ```
 
-该 helper 只写入调用时显式传入的目标项目根目录。Aegis method-pack 仓库自身不预置
-live `docs/aegis/` 工作区。Artifact validation 只检查 JSON sidecar 结构，不判断
-evidence sufficiency，也不授予 completion authority。
+如果某个宿主有单独的 skill discovery 目录，可额外传入
+`--discovery-root <path>`，确认它指向当前 method-pack skills，而不是旧的复制版本。
 
 对 bug 修复、架构变更、contract 工作与治理清理，Aegis 要求：
 
@@ -498,6 +498,7 @@ bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh
 
 修改会影响 agent 行为的 skill 内容前，还应阅读：
 
+- [skills/first-principles-review/SKILL.md](skills/first-principles-review/SKILL.md)
 - [skills/writing-skills/SKILL.md](skills/writing-skills/SKILL.md)
 - [skills/verification-before-completion/SKILL.md](skills/verification-before-completion/SKILL.md)
 

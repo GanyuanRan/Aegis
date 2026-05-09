@@ -35,6 +35,11 @@ This means CodeBuddy is a supported product target. It does **not** mean
 CodeBuddy has current release-level fresh smoke evidence yet. The current
 compatibility matrix still records CodeBuddy as pending broader host rollout.
 
+## Recommended Complete Installation
+
+Keep a local Aegis checkout and install skills from it. This preserves both
+skill discovery and project workspace support verification.
+
 ## Manual Skills Installation
 
 Use this path when you want the most transparent install without relying on a
@@ -61,6 +66,9 @@ The copy puts each Aegis skill directly at:
 ```text
 ~/.codebuddy/skills/<skill-name>/SKILL.md
 ```
+
+Because the checkout remains at `~/.codebuddy/aegis`, project workspace support
+can be verified from that method-pack root.
 
 ## Project-Local Installation
 
@@ -100,6 +108,8 @@ Expected result:
 - CodeBuddy can see Aegis skills such as `using-aegis`,
   `systematic-debugging`, and `brainstorming`.
 - CodeBuddy can load the relevant skill on demand.
+- Project workspace support can be verified when the local checkout remains
+  available.
 - CodeBuddy does not present Aegis as a full runtime platform or final
   completion authority.
 
@@ -153,6 +163,12 @@ plugin manager and then restart the host.
 2. Restart CodeBuddy or start a new session.
 3. Ask CodeBuddy to list or describe available Aegis skills.
 4. Check whether a project-local skill with the same name is taking precedence.
+
+### Project workspace support not verified
+
+If Aegis was installed by copying only `skills/`, the host may discover skills
+but not prove complete project workspace support. Keep or restore the local
+checkout, then run `python scripts/aegis-doctor.py --json` from that checkout.
 
 ### CodeBuddy CLI is installed but not runnable
 

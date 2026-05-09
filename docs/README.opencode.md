@@ -21,6 +21,8 @@ Add aegis to the `plugin` array in your `opencode.json` (global or project-level
 
 Restart OpenCode. The plugin auto-installs via Bun, mirrors aegis skills into
 OpenCode's global `~/.config/opencode/skills/` discovery path, and injects the bootstrap context automatically.
+The plugin-backed path is the recommended complete install because it keeps the
+Aegis method-pack root available for project workspace support verification.
 
 Verify by asking: "Tell me about your aegis"
 
@@ -214,6 +216,13 @@ Override `OPENCODE_TEST_MODEL` to a model/provider pair that is valid on your ma
 2. Check that the plugin is loading (see above)
 3. Check that `~/.config/opencode/skills/<skill-name>/SKILL.md` (or the test HOME equivalent) exists after startup
 4. Each skill needs a `SKILL.md` file with valid YAML frontmatter
+
+### Project workspace support not verified
+
+Skill discovery and project workspace support are separate checks. If skills
+are visible but workspace support is not verified, confirm the plugin-backed
+method-pack checkout/cache is present, then run `python scripts/aegis-doctor.py
+--json` from that method-pack root.
 
 ### Bootstrap not appearing
 

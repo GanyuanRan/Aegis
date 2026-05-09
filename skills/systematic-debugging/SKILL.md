@@ -169,8 +169,8 @@ Especially under time pressure, when "just one quick fix" seems obvious, after m
 Before you claim debugging is complete:
 
 0. **Workspace record for non-trivial debugging** — if this is medium+ complexity
-   or it writes `docs/aegis/` records, initialize/check through the helper when
-   available:
+   or it writes `docs/aegis/` records, initialize/check through configured
+   Aegis workspace support when available:
 
    ```bash
    python scripts/aegis-workspace.py init --root <target-project-root>
@@ -178,6 +178,10 @@ Before you claim debugging is complete:
    python scripts/aegis-workspace.py add-evidence --root <target-project-root> --work <YYYY-MM-DD-slug> ...
    python scripts/aegis-workspace.py check --root <target-project-root>
    ```
+
+   Fast bug fix or quick bug fix pressure does not skip this: if Ripple Signal
+   Triage fires, do the triage before editing and expand verification to the
+   canonical owner plus affected downstream path.
 
    These records are method-pack evidence trails only. They do not grant
    authoritative completion.

@@ -34,6 +34,11 @@ DeepSeek-TUI adds a stable multi-skill repository installer.
 This guide records structural compatibility and manual install support. It does
 not claim current release-level live smoke evidence for DeepSeek-TUI.
 
+## Recommended Complete Installation
+
+Keep a local Aegis checkout and copy skills from it. This preserves both skill
+discovery and project workspace support verification.
+
 ## Global Installation
 
 ### macOS / Linux
@@ -57,6 +62,9 @@ The copy puts each Aegis skill directly at:
 ```text
 ~/.deepseek/skills/<skill-name>/SKILL.md
 ```
+
+Because the checkout remains at `~/.deepseek/aegis`, project workspace support
+can be verified from that method-pack root.
 
 ## Project-Local Installation
 
@@ -103,6 +111,9 @@ Tell me which Aegis skill you would use before debugging a failing test.
 
 DeepSeek-TUI should treat Aegis as method-pack guidance, not as a full runtime
 platform or final completion authority.
+
+For complete install verification, also run `python scripts/aegis-doctor.py
+--json` from the local Aegis checkout when filesystem access is available.
 
 ## Updating
 
@@ -161,6 +172,12 @@ only the Aegis skill folders you copied from this repository.
 
 Use the copy-based install in this guide. Aegis is a multi-skill repository, so a
 single-skill GitHub installer is not the stable canonical path for this host.
+
+### Project workspace support not verified
+
+If only `skills/` were copied and the local checkout was removed, skill
+discovery may still work but complete project workspace support is not proven.
+Restore the checkout and run `python scripts/aegis-doctor.py --json`.
 
 ## DeepSeek-TUI References
 

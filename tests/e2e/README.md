@@ -24,7 +24,10 @@ Bootstrap entrypoints:
 - `boundary-compliance-check.sh`
 - `artifact-schema-check.sh`
 - `aegis-workspace-check.sh`
+- `aegis-doctor-check.sh`
 - `workspace-helper-wiring-check.sh`
+- `project-bootstrap-policy-check.sh`
+- `first-principles-review-check.sh`
 - `long-task-continuation-check.sh`
 - `analyze-transcript.sh`
 
@@ -47,6 +50,15 @@ Workspace helper coverage:
 
 - `aegis-workspace-check.sh` verifies `scripts/aegis-workspace.py` against a
   temporary target project.
+- `aegis-doctor-check.sh` verifies complete-install readiness: key skills,
+  method-pack root, and project workspace support through a temporary target
+  project.
+- `project-bootstrap-policy-check.sh` verifies Project Baseline Bootstrap,
+  Spec Brief, Workspace Shell, Task Work Record, and lazy workspace wording
+  across the process baseline and skills.
+- `first-principles-review-check.sh` verifies that first-principles review is
+  available as a lightweight compositional skill without entering the
+  always-loaded hot path or claiming authority.
 - The Aegis method-pack repository must not ship a live `docs/aegis/`
   workspace. The helper initializes and checks that workspace only in the
   target project root passed by the caller.

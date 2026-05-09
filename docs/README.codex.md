@@ -14,7 +14,7 @@ authority order, release gate, and known limitations, read:
 Tell Codex:
 
 ```
-Fetch and follow instructions from https://raw.githubusercontent.com/GanyuanRan/Aegis/refs/heads/main/.codex/INSTALL.md
+Read https://github.com/GanyuanRan/Aegis, install Aegis globally for Codex, restart Codex if needed, and verify Aegis is fully available, including skill discovery and project workspace support.
 ```
 
 ## Manual Installation
@@ -63,6 +63,11 @@ Codex has native skill discovery — it scans `~/.agents/skills/` at startup, pa
 ```
 
 The `using-aegis` skill is discovered automatically and enforces skill usage discipline — no additional configuration needed.
+
+This recommended install keeps the Aegis method-pack root at
+`~/.codex/aegis`, so project workspace support can also be verified. The skills
+symlink alone proves skill discovery; the full install proves both skill
+discovery and project workspace support.
 
 ## Usage
 
@@ -141,7 +146,8 @@ opencode
 cd ~/.codex/aegis && git pull
 ```
 
-Skills update instantly through the symlink.
+Skills update instantly through the symlink. After updating, restart Codex if
+needed and verify skill discovery plus project workspace support.
 
 ## Uninstalling
 
@@ -163,6 +169,11 @@ Optionally delete the clone: `rm -rf ~/.codex/aegis` (Windows: `Remove-Item -Rec
 1. Verify the symlink: `ls -la ~/.agents/skills/aegis`
 2. Check skills exist: `ls ~/.codex/aegis/skills`
 3. Restart Codex — skills are discovered at startup
+
+### Project workspace support not verified
+
+1. Confirm the method-pack root still exists: `ls ~/.codex/aegis`
+2. From the method-pack root, run: `python scripts/aegis-doctor.py --json`
 
 ### Windows junction issues
 

@@ -12,7 +12,9 @@ Aegis 变成 runtime core，也不会授予最终裁决权。
 - 实施前先界定任务目标、范围、非目标、baseline references、影响面提示与验证目标。
 - 实施前先按任务复杂度路由。中高复杂度任务必须先有 baseline read set、plan 与
   atomic tasks，再进入 TDD；高复杂度任务可能还需要 spec/design review。
-- 如果目标项目没有清晰 baseline，先指出该缺口，并在大型实现前建立轻量 baseline。
+- 对项目问题或“下一步做什么”类请求，先检查 baseline 候选材料。若没有可用
+  baseline，做有边界的仓库扫描；只有项目内容足够时才建立轻量 baseline，同时仍然
+  回答用户原问题。
 - 懒创建 Aegis 项目记录。优先沿用项目已有文档；只有 workflow 需要时才创建最小
   `docs/aegis/` 任务记录。
 - 优先遵循当前仓库的 authority docs、本地约定与既有代码模式，再考虑新增结构。
