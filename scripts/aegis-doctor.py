@@ -52,6 +52,12 @@ def toml_string(value: str) -> str:
     return json.dumps(value)
 
 
+def write_text_lf(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(content)
+
+
 def read_config(path: Path) -> dict[str, str]:
     if not path.is_file():
         return {}
@@ -75,14 +81,13 @@ def read_config(path: Path) -> dict[str, str]:
 
 
 def write_config(path: Path, root: Path, helper: Path) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
     content = (
         "# Aegis user-local configuration\n"
         'activation_mode = "auto"\n'
         f"method_pack_root = {toml_string(root.as_posix())}\n"
         f"workspace_helper = {toml_string(helper.as_posix())}\n"
     )
-    path.write_text(content, encoding="utf-8", newline="\n")
+    write_text_lf(path, content)
 
 
 def config_status(path: Path, root: Path, helper: Path) -> str:

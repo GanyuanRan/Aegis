@@ -195,8 +195,14 @@ def workspace(root: Path) -> Path:
 def write_if_missing(path: Path, content: str) -> bool:
     if path.exists():
         return False
-    path.write_text(content, encoding="utf-8", newline="\n")
+    write_text_lf(path, content)
     return True
+
+
+def write_text_lf(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(content)
 
 
 def initialize_workspace(root: Path) -> list[str]:
@@ -378,11 +384,9 @@ def command_validate_artifact(args: argparse.Namespace) -> int:
 
 
 def write_json(path: Path, data: dict) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
+    write_text_lf(
+        path,
         json.dumps(data, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-        newline="\n",
     )
 
 
@@ -508,7 +512,8 @@ def command_new_work(args: argparse.Namespace) -> int:
     write_json(target / "todo-checkpoint-draft.json", checkpoint)
     write_json(target / "drift-check-draft.json", drift)
 
-    (target / "10-intent.md").write_text(
+    write_text_lf(
+        target / "10-intent.md",
         f"# {args.title} - Intent\n\n"
         "## TaskIntentDraft\n\n"
         f"- Requested outcome: {args.requested_outcome}\n"
@@ -524,31 +529,26 @@ def command_new_work(args: argparse.Namespace) -> int:
         f"- Invariants:\n{markdown_list(invariants)}"
         f"- Non-goals:\n{markdown_list(non_goals)}"
         "\nThese records are Method Pack drafts / hints, not authoritative runtime decisions.\n",
-        encoding="utf-8",
-        newline="\n",
     )
-    (target / "20-checkpoint.md").write_text(
+    write_text_lf(
+        target / "20-checkpoint.md",
         f"# {args.title} - Checkpoint\n\n"
         f"- Task ID: {task_id}\n"
         f"- Current todo: {checkpoint['currentTodo']}\n"
         f"- Active slice: {checkpoint['activeSlice']}\n"
         f"- Blocked on: {checkpoint['blockedOn'] or 'none'}\n"
         f"- Next step: {checkpoint['nextStep']}\n",
-        encoding="utf-8",
-        newline="\n",
     )
-    (target / "90-evidence.md").write_text(
+    write_text_lf(
+        target / "90-evidence.md",
         f"# {args.title} - Evidence\n\n"
         "No evidence has been recorded yet.\n",
-        encoding="utf-8",
-        newline="\n",
     )
-    (target / "99-reflection.md").write_text(
+    write_text_lf(
+        target / "99-reflection.md",
         f"# {args.title} - Reflection\n\n"
         "Completion reflection has not been recorded yet.\n\n"
         "Method Pack output does not grant completion authority.\n",
-        encoding="utf-8",
-        newline="\n",
     )
 
     for filename, kind, title in (
@@ -724,7 +724,7 @@ def command_bundle(args: argparse.Namespace) -> int:
         f"- Retirement status: {drift.get('retirementStatus', '')}\n"
         f"- Advisory decision: {drift.get('decision', '')}\n"
     )
-    (target / "proof-bundle.md").write_text(proof, encoding="utf-8", newline="\n")
+    write_text_lf(target / "proof-bundle.md", proof)
     append_work_file(root, target / "proof-bundle.md", "work", f"{args.work} proof bundle")
     print(f"Assembled proof bundle: {target / 'proof-bundle.md'}")
     return 0

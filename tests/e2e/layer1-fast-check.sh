@@ -50,6 +50,14 @@ echo ""
 passed=0
 failed=0
 
+if command -v python3 >/dev/null 2>&1 && python3 -V >/dev/null 2>&1; then
+    PYTHON_CMD=(python3)
+elif command -v py >/dev/null 2>&1 && py -3 -V >/dev/null 2>&1; then
+    PYTHON_CMD=(py -3)
+else
+    PYTHON_CMD=(python)
+fi
+
 run_check() {
     local label="$1"
     shift
@@ -96,6 +104,7 @@ run_check "boundary compliance" bash "$SCRIPT_DIR/boundary-compliance-check.sh"
 run_check "artifact schema fixtures" bash "$SCRIPT_DIR/artifact-schema-check.sh"
 run_check "aegis project workspace helper" bash "$SCRIPT_DIR/aegis-workspace-check.sh"
 run_check "aegis doctor" bash "$SCRIPT_DIR/aegis-doctor-check.sh"
+run_check "workspace text write compatibility" "${PYTHON_CMD[@]}" tests/helpers/test_workspace_text_write_compat.py
 run_check "workspace helper skill wiring" bash "$SCRIPT_DIR/workspace-helper-wiring-check.sh"
 run_check "project bootstrap policy" bash "$SCRIPT_DIR/project-bootstrap-policy-check.sh"
 run_check "first-principles review policy" bash "$SCRIPT_DIR/first-principles-review-check.sh"

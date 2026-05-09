@@ -1,5 +1,43 @@
 # Aegis Release Notes
 
+## v1.1.1 (2026-05-09)
+
+### Patch Fix
+
+- **Workspace helper Python compatibility** — replaced
+  `Path.write_text(..., newline="\n")` write paths in the workspace helper with
+  an explicit LF writer based on `Path.open(..., newline="\n")`, so
+  `new-work` works on Python versions where `Path.write_text` does not support
+  the `newline` parameter.
+- **Doctor config write compatibility** — applied the same LF writer to
+  `scripts/aegis-doctor.py`, keeping complete-install verification compatible
+  with older Python runtimes.
+
+### Regression Coverage
+
+- Added `tests/helpers/test_workspace_text_write_compat.py` to simulate the old
+  `Path.write_text` signature and verify both `aegis-workspace.py new-work`
+  and `aegis-doctor.py` config writing.
+- Updated `tests/e2e/layer1-fast-check.sh` to run the compatibility test using
+  a portable Python resolver (`python3`, `py -3`, then `python`).
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.1.1`
+- `bash scripts/bump-version.sh --check`
+- `git diff --check`
+- `python -m py_compile scripts/aegis-workspace.py scripts/aegis-doctor.py tests/helpers/test_workspace_text_write_compat.py`
+- `python tests/helpers/test_workspace_text_write_compat.py`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `python scripts/aegis-doctor.py --json`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile none`
+
+### Boundary
+
+This release still ships `Aegis Method Pack (runtime-ready)`. It does not add
+authoritative `GateDecision`, `PolicySnapshot`, or `completion authority`.
+
 ## v1.1.0 (2026-05-09)
 
 ### First-Principles Review
