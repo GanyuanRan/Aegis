@@ -104,6 +104,7 @@ run_check "boundary compliance" bash "$SCRIPT_DIR/boundary-compliance-check.sh"
 run_check "artifact schema fixtures" bash "$SCRIPT_DIR/artifact-schema-check.sh"
 run_check "aegis project workspace helper" bash "$SCRIPT_DIR/aegis-workspace-check.sh"
 run_check "aegis doctor" bash "$SCRIPT_DIR/aegis-doctor-check.sh"
+run_check "claude hook permissions" bash "$SCRIPT_DIR/claude-hook-permissions-check.sh"
 run_check "workspace text write compatibility" "${PYTHON_CMD[@]}" tests/helpers/test_workspace_text_write_compat.py
 run_check "workspace helper skill wiring" bash "$SCRIPT_DIR/workspace-helper-wiring-check.sh"
 run_check "project bootstrap policy" bash "$SCRIPT_DIR/project-bootstrap-policy-check.sh"

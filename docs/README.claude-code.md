@@ -207,6 +207,25 @@ Claude Code hooks on Windows use the wrapper documented in:
 
 Git for Windows should be installed so the wrapper can find Git Bash.
 
+### WSL2 startup hook permission denied
+
+If a `v1.1.0` or `v1.1.1` install reports:
+
+```text
+/bin/sh: .../hooks/run-hook.cmd: Permission denied
+```
+
+upgrade or reinstall Aegis. `v1.1.2` and newer ship the Claude Code hook
+wrapper with the Unix executable bit required by Linux / WSL2 plugin caches.
+
+Temporary workaround for an already-installed old plugin cache:
+
+```bash
+chmod +x ~/.claude/plugins/cache/aegis-dev/aegis/1.1.0/hooks/run-hook.cmd
+```
+
+Use the actual cached version directory if it differs from `1.1.0`.
+
 ### Bootstrap intentionally absent
 
 If Aegis skills are installed but the startup reminder is missing, check whether

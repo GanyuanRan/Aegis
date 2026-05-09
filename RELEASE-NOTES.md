@@ -1,5 +1,39 @@
 # Aegis Release Notes
 
+## v1.1.2 (2026-05-10)
+
+### Patch Fix
+
+- **Claude Code hook permissions** — marked `hooks/run-hook.cmd` as executable
+  in Git so Linux / WSL2 Claude Code plugin caches can run the SessionStart
+  wrapper without `/bin/sh: ... Permission denied`.
+- **WSL2 troubleshooting note** — documented the old-cache workaround for
+  `v1.1.0` / `v1.1.1` installs and directed users to upgrade or reinstall.
+
+### Regression Coverage
+
+- Added `tests/e2e/claude-hook-permissions-check.sh` to verify that
+  `hooks/run-hook.cmd` and `hooks/session-start` are tracked as `100755`.
+- Added the Claude hook permission check to Layer 1 fast verification.
+- The check also parses `hooks/hooks.json` to confirm Claude Code SessionStart
+  still routes through `hooks/run-hook.cmd`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.1.2`
+- `bash scripts/bump-version.sh --check`
+- `bash tests/e2e/claude-hook-permissions-check.sh`
+- `git diff --check`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `python scripts/aegis-doctor.py --json`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile none`
+
+### Boundary
+
+This release still ships `Aegis Method Pack (runtime-ready)`. It does not add
+authoritative `GateDecision`, `PolicySnapshot`, or `completion authority`.
+
 ## v1.1.1 (2026-05-09)
 
 ### Patch Fix

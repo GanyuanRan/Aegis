@@ -2,7 +2,7 @@
   "name": "aegis",
   "displayName": "Aegis",
   "description": "Core skills library: TDD, debugging, collaboration patterns, and proven techniques",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "author": {
     "name": "Aegis Maintainers"
   },
