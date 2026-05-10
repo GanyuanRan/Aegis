@@ -1,6 +1,6 @@
 ---
 name: using-aegis
-description: Use when starting any conversation - routes Aegis skill use with a compact hot path before any response or action
+description: Use when starting any conversation or when checking whether an Aegis skill should apply before a response or action.
 ---
 
 <SUBAGENT-STOP>
@@ -21,11 +21,11 @@ requested or clearly relevant. Load only that skill; otherwise proceed normally.
    (README/ADR/rules/`docs/aegis/baseline`). If none are usable, do a bounded
    index-first scan, create a baseline only when evidence is sufficient, and
    still answer the user's question.
-3. Classify before implementation. Low: concise intent + baseline check + TDD.
-   Medium/high: baseline read-set + plan; add Spec Brief or Design Spec only
-   when complexity, ambiguity, contracts, or cross-module impact require it.
-   Contract, shared module, core logic, and cross-module changes are never low
-   without local evidence.
+3. Classify before implementation and on start/resume/compaction. Low:
+   concise intent + baseline check + TDD. Medium/high: baseline read-set + plan.
+   Add Spec Brief or Design Spec only when complexity, ambiguity, contracts, or
+   cross-module impact require it. Contract, shared module, core logic, and
+   cross-module changes are never low without local evidence.
 4. Workspace support is lazy. Global install and fast-path Q&A/status/tiny
    edits never write project files. Baseline/spec/plan/work records use
    configured Aegis workspace support only when the workflow needs persistent

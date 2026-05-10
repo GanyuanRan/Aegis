@@ -46,6 +46,24 @@ Invoke explicitly requested or clearly relevant skills before response or
 action. If relevance is uncertain, use the compact hot path to classify first;
 load a full skill only when the trigger fits.
 
+## Context Pressure Re-entry
+
+Long sessions, heavy tool output, resume, and context compaction can weaken the
+initial startup route. Treat those moments as a re-entry point, not as proof
+that Aegis is unavailable.
+
+Before continuing non-trivial work under context pressure, run a compact
+re-entry check:
+
+1. What is the current task type?
+2. Is an Aegis skill explicitly requested or clearly relevant?
+3. Does the task need baseline/plan, debugging, or verification discipline?
+4. If yes, load the smallest relevant skill now. If no, continue on the fast
+   path and state why.
+
+Do not fix context-pressure misses by broadening every skill description.
+First classify the failed trigger-health layer.
+
 ## Skill Flow
 
 ```dot

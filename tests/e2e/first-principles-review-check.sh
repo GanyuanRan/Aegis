@@ -57,7 +57,7 @@ fi
 assert_contains "$skill" "^name: first-principles-review$" \
     "skill frontmatter name is stable"
 assert_contains "$skill" "description: Use when" \
-    "skill description uses trigger-only wording"
+    "skill description uses trigger-oriented wording"
 assert_contains "$skill" "explicitly asks for first principles|first-principles|第一性原理|Occam|奥卡姆" \
     "skill has explicit first-principles triggers"
 assert_contains "$skill" "complexity|ambiguous|competing constraints|repeated fixes|fallback|duplicate owner" \

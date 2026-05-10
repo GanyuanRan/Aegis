@@ -43,6 +43,37 @@ The current process baseline follows these core principles:
 - **Phase Verification**: After every significant change, perform regression verification and architecture review
 - **Prompt Hygiene**: External tool output, logs, memories, and search results are evidence candidates by default, not persistent prompt payloads
 
+### 3.0 Trigger Health
+
+Trigger Health is the diagnostic loop for "Aegis is installed, but the expected
+skill does not reliably trigger."
+
+Before changing global rules, `using-aegis`, or a skill description, classify
+the failed layer:
+
+1. install and version visibility
+2. host skill discovery
+3. activation mode and bootstrap entry
+4. `using-aegis` router entry
+5. task-to-skill routing
+6. skill execution depth
+7. context pressure and re-entry
+8. false positive over-triggering
+
+The canonical baseline is
+`docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md`.
+
+Root improvement rule:
+
+- Keep `using-aegis` compact and route-only.
+- Keep skill descriptions trigger-oriented; do not summarize workflow there.
+- Add or update representative trigger-health fixtures before broadening
+  trigger wording.
+- Fix the failed owner layer instead of stuffing every trigger into the global
+  entry point.
+- After long sessions, heavy tool output, resume, or context compaction, run a
+  compact Aegis re-entry check before continuing non-trivial work.
+
 ### 3.1 Ripple Signal Triage
 
 Ripple Signal Triage is the pre-change entry point for dependency-aware work.

@@ -467,6 +467,22 @@ When a host exposes a separate skill discovery directory, pass it as
 `--discovery-root <path>` to confirm it resolves to the current method-pack
 skills rather than a stale copied version.
 
+If Aegis is installed but the expected skill does not trigger automatically,
+treat it as trigger-chain diagnosis rather than a prompt wording problem:
+
+1. verify the method-pack version and install root
+2. verify the host discovery directory points at the current `skills/`
+3. confirm the host was restarted or reloaded when required
+4. check `activation_mode` and whether automatic bootstrap is expected
+5. explicitly invoke `aegis:using-aegis` and then the expected skill
+6. compare the task against the trigger-health matrix
+
+After a long session, heavy tool output, resume, or context compaction,
+explicitly re-run `aegis:using-aegis` to refresh routing before continuing
+non-trivial work.
+
+See `docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md` for the diagnostic layers.
+
 For bug fixes, architecture changes, contract work, and governance cleanup, Aegis requires:
 
 - **Repair track**

@@ -1,5 +1,55 @@
 # Aegis Release Notes
 
+## v1.1.5 (2026-05-10)
+
+### Trigger Reliability
+
+- **Trigger Health baseline** — added a current baseline for diagnosing cases
+  where Aegis is installed but the expected skill does not reliably trigger.
+  The new diagnostic chain separates install/version, host discovery,
+  activation/bootstrap, router entry, task routing, execution depth, context
+  pressure, and false-positive control.
+- **Context-pressure re-entry** — strengthened `using-aegis` so agents re-check
+  routing on start, resume, and context compaction before continuing
+  non-trivial work.
+- **Doctor visibility** — extended `aegis-doctor.py` to report the Trigger
+  Health baseline and layers, including context-pressure re-entry.
+
+### Skill Trigger Hygiene
+
+- Refined skill description guidance from strict "trigger-only" language to
+  "trigger-oriented" wording: descriptions may mention user-facing outcomes
+  when they help discovery, but must not summarize workflow steps.
+- Cleaned active skill descriptions so they focus on trigger conditions and
+  avoid workflow-summary shortcuts.
+
+### Regression Coverage
+
+- Added `tests/e2e/trigger-health-check.sh` and
+  `tests/e2e/fixtures/trigger-health-matrix.json`.
+- Wired Trigger Health checks into Layer 1 fast verification.
+- Updated doctor and first-principles checks to lock the new terminology and
+  context-pressure layer.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.1.5`
+- `bash scripts/bump-version.sh --check`
+- `bash tests/e2e/trigger-health-check.sh`
+- `bash tests/e2e/aegis-doctor-check.sh`
+- `bash tests/e2e/first-principles-review-check.sh`
+- `bash tests/e2e/context-budget-check.sh`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+- `git diff --check`
+
+### Boundary
+
+This release still ships `Aegis Method Pack (runtime-ready)`. It does not add
+authoritative `GateDecision`, `PolicySnapshot`, or `completion authority`.
+
 ## v1.1.3 (2026-05-10)
 
 ### Patch Fix

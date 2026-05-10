@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "samples": [
+    {
+      "id": "quick-shared-module-bug",
+      "prompt": "Please fix this quickly: a shared cache helper now returns stale values for one consumer after an export/readback change.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": ["verification-before-completion"],
+      "mustNotDo": ["jump-straight-to-code"],
+      "failureLayer": "routing-or-depth"
+    },
+    {
+      "id": "failing-test-diagnosis",
+      "prompt": "This test is failing. Diagnose the root cause before changing either the test or the implementation.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": ["test-driven-development"],
+      "mustNotDo": ["modify-test-before-owner"],
+      "failureLayer": "routing-or-depth"
+    },
+    {
+      "id": "ambiguous-feature",
+      "prompt": "I want to add a new capability, but the scope and acceptance criteria are not clear yet. Help me shape it before implementation.",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": ["writing-plans"],
+      "mustNotDo": ["start-implementation-immediately"],
+      "failureLayer": "routing"
+    },
+    {
+      "id": "approved-plan",
+      "prompt": "The implementation plan is approved. Turn it into concrete execution steps with files and verification commands.",
+      "expectedPrimarySkill": "writing-plans",
+      "allowedSecondarySkills": ["executing-plans", "test-driven-development"],
+      "mustNotDo": ["redesign-without-cause"],
+      "failureLayer": "routing"
+    },
+    {
+      "id": "completion-claim",
+      "prompt": "Before we call this done, verify whether the work is complete and tell me the evidence.",
+      "expectedPrimarySkill": "verification-before-completion",
+      "allowedSecondarySkills": ["requesting-code-review"],
+      "mustNotDo": ["claim-complete-without-evidence"],
+      "failureLayer": "routing-or-depth"
+    },
+    {
+      "id": "repeated-fixes",
+      "prompt": "This has been fixed several times and each fix adds another fallback. Re-check the fundamentals before another patch.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": ["first-principles-review"],
+      "mustNotDo": ["add-another-local-patch"],
+      "failureLayer": "routing-or-depth"
+    },
+    {
+      "id": "context-compaction-reentry",
+      "prompt": "The session was compacted and we are continuing a bug fix with prior tool output. Re-check whether Aegis should route the next step before editing.",
+      "expectedPrimarySkill": "using-aegis",
+      "allowedSecondarySkills": ["systematic-debugging", "verification-before-completion"],
+      "mustNotDo": ["continue-without-reentry"],
+      "failureLayer": "context-pressure"
+    },
+    {
+      "id": "simple-factual-qa",
+      "prompt": "What is this repository for?",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": ["using-aegis"],
+      "mustNotDo": ["force-full-workflow"],
+      "failureLayer": "false-positive"
+    },
+    {
+      "id": "tiny-wording-edit",
+      "prompt": "Please fix this typo in the README sentence.",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["create-project-workspace-records"],
+      "failureLayer": "false-positive"
+    }
+  ],
+  "failureReportFields": [
+    "TriggerHealthLayer",
+    "ObservedPrompt",
+    "ExpectedSkill",
+    "ActualSkill",
+    "FailureType",
+    "CanonicalOwner",
+    "SmallestFix",
+    "Verification"
+  ]
+}

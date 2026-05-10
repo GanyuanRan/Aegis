@@ -108,6 +108,7 @@ run_check "claude hook permissions" bash "$SCRIPT_DIR/claude-hook-permissions-ch
 run_check "workspace text write compatibility" "${PYTHON_CMD[@]}" tests/helpers/test_workspace_text_write_compat.py
 run_check "workspace helper skill wiring" bash "$SCRIPT_DIR/workspace-helper-wiring-check.sh"
 run_check "project bootstrap policy" bash "$SCRIPT_DIR/project-bootstrap-policy-check.sh"
+run_check "trigger health policy" bash "$SCRIPT_DIR/trigger-health-check.sh"
 run_check "first-principles review policy" bash "$SCRIPT_DIR/first-principles-review-check.sh"
 run_check "debugging patch-shape gate policy" bash "$SCRIPT_DIR/debugging-patch-shape-gate-check.sh"
 run_check "long-task continuation scenario fixtures" bash "$SCRIPT_DIR/long-task-continuation-check.sh"

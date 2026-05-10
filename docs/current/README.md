@@ -54,6 +54,7 @@ The public current set is:
 - `docs/current/AEGIS_ACTIVATION_MODE.md`
 - `docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md`
 - `docs/current/AEGIS_RULE_LAYERING.md`
+- `docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md`
 - `docs/current/AEGIS_DUAL_TRACK_GOVERNANCE.md`
 - `docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md`
 - `docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md`
@@ -81,6 +82,11 @@ The public current set is:
 
 `AEGIS_RULE_LAYERING.md`
 : Method, host, and repo rule layering.
+
+`AEGIS_TRIGGER_HEALTH_BASELINE.md`
+: Trigger-chain diagnosis for "installed but not reliably invoking the right
+skill", including install, discovery, activation, routing, execution-depth, and
+false-positive layers.
 
 `AEGIS_DUAL_TRACK_GOVERNANCE.md`
 : Repair track plus retirement track governance.

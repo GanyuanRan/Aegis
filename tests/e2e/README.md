@@ -27,6 +27,7 @@ Bootstrap entrypoints:
 - `aegis-doctor-check.sh`
 - `workspace-helper-wiring-check.sh`
 - `project-bootstrap-policy-check.sh`
+- `trigger-health-check.sh`
 - `first-principles-review-check.sh`
 - `long-task-continuation-check.sh`
 - `analyze-transcript.sh`
@@ -56,6 +57,9 @@ Workspace helper coverage:
 - `project-bootstrap-policy-check.sh` verifies Project Baseline Bootstrap,
   Spec Brief, Workspace Shell, Task Work Record, and lazy workspace wording
   across the process baseline and skills.
+- `trigger-health-check.sh` verifies the trigger-chain diagnostic baseline and
+  representative positive/negative trigger-health matrix used when Aegis is
+  installed but the expected skill does not trigger reliably.
 - `first-principles-review-check.sh` verifies that first-principles review is
   available as a lightweight compositional skill without entering the
   always-loaded hot path or claiming authority.

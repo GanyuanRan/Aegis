@@ -430,6 +430,21 @@ python scripts/aegis-doctor.py --json
 如果某个宿主有单独的 skill discovery 目录，可额外传入
 `--discovery-root <path>`，确认它指向当前 method-pack skills，而不是旧的复制版本。
 
+如果 Aegis 已安装，但预期的 skill 不能稳定自动触发，不要先把它当成提示词措辞问题。
+应按触发链路诊断：
+
+1. 验证 method-pack 版本和安装根目录
+2. 验证宿主 discovery 目录是否指向当前 `skills/`
+3. 确认宿主是否已经按要求重启或 reload
+4. 检查 `activation_mode`，确认当前是否期望自动 bootstrap
+5. 显式调用 `aegis:using-aegis`，再显式调用预期 skill
+6. 用 trigger-health matrix 对照典型任务和预期 skill
+
+长会话、大量工具输出、恢复上下文或上下文压缩后，可以显式要求
+`aegis:using-aegis` 重新路由当前任务，再继续非平凡工作。
+
+诊断分层见 `docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md`。
+
 对 bug 修复、架构变更、contract 工作与治理清理，Aegis 要求：
 
 - **修复轨**

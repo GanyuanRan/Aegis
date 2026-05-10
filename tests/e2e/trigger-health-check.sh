@@ -1,0 +1,254 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+cd "$REPO_ROOT"
+
+if command -v python3 >/dev/null 2>&1 && python3 -V >/dev/null 2>&1; then
+    PYTHON_CMD=(python3)
+elif command -v py >/dev/null 2>&1 && py -3 -V >/dev/null 2>&1; then
+    PYTHON_CMD=(py -3)
+else
+    PYTHON_CMD=(python)
+fi
+
+failures=0
+
+pass() {
+    echo "  [PASS] $1"
+}
+
+fail() {
+    echo "  [FAIL] $1"
+    failures=$((failures + 1))
+}
+
+assert_contains() {
+    local file="$1"
+    local pattern="$2"
+    local label="$3"
+
+    if grep -qE "$pattern" "$file"; then
+        pass "$label"
+    else
+        fail "$label"
+    fi
+}
+
+assert_not_contains() {
+    local file="$1"
+    local pattern="$2"
+    local label="$3"
+
+    if grep -qE "$pattern" "$file"; then
+        fail "$label"
+    else
+        pass "$label"
+    fi
+}
+
+echo "=== Trigger Health Check ==="
+
+baseline="docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md"
+current_index="docs/current/README.md"
+process_doc="docs/current/AEGIS_PROCESS_BASELINE.md"
+readme_en="README.md"
+readme_zh="README.zh-CN.md"
+doctor="scripts/aegis-doctor.py"
+matrix="tests/e2e/fixtures/trigger-health-matrix.json"
+
+if [[ -f "$baseline" ]]; then
+    pass "trigger health baseline exists"
+else
+    fail "trigger health baseline exists"
+fi
+
+assert_contains "$current_index" "AEGIS_TRIGGER_HEALTH_BASELINE.md" \
+    "current docs index lists trigger health baseline"
+assert_contains "$process_doc" "Trigger Health" \
+    "process baseline defines trigger health"
+assert_contains "$process_doc" "install and version visibility" \
+    "process baseline starts trigger diagnosis at install/discovery/activation"
+assert_contains "$process_doc" "host skill discovery" \
+    "process baseline includes discovery in trigger diagnosis"
+assert_contains "$process_doc" "activation mode and bootstrap entry" \
+    "process baseline includes activation in trigger diagnosis"
+assert_contains "$process_doc" "context pressure and re-entry" \
+    "process baseline includes context-pressure re-entry in trigger diagnosis"
+assert_contains "$process_doc" 'Keep `using-aegis` compact and route-only' \
+    "process baseline keeps using-aegis compact"
+assert_contains "$process_doc" "skill descriptions trigger-oriented" \
+    "process baseline keeps skill descriptions trigger-oriented"
+assert_contains "$process_doc" "trigger-health fixtures" \
+    "process baseline requires fixtures before broadening trigger wording"
+
+assert_contains "$baseline" "install and version visibility" \
+    "baseline includes install/version layer"
+assert_contains "$baseline" "host skill discovery" \
+    "baseline includes discovery layer"
+assert_contains "$baseline" "activation mode and bootstrap entry" \
+    "baseline includes activation layer"
+assert_contains "$baseline" '`using-aegis` router entry' \
+    "baseline includes router-entry layer"
+assert_contains "$baseline" "task-to-skill routing" \
+    "baseline includes task routing layer"
+assert_contains "$baseline" "skill execution depth" \
+    "baseline includes execution-depth layer"
+assert_contains "$baseline" "### L6 Context Pressure And Re-entry" \
+    "baseline keeps context-pressure as L6"
+assert_contains "$baseline" "context pressure and re-entry" \
+    "baseline includes context-pressure layer"
+assert_contains "$baseline" "compaction" \
+    "baseline covers compaction as a trigger-health pressure signal"
+assert_contains "$baseline" "re-entry check" \
+    "baseline defines compact re-entry check"
+assert_contains "$baseline" "### L7 False Positive Control" \
+    "baseline keeps false-positive control as L7"
+assert_contains "$baseline" "false positive over-triggering" \
+    "baseline includes false-positive layer"
+assert_contains "$baseline" "do not first add more keywords" \
+    "baseline rejects keyword stuffing as first fix"
+assert_contains "$baseline" 'Keep `using-aegis` compact and route-only' \
+    "baseline preserves compact router owner"
+assert_contains "$baseline" "Failure Report Shape" \
+    "baseline defines failure report shape"
+
+assert_contains "$readme_en" "trigger-chain diagnosis" \
+    "English README documents trigger-chain diagnosis"
+assert_contains "$readme_en" "AEGIS_TRIGGER_HEALTH_BASELINE.md" \
+    "English README links trigger health baseline"
+assert_contains "$readme_zh" "触发链路诊断" \
+    "Chinese README documents trigger-chain diagnosis"
+assert_contains "$readme_zh" "AEGIS_TRIGGER_HEALTH_BASELINE.md" \
+    "Chinese README links trigger health baseline"
+
+assert_contains "$doctor" "discovery-root-current" \
+    "doctor can verify discovery root freshness"
+assert_contains "$doctor" "using-aegis-hot-path-current" \
+    "doctor can verify using-aegis hot path freshness"
+assert_contains "$doctor" "context pressure and re-entry" \
+    "doctor reports context-pressure trigger-health layer"
+
+assert_contains "$baseline" "does not grant authoritative" \
+    "baseline explicitly avoids authority escalation in trigger health"
+
+"${PYTHON_CMD[@]}" - <<'PY'
+from pathlib import Path
+
+failures = []
+for path in sorted(Path("skills").glob("*/SKILL.md")):
+    lines = path.read_text(encoding="utf-8").splitlines()
+    desc = next((line for line in lines if line.startswith("description:")), "")
+    if not desc:
+        failures.append(f"{path}: missing description")
+        continue
+    value = desc.split(":", 1)[1].strip().strip('"')
+    if not value.startswith("Use when"):
+        failures.append(f"{path}: description must start with Use when")
+    lowered = value.lower()
+    if " - " in value and any(
+        marker in lowered
+        for marker in (
+            " - guides",
+            " - creates",
+            " - keeps",
+            " - routes",
+            " - requires",
+            " - drops",
+            " - maintains",
+        )
+    ):
+        failures.append(f"{path}: description appears to summarize workflow")
+
+if failures:
+    raise SystemExit("\n".join(failures))
+
+print("  [PASS] active skill descriptions stay trigger-oriented and avoid workflow summaries")
+PY
+
+"${PYTHON_CMD[@]}" - "$matrix" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+data = json.loads(path.read_text(encoding="utf-8"))
+samples = data.get("samples", [])
+expected_ids = {
+    "quick-shared-module-bug",
+    "failing-test-diagnosis",
+    "ambiguous-feature",
+    "approved-plan",
+    "completion-claim",
+    "repeated-fixes",
+    "context-compaction-reentry",
+    "simple-factual-qa",
+    "tiny-wording-edit",
+}
+ids = {item.get("id") for item in samples}
+missing = sorted(expected_ids - ids)
+if missing:
+    raise SystemExit(f"missing trigger-health samples: {', '.join(missing)}")
+
+if len(samples) < 9:
+    raise SystemExit("trigger-health matrix must contain at least 9 samples")
+
+positives = [s for s in samples if s.get("expectedPrimarySkill")]
+negatives = [s for s in samples if s.get("expectedPrimarySkill") is None]
+if len(positives) < 6 or len(negatives) < 2:
+    raise SystemExit("trigger-health matrix must include both positive and negative samples")
+
+required_skills = {
+    "using-aegis",
+    "systematic-debugging",
+    "brainstorming",
+    "writing-plans",
+    "verification-before-completion",
+}
+skills = {s.get("expectedPrimarySkill") for s in positives}
+missing_skills = sorted(required_skills - skills)
+if missing_skills:
+    raise SystemExit(f"missing expected primary skills: {', '.join(missing_skills)}")
+
+for item in samples:
+    for field in ("id", "prompt", "allowedSecondarySkills", "mustNotDo", "failureLayer"):
+        if field not in item:
+            raise SystemExit(f"{item.get('id', '<unknown>')} missing field: {field}")
+    if not item["mustNotDo"]:
+        raise SystemExit(f"{item['id']} must define mustNotDo")
+
+required_report_fields = {
+    "TriggerHealthLayer",
+    "ObservedPrompt",
+    "ExpectedSkill",
+    "ActualSkill",
+    "FailureType",
+    "CanonicalOwner",
+    "SmallestFix",
+    "Verification",
+}
+report_fields = set(data.get("failureReportFields", []))
+missing_fields = sorted(required_report_fields - report_fields)
+if missing_fields:
+    raise SystemExit(f"missing failure report fields: {', '.join(missing_fields)}")
+
+context_sample = next((s for s in samples if s.get("id") == "context-compaction-reentry"), None)
+if not context_sample:
+    raise SystemExit("missing context-compaction-reentry sample")
+if context_sample.get("failureLayer") != "context-pressure":
+    raise SystemExit("context-compaction-reentry must use context-pressure failure layer")
+if "continue-without-reentry" not in context_sample.get("mustNotDo", []):
+    raise SystemExit("context-compaction-reentry must forbid continuing without re-entry")
+
+print("  [PASS] trigger-health matrix has representative positive and negative samples")
+PY
+
+if (( failures > 0 )); then
+    echo ""
+    echo "Trigger health check failed with $failures issue(s)."
+    exit 1
+fi
+
+echo ""
+echo "Trigger health check passed."

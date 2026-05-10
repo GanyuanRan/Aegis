@@ -35,6 +35,17 @@ REQUIRED_USING_AEGIS_PATTERNS = (
     "configured Aegis workspace support",
 )
 
+TRIGGER_HEALTH_LAYERS = (
+    "install/version",
+    "host discovery",
+    "activation/bootstrap",
+    "using-aegis router entry",
+    "task-to-skill routing",
+    "skill execution depth",
+    "context pressure and re-entry",
+    "false-positive over-triggering",
+)
+
 
 class DoctorError(Exception):
     pass
@@ -223,6 +234,11 @@ def perform_check(args: argparse.Namespace) -> dict[str, object]:
         "workspaceSupport": "available",
         "configPath": config_path.as_posix(),
         "configStatus": status,
+        "triggerHealth": {
+            "baseline": (root / "docs" / "current" / "AEGIS_TRIGGER_HEALTH_BASELINE.md").as_posix(),
+            "layers": list(TRIGGER_HEALTH_LAYERS),
+            "note": "If expected skills do not trigger, diagnose the trigger chain before broadening skill wording.",
+        },
         "checks": checks,
     }
 
@@ -232,6 +248,10 @@ def print_text(result: dict[str, object]) -> None:
     print(f"Method pack root: {result['methodPackRoot']}")
     print(f"Project workspace support: {result['workspaceSupport']}")
     print(f"Config status: {result['configStatus']} ({result['configPath']})")
+    trigger_health = result.get("triggerHealth", {})
+    if isinstance(trigger_health, dict):
+        print(f"Trigger health baseline: {trigger_health.get('baseline')}")
+        print("Trigger health layers: " + ", ".join(trigger_health.get("layers", [])))
     for check in result["checks"]:
         item = check  # type: ignore[assignment]
         print(f"- {item['name']}: ok")
