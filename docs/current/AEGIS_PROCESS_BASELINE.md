@@ -56,6 +56,13 @@ signal:
 - fallback, adapter, duplicate owner, legacy path, or retirement boundary
 - producer and consumer both implicated by the same change
 - bug fix proposed at a consumer/caller instead of the canonical owner
+- candidate fix adds keyword, phrase, regex, negation-word list,
+  sample-text exception, local guard, one-off branch, fallback, adapter,
+  compatibility branch, prompt branch, or legacy path expansion
+- downstream logic re-parses raw text or re-infers action/state while typed
+  intent, normalized state, contract, or another source-of-truth already exists
+- artifact, download, export, readback, or cache behavior is patched without
+  first locating the producer and source-of-truth owner
 
 If no signal is hit, continue through the normal workflow without extra output.
 
@@ -66,7 +73,10 @@ changes:
 2. State whether any source-of-truth, contract, fallback, or retirement risk exists
 3. Expand verification scope when producer/consumer, contract, shared module, or
    real user paths are affected
-4. Record the result as a short note or in `ImpactStatementDraft` when the task is
+4. If the candidate fix shape itself is the signal, record
+   `PatchShape`, `CanonicalOwner`, `UpwardDrillSignal`, and `Decision`
+   before editing
+5. Record the result as a short note or in `ImpactStatementDraft` when the task is
    medium/high complexity
 
 If the triage requires changing the canonical owner, changing a public contract,
@@ -203,8 +213,13 @@ Where:
 
 - If `DeeperCause` cannot be clearly answered as "no", do not exit directly
 - If `Evidence` cannot support the current judgment, do not package inferences as conclusions
-- If there remain issues not yet drilled down to indivisible root causes, do not treat the diagnostic task as complete
-- Diagnosis must drill down layer by layer from symptoms (L1 Symptom → L2 Logic → L3 System → L4 Architecture → L5 Cross-system Contract → L6 Platform/Framework Constraint → L7 Spec Gap); the chain's endpoint is "the root cause that cannot be further decomposed", not a fixed layer
+- If there remain issues not yet drilled upward to indivisible root causes, do not treat the diagnostic task as complete
+- Diagnosis must drill upward layer by layer from symptoms (L1 Symptom → L2 Logic → L3 System → L4 Architecture → L5 Cross-system Contract → L6 Platform/Framework Constraint → L7 Spec Gap); the chain's endpoint is "the root cause that cannot be further decomposed", not a fixed layer
+- Candidate fixes that add keyword, phrase, regex, negation-word lists, local
+  guards, one-off branches, fallbacks, adapters, compatibility branches,
+  prompt branches, legacy path expansion, consumer-side patches, or downstream
+  re-parsing while a typed contract/source-of-truth exists are hard signals to
+  continue upward drilling before implementation
 - Watch for compound root causes: when symptoms persist after a fix, perform differential diagnosis to distinguish "incomplete fix", "compound root cause", and "chain-causal failure" before deciding the next action
 - Watch for terminal unactionable root causes: when the required change exceeds system boundaries (T-class hard signals), record the root cause and boundary, then choose a mitigation/fallback/escalation strategy — do not package a local patch as root-cause repair
 

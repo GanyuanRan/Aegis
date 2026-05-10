@@ -1,5 +1,40 @@
 # Aegis Release Notes
 
+## v1.1.3 (2026-05-10)
+
+### Patch Fix
+
+- **Pre-change local patch suppression gate** — added a patch-shape gate to
+  systematic debugging so agents must pause before turning quick local guards,
+  keyword rules, fallback growth, consumer-side fixes, or sample-specific
+  exceptions into implementation changes.
+- **Owner-first repair discipline** — strengthened the debugging baseline so
+  suspicious patch shapes must identify the canonical owner, source-of-truth
+  boundary, and decision path before code edits.
+
+### Regression Coverage
+
+- Added `tests/e2e/debugging-patch-shape-gate-check.sh` to lock the new debugging
+  policy and ensure the patch-shape gate remains present.
+- Added the new debugging policy check to Layer 1 fast verification.
+- Updated the TDD policy check to expect both patch-shape triage and ripple
+  signal triage before risky fixes.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.1.3`
+- `bash scripts/bump-version.sh --check`
+- `bash tests/e2e/debugging-patch-shape-gate-check.sh`
+- `bash tests/e2e/tdd-policy-check.sh`
+- `git diff --check`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+
+### Boundary
+
+This release still ships `Aegis Method Pack (runtime-ready)`. It does not add
+authoritative `GateDecision`, `PolicySnapshot`, or `completion authority`.
+
 ## v1.1.2 (2026-05-10)
 
 ### Patch Fix

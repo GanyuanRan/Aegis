@@ -79,8 +79,8 @@ assert_contains "$tdd_skill" "manual verification|manual steps" \
     "TDD defines manual verification when automation is blocked"
 assert_contains "$process_baseline" "Ripple Signal Triage" \
     "process baseline defines Ripple Signal Triage"
-assert_contains "$systematic_debugging_skill" "Before fixing, run Ripple Signal Triage" \
-    "systematic debugging triggers Ripple Signal Triage before risky fixes"
+assert_contains "$systematic_debugging_skill" "Before fixing, run Patch-Shape Triage and Ripple Signal Triage" \
+    "systematic debugging triggers patch-shape and ripple triage before risky fixes"
 assert_contains "$tdd_skill" "Ripple Signal Triage fired|Ripple signal hit" \
     "TDD broadens verification when Ripple Signal Triage fires"
 assert_contains "$scenario_b_behavior" "assistantMustContain" \
