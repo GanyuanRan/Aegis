@@ -8,16 +8,26 @@
     <img src="assets/aegis-hero.png" alt="Aegis 架构驱动 AI 编程 agent 头图" />
 </p>
 
+<p align="center">
+    <a href="https://github.com/GanyuanRan/Aegis">⭐ 点亮 Star，帮助项目更快更新 ❤️</a>
+</p>
+
 # Aegis
 
-<p align="center"><strong>Architecture-driven discipline for AI coding agents.</strong></p>
+<p align="center">
+    <strong>Aegis Method Pack</strong><br/>
+    面向 AI 编程 agent 的 runtime-ready 工作流程纪律包。
+</p>
 
-## 工作流程说明
-
-新用户在安装 Aegis 前，可以先阅读工作流程说明：
-
-- [中文工作流程说明](docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md)
-- [English workflow guide](docs/current/AEGIS_WORKFLOW_GUIDE.md)
+<p align="center">
+    <a href="README.zh-CN.md"><strong>中文</strong></a>
+    ·
+    <a href="README.md"><strong>English</strong></a>
+    ·
+    <a href="docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md">工作流程说明</a>
+    ·
+    <a href="docs/current/AEGIS_WORKFLOW_GUIDE.md">Workflow Guide</a>
+</p>
 
 ## 极简安装
 

@@ -8,18 +8,26 @@
     <img src="assets/aegis-hero.png" alt="Aegis architecture-driven AI coding agent hero banner" />
 </p>
 
+<p align="center">
+    <a href="https://github.com/GanyuanRan/Aegis">⭐ Star the repo here to help accelerate updates ❤️</a>
+</p>
+
 # Aegis
 
-<p align="center"><strong>Architecture-driven discipline for AI coding agents.</strong></p>
+<p align="center">
+    <strong>Aegis Method Pack</strong><br/>
+    Runtime-ready workflow discipline for AI coding agents.
+</p>
 
-中文版本：[README.zh-CN.md](README.zh-CN.md)
-
-## Workflow Guides
-
-New users can read the workflow guides before installing Aegis:
-
-- [English workflow guide](docs/current/AEGIS_WORKFLOW_GUIDE.md)
-- [中文工作流程说明](docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md)
+<p align="center">
+    <a href="README.md"><strong>English</strong></a>
+    ·
+    <a href="README.zh-CN.md"><strong>中文</strong></a>
+    ·
+    <a href="docs/current/AEGIS_WORKFLOW_GUIDE.md">Workflow Guide</a>
+    ·
+    <a href="docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md">工作流程说明</a>
+</p>
 
 ## Minimal Install
 
