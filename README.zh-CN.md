@@ -12,6 +12,13 @@
 
 <p align="center"><strong>Architecture-driven discipline for AI coding agents.</strong></p>
 
+## 工作流程说明
+
+新用户在安装 Aegis 前，可以先阅读工作流程说明：
+
+- [中文工作流程说明](docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md)
+- [English workflow guide](docs/current/AEGIS_WORKFLOW_GUIDE.md)
+
 ## 极简安装
 
 如果你正在使用 AI 编程 agent，可以直接把下面这段话复制给它：

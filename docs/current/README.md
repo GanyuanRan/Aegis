@@ -51,6 +51,8 @@ The public current set is:
 - `docs/current/AEGIS_TARGET_STATE.md`
 - `docs/current/AEGIS_PRODUCT_BASELINE.md`
 - `docs/current/AEGIS_PROCESS_BASELINE.md`
+- `docs/current/AEGIS_WORKFLOW_GUIDE.md`
+- `docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md`
 - `docs/current/AEGIS_ACTIVATION_MODE.md`
 - `docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md`
 - `docs/current/AEGIS_RULE_LAYERING.md`
@@ -73,6 +75,14 @@ The public current set is:
 
 `AEGIS_PROCESS_BASELINE.md`
 : Method-layer workflow baseline and evidence discipline.
+
+`AEGIS_WORKFLOW_GUIDE.md`
+: English workflow guide for users and contributors. It explains the current
+  Aegis workflow without adding runtime authority.
+
+`AEGIS_WORKFLOW_GUIDE_ZH.md`
+: Chinese workflow guide for users and contributors. It explains the current
+  Aegis workflow without adding runtime authority.
 
 `AEGIS_ACTIVATION_MODE.md`
 : `auto` and `explicit` activation mode semantics.

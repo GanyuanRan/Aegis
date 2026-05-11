@@ -14,6 +14,13 @@
 
 中文版本：[README.zh-CN.md](README.zh-CN.md)
 
+## Workflow Guides
+
+New users can read the workflow guides before installing Aegis:
+
+- [English workflow guide](docs/current/AEGIS_WORKFLOW_GUIDE.md)
+- [中文工作流程说明](docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md)
+
 ## Minimal Install
 
 If you are using an AI coding agent, you can ask it to install Aegis for you:

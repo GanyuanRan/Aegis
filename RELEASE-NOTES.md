@@ -1,5 +1,38 @@
 # Aegis Release Notes
 
+## v1.1.6 (2026-05-11)
+
+### 工作流程入口
+
+- **新增英文工作流程说明** — 增加
+  `docs/current/AEGIS_WORKFLOW_GUIDE.md`，面向用户和贡献者说明 Aegis
+  如何触发、路由、分级、基线读取、执行、验证和收口。
+- **新增中文工作流程说明** — 增加
+  `docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md`，帮助中文用户在安装前快速理解
+  Aegis 的实际工作方式。
+- **README 快速入口** — 在根目录 `README.md` 的 `Minimal Install` 前、以及
+  `README.zh-CN.md` 的 `极简安装` 前加入中英文 workflow guide 链接，方便新用户
+  先阅读流程再安装。
+- **Current docs 索引** — 将两份 workflow guide 纳入 `docs/current/README.md`
+  的 public current baseline 与 document roles。
+
+### 边界
+
+- 两份 workflow guide 仅作为说明型入口，不新增 runtime authority。
+- 本版本仍然发布 `Aegis Method Pack (runtime-ready)`，不新增 authoritative
+  `GateDecision`、`PolicySnapshot` 或 `completion authority`。
+
+### 验证
+
+- `bash scripts/bump-version.sh 1.1.6`
+- `bash scripts/bump-version.sh --check`
+- `git diff --check`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/trigger-health-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/artifact-schema-check.sh`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+
 ## v1.1.5 (2026-05-10)
 
 ### Trigger Reliability
