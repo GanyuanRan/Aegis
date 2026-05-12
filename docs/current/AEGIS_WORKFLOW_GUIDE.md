@@ -415,7 +415,10 @@ feature or bugfix code.
 
 `first-principles-review`
 : Use when direction is complex, repeated fixes are accumulating, fallbacks are
-growing, owners are duplicated, or the user explicitly asks for first principles.
+growing, owners are duplicated, or the user explicitly asks for first
+principles. Before risky approach selection or task decomposition, it can
+escalate to a decision hygiene review covering first-principles invariants,
+owner / retirement, and falsification checks.
 
 `requesting-code-review`
 : Check behavioral risks, regressions, and missing tests after important work.

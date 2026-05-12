@@ -398,7 +398,7 @@ baseline 记录当前架构状态。
 : 在实施 feature 或 bugfix 前，用测试驱动最小实现和回归验证。
 
 `first-principles-review`
-: 当方向复杂、反复修补、fallback 膨胀、owner 重复或用户明确要求第一性原理时使用。
+: 当方向复杂、反复修补、fallback 膨胀、owner 重复或用户明确要求第一性原理时使用。若方案选择或任务拆解会固化 owner、retirement、fallback、adapter 或长期稳定性判断，可升级为 decision hygiene review，检查第一性原则不变量、owner / retirement 和反证场景。
 
 `requesting-code-review`
 : 完成重要实现后，检查行为风险、回归和测试缺口。

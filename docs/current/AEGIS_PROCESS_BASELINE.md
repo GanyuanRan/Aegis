@@ -479,7 +479,9 @@ This process baseline should be projected into the following skills as a priorit
 - `first-principles-review`
   - Provide a lightweight compositional review for first-principles, Occam,
     ambiguous direction, repeated fixes, fallback growth, duplicate owners, or
-    architecture/product direction risk; do not add it to the always-loaded hot path
+    architecture/product direction risk; own the decision hygiene escalation for
+    invariants, owner / retirement, and falsification checks before risky specs
+    or plans are endorsed; do not add it to the always-loaded hot path
 - `using-aegis`
   - Add complexity routing, project workspace creation boundary, and prompt hygiene hot path
 - `systematic-debugging`

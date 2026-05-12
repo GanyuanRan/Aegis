@@ -1,5 +1,47 @@
 # Aegis Release Notes
 
+## v1.2.2 (2026-05-12)
+
+### Decision Hygiene Review
+
+- **First-principles escalation** — strengthened
+  `first-principles-review` with a compact `Decision Hygiene Review` escalation
+  for risky proposal, spec, and plan decisions.
+- **Owner and retirement clarity** — added first-principles invariants,
+  owner / retirement matrix, and falsification matrix prompts before a workflow
+  endorses new owners, duplicate owners, fallbacks, adapters, compat-only
+  carriers, delete-first questions, or long-term stability claims.
+- **Workflow routing** — wired `brainstorming` to invoke the escalation before
+  risky approach selection and `writing-plans` before risky task decomposition
+  when the spec has not already settled the decision.
+- **Guide and baseline alignment** — updated the English and Chinese workflow
+  guides plus the process baseline so decision hygiene remains an escalation
+  inside the method pack, not a new always-on ceremony.
+
+### Regression Coverage
+
+- Expanded `tests/e2e/first-principles-review-check.sh` to guard the decision
+  hygiene template, escalation signals, advisory verdict wording, workflow guide
+  coverage, and the unchanged `using-aegis` hot path.
+
+### Boundary
+
+This release still ships `Aegis Method Pack (runtime-ready)`. Decision Hygiene
+Review is advisory method-pack workflow discipline. It does not add an
+authoritative `GateDecision`, `PolicySnapshot`, or `completion authority`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.2.2`
+- `bash scripts/bump-version.sh --check`
+- `git diff --check`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/first-principles-review-check.sh`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/trigger-health-check.sh`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+
 ## v1.2.1 (2026-05-12)
 
 ### Hardened Install Verification
