@@ -1,5 +1,55 @@
 # Aegis Release Notes
 
+## v1.2.1 (2026-05-12)
+
+### Hardened Install Verification
+
+- **Complete-install gate** — tightened the root English and Chinese README
+  install/update prompts so agents must run
+  `python scripts/aegis-doctor.py --write-config --json` from the Aegis
+  method-pack root.
+- **Durable helper path readback** — documented that installation or update is
+  complete only when the doctor JSON reports `"ok": true`,
+  `"workspaceSupport": "available"`, and `"configStatus": "configured"`.
+- **Discovery-root check** — kept separate host skill discovery validation via
+  `--discovery-root <path>` for hosts that expose a distinct skill discovery
+  directory, reducing the chance that a stale copied skill tree is mistaken for
+  a complete install.
+
+### Host Documentation
+
+- Updated Codex, OpenCode, Claude Code, CodeBuddy, DeepSeek-TUI, and Trae
+  install/troubleshooting guides to use the hardened complete-install
+  verification command.
+- Updated the host compatibility snapshot, known limitations, and trigger
+  health baseline so install/version diagnosis uses the same configured helper
+  path readback.
+
+### Regression Coverage
+
+- Added `tests/e2e/install-verification-policy-check.sh` to prevent public
+  install docs from regressing to weak "skill discovery only" verification.
+- Wired the new install verification policy check into Layer 1 fast
+  verification.
+
+### Boundary
+
+This release still ships `Aegis Method Pack (runtime-ready)`. The hardened
+doctor readback verifies method-pack installation and workspace-helper wiring;
+it does not grant authoritative `GateDecision`, `PolicySnapshot`, or
+`completion authority`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.2.1`
+- `bash scripts/bump-version.sh --check`
+- `git diff --check`
+- `python -m py_compile scripts/aegis-doctor.py scripts/aegis-workspace.py`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/install-verification-policy-check.sh`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+
 ## v1.2.0 (2026-05-12)
 
 ### ADR Auto Backfill

@@ -53,7 +53,9 @@ Question:
 
 Evidence:
 
-- `python scripts/aegis-doctor.py --json`
+- `python scripts/aegis-doctor.py --write-config --json`
+- JSON readback includes `"workspaceSupport": "available"` and
+  `"configStatus": "configured"`
 - `bash scripts/bump-version.sh --check` in the method-pack checkout
 - release tag / commit readback when testing a published install
 

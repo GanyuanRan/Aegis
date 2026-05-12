@@ -90,6 +90,15 @@ Expected result:
 - Trae does not present Aegis as a full runtime platform or final completion
   authority.
 
+For complete-install verification, run this from the local Aegis checkout:
+
+```bash
+python scripts/aegis-doctor.py --write-config --json
+```
+
+Treat the install as complete only if the JSON reports `"ok": true`,
+`"workspaceSupport": "available"`, and `"configStatus": "configured"`.
+
 ## Updating
 
 ### macOS / Linux
@@ -145,7 +154,9 @@ Aegis skill folders you copied from this repository.
 
 If only `skills/` were copied and the local checkout was removed, skill
 discovery may still work but complete project workspace support is not proven.
-Restore the checkout and run `python scripts/aegis-doctor.py --json`.
+Restore the checkout and run `python scripts/aegis-doctor.py --write-config
+--json`. The JSON should include `"workspaceSupport": "available"` and
+`"configStatus": "configured"`.
 
 ## Official Trae References
 

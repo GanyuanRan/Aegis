@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+cd "$REPO_ROOT"
+
+failures=0
+
+pass() {
+    echo "  [PASS] $1"
+}
+
+fail() {
+    echo "  [FAIL] $1"
+    failures=$((failures + 1))
+}
+
+assert_contains() {
+    local file="$1"
+    local pattern="$2"
+    local label="$3"
+
+    if grep -qE -- "$pattern" "$file"; then
+        pass "$label"
+    else
+        fail "$label"
+    fi
+}
+
+echo "=== Install Verification Policy Check ==="
+
+root_docs=(
+    "README.md"
+    "README.zh-CN.md"
+)
+
+host_docs=(
+    "docs/README.codex.md"
+    "docs/README.opencode.md"
+    "docs/README.claude-code.md"
+    "docs/README.codebuddy.md"
+    "docs/README.deepseek-tui.md"
+    "docs/README.trae.md"
+)
+
+for file in "${root_docs[@]}"; do
+    assert_contains "$file" "aegis-doctor\\.py --write-config --json" \
+        "$file requires doctor write-config JSON verification"
+    assert_contains "$file" '"workspaceSupport": "available"' \
+        "$file names workspaceSupport install success field"
+    assert_contains "$file" '"configStatus": "configured"' \
+        "$file names configStatus install success field"
+done
+
+for file in "${host_docs[@]}"; do
+    assert_contains "$file" "aegis-doctor\\.py --write-config --json" \
+        "$file uses hardened complete-install doctor command"
+done
+
+assert_contains "docs/current/AEGIS_KNOWN_LIMITATIONS.md" "aegis-doctor\\.py --write-config --json" \
+    "known limitations tracks hardened install verification command"
+assert_contains "docs/current/AEGIS_KNOWN_LIMITATIONS.md" '"configStatus": "configured"' \
+    "known limitations tracks configured status readback"
+assert_contains "docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md" "aegis-doctor\\.py --write-config --json" \
+    "compatibility snapshot requires hardened install verification"
+
+if (( failures > 0 )); then
+    echo ""
+    echo "Install verification policy check failed with $failures issue(s)."
+    exit 1
+fi
+
+echo ""
+echo "Install verification policy check passed."

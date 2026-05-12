@@ -176,7 +176,9 @@ It only records limitations supported by current fresh evidence and does not spe
 - Some hosts support only copying `skills/` into a native discovery directory. That keeps workflows usable, but the repo-local workspace support scripts may not be discoverable unless the method-pack root remains available or is configured
 
 **Observation Metric**
-- `python scripts/aegis-doctor.py --json`
+- `python scripts/aegis-doctor.py --write-config --json`
+- JSON readback includes `"workspaceSupport": "available"` and
+  `"configStatus": "configured"`
 - Host docs distinguish recommended complete install from compatibility fallback
 
 **Retirement Trigger**
@@ -213,7 +215,7 @@ It only records limitations supported by current fresh evidence and does not spe
   the updated hot path is active.
 
 **Observation Metric**
-- `python scripts/aegis-doctor.py --json`
+- `python scripts/aegis-doctor.py --write-config --json`
 - `python scripts/aegis-doctor.py --discovery-root <host-skill-discovery-root>`
 - Host-specific restart/reload plus skill discovery smoke where available
 

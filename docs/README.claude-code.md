@@ -144,6 +144,16 @@ You can also ask:
 Tell me about your Aegis skills and which one you would use before debugging a failing test.
 ```
 
+When filesystem access to the installed plugin cache or local `--plugin-dir` is
+available, run complete-install verification from the method-pack root:
+
+```bash
+python scripts/aegis-doctor.py --write-config --json
+```
+
+Treat the install as complete only if the JSON reports `"ok": true`,
+`"workspaceSupport": "available"`, and `"configStatus": "configured"`.
+
 Expected result:
 
 - Claude Code can see the `aegis` plugin namespace.
@@ -196,8 +206,10 @@ that supports plugins.
 
 Skill visibility alone does not prove complete project workspace support.
 Confirm the installed plugin cache or local `--plugin-dir` still contains the
-repository scripts, then run `python scripts/aegis-doctor.py --json` from that
-method-pack root when filesystem access is available.
+repository scripts, then run `python scripts/aegis-doctor.py --write-config
+--json` from that method-pack root when filesystem access is available. The
+JSON should include `"workspaceSupport": "available"` and `"configStatus":
+"configured"`.
 
 ### Windows hook behavior
 

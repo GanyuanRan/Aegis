@@ -34,7 +34,7 @@
 如果你正在使用 AI 编程 agent，可以直接把下面这段话复制给它：
 
 ```text
-请仔细阅读 https://github.com/GanyuanRan/Aegis 这个仓库的安装说明，识别我当前使用的 AI 编程宿主，为我完成全局安装；如果需要重启或重新加载宿主，请明确告诉我；安装后请验证 Aegis 已完整可用，包括 skills 可发现，以及项目工作区能力可正常使用。
+请仔细阅读 https://github.com/GanyuanRan/Aegis 这个仓库的安装说明，识别我当前使用的 AI 编程宿主，为我完成全局安装；如果需要重启或重新加载宿主，请明确告诉我；然后从 Aegis method-pack 根目录运行完整安装验证：`python scripts/aegis-doctor.py --write-config --json`。只有当 JSON 输出包含 `"ok": true`、`"workspaceSupport": "available"` 和 `"configStatus": "configured"` 时，才把安装视为完成；如果宿主有单独的 skill discovery 目录，也要额外用 `--discovery-root <path>` 验证它指向当前版本。
 ```
 
 ## 更新 Aegis
@@ -42,7 +42,7 @@
 如果你已经安装过 Aegis，可以直接把下面这段话复制给你的 AI 编程 agent：
 
 ```text
-请将我已安装的 Aegis 更新到 https://github.com/GanyuanRan/Aegis 的最新 main 分支版本；请根据我当前使用的 AI 编程宿主选择正确的更新路径；如果需要重启或重新加载宿主，请明确告诉我；更新后请验证 Aegis 已完整可用，包括 skills 可发现，以及项目工作区能力可正常使用。
+请将我已安装的 Aegis 更新到 https://github.com/GanyuanRan/Aegis 的最新 main 分支版本；请根据我当前使用的 AI 编程宿主选择正确的更新路径；如果需要重启或重新加载宿主，请明确告诉我；然后从 Aegis method-pack 根目录运行完整安装验证：`python scripts/aegis-doctor.py --write-config --json`。只有当 JSON 输出包含 `"ok": true`、`"workspaceSupport": "available"` 和 `"configStatus": "configured"` 时，才把更新视为完成；如果宿主有单独的 skill discovery 目录，也要额外用 `--discovery-root <path>` 验证它指向当前版本。
 ```
 
 ## 可选：轻量全局规则
@@ -438,11 +438,14 @@ authority；可复用的 Aegis 产物只在 workflow 需要时提升。
 method-pack 仓库自身不预置 live `docs/aegis/` 工作区。工作区结构检查不判断
 evidence sufficiency，也不授予 completion authority。
 
-维护者可以用下面的命令验证完整安装：
+维护者可以用下面的命令验证完整安装，并写入稳定的本地 helper 路径：
 
 ```bash
-python scripts/aegis-doctor.py --json
+python scripts/aegis-doctor.py --write-config --json
 ```
+
+完整安装验证必须返回 `"ok": true`、`"workspaceSupport": "available"` 和
+`"configStatus": "configured"`。
 
 如果某个宿主有单独的 skill discovery 目录，可额外传入
 `--discovery-root <path>`，确认它指向当前 method-pack skills，而不是旧的复制版本。

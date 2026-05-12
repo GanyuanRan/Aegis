@@ -14,7 +14,7 @@ authority order, release gate, and known limitations, read:
 Tell Codex:
 
 ```
-Read https://github.com/GanyuanRan/Aegis, install Aegis globally for Codex, restart Codex if needed, and verify Aegis is fully available, including skill discovery and project workspace support.
+Read https://github.com/GanyuanRan/Aegis, install Aegis globally for Codex, restart Codex if needed, then run `python scripts/aegis-doctor.py --write-config --json` from the Aegis method-pack root. Treat the install as complete only if the JSON includes `"ok": true`, `"workspaceSupport": "available"`, and `"configStatus": "configured"`; also verify Codex's skill discovery directory with `--discovery-root <path>`.
 ```
 
 ## Manual Installation
@@ -147,7 +147,11 @@ cd ~/.codex/aegis && git pull
 ```
 
 Skills update instantly through the symlink. After updating, restart Codex if
-needed and verify skill discovery plus project workspace support.
+needed and run `python scripts/aegis-doctor.py --write-config --json` from the
+method-pack root. The update is complete only when the JSON reports `"ok":
+true`, `"workspaceSupport": "available"`, and `"configStatus": "configured"`;
+also pass `--discovery-root <path>` when checking Codex's skill discovery
+directory.
 
 ## Uninstalling
 
@@ -173,7 +177,9 @@ Optionally delete the clone: `rm -rf ~/.codex/aegis` (Windows: `Remove-Item -Rec
 ### Project workspace support not verified
 
 1. Confirm the method-pack root still exists: `ls ~/.codex/aegis`
-2. From the method-pack root, run: `python scripts/aegis-doctor.py --json`
+2. From the method-pack root, run: `python scripts/aegis-doctor.py --write-config --json`
+3. Treat the install as complete only if the JSON reports `"workspaceSupport":
+   "available"` and `"configStatus": "configured"`.
 
 ### Windows junction issues
 

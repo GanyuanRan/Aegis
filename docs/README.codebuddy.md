@@ -103,6 +103,15 @@ After installation, start a new CodeBuddy session and ask:
 Tell me about your Aegis skills and which one you would use before debugging a failing test.
 ```
 
+Then run complete-install verification from the local Aegis checkout:
+
+```bash
+python scripts/aegis-doctor.py --write-config --json
+```
+
+Treat the install as complete only if the JSON reports `"ok": true`,
+`"workspaceSupport": "available"`, and `"configStatus": "configured"`.
+
 Expected result:
 
 - CodeBuddy can see Aegis skills such as `using-aegis`,
@@ -168,7 +177,9 @@ plugin manager and then restart the host.
 
 If Aegis was installed by copying only `skills/`, the host may discover skills
 but not prove complete project workspace support. Keep or restore the local
-checkout, then run `python scripts/aegis-doctor.py --json` from that checkout.
+checkout, then run `python scripts/aegis-doctor.py --write-config --json` from
+that checkout. The JSON should include `"workspaceSupport": "available"` and
+`"configStatus": "configured"`.
 
 ### CodeBuddy CLI is installed but not runnable
 

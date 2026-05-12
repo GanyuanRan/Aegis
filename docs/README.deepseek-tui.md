@@ -112,8 +112,15 @@ Tell me which Aegis skill you would use before debugging a failing test.
 DeepSeek-TUI should treat Aegis as method-pack guidance, not as a full runtime
 platform or final completion authority.
 
-For complete install verification, also run `python scripts/aegis-doctor.py
---json` from the local Aegis checkout when filesystem access is available.
+For complete install verification, also run this from the local Aegis checkout
+when filesystem access is available:
+
+```bash
+python scripts/aegis-doctor.py --write-config --json
+```
+
+Treat the install as complete only if the JSON reports `"ok": true`,
+`"workspaceSupport": "available"`, and `"configStatus": "configured"`.
 
 ## Updating
 
@@ -177,7 +184,9 @@ single-skill GitHub installer is not the stable canonical path for this host.
 
 If only `skills/` were copied and the local checkout was removed, skill
 discovery may still work but complete project workspace support is not proven.
-Restore the checkout and run `python scripts/aegis-doctor.py --json`.
+Restore the checkout and run `python scripts/aegis-doctor.py --write-config
+--json`. The JSON should include `"workspaceSupport": "available"` and
+`"configStatus": "configured"`.
 
 ## DeepSeek-TUI References
 

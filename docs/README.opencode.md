@@ -26,6 +26,15 @@ Aegis method-pack root available for project workspace support verification.
 
 Verify by asking: "Tell me about your aegis"
 
+Then run complete-install verification from the method-pack root:
+
+```bash
+python scripts/aegis-doctor.py --write-config --json
+```
+
+Treat the install as complete only if the JSON reports `"ok": true`,
+`"workspaceSupport": "available"`, and `"configStatus": "configured"`.
+
 ### Activation Mode
 
 Aegis defaults to automatic mode. To switch OpenCode to explicit mode, edit:
@@ -222,7 +231,8 @@ Override `OPENCODE_TEST_MODEL` to a model/provider pair that is valid on your ma
 Skill discovery and project workspace support are separate checks. If skills
 are visible but workspace support is not verified, confirm the plugin-backed
 method-pack checkout/cache is present, then run `python scripts/aegis-doctor.py
---json` from that method-pack root.
+--write-config --json` from that method-pack root. The JSON should include
+`"workspaceSupport": "available"` and `"configStatus": "configured"`.
 
 ### Bootstrap not appearing
 
