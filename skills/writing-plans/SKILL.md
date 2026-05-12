@@ -57,6 +57,10 @@ If the input is a Spec Brief, keep the plan scoped to the pinned
 what/why/acceptance and do not expand into a formal design unless new
 architecture, contract, migration, or cross-module uncertainty appears.
 
+Compact output contract before writing the plan: `Plan Basis`, `Files`,
+`Compatibility`, `Tasks`, `Risks`, and `Retirement`. Expand only where the
+approved scope, risk, or verification surface requires it.
+
 If the spec covers multiple independent subsystems, suggest breaking into
 separate plans. Before writing tasks, check: fact/assumption/unknown, baseline
 docs, compatibility boundary, whether dual-track (repair + retirement) applies.

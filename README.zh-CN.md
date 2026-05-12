@@ -428,6 +428,11 @@ Aegis 会在实施前先按复杂度路由：
 - 中复杂度任务：必须先有 baseline read set、Spec Brief 或稳定需求、plan 和 atomic tasks，再进入 TDD。
 - 高复杂度任务：必须先有 Design Spec 和 plan；workflow 要求用户确认时不能跳过确认。
 
+工作流质量护栏用于保证这套路由在真实任务里保持实用：简单任务继续走 fast path，
+中高风险任务才生成必要证据和 artifacts，输出先使用 compact contracts，只有风险升高时
+才展开完整 workflow 结构。阅读
+[docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md](docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md)。
+
 当项目需要持久化 Aegis 记录时，Aegis 会懒创建轻量项目工作区。默认工作区包含
 `docs/aegis/` 下的 `README.md`、`INDEX.md`、`BASELINE-GOVERNANCE.md`，
 以及标准的 `adr/`、`baseline/`、`specs/`、`plans/`、`work/` 目录。任务过程记录放在
@@ -513,6 +518,7 @@ bash tests/e2e/run-all.sh --full --host-profile fast
 ```bash
 bash tests/e2e/boundary-compliance-check.sh
 bash tests/e2e/artifact-schema-check.sh
+bash tests/e2e/workflow-quality-check.sh
 bash tests/opencode/run-tests.sh
 bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh
 ```

@@ -74,6 +74,23 @@ Root improvement rule:
 - After long sessions, heavy tool output, resume, or context compaction, run a
   compact Aegis re-entry check before continuing non-trivial work.
 
+### 3.0a Workflow Quality
+
+Workflow Quality is the guardrail for making high-frequency Aegis workflows
+useful in real tasks without making simple tasks expensive.
+
+The canonical baseline is
+`docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md`.
+
+Root improvement rule:
+
+- Use workflow-quality fixtures before changing high-frequency skill behavior.
+- Preserve fast-path cheapness for simple Q&A, status checks, and tiny edits.
+- Scale output depth by task complexity and risk.
+- Prefer compact output contracts over broad template expansion.
+- Keep runtime-ready artifacts as drafts, hints, projections, and evidence
+  bundles only.
+
 ### 3.1 Ripple Signal Triage
 
 Ripple Signal Triage is the pre-change entry point for dependency-aware work.

@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "qualityDimensions": [
+    "trigger-accuracy",
+    "fast-path-cheapness",
+    "output-compactness",
+    "evidence-freshness",
+    "artifact-stability",
+    "workspace-laziness",
+    "authority-boundary"
+  ],
+  "samples": [
+    {
+      "id": "simple-factual-qa",
+      "prompt": "What is this repository for?",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": ["using-aegis"],
+      "mustNotDo": ["force-full-workflow", "create-project-workspace-records"],
+      "expectedOutputShape": "concise-answer-with-facts",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "answer-cites-current-docs-when-needed"
+    },
+    {
+      "id": "tiny-wording-edit",
+      "prompt": "Please fix this typo in the README sentence.",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["force-design-spec", "create-project-workspace-records"],
+      "expectedOutputShape": "short-change-summary-and-verification",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "git-diff-check-or-targeted-readback"
+    },
+    {
+      "id": "git-status-version-question",
+      "prompt": "What version is this Aegis checkout on and is the working tree clean?",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": ["using-aegis"],
+      "mustNotDo": ["force-full-workflow", "create-project-workspace-records"],
+      "expectedOutputShape": "command-output-summary",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "fresh-command-output"
+    },
+    {
+      "id": "quick-single-owner-bug",
+      "prompt": "A single helper returns the wrong default value. Please fix it quickly and verify the test.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": ["test-driven-development", "verification-before-completion"],
+      "mustNotDo": ["guess-fix-without-reproduction", "emit-full-architecture-ceremony"],
+      "expectedOutputShape": "quick-bug-lane-root-cause-and-evidence",
+      "workspacePolicy": "workspace-only-if-medium-risk",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "failing-test-or-reproduction-then-fresh-pass"
+    },
+    {
+      "id": "failing-test-diagnosis",
+      "prompt": "This test is failing. Diagnose whether code or test is wrong before changing either.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": ["test-driven-development", "verification-before-completion"],
+      "mustNotDo": ["modify-test-before-owner", "modify-code-to-satisfy-bad-test"],
+      "expectedOutputShape": "root-cause-first-diagnosis",
+      "workspacePolicy": "workspace-if-medium-risk-or-process-trail-needed",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "diagnosis-identifies-error-source"
+    },
+    {
+      "id": "ambiguous-feature",
+      "prompt": "I want to add a new capability, but the scope and acceptance criteria are unclear. Help me shape it first.",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": ["first-principles-review", "writing-plans"],
+      "mustNotDo": ["start-implementation-immediately", "skip-baseline-readset"],
+      "expectedOutputShape": "task-intent-baseline-impact-options",
+      "workspacePolicy": "spec-only-when-persistent-requirements-needed",
+      "expectedArtifacts": ["TaskIntentDraft", "BaselineReadSetHint", "ImpactStatementDraft"],
+      "verificationSignal": "user-approved-brief-or-design-before-plan"
+    },
+    {
+      "id": "approved-spec-to-plan",
+      "prompt": "The Spec Brief is approved. Turn it into an implementation plan with files and verification commands.",
+      "expectedPrimarySkill": "writing-plans",
+      "allowedSecondarySkills": ["first-principles-review"],
+      "mustNotDo": ["redesign-without-cause", "omit-verification"],
+      "expectedOutputShape": "plan-basis-files-compat-tasks-risks-retirement",
+      "workspacePolicy": "plan-record-under-docs-aegis-plans",
+      "expectedArtifacts": ["BaselineReadSetHint", "ImpactStatementDraft"],
+      "verificationSignal": "plan-has-exact-commands-and-file-boundaries"
+    },
+    {
+      "id": "completion-claim",
+      "prompt": "Before we call this done, verify whether the work is complete and tell me the evidence.",
+      "expectedPrimarySkill": "verification-before-completion",
+      "allowedSecondarySkills": ["requesting-code-review"],
+      "mustNotDo": ["claim-complete-without-evidence", "hide-residual-risk"],
+      "expectedOutputShape": "evidence-card",
+      "workspacePolicy": "check-workspace-if-docs-aegis-was-touched",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "fresh-command-exit-status-and-covered-scope"
+    },
+    {
+      "id": "interrupted-long-task-resume",
+      "prompt": "We are resuming a multi-step task after compaction. Re-read the checkpoint and continue safely.",
+      "expectedPrimarySkill": "long-task-continuation",
+      "allowedSecondarySkills": ["using-aegis", "verification-before-completion"],
+      "mustNotDo": ["resume-from-memory-alone", "continue-without-drift-check"],
+      "expectedOutputShape": "checkpoint-evidence-drift-risk-next",
+      "workspacePolicy": "work-record-required-for-medium-plus-long-task",
+      "expectedArtifacts": ["TodoCheckpointDraft", "ResumeStateHint", "DriftCheckDraft", "EvidenceBundleDraft"],
+      "verificationSignal": "latest-checkpoint-and-worktree-readback"
+    },
+    {
+      "id": "governance-compat-cleanup",
+      "prompt": "Clean up this compatibility fallback without breaking supported hosts.",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": ["writing-plans", "verification-before-completion"],
+      "mustNotDo": ["delete-without-retirement-trigger", "claim-host-support-without-smoke-boundary"],
+      "expectedOutputShape": "dual-track-impact-and-plan",
+      "workspacePolicy": "spec-or-plan-record-required",
+      "expectedArtifacts": ["TaskIntentDraft", "ImpactStatementDraft", "GateInputPack"],
+      "verificationSignal": "compatibility-boundary-and-retirement-track-covered"
+    }
+  ],
+  "compactOutputContracts": {
+    "using-aegis": ["Route", "Why", "Next"],
+    "brainstorming": ["TaskIntentDraft", "BaselineReadSetHint", "ImpactStatementDraft", "Options", "Decision Needed"],
+    "writing-plans": ["Plan Basis", "Files", "Compatibility", "Tasks", "Risks", "Retirement"],
+    "systematic-debugging": ["Symptom", "Reproduction", "Root Cause", "Fix Boundary", "Verification"],
+    "verification-before-completion": ["Command / Check", "Exit Status", "Covered", "Not Covered", "Residual Risk", "Confidence"],
+    "long-task-continuation": ["TodoCheckpointDraft", "Evidence", "DriftCheckDraft", "Risk / Unknown", "Next"]
+  }
+}

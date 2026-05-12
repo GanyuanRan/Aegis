@@ -61,6 +61,10 @@ You MUST create a task for each of these items and complete them in order:
 
 **Working artifacts:** Keep three drafts: `TaskIntentDraft` (outcome, scope, risks), `BaselineReadSetHint` (candidate docs, authority gaps), `ImpactStatementDraft` (affected layers, owners, invariants, compat, non-goals). Refresh when scope changes.
 
+**Compact output contract:** `TaskIntentDraft`, `BaselineReadSetHint`,
+`ImpactStatementDraft`, `Options`, and `Decision Needed`. Use this compact
+shape before expanding into a full design structure.
+
 **Exploring approaches:** Propose 2-3 approaches with trade-offs and
 recommendation. Make scope boundary explicit: what's in, what's deferred, what
 belongs elsewhere.

@@ -458,6 +458,11 @@ Aegis routes work by complexity before implementation:
 - Medium-complexity tasks require a baseline read set, a Spec Brief or stable requirements, a plan, and atomic tasks before TDD.
 - High-complexity tasks require a Design Spec and plan first, with user review where the workflow calls for it.
 
+Workflow Quality guardrails keep that routing practical: simple tasks stay on
+the fast path, medium/high-risk tasks get the right evidence and artifacts, and
+outputs use compact contracts before expanding into full workflow structure.
+Read [docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md](docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md).
+
 When a project needs persistent Aegis records, Aegis creates a lightweight
 project workspace lazily. The default workspace includes `README.md`,
 `INDEX.md`, `BASELINE-GOVERNANCE.md`, and standard `adr/`, `baseline/`,
@@ -550,6 +555,7 @@ Focused checks:
 ```bash
 bash tests/e2e/boundary-compliance-check.sh
 bash tests/e2e/artifact-schema-check.sh
+bash tests/e2e/workflow-quality-check.sh
 bash tests/opencode/run-tests.sh
 bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh
 ```

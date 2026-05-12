@@ -186,6 +186,8 @@ Failure owner:
 ## 4. Representative Trigger Matrix
 
 Trigger health uses stable, representative prompts rather than ad hoc feelings.
+workflow-quality samples extend this matrix with expected output shape,
+workspace policy, artifact policy, and evidence freshness checks.
 
 Minimum samples:
 

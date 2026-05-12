@@ -57,6 +57,7 @@ The public current set is:
 - `docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md`
 - `docs/current/AEGIS_RULE_LAYERING.md`
 - `docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md`
+- `docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md`
 - `docs/current/AEGIS_DUAL_TRACK_GOVERNANCE.md`
 - `docs/current/AEGIS_ADR_AUTO_BACKFILL.md`
 - `docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md`
@@ -98,6 +99,11 @@ The public current set is:
 : Trigger-chain diagnosis for "installed but not reliably invoking the right
 skill", including install, discovery, activation, routing, execution-depth, and
 false-positive layers.
+
+`AEGIS_WORKFLOW_QUALITY_BASELINE.md`
+: Quality baseline for high-frequency workflows, compact output contracts,
+  representative samples, fast-path cheapness, evidence freshness, artifact
+  stability, workspace laziness, and authority boundary.
 
 `AEGIS_DUAL_TRACK_GOVERNANCE.md`
 : Repair track plus retirement track governance.

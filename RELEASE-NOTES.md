@@ -1,5 +1,68 @@
 # Aegis Release Notes
 
+## v1.3.0 (2026-05-12)
+
+### Workflow Quality Hardening
+
+- **Workflow Quality baseline** — added
+  `docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md` to define quality
+  dimensions for high-frequency Aegis workflows: trigger accuracy, fast-path
+  cheapness, output compactness, evidence freshness, artifact stability,
+  workspace laziness, and authority boundary.
+- **Representative quality matrix** — added
+  `tests/e2e/fixtures/workflow-quality-matrix.json` with sample-driven
+  expectations for simple Q&A, tiny wording edits, version/status checks, bug
+  fixes, failing tests, ambiguous features, approved specs, completion claims,
+  long-task resume, and governance cleanup.
+- **Regression guardrail** — added `tests/e2e/workflow-quality-check.sh` and
+  wired it into Layer 1 fast verification so workflow hardening is checked
+  before broadening skill behavior.
+
+### Compact Workflow Contracts
+
+- **Leaner routing** — kept `using-aegis` within the hot-path budget while
+  adding a compact `Route / Why / Next` contract for useful routing output.
+- **Scaled workflow depth** — clarified compact contracts for `brainstorming`,
+  `writing-plans`, `systematic-debugging`, `verification-before-completion`,
+  and `long-task-continuation` so everyday tasks stay light and medium/high
+  risk tasks still produce reusable evidence.
+- **Quick bug lane** — added a compact low-risk debugging lane that still
+  requires root-cause evidence before editing and escalates when fallback,
+  duplicate owner, consumer-side patching, contract, shared logic, or
+  cross-module risk appears.
+- **Evidence Card** — formalized the compact verification output shape:
+  command/check, exit status, covered scope, uncovered scope, residual risk,
+  and confidence.
+
+### Documentation And Release Hygiene
+
+- Added Workflow Quality to the current docs index, process baseline, trigger
+  health baseline, English README, Chinese README, and E2E bootstrap docs.
+- Updated version audit exclusions so ignored `.tmp/` dependency caches do not
+  appear as Aegis version drift during release checks.
+
+### Boundary
+
+This release still ships `Aegis Method Pack (runtime-ready)`. Workflow Quality
+Hardening adds method-pack guardrails, samples, and compact output contracts.
+It does not add an authoritative `GateDecision`, `PolicySnapshot`, evidence
+sufficiency decision, or `completion authority`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.3.0`
+- `bash scripts/bump-version.sh --check`
+- `git diff --check`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/trigger-health-check.sh`
+- `bash tests/e2e/project-bootstrap-policy-check.sh`
+- `bash tests/e2e/workspace-helper-wiring-check.sh`
+- `bash tests/e2e/long-task-continuation-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/run-all.sh --full --host-profile none`
+
 ## v1.2.2 (2026-05-12)
 
 ### Decision Hygiene Review
