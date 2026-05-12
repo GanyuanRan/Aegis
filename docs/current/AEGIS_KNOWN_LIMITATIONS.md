@@ -246,6 +246,33 @@ It only records limitations supported by current fresh evidence and does not spe
 
 ---
 
+### 2.14 ADR Auto Backfill Is Baseline-Defined Before Helper Automation
+
+**Retained Item**
+- ADR Auto Backfill is currently defined as a method-pack workflow baseline, but
+  helper-backed `new-adr`, `amend-adr`, and `supersede-adr` commands are not yet
+  implemented
+
+**Retention Reason**
+- The workflow boundary must be stable before helper automation is added. The
+  current repository already defines how completed work should backfill ADRs and
+  when baseline sync is mandatory, but script support and skill wiring still
+  need a separate implementation slice
+
+**Observation Metric**
+- `docs/current/AEGIS_ADR_AUTO_BACKFILL.md`
+- Future helper tests for ADR creation, amendment, supersession, index coverage,
+  and baseline sync checks
+- Review of `verification-before-completion`, `long-task-continuation`,
+  `writing-plans`, and `requesting-code-review` skill wiring
+
+**Retirement Trigger**
+- When helper-backed ADR lifecycle commands exist, affected skills invoke ADR
+  Auto Backfill at completion time, and e2e tests prove ADR/index/baseline sync
+  behavior without granting runtime authority
+
+---
+
 ## 3. Default Reading Rule
 
 If a limitation appears simultaneously in README, host docs, or test descriptions, use this document as the current reading entry point.

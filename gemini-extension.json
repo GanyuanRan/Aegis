@@ -1,6 +1,6 @@
 {
   "name": "aegis",
   "description": "Core skills library: TDD, debugging, collaboration patterns, and proven techniques",
-  "version": "1.1.6",
+  "version": "1.2.0",
   "contextFileName": "GEMINI.md"
 }

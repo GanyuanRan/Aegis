@@ -227,6 +227,8 @@ Must cover at minimum:
 
 - Whether the current conclusion should exit, continue iterating, or escalate the problem definition
 - Whether baseline, ADR, review, or verification strategy needs revision
+- Whether completed work should backfill, amend, supersede, or skip an ADR
+  based on `docs/current/AEGIS_ADR_AUTO_BACKFILL.md`
 
 ---
 
@@ -433,6 +435,37 @@ The generated proof bundle is a structural review/handoff package. It is not a
 final evidence-sufficiency decision, not an authoritative `GateDecision`, and
 not completion authority.
 
+### 12.7 ADR Auto Backfill
+
+ADR Auto Backfill is the completion-time workflow for turning completed
+engineering work into architecture memory.
+
+It uses the strongest available source in this order:
+
+1. `docs/aegis/work/YYYY-MM-DD-<slug>/`
+2. `docs/aegis/plans/YYYY-MM-DD-<topic>.md`
+3. `docs/aegis/specs/YYYY-MM-DD-<topic>-brief.md` or
+   `docs/aegis/specs/YYYY-MM-DD-<topic>-design.md`
+4. git diff, commits, verification output, release notes, and current docs
+
+The workflow may create, amend, supersede, or skip an ADR. It must not promote
+speculative, unexecuted plans into durable architecture memory.
+
+If an ADR action changes or confirms ownership, contract inventory, dependency
+direction, source-of-truth ownership, compatibility boundary, host support
+status, runtime-ready artifact boundary, or retirement schedule, a baseline sync
+check is mandatory.
+
+Canonical rule:
+
+```text
+ADR records why.
+Baseline records current state.
+```
+
+Detailed trigger and sync rules live in
+`docs/current/AEGIS_ADR_AUTO_BACKFILL.md`.
+
 ---
 
 ## 13. Projection Targets for Existing Skills
@@ -456,9 +489,11 @@ This process baseline should be projected into the following skills as a priorit
 - `test-driven-development`
   - Position TDD as the implementation discipline for approved atomic tasks, preventing medium/high-complexity tasks from bypassing planning
 - `requesting-code-review`
-  - Add evidence sufficiency and architecture drift checks
+  - Add evidence sufficiency, architecture drift checks, and missing ADR /
+    baseline sync findings for durable architecture decisions
 - `verification-before-completion`
-  - Align with reflection, QA, and final output contract
+  - Align with reflection, QA, final output contract, and ADR Auto Backfill for
+    completed medium/high work that touched architecture surfaces
 
 ---
 
@@ -500,6 +535,7 @@ A new `baseline/YYYY-MM-DD-<scope>-baseline.md` MUST be created when any of the 
 2. **Architecture review found a defect and it has been corrected** — baseline document has been fixed; a new snapshot is needed to solidify the correction.
 3. **Reflection Evolve decision is "revise baseline"** — regardless of trigger source, if Reflection determines the baseline needs revision, a new snapshot must be written.
 4. **Ownership map, contract inventory, or dependency direction convention has changed** — even if all 7 dimensions pass, if any of these three items changes, a new snapshot is required.
+5. **ADR Auto Backfill created, amended, or superseded a decision that changes current architecture state** — the baseline must either be updated or explicitly state why the existing baseline remains valid.
 
 Name the new snapshot by change date and use the 10-field template (see `brainstorming/SKILL.md` Initial Baseline Snapshot Template). Snapshots are evidence, not authority — BASELINE-GOVERNANCE.md remains the constitution.
 

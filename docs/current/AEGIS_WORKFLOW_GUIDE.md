@@ -341,6 +341,7 @@ Create or use `docs/aegis/` when the workflow needs:
 - ripple triage
 - long-task continuation
 - a recoverable evidence trail
+- completion-time ADR backfill from durable architecture decisions
 
 Typical structure:
 
@@ -358,6 +359,35 @@ docs/aegis/
 
 These records are method-layer evidence and handoff material, not final runtime
 adjudication.
+
+### 12.1 ADR Auto Backfill
+
+ADR Auto Backfill runs near completion, not before execution.
+
+When completed work changes a durable architecture surface, Aegis should check
+whether to create, amend, supersede, or skip an ADR. It reads the strongest
+available source:
+
+```text
+work -> plan -> spec -> git / verification evidence
+```
+
+Examples of durable architecture surfaces include owners, public contracts,
+dependency direction, source-of-truth ownership, host compatibility strategy,
+runtime-ready artifact boundaries, and retained or retired fallback paths.
+
+ADR and baseline records are linked:
+
+```text
+ADR records why.
+Baseline records current state.
+```
+
+When an ADR changes or confirms current architecture state, Aegis must run a
+baseline sync check. If the baseline is not updated, the ADR or reflection
+should state why the existing baseline still holds.
+
+See `docs/current/AEGIS_ADR_AUTO_BACKFILL.md`.
 
 ---
 
@@ -392,7 +422,8 @@ growing, owners are duplicated, or the user explicitly asks for first principles
 
 `verification-before-completion`
 : Require fresh verification evidence before claiming done, fixed, passing,
-release-ready, or handoff-ready.
+release-ready, or handoff-ready. For medium/high work that touched durable
+architecture surfaces, also run the ADR Auto Backfill check.
 
 `long-task-continuation`
 : Maintain checkpoints, resume hints, and drift checks for long, cross-session,
@@ -445,4 +476,3 @@ Aegis can currently produce:
 These are drafts, hints, or projection inputs. They can help a future runtime
 core make decisions, but they must not be written as final authority already
 owned by this repository.
-

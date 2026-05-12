@@ -58,6 +58,7 @@ The public current set is:
 - `docs/current/AEGIS_RULE_LAYERING.md`
 - `docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md`
 - `docs/current/AEGIS_DUAL_TRACK_GOVERNANCE.md`
+- `docs/current/AEGIS_ADR_AUTO_BACKFILL.md`
 - `docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md`
 - `docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md`
 - `docs/current/AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md`
@@ -100,6 +101,10 @@ false-positive layers.
 
 `AEGIS_DUAL_TRACK_GOVERNANCE.md`
 : Repair track plus retirement track governance.
+
+`AEGIS_ADR_AUTO_BACKFILL.md`
+: Completion-time ADR backfill from work, plan, spec, and verification
+  evidence, including ADR/baseline sync rules.
 
 `AEGIS_ARTIFACT_SCHEMA_BASELINE.md`
 : Minimum runtime-ready artifact shapes.

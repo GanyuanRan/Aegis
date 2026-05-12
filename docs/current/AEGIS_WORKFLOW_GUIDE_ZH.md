@@ -331,6 +331,7 @@ Aegis 支持惰性项目工作区。
 - ripple triage
 - 长任务续跑
 - 需要可恢复证据链的工作
+- 完成态从长期架构决策中自动回写 ADR
 
 典型结构：
 
@@ -347,6 +348,32 @@ docs/aegis/
 ```
 
 这些记录是方法层证据和交接材料，不是最终 runtime 裁决。
+
+### 12.1 ADR 自动回写
+
+ADR 自动回写发生在任务接近完成时，而不是执行前。
+
+当已完成工作改变了长期架构面，Aegis 应检查是否需要创建、修订、替代或跳过 ADR。
+读取证据时使用最强可用来源：
+
+```text
+work -> plan -> spec -> git / verification evidence
+```
+
+长期架构面包括 owner、公共 contract、依赖方向、source-of-truth owner、宿主兼容策略、
+runtime-ready artifact 边界，以及被保留或退役的 fallback / adapter / 兼容路径。
+
+ADR 与 baseline 是联动的：
+
+```text
+ADR 记录为什么这样决策。
+baseline 记录当前架构状态。
+```
+
+当 ADR 改变或确认了当前架构状态，Aegis 必须执行 baseline sync check。
+如果 baseline 不更新，ADR 或反思记录中应说明现有 baseline 为什么仍然成立。
+
+详见 `docs/current/AEGIS_ADR_AUTO_BACKFILL.md`。
 
 ---
 
@@ -377,7 +404,7 @@ docs/aegis/
 : 完成重要实现后，检查行为风险、回归和测试缺口。
 
 `verification-before-completion`
-: 在声称完成、修复、通过、可发布或可交付前，确认有新鲜验证证据。
+: 在声称完成、修复、通过、可发布或可交付前，确认有新鲜验证证据。对触及长期架构面的中高复杂度工作，还要执行 ADR 自动回写检查。
 
 `long-task-continuation`
 : 长任务、跨上下文、跨会话或需要交接时，维护 checkpoint、resume hint 和 drift check。

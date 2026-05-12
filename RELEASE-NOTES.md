@@ -1,5 +1,54 @@
 # Aegis Release Notes
 
+## v1.2.0 (2026-05-12)
+
+### ADR Auto Backfill
+
+- **Completion-time ADR memory** — added
+  `docs/current/AEGIS_ADR_AUTO_BACKFILL.md`, defining how completed work should
+  be backfilled into durable architecture decision records without turning ADRs
+  into a manual user approval burden.
+- **Evidence-source priority** — documented the source order for ADR backfill:
+  `work -> plan -> spec -> git / verification evidence`. Work records remain
+  the preferred source when available.
+- **Create / amend / supersede / skip policy** — clarified when Aegis should
+  create a new ADR, amend an existing ADR, supersede a prior decision, or skip
+  ADR creation for low-value or speculative decisions.
+- **ADR and baseline sync** — formalized the rule that ADRs record why a
+  decision exists, while baselines record the current architecture state. ADR
+  actions that change or confirm owners, contracts, dependency direction,
+  source-of-truth ownership, compatibility boundaries, runtime-ready artifact
+  boundaries, or retirement schedules now require a baseline sync check.
+
+### Documentation Wiring
+
+- Added ADR Auto Backfill to the public current docs index.
+- Updated the process baseline and both workflow guides so users can understand
+  ADR backfill as a completion-time workflow rather than a pre-execution
+  ceremony.
+- Recorded the current limitation that helper-backed `new-adr`, `amend-adr`,
+  and `supersede-adr` commands are not implemented yet.
+
+### Boundary
+
+This release still ships `Aegis Method Pack (runtime-ready)`. ADR Auto Backfill
+is method-pack workflow discipline only. It does not add authoritative
+`GateDecision`, `PolicySnapshot`, or `completion authority`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.2.0`
+- `bash scripts/bump-version.sh --check`
+- `git diff --check`
+- `python -m py_compile scripts/aegis-workspace.py scripts/aegis-doctor.py`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/project-bootstrap-policy-check.sh`
+- `bash tests/e2e/workspace-helper-wiring-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/artifact-schema-check.sh`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+
 ## v1.1.6 (2026-05-11)
 
 ### 工作流程入口
