@@ -179,6 +179,7 @@ expected_ids = {
     "quick-shared-module-bug",
     "failing-test-diagnosis",
     "ambiguous-feature",
+    "explicit-aegis-goal",
     "approved-plan",
     "completion-claim",
     "repeated-fixes",
@@ -201,6 +202,7 @@ if len(positives) < 6 or len(negatives) < 2:
 
 required_skills = {
     "using-aegis",
+    "goal-framing",
     "systematic-debugging",
     "brainstorming",
     "writing-plans",

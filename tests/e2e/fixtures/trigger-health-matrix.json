@@ -26,6 +26,14 @@
       "failureLayer": "routing"
     },
     {
+      "id": "explicit-aegis-goal",
+      "prompt": "Aegis goal: finish the auth refresh bug fix without rewriting the auth module.",
+      "expectedPrimarySkill": "goal-framing",
+      "allowedSecondarySkills": ["using-aegis", "systematic-debugging"],
+      "mustNotDo": ["force-full-workflow", "create-project-workspace-records"],
+      "failureLayer": "routing"
+    },
+    {
       "id": "approved-plan",
       "prompt": "The implementation plan is approved. Turn it into concrete execution steps with files and verification commands.",
       "expectedPrimarySkill": "writing-plans",

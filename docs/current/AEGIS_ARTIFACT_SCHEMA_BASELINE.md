@@ -56,6 +56,18 @@ Required fields:
 - `changeKinds`
 - `riskHints`
 
+Optional goal-framing fields:
+
+- `goal`
+- `successEvidence`
+- `stopCondition`
+- `nonGoals`
+
+These optional fields are used by `goal-framing` and helper-generated work
+records to define what the task is trying to satisfy, what evidence would count,
+when to stop, and what is explicitly out of scope. They do not grant completion
+authority.
+
 Current owner:
 
 - method pack
@@ -178,6 +190,35 @@ Allowed `decision` values:
 Current owner:
 
 - method pack
+
+### 3.9 `SubagentContextPacket`
+
+Required fields:
+
+- `schemaVersion`
+- `task`
+- `goal`
+- `stopCondition`
+- `relevantBaselineRefs`
+- `relevantFiles`
+- `knownFacts`
+- `unknowns`
+- `nonGoals`
+- `expectedOutput`
+- `verificationExpected`
+- `mustReadExcerpts`
+- `unsafeAssumptions`
+
+Current owner:
+
+- method pack / host projection
+
+Purpose:
+
+- Give subagents the smallest useful task context without inheriting the full
+  conversation
+- Preserve the requirement that critical facts still come from bounded raw
+  evidence excerpts, not controller summaries alone
 
 ---
 

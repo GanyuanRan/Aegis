@@ -57,6 +57,7 @@ When this repository reaches its target state, it should simultaneously satisfy 
    - `ImpactStatementDraft`
    - `EvidenceBundleDraft`
    - `GateInputPack`
+   - `SubagentContextPacket`
    - `TodoCheckpointDraft`
    - `ResumeStateHint`
    - `DriftCheckDraft`

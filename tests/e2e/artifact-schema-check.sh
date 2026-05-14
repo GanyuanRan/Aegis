@@ -27,6 +27,21 @@ expected = {
         "changeKinds",
         "riskHints",
     ],
+    "subagent-context-packet.sample.json": [
+        "schemaVersion",
+        "task",
+        "goal",
+        "stopCondition",
+        "relevantBaselineRefs",
+        "relevantFiles",
+        "knownFacts",
+        "unknowns",
+        "nonGoals",
+        "expectedOutput",
+        "verificationExpected",
+        "mustReadExcerpts",
+        "unsafeAssumptions",
+    ],
     "baseline-read-set-hint.sample.json": [
         "schemaVersion",
         "candidateDocs",
@@ -121,6 +136,12 @@ for filename, fields in expected.items():
             failures.append(
                 f"{filename}: decision must not be an authoritative completion value"
             )
+    if filename == "task-intent-draft.sample.json":
+        for optional_goal_field in ("goal", "successEvidence", "stopCondition", "nonGoals"):
+            if optional_goal_field not in data:
+                failures.append(
+                    f"{filename}: goal framing sample should include optional field {optional_goal_field}"
+                )
 
 if failures:
     for item in failures:

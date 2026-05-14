@@ -109,6 +109,17 @@ You can also ask:
 Tell me which Aegis skill you would use before debugging a failing test.
 ```
 
+Portable goal entry:
+
+```text
+Aegis goal: Fix the auth refresh bug without rewriting the auth system.
+```
+
+Use this when you want `goal-framing` to set goal, success evidence, stop
+condition, and non-goals before routing onward. `/aegis-goal <task>` is an
+optional shortcut only when the current host/session supports slash-style
+aliases.
+
 DeepSeek-TUI should treat Aegis as method-pack guidance, not as a full runtime
 platform or final completion authority.
 

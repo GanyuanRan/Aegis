@@ -17,6 +17,7 @@ from pathlib import Path
 
 KEY_SKILLS = (
     "using-aegis",
+    "goal-framing",
     "first-principles-review",
     "brainstorming",
     "writing-plans",

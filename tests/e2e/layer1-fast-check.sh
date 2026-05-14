@@ -111,6 +111,7 @@ run_check "workspace helper skill wiring" bash "$SCRIPT_DIR/workspace-helper-wir
 run_check "project bootstrap policy" bash "$SCRIPT_DIR/project-bootstrap-policy-check.sh"
 run_check "trigger health policy" bash "$SCRIPT_DIR/trigger-health-check.sh"
 run_check "workflow quality policy" bash "$SCRIPT_DIR/workflow-quality-check.sh"
+run_check "goal framing policy" bash "$SCRIPT_DIR/goal-framing-check.sh"
 run_check "first-principles review policy" bash "$SCRIPT_DIR/first-principles-review-check.sh"
 run_check "debugging patch-shape gate policy" bash "$SCRIPT_DIR/debugging-patch-shape-gate-check.sh"
 run_check "long-task continuation scenario fixtures" bash "$SCRIPT_DIR/long-task-continuation-check.sh"

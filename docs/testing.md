@@ -113,6 +113,9 @@ Notes:
 - `layer2-behavior-check.sh` now owns the active Slice 3 behavior check: fixture-backed transcript analysis, scenario contract matching, and with/without Aegis comparison.
 - `layer3-scenario-check.sh` now owns the active Slice 4b scenario check: fixture-backed scenario orchestration plus cross-host consistency comparison.
 - `run-all.sh --full --host-profile fast` is the current aggregate closeout command for the completed Phase 5 E2E verification slice.
+- `goal-framing-check.sh` is part of Layer 1 and guards the opt-in goal entry,
+  optional `TaskIntentDraft` goal fields, `SubagentContextPacket` shape, and
+  no-file default policy.
 - Full host smoke remains owned by the existing Codex / OpenCode suites and can be pulled into later E2E slices after the fast profile is stable.
 
 ### Requirements

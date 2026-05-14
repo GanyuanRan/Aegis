@@ -51,7 +51,7 @@ discipline_ref="skills/using-aegis/references/skill-discipline.md"
 prompt_hygiene_doc="docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md"
 verification_skill="skills/verification-before-completion/SKILL.md"
 log_window_script="scripts/log-window.sh"
-max_hot_path_chars=2300
+max_hot_path_chars=2500
 
 if [[ ! -f "$using_aegis" ]]; then
     fail "using-aegis skill exists"

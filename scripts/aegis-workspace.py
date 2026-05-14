@@ -94,6 +94,21 @@ ARTIFACT_SCHEMAS = {
         "changeKinds",
         "riskHints",
     ),
+    "SubagentContextPacket": (
+        "schemaVersion",
+        "task",
+        "goal",
+        "stopCondition",
+        "relevantBaselineRefs",
+        "relevantFiles",
+        "knownFacts",
+        "unknowns",
+        "nonGoals",
+        "expectedOutput",
+        "verificationExpected",
+        "mustReadExcerpts",
+        "unsafeAssumptions",
+    ),
     "BaselineReadSetHint": (
         "schemaVersion",
         "candidateDocs",
@@ -158,6 +173,7 @@ ARTIFACT_SCHEMAS = {
 }
 ARTIFACT_FILENAME_TYPES = {
     "task-intent-draft": "TaskIntentDraft",
+    "subagent-context-packet": "SubagentContextPacket",
     "baseline-read-set-hint": "BaselineReadSetHint",
     "impact-statement-draft": "ImpactStatementDraft",
     "evidence-bundle-draft": "EvidenceBundleDraft",
@@ -401,6 +417,10 @@ def list_arg(values: list[str] | None) -> list[str]:
     return list(values or [])
 
 
+def arg_value(args: argparse.Namespace, name: str, default: object = None) -> object:
+    return getattr(args, name, default)
+
+
 def optional_none(value: str | None) -> str | None:
     if value in (None, "", "none", "None"):
         return None
@@ -465,6 +485,10 @@ def command_new_work(args: argparse.Namespace) -> int:
     task_intent = {
         "schemaVersion": SCHEMA_VERSION,
         "requestedOutcome": args.requested_outcome,
+        "goal": arg_value(args, "goal") or args.requested_outcome,
+        "successEvidence": list_arg(arg_value(args, "success_evidence", [])),
+        "stopCondition": arg_value(args, "stop_condition") or "Stop when success evidence is satisfied or a blocker/risk requires pause.",
+        "nonGoals": non_goals,
         "scope": args.scope,
         "changeKinds": change_kinds,
         "riskHints": risk_hints,
@@ -517,6 +541,10 @@ def command_new_work(args: argparse.Namespace) -> int:
         f"# {args.title} - Intent\n\n"
         "## TaskIntentDraft\n\n"
         f"- Requested outcome: {args.requested_outcome}\n"
+        f"- Goal: {task_intent['goal']}\n"
+        f"- Success evidence:\n{markdown_list(task_intent['successEvidence'])}"
+        f"- Stop condition: {task_intent['stopCondition']}\n"
+        f"- Non-goals:\n{markdown_list(non_goals)}"
         f"- Scope: {args.scope}\n"
         f"- Change kinds:\n{markdown_list(change_kinds)}"
         f"- Risk hints:\n{markdown_list(risk_hints)}"
@@ -836,6 +864,11 @@ def build_parser() -> argparse.ArgumentParser:
     new_work_parser.add_argument("--title", required=True, help="human-readable work title")
     new_work_parser.add_argument("--task-id", help="stable task id; defaults to date-slug")
     new_work_parser.add_argument("--requested-outcome", required=True, help="requested outcome")
+    new_work_parser.add_argument("--goal", help="goal framing; defaults to requested outcome")
+    new_work_parser.add_argument(
+        "--success-evidence", action="append", default=[], help="evidence that would satisfy the goal"
+    )
+    new_work_parser.add_argument("--stop-condition", help="condition for done, blocked, needs verification, or scope exceeded")
     new_work_parser.add_argument("--scope", required=True, help="task scope")
     new_work_parser.add_argument("--change-kind", action="append", default=[], help="change kind")
     new_work_parser.add_argument("--risk-hint", action="append", default=[], help="risk hint")

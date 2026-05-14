@@ -196,6 +196,7 @@ Minimum samples:
 | Quick shared-module bug fix | `systematic-debugging` | `verification-before-completion` | Jump straight to code |
 | Failing test diagnosis | `systematic-debugging` | `test-driven-development` | Modify tests before locating owner |
 | New ambiguous feature | `brainstorming` | `writing-plans` | Start implementation immediately |
+| Explicit Aegis goal | `goal-framing` | `using-aegis`, `systematic-debugging` | Force full workflow or create workspace records by default |
 | Approved implementation plan | `writing-plans` or `executing-plans` | `test-driven-development` | Re-design without cause |
 | Release or completion claim | `verification-before-completion` | `requesting-code-review` | Claim completion without evidence |
 | Repeated fixes / fallback growth | `systematic-debugging` | `first-principles-review` | Add another local patch |

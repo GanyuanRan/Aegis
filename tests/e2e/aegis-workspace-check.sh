@@ -77,6 +77,10 @@ ARTIFACT_PATH="$TARGET_ROOT/docs/aegis/work/2026-05-07-helper/task-intent-draft.
 write_json "$ARTIFACT_PATH" '{
   "schemaVersion": "aegis.schema.v0",
   "requestedOutcome": "Validate workspace helper artifact sidecars.",
+  "goal": "Keep validation bounded to workspace helper artifact sidecars.",
+  "successEvidence": ["validate-artifact accepts the sidecar"],
+  "stopCondition": "Stop when the sidecar validates or validation fails with a real error.",
+  "nonGoals": ["Do not grant completion authority"],
   "scope": "temporary target project",
   "changeKinds": ["test"],
   "riskHints": []
@@ -165,6 +169,9 @@ WORK_DIR="$TARGET_ROOT/docs/aegis/work/2026-05-07-helper-lifecycle"
     --slug helper-lifecycle \
     --title "Helper lifecycle" \
     --requested-outcome "Exercise helper-backed task lifecycle records." \
+    --goal "Verify helper-backed lifecycle records stay bounded and advisory." \
+    --success-evidence "new-work creates intent, checkpoint, drift, and evidence placeholders" \
+    --stop-condition "Stop when lifecycle files validate or report needs-verification." \
     --scope "temporary target project" \
     --change-kind test \
     --risk-hint advisory-only >/dev/null
@@ -213,6 +220,14 @@ do
     fi
 done
 pass "new-work creates helper-backed lifecycle records"
+
+if ! grep -q "Goal: Verify helper-backed lifecycle records stay bounded and advisory." "$WORK_DIR/10-intent.md"; then
+    fail "new-work intent markdown must include goal framing"
+fi
+if ! grep -q "Stop condition: Stop when lifecycle files validate or report needs-verification." "$WORK_DIR/10-intent.md"; then
+    fail "new-work intent markdown must include stop condition"
+fi
+pass "new-work records optional goal framing in intent artifacts"
 
 "${PYTHON_CMD[@]}" "$HELPER" add-checkpoint \
     --root "$TARGET_ROOT" \

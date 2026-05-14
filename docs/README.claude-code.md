@@ -107,6 +107,17 @@ In `explicit` mode, the hook does not inject the compact `using-aegis`
 bootstrap. The plugin and skills remain installed, so users can still call
 `/aegis:using-aegis` or another Aegis skill directly.
 
+Portable goal entry also works across hosts:
+
+```text
+Aegis goal: Fix the auth refresh bug without rewriting the auth system.
+```
+
+Use this when you want `goal-framing` to set goal, success evidence, stop
+condition, and non-goals before routing onward. Treat `/aegis-goal <task>` as
+an optional shortcut only when the current host/session supports slash-style
+aliases.
+
 ## Local Development Installation
 
 For local development or smoke testing from a checked-out copy:

@@ -79,6 +79,28 @@ standard path。
 如果用户明确调用某个 skill，例如 `aegis:systematic-debugging` 或
 `aegis:writing-plans`，则优先进入对应 skill。
 
+如果用户以 `/aegis-goal <任务>` 或 `Aegis goal: <任务>` 开始，则先加载
+`goal-framing`。它只生成轻量 `TaskIntentDraft` 边界：目标、成功证据、停止条件
+和非目标，然后再继续路由。Goal framing 默认不创建项目文件，也不授予
+completion authority。
+
+示例：
+
+```text
+Aegis goal: 修复登录后偶发跳回登录页，不重写 auth 系统。
+```
+
+按 goal frame 的信号路由：
+
+| Goal signal | Route |
+| --- | --- |
+| 单 owner、低风险、验证路径清楚 | fast path 或 `test-driven-development` |
+| bug、失败、回归、异常行为 | `systematic-debugging` |
+| 产品、架构、contract、跨模块行为不清 | `brainstorming` |
+| spec 已批准、需求稳定、需要切任务 | `writing-plans` |
+| 多步骤、handoff、容易压缩上下文 | `long-task-continuation` |
+| 完成、发布、交付、"是否已完成" | `verification-before-completion` |
+
 如果任务很小，例如事实问答、版本状态、极小文案调整，可以只做快速判断并继续，
 不创建项目工作区记录。
 
@@ -404,7 +426,7 @@ baseline 记录当前架构状态。
 : 完成重要实现后，检查行为风险、回归和测试缺口。
 
 `verification-before-completion`
-: 在声称完成、修复、通过、可发布或可交付前，确认有新鲜验证证据。对触及长期架构面的中高复杂度工作，还要执行 ADR 自动回写检查。
+: 在声称完成、修复、通过、可发布或可交付前，确认有新鲜验证证据。对触及长期架构面的中高复杂度工作，还要执行 ADR 自动回写检查。如果存在 goal framing，还要补 Goal Closure：goal status、success evidence、stop state，以及 non-goals 是否被遵守。
 
 `long-task-continuation`
 : 长任务、跨上下文、跨会话或需要交接时，维护 checkpoint、resume hint 和 drift check。
@@ -449,6 +471,7 @@ Aegis 可以让宿主工作得更像一个治理严谨的工程代理，但当�
 - `ImpactStatementDraft`
 - `EvidenceBundleDraft`
 - `GateInputPack`
+- `SubagentContextPacket`
 - `TodoCheckpointDraft`
 - `ResumeStateHint`
 - `DriftCheckDraft`

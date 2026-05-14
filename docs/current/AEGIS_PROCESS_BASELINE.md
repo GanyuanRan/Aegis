@@ -66,6 +66,8 @@ The canonical baseline is
 Root improvement rule:
 
 - Keep `using-aegis` compact and route-only.
+- Route explicit `/aegis-goal` or `Aegis goal:` prompts to `goal-framing`
+  instead of expanding the global hot path.
 - Keep skill descriptions trigger-oriented; do not summarize workflow there.
 - Add or update representative trigger-health fixtures before broadening
   trigger wording.

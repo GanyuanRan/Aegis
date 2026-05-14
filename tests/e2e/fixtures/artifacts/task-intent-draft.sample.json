@@ -1,6 +1,16 @@
 {
   "schemaVersion": "aegis.schema.v0",
   "requestedOutcome": "Implement a narrow bootstrap verification slice.",
+  "goal": "Prove the bootstrap verification slice is framed, bounded, and verifiable before execution.",
+  "successEvidence": [
+    "Artifact schema fixtures pass",
+    "Workspace helper validates the generated task intent"
+  ],
+  "stopCondition": "Stop when the target verification passes, a blocker appears, evidence is missing, or the scope would expand beyond the bootstrap slice.",
+  "nonGoals": [
+    "Do not grant completion authority",
+    "Do not create runtime-core gate logic"
+  ],
   "scope": "tests/e2e skeleton and supporting authority docs",
   "changeKinds": [
     "docs",

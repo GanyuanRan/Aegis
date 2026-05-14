@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "task": "Implement the narrow bootstrap verification slice.",
+  "goal": "Keep the subagent focused on one verification slice without inheriting full conversation context.",
+  "stopCondition": "Stop when the requested files are changed and target verification passes, or report blocked / needs-verification / scope-exceeded.",
+  "relevantBaselineRefs": [
+    "docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md"
+  ],
+  "relevantFiles": [
+    "tests/e2e/artifact-schema-check.sh",
+    "tests/e2e/fixtures/artifacts/task-intent-draft.sample.json"
+  ],
+  "knownFacts": [
+    "TaskIntentDraft remains a Method Pack draft, not completion authority."
+  ],
+  "unknowns": [
+    "Whether broader host smoke is needed for this slice."
+  ],
+  "nonGoals": [
+    "Do not read the full conversation transcript.",
+    "Do not broaden the slice into runtime-core gate logic."
+  ],
+  "expectedOutput": "Patch summary, changed files, and verification result.",
+  "verificationExpected": [
+    "bash tests/e2e/artifact-schema-check.sh"
+  ],
+  "mustReadExcerpts": [
+    "docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md#TaskIntentDraft"
+  ],
+  "unsafeAssumptions": [
+    "A controller summary alone proves source facts.",
+    "Passing tests grants completion authority."
+  ]
+}

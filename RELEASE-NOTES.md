@@ -1,5 +1,75 @@
 # Aegis Release Notes
 
+## v1.4.0 (2026-05-14)
+
+### Goal Framing
+
+- **Opt-in goal entry** — added `goal-framing` for `/aegis-goal <task>` and
+  portable `Aegis goal: <task>` prompts.
+- **Thin goal frame** — the new entry records the goal, success evidence, stop
+  condition, non-goals, route, and next action before handing work to the
+  appropriate workflow.
+- **Explicit stop states** — goal-framed work distinguishes `done`, `blocked`,
+  `needs-verification`, and `scope-exceeded` instead of making the host infer
+  when to continue or stop.
+
+### Goal Closure And Routing
+
+- Added a goal signal routing matrix for fast path / TDD, systematic debugging,
+  brainstorming, writing plans, long-task continuation, and
+  verification-before-completion.
+- Extended `verification-before-completion` with Goal Closure so completion
+  claims compare fresh evidence against the latest goal frame, stop state, and
+  non-goals.
+- Kept `using-aegis` compact by routing explicit goal prompts to
+  `goal-framing` instead of expanding the always-loaded hot path.
+
+### Subagent Handoff And Runtime-Ready Artifacts
+
+- Added `SubagentContextPacket` as a compact delegation packet for subagents,
+  with relevant baseline refs, files, known facts, unknowns, non-goals,
+  expected output, expected verification, must-read excerpts, and unsafe
+  assumptions.
+- Extended `TaskIntentDraft` with optional goal-framing fields:
+  `goal`, `successEvidence`, `stopCondition`, and `nonGoals`.
+- Updated `scripts/aegis-workspace.py new-work` with optional `--goal`,
+  `--success-evidence`, and `--stop-condition` arguments while preserving
+  backward-compatible defaults.
+
+### Host And Documentation Updates
+
+- Documented portable `Aegis goal:` usage in the English and Chinese README
+  files, English and Chinese workflow guides, and the Codex, OpenCode, Claude
+  Code, CodeBuddy, DeepSeek-TUI, and Trae host guides.
+- Added `goal-framing` to doctor key skill detection, trigger/workflow quality
+  fixtures, artifact schema fixtures, and Layer 1 fast verification.
+- Added `tests/e2e/goal-framing-check.sh` to guard the opt-in entry, no-file
+  default, Goal Closure contract, and SubagentContextPacket shape.
+
+### Boundary
+
+This release still ships `Aegis Method Pack (runtime-ready)`. Goal Framing,
+Goal Closure, and SubagentContextPacket are advisory method-pack discipline and
+runtime-ready inputs only. They do not add an authoritative `GateDecision`,
+`PolicySnapshot`, evidence sufficiency decision, host daemon, automatic stop
+enforcement, or `completion authority`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.4.0`
+- `bash scripts/bump-version.sh --check`
+- `git diff --check`
+- `python -m py_compile scripts/aegis-doctor.py scripts/aegis-workspace.py`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `python tests/helpers/test_workspace_text_write_compat.py`
+- `bash tests/e2e/goal-framing-check.sh`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `bash tests/e2e/trigger-health-check.sh`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+
 ## v1.3.0 (2026-05-12)
 
 ### Workflow Quality Hardening

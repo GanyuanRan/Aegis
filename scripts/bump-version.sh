@@ -21,10 +21,30 @@ fi
 
 # --- helpers ---
 
+python_json() {
+  python - "$@"
+}
+
 # Read a dotted field path from a JSON file.
 # Handles both simple ("version") and nested ("plugins.0.version") paths.
 read_json_field() {
   local file="$1" field="$2"
+  if ! command -v jq >/dev/null 2>&1; then
+    python_json "$file" "$field" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+field = sys.argv[2].split(".")
+value = json.loads(path.read_text(encoding="utf-8"))
+for part in field:
+    value = value[int(part)] if part.isdigit() else value[part]
+sys.stdout.buffer.write((str(value) + "\n").encode("utf-8"))
+PY
+    return
+  fi
+
   # Convert dot-path to jq path: "plugins.0.version" -> .plugins[0].version
   local jq_path
   jq_path=$(echo "$field" | sed -E 's/\.([0-9]+)/[\1]/g' | sed 's/^/./' | sed 's/\.\././g')
@@ -34,6 +54,29 @@ read_json_field() {
 # Write a dotted field path in a JSON file, preserving formatting.
 write_json_field() {
   local file="$1" field="$2" value="$3"
+  if ! command -v jq >/dev/null 2>&1; then
+    python_json "$file" "$field" "$value" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+field = sys.argv[2].split(".")
+new_value = sys.argv[3]
+data = json.loads(path.read_text(encoding="utf-8"))
+target = data
+for part in field[:-1]:
+    target = target[int(part)] if part.isdigit() else target[part]
+last = field[-1]
+if last.isdigit():
+    target[int(last)] = new_value
+else:
+    target[last] = new_value
+path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+PY
+    return
+  fi
+
   local jq_path
   jq_path=$(echo "$field" | sed -E 's/\.([0-9]+)/[\1]/g' | sed 's/^/./' | sed 's/\.\././g')
   local tmp="${file}.tmp"
@@ -43,11 +86,37 @@ write_json_field() {
 # Read the list of declared files from config.
 # Outputs lines of "path<TAB>field"
 declared_files() {
+  if ! command -v jq >/dev/null 2>&1; then
+    python_json "$CONFIG" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+config = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+for item in config["files"]:
+    sys.stdout.buffer.write(f"{item['path']}\t{item['field']}\n".encode("utf-8"))
+PY
+    return
+  fi
+
   jq -r '.files[] | "\(.path)\t\(.field)"' "$CONFIG"
 }
 
 # Read the audit exclude patterns from config.
 audit_excludes() {
+  if ! command -v jq >/dev/null 2>&1; then
+    python_json "$CONFIG" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+config = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+for pattern in config.get("audit", {}).get("exclude", []):
+    sys.stdout.buffer.write((pattern + "\n").encode("utf-8"))
+PY
+    return
+  fi
+
   jq -r '.audit.exclude[]' "$CONFIG" 2>/dev/null
 }
 

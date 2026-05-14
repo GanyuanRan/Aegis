@@ -49,9 +49,18 @@ Minimum fields:
 - `changeKinds`
 - `riskHints`
 
+Optional goal-framing fields:
+
+- `goal`
+- `successEvidence`
+- `stopCondition`
+- `nonGoals`
+
 Purpose:
 
 - Help the host and future runtime core establish unified task framing
+- Make done, blocked, needs-verification, and scope-exceeded boundaries explicit
+  before execution when the user invokes `/aegis-goal` or `Aegis goal:`
 
 ### 3.2 `BaselineReadSetHint`
 
@@ -157,6 +166,30 @@ Minimum fields:
 Purpose:
 
 - Explicitly check whether goals, baselines, compatibility boundaries, and retirement tracks have drifted during long task execution
+
+### 3.9 `SubagentContextPacket`
+
+Minimum fields:
+
+- `task`
+- `goal`
+- `stopCondition`
+- `relevantBaselineRefs`
+- `relevantFiles`
+- `knownFacts`
+- `unknowns`
+- `nonGoals`
+- `expectedOutput`
+- `verificationExpected`
+- `mustReadExcerpts`
+- `unsafeAssumptions`
+
+Purpose:
+
+- Provide a compact delegation packet for subagents without inheriting full
+  conversation context
+- Require critical facts to stay tied to bounded evidence excerpts that the
+  subagent may verify directly
 
 ---
 

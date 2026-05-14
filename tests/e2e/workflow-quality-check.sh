@@ -94,6 +94,7 @@ done
 
 for skill in \
     "using-aegis" \
+    "goal-framing" \
     "brainstorming" \
     "writing-plans" \
     "systematic-debugging" \
@@ -104,6 +105,8 @@ done
 
 assert_contains "skills/using-aegis/SKILL.md" "Route: fast-path" \
     "using-aegis exposes compact route contract"
+assert_contains "skills/goal-framing/SKILL.md" "TaskIntentDraft" \
+    "goal-framing exposes task intent goal frame"
 assert_contains "skills/brainstorming/SKILL.md" "Compact output contract" \
     "brainstorming exposes compact output contract"
 assert_contains "skills/writing-plans/SKILL.md" "Compact output contract" \
@@ -136,6 +139,7 @@ expected_ids = {
     "quick-single-owner-bug",
     "failing-test-diagnosis",
     "ambiguous-feature",
+    "explicit-aegis-goal",
     "approved-spec-to-plan",
     "completion-claim",
     "interrupted-long-task-resume",
@@ -183,6 +187,7 @@ if len(positive) < 6:
 
 skills = {s.get("expectedPrimarySkill") for s in positive}
 required_skills = {
+    "goal-framing",
     "brainstorming",
     "writing-plans",
     "systematic-debugging",
@@ -202,6 +207,7 @@ for item in negative:
 contracts = data.get("compactOutputContracts", {})
 required_contracts = {
     "using-aegis",
+    "goal-framing",
     "brainstorming",
     "writing-plans",
     "systematic-debugging",
@@ -214,6 +220,8 @@ if missing_contracts:
 
 if "Confidence" not in contracts["verification-before-completion"]:
     raise SystemExit("verification compact contract must include Confidence")
+if "Stop condition" not in contracts["goal-framing"]:
+    raise SystemExit("goal-framing compact contract must include Stop condition")
 if "DriftCheckDraft" not in contracts["long-task-continuation"]:
     raise SystemExit("long-task compact contract must include DriftCheckDraft")
 

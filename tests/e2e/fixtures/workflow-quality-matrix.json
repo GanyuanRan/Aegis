@@ -77,6 +77,17 @@
       "verificationSignal": "user-approved-brief-or-design-before-plan"
     },
     {
+      "id": "explicit-aegis-goal",
+      "prompt": "/aegis-goal Fix the auth refresh bug without rewriting the auth system.",
+      "expectedPrimarySkill": "goal-framing",
+      "allowedSecondarySkills": ["using-aegis", "systematic-debugging", "long-task-continuation"],
+      "mustNotDo": ["create-project-workspace-records", "grant-completion-authority", "force-design-spec"],
+      "expectedOutputShape": "goal-success-evidence-stop-condition-non-goals-route-next",
+      "workspacePolicy": "no-workspace-unless-routed-workflow-needs-persistent-evidence",
+      "expectedArtifacts": ["TaskIntentDraft"],
+      "verificationSignal": "goal-frame-states-done-blocked-needs-verification-scope-exceeded"
+    },
+    {
       "id": "approved-spec-to-plan",
       "prompt": "The Spec Brief is approved. Turn it into an implementation plan with files and verification commands.",
       "expectedPrimarySkill": "writing-plans",
@@ -123,10 +134,11 @@
   ],
   "compactOutputContracts": {
     "using-aegis": ["Route", "Why", "Next"],
+    "goal-framing": ["Goal", "Success evidence", "Stop condition", "Non-goals", "Route", "Next"],
     "brainstorming": ["TaskIntentDraft", "BaselineReadSetHint", "ImpactStatementDraft", "Options", "Decision Needed"],
     "writing-plans": ["Plan Basis", "Files", "Compatibility", "Tasks", "Risks", "Retirement"],
     "systematic-debugging": ["Symptom", "Reproduction", "Root Cause", "Fix Boundary", "Verification"],
-    "verification-before-completion": ["Command / Check", "Exit Status", "Covered", "Not Covered", "Residual Risk", "Confidence"],
+    "verification-before-completion": ["Command / Check", "Exit Status", "Covered", "Not Covered", "Residual Risk", "Confidence", "Goal status", "Success evidence", "Stop state"],
     "long-task-continuation": ["TodoCheckpointDraft", "Evidence", "DriftCheckDraft", "Risk / Unknown", "Next"]
   }
 }

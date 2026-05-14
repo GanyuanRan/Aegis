@@ -394,6 +394,10 @@ Aegis 不是 daemon、后台 runner，也不是 authoritative runtime core。它
 
 - 直接点名 skill，例如 `aegis:brainstorming`、`aegis:systematic-debugging`、
   `aegis:long-task-continuation`、`aegis:verification-before-completion`。
+- 当你希望开工前先框定目标时，可以使用 `/aegis-goal <任务>`，或跨宿主更稳的
+  `Aegis goal: <任务>`。它只设置目标、成功证据、停止条件和非目标，然后继续路由；
+  默认不创建项目文件。
+  示例：`Aegis goal: 修复登录后偶发跳回登录页，不重写 auth 系统。`
 - 在 OpenCode 中使用原生 `skill` tool，例如：`use skill tool to load aegis/brainstorming`。
 - 在 Claude Code 中使用 plugin namespace，例如：`/aegis:using-aegis`。
 - 在 CodeBuddy 中要求它加载某个 Aegis skill，例如 `systematic-debugging`。
@@ -494,6 +498,7 @@ python scripts/aegis-doctor.py --write-config --json
 - `ImpactStatementDraft`
 - `EvidenceBundleDraft`
 - `GateInputPack`
+- `SubagentContextPacket`
 - `TodoCheckpointDraft`
 - `ResumeStateHint`
 - `DriftCheckDraft`

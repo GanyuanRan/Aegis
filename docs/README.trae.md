@@ -90,6 +90,17 @@ Expected result:
 - Trae does not present Aegis as a full runtime platform or final completion
   authority.
 
+Portable goal entry:
+
+```text
+Aegis goal: Fix the auth refresh bug without rewriting the auth system.
+```
+
+Use this when you want `goal-framing` to set goal, success evidence, stop
+condition, and non-goals before routing onward. `/aegis-goal <task>` is an
+optional shortcut only when the current host/session supports slash-style
+aliases.
+
 For complete-install verification, run this from the local Aegis checkout:
 
 ```bash

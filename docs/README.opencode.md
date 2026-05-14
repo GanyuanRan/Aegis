@@ -121,6 +121,19 @@ use skill tool to list skills
 use skill tool to load aegis/brainstorming
 ```
 
+### Goal Framing
+
+Portable goal entry:
+
+```text
+Aegis goal: Fix the auth refresh bug without rewriting the auth system.
+```
+
+Use this when you want `goal-framing` to set goal, success evidence, stop
+condition, and non-goals before routing onward. `/aegis-goal <task>` is an
+optional shortcut only when the current host/session supports slash-style
+aliases.
+
 Notes:
 
 - In current OpenCode runtime, bare skill names are the most reliable way to load a skill the host has already discovered.

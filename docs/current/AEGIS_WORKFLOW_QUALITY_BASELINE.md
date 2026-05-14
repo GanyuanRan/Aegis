@@ -171,6 +171,36 @@ Decision Needed: approve brief/design, revise, or defer
 Use a `Spec Brief` for medium tasks. Use a `Design Spec` only when ambiguity,
 architecture, contract, migration, or cross-module risk requires it.
 
+### 4.2a `goal-framing`
+
+Purpose:
+
+- set an explicit goal, evidence target, stop condition, and non-goals before
+  routing onward
+
+Compact contract:
+
+```text
+TaskIntentDraft: requested outcome, goal, success evidence, stop condition, non-goals
+Route: fast-path | <skill-name> | needs-baseline-readback
+Next: next smallest safe action
+```
+
+Goal framing is opt-in. It does not create project workspace records unless the
+routed workflow needs persistent evidence, and it does not grant completion
+authority.
+
+Route matrix:
+
+| Goal signal | Route |
+| --- | --- |
+| single-owner, low-risk, clear verification | fast path or `test-driven-development` |
+| bug, failure, regression, unexpected behavior | `systematic-debugging` |
+| ambiguous product, architecture, contract, cross-module behavior | `brainstorming` |
+| approved spec, stable requirements, implementation slicing | `writing-plans` |
+| multi-step, handoff, compaction-prone work | `long-task-continuation` |
+| completion, release, handoff, "is this done?" | `verification-before-completion` |
+
 ### 4.3 `writing-plans`
 
 Purpose:
@@ -230,6 +260,21 @@ Evidence Card:
 ```
 
 If evidence is incomplete, the claim must be downgraded.
+
+Goal Closure:
+
+When a task used `goal-framing`, `verification-before-completion` must compare
+the final claim against the latest goal frame:
+
+```text
+Goal status: satisfied | blocked | needs-verification | scope-exceeded
+Success evidence: fresh commands, files, logs, or manual verification
+Stop state: done | blocked | needs-verification | scope-exceeded
+Non-goals respected: yes | no | unknown
+```
+
+Goal Closure is advisory and evidence-focused. It does not grant completion
+authority or decide final evidence sufficiency.
 
 ### 4.6 `long-task-continuation`
 

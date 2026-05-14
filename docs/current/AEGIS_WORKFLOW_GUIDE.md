@@ -80,6 +80,29 @@ The typical entry point is `using-aegis`:
 If the user explicitly invokes a skill, such as `aegis:systematic-debugging` or
 `aegis:writing-plans`, the matching skill takes priority.
 
+If the user starts with `/aegis-goal <task>` or `Aegis goal: <task>`, load
+`goal-framing` first. It creates a thin `TaskIntentDraft` frame with goal,
+success evidence, stop condition, and non-goals, then routes onward. Goal
+framing does not create project files by default and does not grant completion
+authority.
+
+Example:
+
+```text
+Aegis goal: Fix the auth refresh bug without rewriting the auth system.
+```
+
+Route from the goal frame by signal:
+
+| Goal signal | Route |
+| --- | --- |
+| single-owner, low-risk, clear verification | fast path or `test-driven-development` |
+| bug, failure, regression, unexpected behavior | `systematic-debugging` |
+| ambiguous product, architecture, contract, cross-module behavior | `brainstorming` |
+| approved spec, stable requirements, implementation slicing | `writing-plans` |
+| multi-step, handoff, compaction-prone work | `long-task-continuation` |
+| completion, release, handoff, "is this done?" | `verification-before-completion` |
+
 If the task is small, such as a factual question, version check, or tiny wording
 edit, the agent may continue after a compact routing check without creating
 project workspace records.
@@ -426,7 +449,9 @@ owner / retirement, and falsification checks.
 `verification-before-completion`
 : Require fresh verification evidence before claiming done, fixed, passing,
 release-ready, or handoff-ready. For medium/high work that touched durable
-architecture surfaces, also run the ADR Auto Backfill check.
+architecture surfaces, also run the ADR Auto Backfill check. When goal framing
+exists, include Goal Closure: goal status, success evidence, stop state, and
+whether non-goals were respected.
 
 `long-task-continuation`
 : Maintain checkpoints, resume hints, and drift checks for long, cross-session,
@@ -472,6 +497,7 @@ Aegis can currently produce:
 - `ImpactStatementDraft`
 - `EvidenceBundleDraft`
 - `GateInputPack`
+- `SubagentContextPacket`
 - `TodoCheckpointDraft`
 - `ResumeStateHint`
 - `DriftCheckDraft`

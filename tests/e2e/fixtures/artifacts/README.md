@@ -13,4 +13,9 @@ Long-task continuation fixtures additionally cover:
 - `ResumeStateHint`
 - `DriftCheckDraft`
 
+Goal-framing and subagent handoff fixtures additionally cover:
+
+- optional `TaskIntentDraft` goal fields
+- `SubagentContextPacket`
+
 These are draft / hint fixtures only. They are not durable runtime records and do not grant completion authority.

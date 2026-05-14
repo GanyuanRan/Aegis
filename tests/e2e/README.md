@@ -29,6 +29,7 @@ Bootstrap entrypoints:
 - `project-bootstrap-policy-check.sh`
 - `trigger-health-check.sh`
 - `workflow-quality-check.sh`
+- `goal-framing-check.sh`
 - `first-principles-review-check.sh`
 - `long-task-continuation-check.sh`
 - `analyze-transcript.sh`
@@ -64,6 +65,9 @@ Workspace helper coverage:
 - `workflow-quality-check.sh` verifies the workflow quality baseline, compact
   output contracts, and representative samples for fast-path cheapness,
   evidence freshness, artifact stability, and workspace laziness.
+- `goal-framing-check.sh` verifies the opt-in goal-framing entry, optional
+  TaskIntentDraft goal fields, SubagentContextPacket shape, and no-file default
+  policy.
 - `first-principles-review-check.sh` verifies that first-principles review is
   available as a lightweight compositional skill without entering the
   always-loaded hot path or claiming authority.

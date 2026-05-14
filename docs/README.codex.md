@@ -76,6 +76,17 @@ Skills are discovered automatically. Codex activates them when:
 - The task matches a skill's description
 - The `using-aegis` skill directs Codex to use one
 
+Portable goal entry:
+
+```text
+Aegis goal: Fix the auth refresh bug without rewriting the auth system.
+```
+
+Use this when you want `goal-framing` to set goal, success evidence, stop
+condition, and non-goals before routing onward. `/aegis-goal <task>` is an
+optional shortcut only when the current host/session supports slash-style
+aliases.
+
 ### Personal Skills
 
 Create your own skills in `~/.agents/skills/`:
