@@ -1,5 +1,63 @@
 # Aegis Release Notes
 
+## v1.4.3 (2026-05-15)
+
+### ADR Backfill Signal Hardening
+
+- **Completion-time ADR Backfill Check** — extended
+  `verification-before-completion` with an advisory ADR Backfill Check that
+  records trigger status, suggested action, evidence source, baseline sync,
+  skip reason, and method-pack boundary.
+- **Workflow quality guardrails** — expanded the workflow quality baseline and
+  fixture coverage so ADR backfill behavior is locked as a representative
+  completion signal rather than a runtime authority decision.
+- **Boundary preservation** — kept ADR backfill as method-pack signal and
+  review discipline only; this release does not add authoritative
+  `GateDecision`, `PolicySnapshot`, evidence sufficiency, or
+  `completion authority`.
+
+### ADR Signal Propagation
+
+- Aligned ADR signal handling across `brainstorming`, `writing-plans`,
+  `long-task-continuation`, `requesting-code-review`, and
+  `verification-before-completion`.
+- Preserved ADR signals, source references, alternatives, compatibility
+  questions, baseline-sync questions, work records, proof bundles, drift
+  checks, and evidence references across workflow handoffs.
+- Clarified that long-task records and verification evidence are preferred
+  sources for ADR Auto Backfill review.
+
+### Code Review Routing And Baseline Awareness
+
+- Demoted `requesting-code-review` from the default generic completion path so
+  normal completion claims route to `verification-before-completion`.
+- Retained code review as an explicit or high-risk independent escalation path
+  with representative trigger-health and workflow-quality coverage.
+- Made review baseline-aware by requiring reviewers to distinguish baseline
+  defects from architecture drift and to check ADR Auto Backfill / baseline
+  sync findings.
+
+### Reviewer Compatibility Projection
+
+- Marked `agents/code-reviewer.md` as a host compatibility projection rather
+  than a second canonical owner.
+- Kept `skills/requesting-code-review/code-reviewer.md` as the canonical
+  reviewer template while mirroring the key baseline-aware and ADR review
+  semantics into the compatibility projection.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.4.3`
+- `bash scripts/bump-version.sh --check`
+- `git diff --check`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `bash tests/e2e/trigger-health-check.sh`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/artifact-schema-check.sh`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+
 ## v1.4.0 (2026-05-14)
 
 ### Goal Framing
