@@ -110,6 +110,39 @@
       "verificationSignal": "fresh-command-exit-status-and-covered-scope"
     },
     {
+      "id": "architecture-completion-adr-backfill-check",
+      "prompt": "We completed a medium-risk architecture change that altered the runtime-ready artifact boundary. Verify completion and tell me whether an ADR or baseline sync is needed.",
+      "expectedPrimarySkill": "verification-before-completion",
+      "allowedSecondarySkills": ["requesting-code-review"],
+      "mustNotDo": ["skip-adr-backfill-check", "create-authoritative-gate-decision", "force-adr-creation-without-trigger"],
+      "expectedOutputShape": "evidence-card-plus-adr-backfill-check",
+      "workspacePolicy": "check-workspace-if-docs-aegis-was-touched",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "fresh-evidence-plus-trigger-action-baseline-sync-or-skip-reason"
+    },
+    {
+      "id": "simple-completion-no-adr-ceremony",
+      "prompt": "I only fixed a README typo. Verify it and keep the completion note short.",
+      "expectedPrimarySkill": "verification-before-completion",
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["force-adr-backfill-ceremony", "create-project-workspace-records", "treat-wording-edit-as-architecture-decision"],
+      "expectedOutputShape": "short-evidence-card-with-no-adr-ceremony",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "targeted-readback-or-git-diff-check-without-adr-backfill-expansion"
+    },
+    {
+      "id": "architecture-area-bugfix-restores-baseline-no-adr",
+      "prompt": "A bug fix touched a host compatibility helper, but only restored the documented install/discovery contract. Verify completion and decide whether ADR backfill is needed.",
+      "expectedPrimarySkill": "verification-before-completion",
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["force-adr-creation-for-baseline-restoration", "treat-implementation-detail-as-durable-decision", "skip-evidence-card"],
+      "expectedOutputShape": "evidence-card-plus-adr-backfill-check-with-trigger-no-or-skip",
+      "workspacePolicy": "check-workspace-if-docs-aegis-was-touched",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "fresh-evidence-plus-skip-reason-that-existing-baseline-was-restored"
+    },
+    {
       "id": "interrupted-long-task-resume",
       "prompt": "We are resuming a multi-step task after compaction. Re-read the checkpoint and continue safely.",
       "expectedPrimarySkill": "long-task-continuation",
@@ -138,7 +171,7 @@
     "brainstorming": ["TaskIntentDraft", "BaselineReadSetHint", "ImpactStatementDraft", "Options", "Decision Needed"],
     "writing-plans": ["Plan Basis", "Files", "Compatibility", "Tasks", "Risks", "Retirement"],
     "systematic-debugging": ["Symptom", "Reproduction", "Root Cause", "Fix Boundary", "Verification"],
-    "verification-before-completion": ["Command / Check", "Exit Status", "Covered", "Not Covered", "Residual Risk", "Confidence", "Goal status", "Success evidence", "Stop state"],
+    "verification-before-completion": ["Command / Check", "Exit Status", "Covered", "Not Covered", "Residual Risk", "Confidence", "Goal status", "Success evidence", "Stop state", "ADR Backfill Check"],
     "long-task-continuation": ["TodoCheckpointDraft", "Evidence", "DriftCheckDraft", "Risk / Unknown", "Next"]
   }
 }

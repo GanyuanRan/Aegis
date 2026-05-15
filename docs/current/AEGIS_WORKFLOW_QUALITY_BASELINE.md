@@ -259,6 +259,23 @@ Evidence Card:
 - Confidence: A | B | C
 ```
 
+For completed medium/high work that touched durable architecture surfaces,
+include an advisory `ADR Backfill Check` before the final completion claim:
+
+```text
+ADR Backfill Check:
+- Trigger: yes | no
+- Suggested action: create | amend | supersede | skip
+- Evidence source:
+- Baseline sync: needed | not-needed | unknown
+- Skip reason:
+- Boundary: advisory method-pack signal only
+```
+
+Do not force ADR ceremony onto simple wording edits, ordinary README cleanup,
+routine release-note edits, low-risk single-file changes, tests-only coverage
+improvements, or bug fixes that only restore the existing baseline.
+
 If evidence is incomplete, the claim must be downgraded.
 
 Goal Closure:

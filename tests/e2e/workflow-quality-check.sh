@@ -115,6 +115,8 @@ assert_contains "skills/systematic-debugging/SKILL.md" "Quick bug lane" \
     "systematic debugging defines quick bug lane"
 assert_contains "skills/verification-before-completion/SKILL.md" "Evidence Card" \
     "verification skill defines evidence card"
+assert_contains "skills/verification-before-completion/SKILL.md" "ADR Backfill Check" \
+    "verification skill defines ADR backfill check"
 assert_contains "skills/long-task-continuation/SKILL.md" "Minimal Reporting Shape" \
     "long-task continuation keeps minimal reporting shape"
 
@@ -142,6 +144,9 @@ expected_ids = {
     "explicit-aegis-goal",
     "approved-spec-to-plan",
     "completion-claim",
+    "architecture-completion-adr-backfill-check",
+    "simple-completion-no-adr-ceremony",
+    "architecture-area-bugfix-restores-baseline-no-adr",
     "interrupted-long-task-resume",
     "governance-compat-cleanup",
 }
@@ -220,10 +225,41 @@ if missing_contracts:
 
 if "Confidence" not in contracts["verification-before-completion"]:
     raise SystemExit("verification compact contract must include Confidence")
+if "ADR Backfill Check" not in contracts["verification-before-completion"]:
+    raise SystemExit("verification compact contract must include ADR Backfill Check")
 if "Stop condition" not in contracts["goal-framing"]:
     raise SystemExit("goal-framing compact contract must include Stop condition")
 if "DriftCheckDraft" not in contracts["long-task-continuation"]:
     raise SystemExit("long-task compact contract must include DriftCheckDraft")
+
+by_id = {item["id"]: item for item in samples}
+adr_sample = by_id["architecture-completion-adr-backfill-check"]
+if adr_sample.get("expectedPrimarySkill") != "verification-before-completion":
+    raise SystemExit("ADR backfill completion sample must use verification-before-completion")
+if "skip-adr-backfill-check" not in adr_sample.get("mustNotDo", []):
+    raise SystemExit("ADR backfill completion sample must forbid skipping the check")
+if "baseline-sync" not in adr_sample.get("verificationSignal", ""):
+    raise SystemExit("ADR backfill completion sample must require baseline-sync judgment")
+if "authoritative" not in " ".join(adr_sample.get("mustNotDo", [])):
+    raise SystemExit("ADR backfill completion sample must protect the authority boundary")
+
+no_adr_sample = by_id["simple-completion-no-adr-ceremony"]
+if no_adr_sample.get("expectedArtifacts"):
+    raise SystemExit("simple completion no-ADR sample must not expect artifacts")
+if no_adr_sample.get("workspacePolicy") != "no-workspace":
+    raise SystemExit("simple completion no-ADR sample must keep no-workspace policy")
+if "force-adr-backfill-ceremony" not in no_adr_sample.get("mustNotDo", []):
+    raise SystemExit("simple completion no-ADR sample must forbid ADR ceremony")
+
+baseline_restore_sample = by_id["architecture-area-bugfix-restores-baseline-no-adr"]
+if baseline_restore_sample.get("expectedPrimarySkill") != "verification-before-completion":
+    raise SystemExit("baseline restoration sample must use verification-before-completion")
+if "force-adr-creation-for-baseline-restoration" not in baseline_restore_sample.get("mustNotDo", []):
+    raise SystemExit("baseline restoration sample must forbid forced ADR creation")
+if "skip-reason" not in baseline_restore_sample.get("verificationSignal", ""):
+    raise SystemExit("baseline restoration sample must require a skip reason")
+if "existing-baseline-was-restored" not in baseline_restore_sample.get("verificationSignal", ""):
+    raise SystemExit("baseline restoration sample must cite existing baseline restoration")
 
 print("  [PASS] workflow quality matrix has representative samples and compact contracts")
 PY

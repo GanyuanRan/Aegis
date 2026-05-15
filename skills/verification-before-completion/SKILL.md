@@ -79,7 +79,34 @@ Evidence Card:
    workspace check validate method-pack structure, index coverage, and
    recognizable JSON artifact sidecars only; they do not judge evidence
    sufficiency and do not grant completion authority.
-9. **Governance Closure**: for governance/cleanup/migration/compatibility/retirement work → final response must include. Do not skip this structure just because the implementation was small. Localize section labels and prose to the user's language; keep internal concepts in English only when they are product terms or file/path identifiers.
+9. **ADR Backfill Check**: for completed medium/high work that touched durable
+   architecture surfaces, run the ADR Auto Backfill check before final
+   completion claims. Use `Trigger: no` or skip the expanded block for simple
+   wording edits, ordinary README cleanup, routine release-note edits, low-risk
+   single-file changes, tests-only coverage improvements, and bug fixes that
+   only restore the existing baseline. This is a method-pack signal, not a
+   runtime gate, not an authoritative `GateDecision`, and not completion
+   authority.
+
+   Durable architecture surfaces include canonical owner, public API/schema,
+   artifact shape, behavior contract, dependency direction, source-of-truth
+   owner, host compatibility strategy, install/discovery contract,
+   method-pack/runtime-core boundary, runtime-ready artifact boundary, evidence
+   model, retained fallback, adapter, compatibility path, duplicate owner,
+   retirement schedule, accepted architecture drift, and release/distribution
+   strategy that future contributors would otherwise misread.
+
+   ```text
+   ADR Backfill Check:
+   - Trigger: yes | no
+   - Suggested action: create | amend | supersede | skip
+   - Evidence source:
+   - Baseline sync: needed | not-needed | unknown
+   - Skip reason:
+   - Boundary: advisory method-pack signal only
+   ```
+
+10. **Governance Closure**: for governance/cleanup/migration/compatibility/retirement work → final response must include. Do not skip this structure just because the implementation was small. Localize section labels and prose to the user's language; keep internal concepts in English only when they are product terms or file/path identifiers.
 
    ```
    Repair Track: repaired object | action | impact | verification
