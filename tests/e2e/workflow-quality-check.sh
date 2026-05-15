@@ -119,6 +119,20 @@ assert_contains "skills/verification-before-completion/SKILL.md" "ADR Backfill C
     "verification skill defines ADR backfill check"
 assert_contains "skills/long-task-continuation/SKILL.md" "Minimal Reporting Shape" \
     "long-task continuation keeps minimal reporting shape"
+assert_contains "skills/brainstorming/SKILL.md" "ADR signals" \
+    "brainstorming marks ADR signals without creating accepted memory"
+assert_contains "skills/brainstorming/SKILL.md" "unexecuted ideas" \
+    "brainstorming does not create accepted architecture memory from unexecuted ideas"
+assert_contains "skills/writing-plans/SKILL.md" "ADR signal preservation" \
+    "writing-plans preserves ADR signals for completion"
+assert_contains "skills/writing-plans/SKILL.md" "baseline-sync questions for completion" \
+    "writing-plans preserves baseline-sync questions"
+assert_contains "skills/long-task-continuation/SKILL.md" "preferred ADR Auto Backfill source" \
+    "long-task continuation records are preferred ADR source"
+assert_contains "skills/long-task-continuation/SKILL.md" "proof bundle.*ADR signals" \
+    "long-task completion passes proof bundle and ADR signals forward"
+assert_contains "skills/requesting-code-review/SKILL.md" "missing ADR Auto Backfill or baseline sync" \
+    "requesting code review checks missing ADR or baseline sync"
 
 assert_not_contains "skills/using-aegis/SKILL.md" "Evidence Card" \
     "using-aegis does not absorb verification output contract"

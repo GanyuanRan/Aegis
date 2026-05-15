@@ -46,6 +46,8 @@ Review in this method pack is advisory and evidence-oriented. It is not authorit
 - What evidence already exists (tests, commands, logs, screenshots, diff summary)
 - What compatibility boundary or risk deserves reviewer attention
 - Whether there is any old path, fallback, duplicate owner, or temporary patch that should retire
+- Whether the diff contains durable architecture decisions that need ADR
+  Auto Backfill or baseline sync findings
 
 If you cannot answer these, stop and gather them before dispatching review.
 
@@ -130,6 +132,8 @@ The review request must prompt the reviewer to inspect at least:
 - evidence sufficiency
 - architecture drift or owner duplication
 - compatibility boundary
+- missing ADR Auto Backfill or baseline sync findings for durable architecture
+  decisions
 - unverified claims or missing proof
 - old logic that should retire, stay temporarily, or converge
 

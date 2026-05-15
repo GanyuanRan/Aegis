@@ -55,6 +55,12 @@ Maintain artifacts under `docs/aegis/work/YYYY-MM-DD-<slug>/`:
 
 For medium+ complexity tasks only. Low-complexity tasks skip work/.
 
+When durable architecture decisions are in scope, these work records are the
+preferred ADR Auto Backfill source. Preserve ADR signals, source refs,
+alternatives, compatibility boundaries, drift checks, retirement notes, and
+baseline-sync questions in the work record instead of relying on memory at
+completion time.
+
 These are draft / hint / projection inputs. They are not authoritative runtime records.
 
 ## Workspace Helper Protocol
@@ -193,6 +199,9 @@ Before saying work is complete:
 7. Run `python scripts/aegis-workspace.py check --root <target-project-root>`
    if the helper is available and the task wrote `docs/aegis/` records.
 8. Treat the generated `GateInputPack` as future-runtime input only.
+9. If durable architecture decisions were in scope, pass the work record,
+   proof bundle, drift checks, evidence refs, and ADR signals into
+   aegis:verification-before-completion for ADR Backfill Check.
 
 Method Pack output is verified evidence and advisory judgment only. It is not authoritative completion.
 
