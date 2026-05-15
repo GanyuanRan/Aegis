@@ -133,6 +133,18 @@ assert_contains "skills/long-task-continuation/SKILL.md" "proof bundle.*ADR sign
     "long-task completion passes proof bundle and ADR signals forward"
 assert_contains "skills/requesting-code-review/SKILL.md" "missing ADR Auto Backfill or baseline sync" \
     "requesting code review checks missing ADR or baseline sync"
+assert_contains "skills/requesting-code-review/SKILL.md" "independent code review" \
+    "requesting code review is framed as independent review"
+assert_contains "skills/requesting-code-review/SKILL.md" "baseline / current authority" \
+    "requesting code review checks baseline and current authority refs"
+assert_contains "skills/requesting-code-review/SKILL.md" "baseline defect vs architecture drift" \
+    "requesting code review distinguishes baseline defect from architecture drift"
+assert_contains "skills/requesting-code-review/code-reviewer.md" "Baseline / Current Authority" \
+    "code reviewer template includes baseline/current authority section"
+assert_contains "skills/requesting-code-review/code-reviewer.md" "ownership map, contract inventory, and dependency direction" \
+    "code reviewer template checks baseline ownership contracts and dependencies"
+assert_contains "skills/requesting-code-review/code-reviewer.md" "baseline defect, architecture drift, or intentional architecture change" \
+    "code reviewer template distinguishes baseline defect and drift"
 
 assert_not_contains "skills/using-aegis/SKILL.md" "Evidence Card" \
     "using-aegis does not absorb verification output contract"
@@ -159,6 +171,7 @@ expected_ids = {
     "approved-spec-to-plan",
     "completion-claim",
     "architecture-completion-adr-backfill-check",
+    "high-risk-merge-independent-review",
     "simple-completion-no-adr-ceremony",
     "architecture-area-bugfix-restores-baseline-no-adr",
     "interrupted-long-task-resume",
@@ -212,6 +225,7 @@ required_skills = {
     "systematic-debugging",
     "verification-before-completion",
     "long-task-continuation",
+    "requesting-code-review",
 }
 missing_skills = sorted(required_skills - skills)
 if missing_skills:
@@ -256,6 +270,29 @@ if "baseline-sync" not in adr_sample.get("verificationSignal", ""):
     raise SystemExit("ADR backfill completion sample must require baseline-sync judgment")
 if "authoritative" not in " ".join(adr_sample.get("mustNotDo", [])):
     raise SystemExit("ADR backfill completion sample must protect the authority boundary")
+
+completion_sample = by_id["completion-claim"]
+if "requesting-code-review" in completion_sample.get("allowedSecondarySkills", []):
+    raise SystemExit("generic completion sample must not route to requesting-code-review by default")
+
+review_sample = by_id["high-risk-merge-independent-review"]
+if review_sample.get("expectedPrimarySkill") != "requesting-code-review":
+    raise SystemExit("high-risk merge review sample must use requesting-code-review")
+for required in (
+    "replace-verification-before-completion",
+    "skip-baseline-alignment",
+    "treat-review-as-completion-authority",
+):
+    if required not in review_sample.get("mustNotDo", []):
+        raise SystemExit(f"high-risk review sample must forbid {required}")
+for required_signal in (
+    "baseline-alignment",
+    "architecture-drift",
+    "retirement",
+    "adr-baseline-sync",
+):
+    if required_signal not in review_sample.get("verificationSignal", ""):
+        raise SystemExit(f"high-risk review sample must require {required_signal}")
 
 no_adr_sample = by_id["simple-completion-no-adr-ceremony"]
 if no_adr_sample.get("expectedArtifacts"):

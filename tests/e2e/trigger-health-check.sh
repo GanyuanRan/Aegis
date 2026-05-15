@@ -182,6 +182,7 @@ expected_ids = {
     "explicit-aegis-goal",
     "approved-plan",
     "completion-claim",
+    "high-risk-merge-independent-review",
     "repeated-fixes",
     "context-compaction-reentry",
     "simple-factual-qa",
@@ -207,6 +208,7 @@ required_skills = {
     "brainstorming",
     "writing-plans",
     "verification-before-completion",
+    "requesting-code-review",
 }
 skills = {s.get("expectedPrimarySkill") for s in positives}
 missing_skills = sorted(required_skills - skills)
@@ -242,6 +244,22 @@ if context_sample.get("failureLayer") != "context-pressure":
     raise SystemExit("context-compaction-reentry must use context-pressure failure layer")
 if "continue-without-reentry" not in context_sample.get("mustNotDo", []):
     raise SystemExit("context-compaction-reentry must forbid continuing without re-entry")
+
+completion_sample = next((s for s in samples if s.get("id") == "completion-claim"), None)
+if not completion_sample:
+    raise SystemExit("missing completion-claim sample")
+if "requesting-code-review" in completion_sample.get("allowedSecondarySkills", []):
+    raise SystemExit("generic completion sample must not route to requesting-code-review by default")
+
+review_sample = next((s for s in samples if s.get("id") == "high-risk-merge-independent-review"), None)
+if not review_sample:
+    raise SystemExit("missing high-risk-merge-independent-review sample")
+if review_sample.get("expectedPrimarySkill") != "requesting-code-review":
+    raise SystemExit("high-risk merge review sample must use requesting-code-review")
+if "skip-baseline-alignment" not in review_sample.get("mustNotDo", []):
+    raise SystemExit("high-risk merge review sample must forbid skipping baseline alignment")
+if "treat-review-as-completion-authority" not in review_sample.get("mustNotDo", []):
+    raise SystemExit("high-risk merge review sample must protect authority boundary")
 
 print("  [PASS] trigger-health matrix has representative positive and negative samples")
 PY

@@ -45,9 +45,17 @@
       "id": "completion-claim",
       "prompt": "Before we call this done, verify whether the work is complete and tell me the evidence.",
       "expectedPrimarySkill": "verification-before-completion",
-      "allowedSecondarySkills": ["requesting-code-review"],
+      "allowedSecondarySkills": [],
       "mustNotDo": ["claim-complete-without-evidence"],
       "failureLayer": "routing-or-depth"
+    },
+    {
+      "id": "high-risk-merge-independent-review",
+      "prompt": "Before merging this high-risk architecture change, run an independent code review against the plan, baseline, evidence, compatibility boundary, and retirement notes.",
+      "expectedPrimarySkill": "requesting-code-review",
+      "allowedSecondarySkills": ["verification-before-completion"],
+      "mustNotDo": ["skip-baseline-alignment", "treat-review-as-completion-authority"],
+      "failureLayer": "routing"
     },
     {
       "id": "repeated-fixes",

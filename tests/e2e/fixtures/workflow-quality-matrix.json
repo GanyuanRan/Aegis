@@ -102,7 +102,7 @@
       "id": "completion-claim",
       "prompt": "Before we call this done, verify whether the work is complete and tell me the evidence.",
       "expectedPrimarySkill": "verification-before-completion",
-      "allowedSecondarySkills": ["requesting-code-review"],
+      "allowedSecondarySkills": [],
       "mustNotDo": ["claim-complete-without-evidence", "hide-residual-risk"],
       "expectedOutputShape": "evidence-card",
       "workspacePolicy": "check-workspace-if-docs-aegis-was-touched",
@@ -119,6 +119,17 @@
       "workspacePolicy": "check-workspace-if-docs-aegis-was-touched",
       "expectedArtifacts": ["EvidenceBundleDraft"],
       "verificationSignal": "fresh-evidence-plus-trigger-action-baseline-sync-or-skip-reason"
+    },
+    {
+      "id": "high-risk-merge-independent-review",
+      "prompt": "Before merging this high-risk architecture change, run an independent code review against the plan, baseline, evidence, compatibility boundary, retirement notes, and ADR/baseline sync risk.",
+      "expectedPrimarySkill": "requesting-code-review",
+      "allowedSecondarySkills": ["verification-before-completion"],
+      "mustNotDo": ["replace-verification-before-completion", "skip-baseline-alignment", "treat-review-as-completion-authority"],
+      "expectedOutputShape": "independent-review-with-baseline-authority-evidence-and-retirement-checks",
+      "workspacePolicy": "no-new-workspace-records-unless-review-finds-process-trail-gap",
+      "expectedArtifacts": [],
+      "verificationSignal": "review-checks-baseline-alignment-evidence-architecture-drift-retirement-and-adr-baseline-sync"
     },
     {
       "id": "simple-completion-no-adr-ceremony",
