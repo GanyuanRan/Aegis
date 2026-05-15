@@ -145,6 +145,16 @@ assert_contains "skills/requesting-code-review/code-reviewer.md" "ownership map,
     "code reviewer template checks baseline ownership contracts and dependencies"
 assert_contains "skills/requesting-code-review/code-reviewer.md" "baseline defect, architecture drift, or intentional architecture change" \
     "code reviewer template distinguishes baseline defect and drift"
+assert_contains "agents/code-reviewer.md" "skills/requesting-code-review/code-reviewer.md" \
+    "named code reviewer points to canonical skill template path"
+assert_contains "agents/code-reviewer.md" "canonical Aegis code" \
+    "named code reviewer identifies canonical Aegis review checklist"
+assert_contains "agents/code-reviewer.md" "host compatibility projection" \
+    "named code reviewer is marked as compatibility projection"
+assert_contains "agents/code-reviewer.md" "baseline defect, architecture drift, and intentional architecture change" \
+    "named code reviewer mirrors baseline defect and drift distinction"
+assert_contains "agents/code-reviewer.md" "ADR Auto Backfill or baseline sync" \
+    "named code reviewer mirrors ADR and baseline sync checks"
 
 assert_not_contains "skills/using-aegis/SKILL.md" "Evidence Card" \
     "using-aegis does not absorb verification output contract"
