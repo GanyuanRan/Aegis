@@ -85,7 +85,21 @@ Pass criteria:
   design, planning, and verification structures
 - no workflow emits a full ceremony merely because Aegis is installed
 
-### 3.4 Evidence Freshness
+### 3.4 User-Language Output
+
+User-facing output should match the user's current language.
+
+Pass criteria:
+
+- section labels, field labels, and explanatory prose use the user's language
+- commands, file paths, code identifiers, stable enum values, and product terms
+  remain in English when precision requires it
+- important Aegis product terms may use first-use bilingual labels, then the
+  user's language in later references
+- compact contracts remain machine-readable without forcing English labels into
+  every user-facing response
+
+### 3.5 Evidence Freshness
 
 Completion claims require fresh evidence.
 
@@ -96,7 +110,7 @@ Pass criteria:
 - uncovered scope and residual risk are stated
 - method-pack verification is not described as final authority
 
-### 3.5 Artifact Stability
+### 3.6 Artifact Stability
 
 Medium/high-risk tasks should produce stable draft / hint / projection
 artifacts when a process trail is needed.
@@ -108,7 +122,7 @@ Pass criteria:
 - work records use `docs/aegis/work/YYYY-MM-DD-<slug>/`
 - proof bundles remain advisory method-pack handoff packages
 
-### 3.6 Workspace Laziness
+### 3.7 Workspace Laziness
 
 Project workspace records are lazy, not universal.
 
@@ -120,7 +134,7 @@ Pass criteria:
   evidence trails use configured workspace support when available
 - every new `docs/aegis/` file is indexed
 
-### 3.7 Authority Boundary
+### 3.8 Authority Boundary
 
 Workflow quality checks stay inside the method-pack boundary.
 
@@ -145,11 +159,18 @@ Compact contract:
 
 ```text
 Route: fast-path | <skill-name> | needs-baseline-readback
+ArchitectureReviewRequired: yes | no
 Why: <one short reason>
 Next: <smallest safe action>
 ```
 
 For obvious fast-path work, the route can stay implicit in the normal answer.
+Set `ArchitectureReviewRequired: yes` when a medium/high task or project rule
+touches architecture, contract, cross-module data flow, canonical owner,
+source-of-truth owner, context/answering/runtime flow, public user-visible
+identity, evidence model, fallback, adapter, or compatibility path. Carry the
+signal to `verification-before-completion`; it is a completion-time reporting
+signal, not a runtime gate.
 
 ### 4.2 `brainstorming`
 
@@ -258,6 +279,29 @@ Evidence Card:
 - Residual Risk:
 - Confidence: A | B | C
 ```
+
+Localize completion card labels and explanatory prose to the user's language.
+Keep commands, paths, code identifiers, stable enum values, and product terms in
+English when needed for precision. For important product terms, first-use
+bilingual labels such as `架构对齐（Architecture Alignment）` are preferred.
+
+When project instructions require architecture reporting or completed
+medium/high work touched durable architecture surfaces, include an advisory
+`Architecture Alignment` result before the final completion claim:
+
+```text
+Architecture Alignment:
+- Trigger: yes | no
+- Scope:
+- Baseline checked:
+- Result: aligned | architecture drift | architecture defect
+- Evidence:
+- Residual architecture risk:
+```
+
+Architecture Alignment states whether the completed work matches the current
+baseline or should be reported as drift/defect. It is separate from ADR
+Backfill and does not grant completion authority.
 
 For completed medium/high work that touched durable architecture surfaces,
 include an advisory `ADR Backfill Check` before the final completion claim:

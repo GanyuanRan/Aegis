@@ -79,7 +79,40 @@ Evidence Card:
    workspace check validate method-pack structure, index coverage, and
    recognizable JSON artifact sidecars only; they do not judge evidence
    sufficiency and do not grant completion authority.
-9. **ADR Backfill Check**: for completed medium/high work that touched durable
+9. **User-Language Output**: final response cards must localize user-facing
+   section labels, field labels, and explanatory prose to the user's language.
+   Keep commands, file paths, code identifiers, stable enum values, and product
+   terms in English when that preserves precision. For important Aegis product
+   terms, prefer first-use bilingual labels such as
+   `架构对齐（Architecture Alignment）`; later references may use the user's
+   language alone.
+
+10. **Architecture Alignment Check**: before final response, if project
+   instructions require architecture reporting or the task touched durable
+   architecture surfaces, include an explicit architecture alignment result.
+   This is separate from ADR Backfill: alignment states whether the completed
+   work matches current baselines; ADR Backfill states whether durable
+   architecture memory needs to be created, amended, superseded, or skipped.
+   This is a method-pack signal, not a runtime gate, not an authoritative
+   `GateDecision`, and not completion authority.
+
+   Triggering surfaces include architecture, contracts, source-of-truth owner,
+   canonical owner, context/answering/runtime flow, cross-module data flow,
+   producer-to-carrier-to-consumer chains, public user-visible identity,
+   evidence model, retained fallback, adapter, compatibility path, and
+   project-specific baseline rules.
+
+   ```text
+   Architecture Alignment:
+   - Trigger: yes | no
+   - Scope:
+   - Baseline checked:
+   - Result: aligned | architecture drift | architecture defect
+   - Evidence:
+   - Residual architecture risk:
+   ```
+
+11. **ADR Backfill Check**: for completed medium/high work that touched durable
    architecture surfaces, run the ADR Auto Backfill check before final
    completion claims. Use `Trigger: no` or skip the expanded block for simple
    wording edits, ordinary README cleanup, routine release-note edits, low-risk
@@ -106,7 +139,7 @@ Evidence Card:
    - Boundary: advisory method-pack signal only
    ```
 
-10. **Governance Closure**: for governance/cleanup/migration/compatibility/retirement work → final response must include. Do not skip this structure just because the implementation was small. Localize section labels and prose to the user's language; keep internal concepts in English only when they are product terms or file/path identifiers.
+12. **Governance Closure**: for governance/cleanup/migration/compatibility/retirement work → final response must include. Do not skip this structure just because the implementation was small. Localize section labels and prose to the user's language; keep internal concepts in English only when they are product terms or file/path identifiers.
 
    ```
    Repair Track: repaired object | action | impact | verification

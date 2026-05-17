@@ -85,6 +85,7 @@ for dimension in \
     "Trigger Accuracy" \
     "Fast-Path Cheapness" \
     "Output Compactness" \
+    "User-Language Output" \
     "Evidence Freshness" \
     "Artifact Stability" \
     "Workspace Laziness" \
@@ -105,6 +106,8 @@ done
 
 assert_contains "skills/using-aegis/SKILL.md" "Route: fast-path" \
     "using-aegis exposes compact route contract"
+assert_contains "skills/using-aegis/SKILL.md" "ArchitectureReviewRequired" \
+    "using-aegis marks architecture review required signal"
 assert_contains "skills/goal-framing/SKILL.md" "TaskIntentDraft" \
     "goal-framing exposes task intent goal frame"
 assert_contains "skills/brainstorming/SKILL.md" "Compact output contract" \
@@ -115,6 +118,12 @@ assert_contains "skills/systematic-debugging/SKILL.md" "Quick bug lane" \
     "systematic debugging defines quick bug lane"
 assert_contains "skills/verification-before-completion/SKILL.md" "Evidence Card" \
     "verification skill defines evidence card"
+assert_contains "skills/verification-before-completion/SKILL.md" "User-Language Output" \
+    "verification skill defines user-language output rule"
+assert_contains "skills/verification-before-completion/SKILL.md" "section labels, field labels, and explanatory prose" \
+    "verification skill localizes user-facing completion cards"
+assert_contains "skills/verification-before-completion/SKILL.md" "Architecture Alignment" \
+    "verification skill defines architecture alignment check"
 assert_contains "skills/verification-before-completion/SKILL.md" "ADR Backfill Check" \
     "verification skill defines ADR backfill check"
 assert_contains "skills/long-task-continuation/SKILL.md" "Minimal Reporting Shape" \
@@ -263,8 +272,12 @@ if missing_contracts:
 
 if "Confidence" not in contracts["verification-before-completion"]:
     raise SystemExit("verification compact contract must include Confidence")
+if "Architecture Alignment" not in contracts["verification-before-completion"]:
+    raise SystemExit("verification compact contract must include Architecture Alignment")
 if "ADR Backfill Check" not in contracts["verification-before-completion"]:
     raise SystemExit("verification compact contract must include ADR Backfill Check")
+if "ArchitectureReviewRequired" not in contracts["using-aegis"]:
+    raise SystemExit("using-aegis compact contract must include ArchitectureReviewRequired")
 if "Stop condition" not in contracts["goal-framing"]:
     raise SystemExit("goal-framing compact contract must include Stop condition")
 if "DriftCheckDraft" not in contracts["long-task-continuation"]:
@@ -274,8 +287,12 @@ by_id = {item["id"]: item for item in samples}
 adr_sample = by_id["architecture-completion-adr-backfill-check"]
 if adr_sample.get("expectedPrimarySkill") != "verification-before-completion":
     raise SystemExit("ADR backfill completion sample must use verification-before-completion")
+if "skip-architecture-alignment" not in adr_sample.get("mustNotDo", []):
+    raise SystemExit("ADR backfill completion sample must forbid skipping architecture alignment")
 if "skip-adr-backfill-check" not in adr_sample.get("mustNotDo", []):
     raise SystemExit("ADR backfill completion sample must forbid skipping the check")
+if "architecture-alignment" not in adr_sample.get("verificationSignal", ""):
+    raise SystemExit("ADR backfill completion sample must require architecture alignment judgment")
 if "baseline-sync" not in adr_sample.get("verificationSignal", ""):
     raise SystemExit("ADR backfill completion sample must require baseline-sync judgment")
 if "authoritative" not in " ".join(adr_sample.get("mustNotDo", [])):

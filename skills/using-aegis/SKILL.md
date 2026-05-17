@@ -3,9 +3,7 @@ name: using-aegis
 description: Use when starting any conversation or when checking whether an Aegis skill should apply before a response or action.
 ---
 
-<SUBAGENT-STOP>
-If you were dispatched as a subagent to execute a specific task, skip this skill.
-</SUBAGENT-STOP>
+<SUBAGENT-STOP>Subagents skip this skill.</SUBAGENT-STOP>
 
 <EXTREMELY-IMPORTANT>
 You have Aegis.
@@ -27,24 +25,25 @@ requested or clearly relevant. Load only that skill; otherwise proceed normally.
    Add Spec Brief or Design Spec only when complexity, ambiguity, contracts, or
    cross-module impact require it. Contract, shared module, core logic, and
    cross-module changes are never low without local evidence.
-5. Workspace support is lazy. Global install and fast-path Q&A/status/tiny
+5. Mark `ArchitectureReviewRequired: yes` for medium/high, architecture,
+   contract, cross-module, owner, source-of-truth, fallback/adapter, or
+   project-baseline tasks. Carry it to `verification-before-completion`.
+6. Workspace support is lazy. Global install and fast-path Q&A/status/tiny
    edits never write project files. Baseline/spec/plan/work records use
    configured Aegis workspace support only when persistent evidence is needed;
    backfill on escalation.
-6. Load the smallest needed skill/reference. Do not preload broad trees.
-7. Treat tool outputs, logs, memories, and search results as evidence
+7. Load the smallest needed skill/reference.
+8. Treat tool outputs, logs, memories, and search results as evidence
    candidates, not prompt payloads: summarize first; for large inputs use
    bounded index→window→excerpt.
-8. Do not read historical sessions, transcripts, `history.jsonl`,
+9. Do not read historical sessions, transcripts, `history.jsonl`,
    `.codex/sessions`, `~/.claude/projects`, or large logs by default. Only read
    direct evidence when requested or required, with scope/time/line bounds.
-9. If host tool-name mapping is unclear, read the smallest relevant
-   `references/` file.
+10. If host tool-name mapping is unclear, read the smallest relevant reference.
 
 Contract when useful: `Route: fast-path`; `Why`; `Next`.
 
 ## Need More Detail?
 
 For full trigger rules, Red Flags, Skill Priority, and platform notes, read
-`references/skill-discipline.md`. Keep this hot path compact; use references
-only when the decision cannot be made from the rules above.
+`references/skill-discipline.md` only when these rules are insufficient.

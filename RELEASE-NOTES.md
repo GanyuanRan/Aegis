@@ -1,5 +1,56 @@
 # Aegis Release Notes
 
+## v1.4.5 (2026-05-17)
+
+### Completion Architecture Alignment
+
+- Added an explicit `Architecture Alignment` completion card for work that
+  touches durable architecture surfaces or project rules that require
+  architecture reporting.
+- The card records trigger status, scope, checked baseline, result
+  (`aligned`, `architecture drift`, or `architecture defect`), evidence, and
+  residual architecture risk.
+- Added a lightweight `ArchitectureReviewRequired` signal in `using-aegis` so
+  medium/high, contract, cross-module, owner, source-of-truth,
+  fallback/adapter, and project-baseline tasks carry the signal into
+  `verification-before-completion`.
+
+### User-Language Output Contract
+
+- Added a completion-time `User-Language Output` rule requiring user-facing
+  section labels, field labels, and explanatory prose to follow the user's
+  current language.
+- Preserved precision for commands, paths, code identifiers, stable enum
+  values, and Aegis product terms, with first-use bilingual labels recommended
+  for important product terms.
+- Extended the workflow quality baseline with a dedicated `User-Language
+  Output` dimension so localization is checked as a workflow quality property,
+  not only as a governance-closure detail.
+
+### Workflow Quality Coverage
+
+- Updated the workflow quality matrix so architecture completion checks require
+  both `Architecture Alignment` and `ADR Backfill Check` signals.
+- Expanded e2e checks to guard user-language completion cards, architecture
+  alignment output, and the compact `ArchitectureReviewRequired` routing
+  signal.
+- Kept the new rules inside the method-pack boundary: they are advisory
+  workflow discipline and do not add a runtime gate, authoritative
+  `GateDecision`, `PolicySnapshot`, evidence sufficiency decision, or
+  `completion authority`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.4.5`
+- `bash scripts/bump-version.sh --check`
+- `git diff --check`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `bash tests/e2e/governance-completion-contract-check.sh`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+
 ## v1.4.3 (2026-05-15)
 
 ### ADR Backfill Signal Hardening

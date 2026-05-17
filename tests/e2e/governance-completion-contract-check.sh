@@ -45,6 +45,18 @@ assert_contains "$verification_skill" "Retirement Track" \
 assert_contains "$verification_skill" "Residual Risk" \
     "verification gate requires Residual Risk for governance closure"
 
+assert_contains "$verification_skill" "User-Language Output" \
+    "verification gate requires user-language output for completion cards"
+
+assert_contains "$verification_skill" "section labels, field labels, and explanatory prose" \
+    "verification gate localizes labels fields and prose"
+
+assert_contains "$verification_skill" "Architecture Alignment" \
+    "verification gate requires Architecture Alignment for durable architecture closure"
+
+assert_contains "$verification_skill" "aligned | architecture drift | architecture defect" \
+    "architecture alignment requires explicit aligned drift defect result"
+
 assert_contains "$verification_skill" "Localize section labels and prose to the user's language" \
     "verification gate requires user-language localized output"
 

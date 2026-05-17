@@ -114,11 +114,11 @@
       "prompt": "We completed a medium-risk architecture change that altered the runtime-ready artifact boundary. Verify completion and tell me whether an ADR or baseline sync is needed.",
       "expectedPrimarySkill": "verification-before-completion",
       "allowedSecondarySkills": ["requesting-code-review"],
-      "mustNotDo": ["skip-adr-backfill-check", "create-authoritative-gate-decision", "force-adr-creation-without-trigger"],
-      "expectedOutputShape": "evidence-card-plus-adr-backfill-check",
+      "mustNotDo": ["skip-architecture-alignment", "skip-adr-backfill-check", "create-authoritative-gate-decision", "force-adr-creation-without-trigger"],
+      "expectedOutputShape": "evidence-card-plus-architecture-alignment-and-adr-backfill-check",
       "workspacePolicy": "check-workspace-if-docs-aegis-was-touched",
       "expectedArtifacts": ["EvidenceBundleDraft"],
-      "verificationSignal": "fresh-evidence-plus-trigger-action-baseline-sync-or-skip-reason"
+      "verificationSignal": "fresh-evidence-plus-architecture-alignment-trigger-action-baseline-sync-or-skip-reason"
     },
     {
       "id": "high-risk-merge-independent-review",
@@ -177,12 +177,12 @@
     }
   ],
   "compactOutputContracts": {
-    "using-aegis": ["Route", "Why", "Next"],
+    "using-aegis": ["Route", "ArchitectureReviewRequired", "Why", "Next"],
     "goal-framing": ["Goal", "Success evidence", "Stop condition", "Non-goals", "Route", "Next"],
     "brainstorming": ["TaskIntentDraft", "BaselineReadSetHint", "ImpactStatementDraft", "Options", "Decision Needed"],
     "writing-plans": ["Plan Basis", "Files", "Compatibility", "Tasks", "Risks", "Retirement"],
     "systematic-debugging": ["Symptom", "Reproduction", "Root Cause", "Fix Boundary", "Verification"],
-    "verification-before-completion": ["Command / Check", "Exit Status", "Covered", "Not Covered", "Residual Risk", "Confidence", "Goal status", "Success evidence", "Stop state", "ADR Backfill Check"],
+    "verification-before-completion": ["Command / Check", "Exit Status", "Covered", "Not Covered", "Residual Risk", "Confidence", "Goal status", "Success evidence", "Stop state", "Architecture Alignment", "ADR Backfill Check"],
     "long-task-continuation": ["TodoCheckpointDraft", "Evidence", "DriftCheckDraft", "Risk / Unknown", "Next"]
   }
 }
