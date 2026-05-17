@@ -1,6 +1,6 @@
 # Aegis Release Notes
 
-## Unreleased
+## v1.4.6 (2026-05-18)
 
 ### Workspace Helper Resolution Boundary
 
@@ -16,6 +16,7 @@
 
 ### Verification
 
+- `bash scripts/bump-version.sh 1.4.6`
 - `git diff --check`
 - `python tests/helpers/test_parse_codex_skills.py`
 - `bash tests/e2e/workspace-helper-resolution-check.sh`
