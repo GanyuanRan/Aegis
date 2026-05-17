@@ -1,5 +1,36 @@
 # Aegis Release Notes
 
+## Unreleased
+
+### Workspace Helper Resolution Boundary
+
+- Added `aegis-doctor.py helper-path --json` so hosts and agents can resolve the
+  installed Aegis workspace helper without assuming the target project owns
+  `scripts/aegis-workspace.py`.
+- Updated workspace-writing skills and current docs to use
+  `python <aegis-workspace-helper> ... --root <target-project-root>`, keeping
+  the helper owner and target project root as separate concepts.
+- Added `workspace-helper-resolution-check.sh` and Layer 1 coverage for helper
+  path resolution, uninitialized target-project reporting, and target-project
+  helper ownership wording.
+
+### Verification
+
+- `git diff --check`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/workspace-helper-resolution-check.sh`
+- `bash tests/e2e/workspace-helper-wiring-check.sh`
+- `bash tests/e2e/long-task-continuation-check.sh`
+- `bash tests/e2e/aegis-doctor-check.sh`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `bash tests/e2e/governance-completion-contract-check.sh`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/project-bootstrap-policy-check.sh`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash scripts/bump-version.sh --check`
+- `bash tests/e2e/run-all.sh --full --host-profile none`
+
 ## v1.4.5 (2026-05-17)
 
 ### Completion Architecture Alignment

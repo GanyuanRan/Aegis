@@ -71,30 +71,30 @@ available, use it for the target project workspace and lifecycle records:
 1. Initialize before writing work records:
 
    ```bash
-   python scripts/aegis-workspace.py init --root <target-project-root>
+   python <aegis-workspace-helper> init --root <target-project-root>
    ```
 
 2. For a new medium+ task process trail, prefer helper-backed lifecycle
    creation over hand-created files:
 
    ```bash
-   python scripts/aegis-workspace.py new-work --root <target-project-root> --date YYYY-MM-DD --slug <slug> --title "<title>" --requested-outcome "<outcome>" --scope "<scope>" --change-kind <kind>
+   python <aegis-workspace-helper> new-work --root <target-project-root> --date YYYY-MM-DD --slug <slug> --title "<title>" --requested-outcome "<outcome>" --scope "<scope>" --change-kind <kind>
    ```
 
 3. After each slice, update checkpoint, evidence, and drift through the helper:
 
    ```bash
-   python scripts/aegis-workspace.py add-checkpoint --root <target-project-root> --work YYYY-MM-DD-<slug> ...
-   python scripts/aegis-workspace.py add-evidence --root <target-project-root> --work YYYY-MM-DD-<slug> ...
-   python scripts/aegis-workspace.py add-drift-check --root <target-project-root> --work YYYY-MM-DD-<slug> ...
+   python <aegis-workspace-helper> add-checkpoint --root <target-project-root> --work YYYY-MM-DD-<slug> ...
+   python <aegis-workspace-helper> add-evidence --root <target-project-root> --work YYYY-MM-DD-<slug> ...
+   python <aegis-workspace-helper> add-drift-check --root <target-project-root> --work YYYY-MM-DD-<slug> ...
    ```
 
 4. Before pause, handoff, or completion candidate, assemble a structural proof
    bundle and check the workspace:
 
    ```bash
-   python scripts/aegis-workspace.py bundle --root <target-project-root> --work YYYY-MM-DD-<slug>
-   python scripts/aegis-workspace.py check --root <target-project-root>
+   python <aegis-workspace-helper> bundle --root <target-project-root> --work YYYY-MM-DD-<slug>
+   python <aegis-workspace-helper> check --root <target-project-root>
    ```
 
 These helper checks validate workspace structure, index coverage, and JSON
@@ -193,10 +193,10 @@ Before saying work is complete:
 3. Confirm blockers are resolved or externalized.
 4. Confirm evidence refs cover the acceptance criteria.
 5. Confirm drift check has no blocking state.
-6. Run `python scripts/aegis-workspace.py bundle --root <target-project-root>
+6. Run `python <aegis-workspace-helper> bundle --root <target-project-root>
    --work YYYY-MM-DD-<slug>` if the helper is available and a work record
    exists.
-7. Run `python scripts/aegis-workspace.py check --root <target-project-root>`
+7. Run `python <aegis-workspace-helper> check --root <target-project-root>`
    if the helper is available and the task wrote `docs/aegis/` records.
 8. Treat the generated `GateInputPack` as future-runtime input only.
 9. If durable architecture decisions were in scope, pass the work record,

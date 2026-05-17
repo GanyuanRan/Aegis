@@ -26,6 +26,7 @@ Bootstrap entrypoints:
 - `aegis-workspace-check.sh`
 - `aegis-doctor-check.sh`
 - `workspace-helper-wiring-check.sh`
+- `workspace-helper-resolution-check.sh`
 - `project-bootstrap-policy-check.sh`
 - `trigger-health-check.sh`
 - `workflow-quality-check.sh`
@@ -81,5 +82,8 @@ Workspace helper coverage:
   method-pack evidence, not a final gate.
 - `workspace-helper-wiring-check.sh` verifies that skills which write
   `docs/aegis/` records route through the shared helper or run helper checks.
+- `workspace-helper-resolution-check.sh` verifies that workflows resolve the
+  helper from the installed method-pack support path and pass the target project
+  separately with `--root`.
 - `long-task-continuation-check.sh` verifies that long-task `work/<slug>/`
   records are routed through the workspace helper discipline.

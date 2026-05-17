@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -113,6 +114,52 @@ def config_status(path: Path, root: Path, helper: Path) -> str:
     ):
         return "configured"
     return "partial"
+
+
+def resolve_workspace_helper(config_path: Path) -> tuple[Path, str]:
+    env_helper = os.environ.get("AEGIS_WORKSPACE_HELPER")
+    if env_helper:
+        helper = Path(env_helper).expanduser()
+        if helper.is_file():
+            return helper, "env"
+
+    config = read_config(config_path)
+    configured_helper = config.get("workspace_helper")
+    if configured_helper:
+        helper = Path(configured_helper).expanduser()
+        if helper.is_file():
+            return helper, "config"
+
+    installed_helper = method_pack_root() / "scripts" / "aegis-workspace.py"
+    if installed_helper.is_file():
+        return installed_helper, "installed-method-pack"
+
+    cwd_helper = Path.cwd() / "scripts" / "aegis-workspace.py"
+    if cwd_helper.is_file():
+        return cwd_helper, "current-repo"
+
+    raise DoctorError(
+        "Aegis workspace helper unavailable. Set AEGIS_WORKSPACE_HELPER or run "
+        "aegis-doctor.py --write-config from an installed Aegis Method Pack."
+    )
+
+
+def helper_path_result(args: argparse.Namespace) -> dict[str, object]:
+    config_path = Path(args.config).expanduser() if args.config else default_config_path()
+    helper, source = resolve_workspace_helper(config_path)
+    helper_posix = helper.as_posix()
+    return {
+        "ok": True,
+        "workspaceHelper": helper_posix,
+        "source": source,
+        "configPath": config_path.as_posix(),
+        "targetProjectRootArgument": "--root <target-project-root>",
+        "shellHint": f"python {json.dumps(helper_posix)} check --root <target-project-root>",
+        "note": (
+            "The Aegis workspace helper belongs to the installed method-pack root; "
+            "the target project is passed separately via --root."
+        ),
+    }
 
 
 def run_helper(helper: Path) -> None:
@@ -262,6 +309,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Verify Aegis Method Pack skill and project workspace support."
     )
+    parser.add_argument(
+        "command",
+        nargs="?",
+        choices=("check", "helper-path"),
+        default="check",
+        help="command to run; default is check",
+    )
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     parser.add_argument("--config", help="config path; defaults to ~/.config/aegis/config.toml")
     parser.add_argument(
@@ -280,7 +334,10 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     try:
-        result = perform_check(args)
+        if args.command == "helper-path":
+            result = helper_path_result(args)
+        else:
+            result = perform_check(args)
     except DoctorError as exc:
         failure = {"ok": False, "error": str(exc)}
         if args.json:

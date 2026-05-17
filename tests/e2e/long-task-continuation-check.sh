@@ -29,13 +29,13 @@ done
 skill_text="$(cat skills/long-task-continuation/SKILL.md)"
 
 for pattern in \
-    "aegis-workspace.py init" \
-    "aegis-workspace.py new-work" \
-    "aegis-workspace.py add-checkpoint" \
-    "aegis-workspace.py add-evidence" \
-    "aegis-workspace.py add-drift-check" \
-    "aegis-workspace.py bundle" \
-    "aegis-workspace.py check" \
+    "<aegis-workspace-helper> init" \
+    "<aegis-workspace-helper> new-work" \
+    "<aegis-workspace-helper> add-checkpoint" \
+    "<aegis-workspace-helper> add-evidence" \
+    "<aegis-workspace-helper> add-drift-check" \
+    "<aegis-workspace-helper> bundle" \
+    "<aegis-workspace-helper> check" \
     "todo-checkpoint-draft.json" \
     "drift-check-draft.json"
 do

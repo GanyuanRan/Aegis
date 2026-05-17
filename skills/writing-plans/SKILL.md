@@ -37,7 +37,7 @@ If `docs/aegis/` does not exist and configured Aegis workspace support is
 available, initialize the target project first:
 
 ```bash
-python scripts/aegis-workspace.py init --root <target-project-root>
+python <aegis-workspace-helper> init --root <target-project-root>
 ```
 
 If installed Aegis workspace support is unavailable, initialize the workspace manually:
@@ -47,8 +47,8 @@ If installed Aegis workspace support is unavailable, initialize the workspace ma
 Then save the plan and append to `docs/aegis/INDEX.md`. Prefer:
 
 ```bash
-python scripts/aegis-workspace.py append-index --root <target-project-root> --path docs/aegis/plans/<filename>.md --kind plan --title "<title>"
-python scripts/aegis-workspace.py check --root <target-project-root>
+python <aegis-workspace-helper> append-index --root <target-project-root> --path docs/aegis/plans/<filename>.md --kind plan --title "<title>"
+python <aegis-workspace-helper> check --root <target-project-root>
 ```
 
 ## Scope Check

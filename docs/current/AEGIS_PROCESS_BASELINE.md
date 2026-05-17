@@ -376,6 +376,9 @@ repository ships zero-dependency scripts for workspace initialization,
 lifecycle records, proof-bundle assembly, and structural checks, but these are
 method-pack support tools. They validate structure and index coverage only;
 they do not decide evidence sufficiency and do not grant completion authority.
+Resolve the helper from the installed method-pack support path, then pass the
+target project separately, for example
+`python <aegis-workspace-helper> check --root <target-project-root>`.
 
 The Aegis method-pack repository itself must not ship a precreated live
 `docs/aegis/` workspace. That directory belongs to the concrete target project

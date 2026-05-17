@@ -156,7 +156,7 @@ It only records limitations supported by current fresh evidence and does not spe
 - The content quality of BASELINE-GOVERNANCE.md still depends on the agent or workflow choosing the correct target project and preserving project-specific review
 
 **Retention Reason**
-- `scripts/aegis-workspace.py init` now writes the standard baseline governance template and `check` verifies required headings and boundary phrases, but it cannot judge whether a target project's later edits are semantically sufficient
+- `<aegis-workspace-helper> init` now writes the standard baseline governance template and `check` verifies required headings and boundary phrases, but it cannot judge whether a target project's later edits are semantically sufficient
 
 **Observation Metric**
 - `bash tests/e2e/aegis-workspace-check.sh`

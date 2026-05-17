@@ -72,9 +72,9 @@ Evidence Card:
 8. **Workspace Integrity**: if the task created or modified a target project's
    `docs/aegis/` workspace and configured Aegis workspace support is available,
    run
-   `python scripts/aegis-workspace.py bundle --root <target-project-root> --work YYYY-MM-DD-<slug>`
+   `python <aegis-workspace-helper> bundle --root <target-project-root> --work YYYY-MM-DD-<slug>`
    when a `work/` record exists, then run
-   `python scripts/aegis-workspace.py check --root <target-project-root>` and
+   `python <aegis-workspace-helper> check --root <target-project-root>` and
    include the result in the evidence bundle. The generated proof bundle and
    workspace check validate method-pack structure, index coverage, and
    recognizable JSON artifact sidecars only; they do not judge evidence

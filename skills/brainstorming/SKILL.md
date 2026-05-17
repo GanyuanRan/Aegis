@@ -100,7 +100,7 @@ create accepted architecture memory from unexecuted ideas.
 1. **Aegis Project Workspace initialization (first creation only):**
    If `docs/aegis/` does not exist and configured Aegis workspace support is
    available, initialize the target project:
-   `python scripts/aegis-workspace.py init --root <target-project-root>`.
+   `python <aegis-workspace-helper> init --root <target-project-root>`.
    If installed Aegis workspace support is unavailable, create it manually:
    a. Create `docs/aegis/README.md` — describes workspace purpose and structure
    b. Create `docs/aegis/INDEX.md` — empty index, will be appended below
@@ -121,11 +121,11 @@ create accepted architecture memory from unexecuted ideas.
    Specs always go to `specs/` — never to `work/`.
 
 3. **Update INDEX.md:**
-   Prefer configured Aegis workspace support: `python scripts/aegis-workspace.py append-index --root
+   Prefer configured Aegis workspace support: `python <aegis-workspace-helper> append-index --root
    <target-project-root> --path docs/aegis/specs/<filename>.md --kind spec
    --title "<title>"`. If workspace support is unavailable, append the new spec entry
    to `docs/aegis/INDEX.md` manually.
-   After the append, run `python scripts/aegis-workspace.py check --root
+   After the append, run `python <aegis-workspace-helper> check --root
    <target-project-root>` when configured workspace support is available. This validates
    structure and index coverage only; it does not grant completion authority.
 

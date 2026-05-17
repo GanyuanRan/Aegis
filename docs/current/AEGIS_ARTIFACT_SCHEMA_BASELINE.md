@@ -21,22 +21,22 @@ The current schema version is uniformly:
 
 - `aegis.schema.v0`
 
-When `scripts/aegis-workspace.py` is available, it may validate JSON sidecar
+When `<aegis-workspace-helper>` is available, it may validate JSON sidecar
 artifacts against this minimum field baseline:
 
 ```bash
-python scripts/aegis-workspace.py validate-artifact --type TaskIntentDraft --file <artifact.json>
+python <aegis-workspace-helper> validate-artifact --type TaskIntentDraft --file <artifact.json>
 ```
 
 It may also create and assemble helper-backed task lifecycle artifacts under a
 target project's `docs/aegis/work/YYYY-MM-DD-<slug>/` directory:
 
 ```bash
-python scripts/aegis-workspace.py new-work --root <target-project-root> ...
-python scripts/aegis-workspace.py add-checkpoint --root <target-project-root> --work YYYY-MM-DD-<slug> ...
-python scripts/aegis-workspace.py add-evidence --root <target-project-root> --work YYYY-MM-DD-<slug> ...
-python scripts/aegis-workspace.py add-drift-check --root <target-project-root> --work YYYY-MM-DD-<slug> ...
-python scripts/aegis-workspace.py bundle --root <target-project-root> --work YYYY-MM-DD-<slug>
+python <aegis-workspace-helper> new-work --root <target-project-root> ...
+python <aegis-workspace-helper> add-checkpoint --root <target-project-root> --work YYYY-MM-DD-<slug> ...
+python <aegis-workspace-helper> add-evidence --root <target-project-root> --work YYYY-MM-DD-<slug> ...
+python <aegis-workspace-helper> add-drift-check --root <target-project-root> --work YYYY-MM-DD-<slug> ...
+python <aegis-workspace-helper> bundle --root <target-project-root> --work YYYY-MM-DD-<slug>
 ```
 
 That validation is structural only. It does not determine evidence sufficiency,
