@@ -121,6 +121,17 @@
       "verificationSignal": "fresh-evidence-plus-architecture-alignment-trigger-action-baseline-sync-or-skip-reason"
     },
     {
+      "id": "core-file-complexity-delta-before-completion",
+      "prompt": "We changed core code and one touched file may now be over 800 lines. Before calling it done, verify tests and tell me whether complexity increased or old paths retired.",
+      "expectedPrimarySkill": "verification-before-completion",
+      "allowedSecondarySkills": ["requesting-code-review"],
+      "mustNotDo": ["skip-complexity-delta", "ignore-file-crossing-800-lines", "retain-old-logic-without-retirement-trigger", "claim-completion-with-entropy-increase-hidden"],
+      "expectedOutputShape": "evidence-card-plus-complexity-delta-and-retirement-closure",
+      "workspacePolicy": "check-workspace-if-docs-aegis-was-touched",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "fresh-evidence-plus-complexity-delta-file-thresholds-net-entropy-retirement-closure"
+    },
+    {
       "id": "high-risk-merge-independent-review",
       "prompt": "Before merging this high-risk architecture change, run an independent code review against the plan, baseline, evidence, compatibility boundary, retirement notes, and ADR/baseline sync risk.",
       "expectedPrimarySkill": "requesting-code-review",
@@ -182,7 +193,7 @@
     "brainstorming": ["TaskIntentDraft", "BaselineReadSetHint", "ImpactStatementDraft", "Options", "Decision Needed"],
     "writing-plans": ["Plan Basis", "Files", "Compatibility", "Tasks", "Risks", "Retirement"],
     "systematic-debugging": ["Symptom", "Reproduction", "Root Cause", "Fix Boundary", "Verification"],
-    "verification-before-completion": ["Command / Check", "Exit Status", "Covered", "Not Covered", "Residual Risk", "Confidence", "Goal status", "Success evidence", "Stop state", "Architecture Alignment", "ADR Backfill Check"],
+    "verification-before-completion": ["Command / Check", "Exit Status", "Covered", "Not Covered", "Residual Risk", "Confidence", "Goal status", "Success evidence", "Stop state", "Complexity Delta", "Architecture Alignment", "ADR Backfill Check", "Retirement Closure"],
     "long-task-continuation": ["TodoCheckpointDraft", "Evidence", "DriftCheckDraft", "Risk / Unknown", "Next"]
   }
 }

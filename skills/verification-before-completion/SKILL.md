@@ -11,6 +11,7 @@ description: Use when about to claim work is complete, fixed, passing, verified,
   3. Read: output, exit code, failures
   4. Verify: output confirms claim? → state claim WITH evidence. Doesn't? → state actual status.
 → Done when: exact command run, output confirms, residual risk stated, confidence graded.
+  Non-trivial code changes → also report Complexity Delta.
   Governance/retirement work → also close Repair Track + Retirement Track + Residual Risk.
 
 # Verification Before Completion
@@ -87,7 +88,43 @@ Evidence Card:
    `架构对齐（Architecture Alignment）`; later references may use the user's
    language alone.
 
-10. **Architecture Alignment Check**: before final response, if project
+10. **Complexity Delta**: for non-trivial code changes, inspect the actual
+   diff before claiming completion. This is a completion-time entropy check,
+   not a universal failure gate. Skip or keep it one-line for tiny wording
+   edits, tests-only additions, generated files, vendored files, fixtures,
+   lockfiles, or purely mechanical formatting where no maintained source owner
+   gained complexity.
+
+   Use the project language for field labels in the final response, but keep
+   the internal shape recognizable:
+
+   ```text
+   Complexity Delta:
+   - Files over 800 lines:
+   - Files newly crossing 800 lines:
+   - Largest touched file delta:
+   - Largest touched function/block:
+   - New branches/fallbacks/adapters:
+   - Retired branches/fallbacks/adapters:
+   - Net entropy: decreased | stable | increased-with-justification
+   - Required follow-up:
+   ```
+
+   Rules:
+   - A maintained source file over 800 lines is a review signal. If this slice
+     added logic there or pushed it across 800 lines, explain why the owner
+     boundary is still correct or report a split/refactor follow-up.
+   - A touched function, method, component, or cohesive block over roughly 80
+     lines, deeply nested logic, or mixed reasons to change is a block-level
+     complexity signal even if the file remains under 800 lines.
+   - New fallback, adapter, compatibility, guard, or branch logic must be
+     paired with retired paths or a Retirement Closure entry. Net new paths
+     without deletion or a scheduled retirement trigger count as entropy
+     increase.
+   - If entropy increased and no stronger owner/compatibility reason exists,
+     downgrade the completion claim or state the residual risk.
+
+11. **Architecture Alignment Check**: before final response, if project
    instructions require architecture reporting or the task touched durable
    architecture surfaces, include an explicit architecture alignment result.
    This is separate from ADR Backfill: alignment states whether the completed
@@ -112,7 +149,7 @@ Evidence Card:
    - Residual architecture risk:
    ```
 
-11. **ADR Backfill Check**: for completed medium/high work that touched durable
+12. **ADR Backfill Check**: for completed medium/high work that touched durable
    architecture surfaces, run the ADR Auto Backfill check before final
    completion claims. Use `Trigger: no` or skip the expanded block for simple
    wording edits, ordinary README cleanup, routine release-note edits, low-risk
@@ -139,12 +176,25 @@ Evidence Card:
    - Boundary: advisory method-pack signal only
    ```
 
-12. **Governance Closure**: for governance/cleanup/migration/compatibility/retirement work → final response must include. Do not skip this structure just because the implementation was small. Localize section labels and prose to the user's language; keep internal concepts in English only when they are product terms or file/path identifiers.
+13. **Governance Closure**: for governance/cleanup/migration/compatibility/retirement work → final response must include. Do not skip this structure just because the implementation was small. Localize section labels and prose to the user's language; keep internal concepts in English only when they are product terms or file/path identifiers.
 
    ```
    Repair Track: repaired object | action | impact | verification
    Retirement Track: retired object | action | retained boundary | future trigger
    Residual Risk: unverified | deferred
+   ```
+
+   For work that adds, replaces, or retains old logic, also make the
+   delete-first closure explicit:
+
+   ```text
+   Retirement Closure:
+   - Old logic located:
+   - Deleted:
+   - Retained:
+   - Retention reason:
+   - Retirement trigger:
+   - Lingering references checked:
    ```
 
 ## Red Flags - QA Drift
@@ -156,3 +206,7 @@ Evidence Card:
 - Presenting method-pack verification as if it grants final authority
 - Adding new verification branches without saying what old check or fallback now retires
 - Closing governance or retirement work without Repair Track, Retirement Track, and Residual Risk
+- Claiming completion after growing a core file or complex block without a
+  Complexity Delta or residual-risk note
+- Retaining old logic without a Retention reason, Retirement trigger, and
+  lingering-reference check

@@ -74,6 +74,14 @@ assert_contains "$current_index" "AEGIS_WORKFLOW_QUALITY_BASELINE.md" \
     "current docs index lists workflow quality baseline"
 assert_contains "$process_doc" "Workflow Quality" \
     "process baseline references workflow quality"
+assert_contains "$process_doc" "Complexity Delta" \
+    "process baseline defines completion-time complexity delta"
+assert_contains "$process_doc" "Files newly crossing 800 lines" \
+    "process baseline defines file threshold complexity signal"
+assert_contains "$process_doc" "Largest touched function/block" \
+    "process baseline defines block-level complexity signal"
+assert_contains "$process_doc" "Retired branches/fallbacks/adapters" \
+    "process baseline ties complexity delta to retirement"
 assert_contains "$trigger_doc" "workflow-quality" \
     "trigger health references workflow-quality samples"
 assert_contains "$readme_en" "Workflow Quality" \
@@ -89,9 +97,17 @@ for dimension in \
     "Evidence Freshness" \
     "Artifact Stability" \
     "Workspace Laziness" \
-    "Authority Boundary"; do
+    "Authority Boundary" \
+    "Completion-Time Complexity Delta"; do
     assert_contains "$baseline" "$dimension" "baseline defines $dimension"
 done
+
+assert_contains "$baseline" "Files newly crossing 800 lines" \
+    "workflow quality baseline includes file threshold complexity signal"
+assert_contains "$baseline" "Largest touched function/block" \
+    "workflow quality baseline includes block-level complexity signal"
+assert_contains "$baseline" "Retirement Closure" \
+    "workflow quality baseline includes retirement closure"
 
 for skill in \
     "using-aegis" \
@@ -126,6 +142,18 @@ assert_contains "skills/verification-before-completion/SKILL.md" "Architecture A
     "verification skill defines architecture alignment check"
 assert_contains "skills/verification-before-completion/SKILL.md" "ADR Backfill Check" \
     "verification skill defines ADR backfill check"
+assert_contains "skills/verification-before-completion/SKILL.md" "Complexity Delta" \
+    "verification skill defines complexity delta check"
+assert_contains "skills/verification-before-completion/SKILL.md" "Files newly crossing 800 lines" \
+    "verification skill checks file threshold crossings"
+assert_contains "skills/verification-before-completion/SKILL.md" "Largest touched function/block" \
+    "verification skill checks block-level complexity"
+assert_contains "skills/verification-before-completion/SKILL.md" "Retirement Closure" \
+    "verification skill defines retirement closure"
+assert_contains "skills/verification-before-completion/SKILL.md" "Retention reason" \
+    "verification skill requires retention reason"
+assert_contains "skills/verification-before-completion/SKILL.md" "Retirement trigger" \
+    "verification skill requires retirement trigger"
 assert_contains "skills/long-task-continuation/SKILL.md" "Minimal Reporting Shape" \
     "long-task continuation keeps minimal reporting shape"
 assert_contains "skills/brainstorming/SKILL.md" "ADR signals" \
@@ -190,6 +218,7 @@ expected_ids = {
     "approved-spec-to-plan",
     "completion-claim",
     "architecture-completion-adr-backfill-check",
+    "core-file-complexity-delta-before-completion",
     "high-risk-merge-independent-review",
     "simple-completion-no-adr-ceremony",
     "architecture-area-bugfix-restores-baseline-no-adr",
@@ -272,10 +301,14 @@ if missing_contracts:
 
 if "Confidence" not in contracts["verification-before-completion"]:
     raise SystemExit("verification compact contract must include Confidence")
+if "Complexity Delta" not in contracts["verification-before-completion"]:
+    raise SystemExit("verification compact contract must include Complexity Delta")
 if "Architecture Alignment" not in contracts["verification-before-completion"]:
     raise SystemExit("verification compact contract must include Architecture Alignment")
 if "ADR Backfill Check" not in contracts["verification-before-completion"]:
     raise SystemExit("verification compact contract must include ADR Backfill Check")
+if "Retirement Closure" not in contracts["verification-before-completion"]:
+    raise SystemExit("verification compact contract must include Retirement Closure")
 if "ArchitectureReviewRequired" not in contracts["using-aegis"]:
     raise SystemExit("using-aegis compact contract must include ArchitectureReviewRequired")
 if "Stop condition" not in contracts["goal-framing"]:
@@ -301,6 +334,28 @@ if "authoritative" not in " ".join(adr_sample.get("mustNotDo", [])):
 completion_sample = by_id["completion-claim"]
 if "requesting-code-review" in completion_sample.get("allowedSecondarySkills", []):
     raise SystemExit("generic completion sample must not route to requesting-code-review by default")
+
+complexity_sample = by_id["core-file-complexity-delta-before-completion"]
+if complexity_sample.get("expectedPrimarySkill") != "verification-before-completion":
+    raise SystemExit("core file complexity sample must use verification-before-completion")
+for required in (
+    "skip-complexity-delta",
+    "ignore-file-crossing-800-lines",
+    "retain-old-logic-without-retirement-trigger",
+    "claim-completion-with-entropy-increase-hidden",
+):
+    if required not in complexity_sample.get("mustNotDo", []):
+        raise SystemExit(f"core file complexity sample must forbid {required}")
+for required_signal in (
+    "complexity-delta",
+    "file-thresholds",
+    "net-entropy",
+    "retirement-closure",
+):
+    if required_signal not in complexity_sample.get("verificationSignal", ""):
+        raise SystemExit(f"core file complexity sample must require {required_signal}")
+if "complexity-delta" not in complexity_sample.get("expectedOutputShape", ""):
+    raise SystemExit("core file complexity sample must include complexity delta in output shape")
 
 review_sample = by_id["high-risk-merge-independent-review"]
 if review_sample.get("expectedPrimarySkill") != "requesting-code-review":

@@ -145,6 +145,25 @@ Pass criteria:
 - skills do not grant `completion authority`
 - tests check wording for authority drift
 
+### 3.9 Completion-Time Complexity Delta
+
+Non-trivial code changes should report actual complexity movement before a
+completion claim.
+
+Pass criteria:
+
+- completion checks distinguish plan-time complexity budget from actual diff
+  results
+- maintained source files over 800 lines, newly crossing 800 lines, or receiving
+  new logic while already oversized are reported as review signals
+- touched functions, methods, components, or cohesive blocks over roughly 80
+  lines, deeply nested logic, or mixed reasons to change are reported as
+  block-level complexity signals
+- new branches, fallbacks, adapters, guards, or compatibility paths are paired
+  with retired paths or a retirement trigger
+- entropy increases are either justified by owner / compatibility evidence or
+  reported as residual risk
+
 ---
 
 ## 4. Compact Output Contracts
@@ -336,6 +355,34 @@ Non-goals respected: yes | no | unknown
 
 Goal Closure is advisory and evidence-focused. It does not grant completion
 authority or decide final evidence sufficiency.
+
+For non-trivial code changes, include a compact `Complexity Delta` before the
+final completion claim:
+
+```text
+Complexity Delta:
+- Files over 800 lines:
+- Files newly crossing 800 lines:
+- Largest touched file delta:
+- Largest touched function/block:
+- New branches/fallbacks/adapters:
+- Retired branches/fallbacks/adapters:
+- Net entropy: decreased | stable | increased-with-justification
+- Required follow-up:
+```
+
+For governance, compatibility, cleanup, or retirement work that adds, replaces,
+or retains old logic, include `Retirement Closure`:
+
+```text
+Retirement Closure:
+- Old logic located:
+- Deleted:
+- Retained:
+- Retention reason:
+- Retirement trigger:
+- Lingering references checked:
+```
 
 ### 4.6 `long-task-continuation`
 

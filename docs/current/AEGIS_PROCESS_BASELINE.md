@@ -93,6 +93,48 @@ Root improvement rule:
 - Keep runtime-ready artifacts as drafts, hints, projections, and evidence
   bundles only.
 
+### 3.0b Complexity Delta
+
+Complexity Delta is the post-change guardrail for detecting entropy growth
+before a task is claimed complete.
+
+It complements plan-time complexity budgeting. Plans may predict the intended
+file and responsibility shape, but completion-time review must compare the
+actual diff against the final code shape.
+
+For non-trivial code changes, `verification-before-completion` should report a
+compact Complexity Delta before the final completion claim:
+
+```text
+Complexity Delta:
+- Files over 800 lines:
+- Files newly crossing 800 lines:
+- Largest touched file delta:
+- Largest touched function/block:
+- New branches/fallbacks/adapters:
+- Retired branches/fallbacks/adapters:
+- Net entropy: decreased | stable | increased-with-justification
+- Required follow-up:
+```
+
+The 800-line threshold is a review signal, not a universal failure gate.
+Generated files, vendored files, fixtures, lockfiles, and framework-owned
+artifacts may be exempt when the reason is explicit. For normal source files,
+new work that pushes a file past 800 lines or continues adding logic to an
+already oversized file must either justify the owner boundary or report a split
+/ refactor follow-up.
+
+Function, method, component, or similarly cohesive block growth should be
+treated as the same entropy class. A touched block over roughly 80 lines, deeply
+nested logic, or a block that combines multiple reasons to change should be
+reported as a Complexity Delta risk even when the containing file is below 800
+lines.
+
+When the diff adds fallback, adapter, compatibility, guard, or branch logic, the
+Complexity Delta must be read together with Retirement Closure. Net new paths
+without deleted or scheduled old paths count as entropy increase and must be
+explained in `Risk/Unknown`.
+
 ### 3.1 Ripple Signal Triage
 
 Ripple Signal Triage is the pre-change entry point for dependency-aware work.
@@ -282,6 +324,7 @@ Where:
 For standard-path tasks, after exiting the reflection loop, enter quality assurance:
 
 - `Remove/Restore`
+- Complexity Delta
 - Rollback preparation
 - Confidence assessment
 - Asset capture
@@ -290,6 +333,8 @@ Minimum principle:
 
 - Do not end at "the feature seems to work"
 - Must state side effects, residual risks, and rollback boundaries
+- For non-trivial code changes, must state whether the actual diff decreased,
+  preserved, or increased complexity before claiming completion
 
 ---
 
@@ -549,7 +594,7 @@ pre-change Ripple Signal Triage in §3.1.
 
 If any dimension fails → record as an architecture finding → decide: fix now / schedule fix / record as known limitation.
 
-The 7-dimension check results MUST be entered into the Reflection Risk/Unknown field (mapping rules in §17).
+The 7-dimension check results MUST be entered into the Reflection Risk/Unknown field (mapping rules in §17). For non-trivial code changes, the Entropy flow finding should be backed by the completion-time Complexity Delta when available.
 
 ### 15.1 Baseline Snapshot Update Trigger
 

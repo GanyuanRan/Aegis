@@ -1,5 +1,56 @@
 # Aegis Release Notes
 
+## v1.5.0 (2026-05-19)
+
+### Completion-Time Complexity Delta
+
+- Added a completion-time `Complexity Delta` guardrail so non-trivial code
+  changes report actual entropy movement before a completion claim.
+- The completion check now calls out maintained source files over 800 lines,
+  files newly crossing 800 lines, largest touched file delta, largest touched
+  function/block, new branches/fallbacks/adapters, retired paths, net entropy,
+  and required follow-up.
+- The 800-line file threshold is documented as a review signal rather than a
+  universal failure gate, with generated, vendored, fixture, lockfile, and
+  framework-owned artifacts exempt only when the reason is explicit.
+- Added block-level complexity guidance for touched functions, methods,
+  components, or cohesive blocks over roughly 80 lines, deeply nested logic, or
+  mixed reasons to change.
+
+### Retirement Closure
+
+- Extended `verification-before-completion` with a `Retirement Closure` card
+  for work that adds, replaces, or retains old logic.
+- The closure now asks agents to record old logic location, deletion status,
+  retained logic, retention reason, retirement trigger, and lingering-reference
+  checks.
+- Complexity Delta and Retirement Closure are linked: new fallback, adapter,
+  compatibility, guard, or branch logic without deleted or scheduled old paths
+  is reported as entropy increase and residual risk.
+
+### Workflow Quality Coverage
+
+- Added the `Completion-Time Complexity Delta` dimension to the workflow
+  quality baseline.
+- Added a representative workflow-quality sample for a core file that may cross
+  the 800-line threshold before completion.
+- Expanded `workflow-quality-check.sh` so process docs, workflow quality docs,
+  the verification skill, compact contracts, and the matrix all lock the new
+  completion-time complexity behavior.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.5.0`
+- `git diff --check`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/governance-completion-contract-check.sh`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash scripts/bump-version.sh --check`
+- `bash tests/e2e/run-all.sh --full --host-profile none`
+
 ## v1.4.6 (2026-05-18)
 
 ### Workspace Helper Resolution Boundary
