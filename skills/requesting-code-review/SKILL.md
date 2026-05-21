@@ -50,6 +50,8 @@ Review in this method pack is advisory and evidence-oriented. It is not authorit
 - Whether there is any old path, fallback, duplicate owner, or temporary patch that should retire
 - Whether the diff contains durable architecture decisions that need ADR
   Auto Backfill or baseline sync findings
+- Whether `recording-architecture-decisions` was used, or should be used, when
+  an ADR action or baseline sync closure is in scope
 
 If you cannot answer these, stop and gather them before dispatching review.
 
@@ -138,6 +140,8 @@ The review request must prompt the reviewer to inspect at least:
 - compatibility boundary
 - missing ADR Auto Backfill or baseline sync findings for durable architecture
   decisions
+- missing `recording-architecture-decisions` handoff when ADR action or
+  baseline sync closure is in scope
 - unverified claims or missing proof
 - old logic that should retire, stay temporarily, or converge
 

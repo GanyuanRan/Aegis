@@ -1,0 +1,1 @@
+Help me record this durable architecture decision as an ADR and make sure the architecture baseline is synced if the decision changes current state.

@@ -176,6 +176,12 @@ Evidence Card:
    - Boundary: advisory method-pack signal only
    ```
 
+   If the suggested action is create, amend, or supersede, or if Baseline sync
+   is needed or unknown, use `recording-architecture-decisions` for the ADR
+   lifecycle and Baseline Sync Closure before making the final completion
+   claim. This keeps `verification-before-completion` as the completion owner
+   while delegating the ADR/baseline writeback decision to the dedicated skill.
+
 13. **Governance Closure**: for governance/cleanup/migration/compatibility/retirement work → final response must include. Do not skip this structure just because the implementation was small. Localize section labels and prose to the user's language; keep internal concepts in English only when they are product terms or file/path identifiers.
 
    ```

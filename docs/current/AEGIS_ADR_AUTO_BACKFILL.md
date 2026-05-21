@@ -239,12 +239,23 @@ Skill responsibilities:
 - `long-task-continuation`
   - should keep work evidence, drift checks, and proof bundles usable as the
     preferred ADR source
+- `recording-architecture-decisions`
+  - should own direct ADR, architecture decision record, decision log, and
+    baseline sync closure requests
+  - must run the ADR creation gate, choose create / amend / supersede / skip,
+    choose the owner surface, and close baseline sync before any writeback
+  - does not replace completion verification and does not grant completion
+    authority
 - `verification-before-completion`
   - should run the ADR Auto Backfill check before final completion claims for
     medium/high work that touched architecture surfaces
+  - should route create / amend / supersede actions, or needed / unknown
+    baseline sync, through `recording-architecture-decisions`
 - `requesting-code-review`
   - should flag missing ADR or baseline sync when the diff shows durable
     architecture decisions
+  - should flag missing `recording-architecture-decisions` handoff when ADR
+    action or baseline sync closure is in scope
 
 ---
 

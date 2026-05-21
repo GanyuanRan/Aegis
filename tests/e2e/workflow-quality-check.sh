@@ -142,6 +142,8 @@ assert_contains "skills/verification-before-completion/SKILL.md" "Architecture A
     "verification skill defines architecture alignment check"
 assert_contains "skills/verification-before-completion/SKILL.md" "ADR Backfill Check" \
     "verification skill defines ADR backfill check"
+assert_contains "skills/verification-before-completion/SKILL.md" "recording-architecture-decisions" \
+    "verification skill routes ADR lifecycle closure to the dedicated skill when needed"
 assert_contains "skills/verification-before-completion/SKILL.md" "Complexity Delta" \
     "verification skill defines complexity delta check"
 assert_contains "skills/verification-before-completion/SKILL.md" "Files newly crossing 800 lines" \
@@ -170,6 +172,8 @@ assert_contains "skills/long-task-continuation/SKILL.md" "proof bundle.*ADR sign
     "long-task completion passes proof bundle and ADR signals forward"
 assert_contains "skills/requesting-code-review/SKILL.md" "missing ADR Auto Backfill or baseline sync" \
     "requesting code review checks missing ADR or baseline sync"
+assert_contains "skills/requesting-code-review/SKILL.md" "recording-architecture-decisions" \
+    "requesting code review references dedicated ADR lifecycle skill"
 assert_contains "skills/requesting-code-review/SKILL.md" "independent code review" \
     "requesting code review is framed as independent review"
 assert_contains "skills/requesting-code-review/SKILL.md" "baseline / current authority" \
@@ -192,6 +196,23 @@ assert_contains "agents/code-reviewer.md" "baseline defect, architecture drift, 
     "named code reviewer mirrors baseline defect and drift distinction"
 assert_contains "agents/code-reviewer.md" "ADR Auto Backfill or baseline sync" \
     "named code reviewer mirrors ADR and baseline sync checks"
+
+assert_contains "skills/recording-architecture-decisions/SKILL.md" "name: recording-architecture-decisions" \
+    "recording architecture decisions skill exists"
+assert_contains "skills/recording-architecture-decisions/SKILL.md" "architecture decision record|durable architecture decision|decision log" \
+    "recording architecture decisions skill has ADR discovery terms"
+assert_contains "skills/recording-architecture-decisions/SKILL.md" "ADR-CREATION-GATE.md" \
+    "recording architecture decisions skill reads ADR creation gate"
+assert_contains "skills/recording-architecture-decisions/SKILL.md" "AEGIS_ADR_AUTO_BACKFILL.md" \
+    "recording architecture decisions skill reads ADR auto backfill baseline"
+assert_contains "skills/recording-architecture-decisions/SKILL.md" "Baseline Sync" \
+    "recording architecture decisions skill defines baseline sync closure"
+assert_contains "skills/recording-architecture-decisions/SKILL.md" "create.*amend.*supersede.*skip" \
+    "recording architecture decisions skill covers ADR lifecycle actions"
+assert_contains "skills/recording-architecture-decisions/SKILL.md" "existing baseline remains valid|baseline remains valid" \
+    "recording architecture decisions skill requires unchanged-baseline reason"
+assert_contains "skills/recording-architecture-decisions/SKILL.md" "not completion authority" \
+    "recording architecture decisions skill preserves authority boundary"
 
 assert_not_contains "skills/using-aegis/SKILL.md" "Evidence Card" \
     "using-aegis does not absorb verification output contract"
@@ -274,6 +295,7 @@ required_skills = {
     "verification-before-completion",
     "long-task-continuation",
     "requesting-code-review",
+    "recording-architecture-decisions",
 }
 missing_skills = sorted(required_skills - skills)
 if missing_skills:
@@ -309,6 +331,11 @@ if "ADR Backfill Check" not in contracts["verification-before-completion"]:
     raise SystemExit("verification compact contract must include ADR Backfill Check")
 if "Retirement Closure" not in contracts["verification-before-completion"]:
     raise SystemExit("verification compact contract must include Retirement Closure")
+if "recording-architecture-decisions" not in contracts:
+    raise SystemExit("compact output contracts must include recording-architecture-decisions")
+for required in ("Decision Candidate", "ADR Gate", "ADR Action", "Owner Surface", "Baseline Sync", "Boundary"):
+    if required not in contracts["recording-architecture-decisions"]:
+        raise SystemExit(f"recording-architecture-decisions compact contract must include {required}")
 if "ArchitectureReviewRequired" not in contracts["using-aegis"]:
     raise SystemExit("using-aegis compact contract must include ArchitectureReviewRequired")
 if "Stop condition" not in contracts["goal-framing"]:
@@ -330,6 +357,40 @@ if "baseline-sync" not in adr_sample.get("verificationSignal", ""):
     raise SystemExit("ADR backfill completion sample must require baseline-sync judgment")
 if "authoritative" not in " ".join(adr_sample.get("mustNotDo", [])):
     raise SystemExit("ADR backfill completion sample must protect the authority boundary")
+if "recording-architecture-decisions" not in adr_sample.get("allowedSecondarySkills", []):
+    raise SystemExit("ADR backfill completion sample must allow recording-architecture-decisions for lifecycle closure")
+
+direct_adr_sample = by_id["direct-adr-lifecycle-request"]
+if direct_adr_sample.get("expectedPrimarySkill") != "recording-architecture-decisions":
+    raise SystemExit("direct ADR lifecycle request must use recording-architecture-decisions")
+for required in (
+    "treat-adr-as-completion-authority",
+    "write-adr-without-gate-check",
+    "skip-baseline-sync-closure",
+):
+    if required not in direct_adr_sample.get("mustNotDo", []):
+        raise SystemExit(f"direct ADR lifecycle request must forbid {required}")
+for required_signal in (
+    "adr-gate",
+    "owner-surface",
+    "baseline-sync",
+    "unchanged-reason",
+):
+    if required_signal not in direct_adr_sample.get("verificationSignal", ""):
+        raise SystemExit(f"direct ADR lifecycle request must require {required_signal}")
+
+direct_adr_skip_sample = by_id["direct-adr-skip-request"]
+if direct_adr_skip_sample.get("expectedPrimarySkill") != "recording-architecture-decisions":
+    raise SystemExit("direct ADR skip request must use recording-architecture-decisions")
+if direct_adr_skip_sample.get("expectedArtifacts"):
+    raise SystemExit("direct ADR skip request must not expect artifacts")
+for required in (
+    "force-adr-creation",
+    "force-baseline-writeback",
+    "treat-implementation-detail-as-durable-decision",
+):
+    if required not in direct_adr_skip_sample.get("mustNotDo", []):
+        raise SystemExit(f"direct ADR skip request must forbid {required}")
 
 completion_sample = by_id["completion-claim"]
 if "requesting-code-review" in completion_sample.get("allowedSecondarySkills", []):

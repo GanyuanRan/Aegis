@@ -1,5 +1,52 @@
 # Aegis Release Notes
 
+## v1.5.3 (2026-05-21)
+
+### Recording Architecture Decisions
+
+- Added `recording-architecture-decisions` as the dedicated ADR lifecycle
+  skill for direct ADR, architecture decision record, decision log, and
+  baseline sync closure requests.
+- The new skill runs the ADR creation gate, chooses create / amend /
+  supersede / skip, selects the owner surface, and closes Baseline Sync before
+  any ADR or baseline writeback.
+- Kept the boundary explicit: ADR handling remains advisory method-pack
+  discipline and does not become completion authority, an authoritative
+  `GateDecision`, or a `PolicySnapshot`.
+
+### Baseline Sync Closure
+
+- Updated ADR Auto Backfill guidance so create, amend, supersede, needed, or
+  unknown baseline sync outcomes route through `recording-architecture-decisions`.
+- Extended `verification-before-completion` and `requesting-code-review` so
+  completion and review flows flag missing ADR lifecycle handoff when durable
+  architecture decisions or baseline sync closure are in scope.
+- Documented the compact output contract in the workflow quality baseline:
+  Decision Candidate, ADR Gate, ADR Action, Owner Surface, Baseline Sync, and
+  Boundary.
+
+### Trigger And Release Coverage
+
+- Added `recording-architecture-decisions` to doctor key skill detection and
+  skill-triggering / explicit-skill request coverage.
+- Expanded workflow quality fixtures and checks with direct ADR lifecycle and
+  ADR-skip samples, including no-forced-ADR and no-forced-baseline-writeback
+  guardrails.
+- Bumped public package and host distribution manifests to `1.5.3`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.5.3`
+- `bash scripts/bump-version.sh --check`
+- `git diff --check`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/governance-completion-contract-check.sh`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+
 ## v1.5.0 (2026-05-19)
 
 ### Completion-Time Complexity Delta

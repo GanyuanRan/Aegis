@@ -59,6 +59,8 @@ Pass criteria:
 - bugs, failures, and unexpected behavior route to `systematic-debugging`
 - completion claims route to `verification-before-completion`
 - long, resumable, or handoff-prone work routes to `long-task-continuation`
+- direct ADR, architecture decision record, decision log, or baseline sync
+  closure requests route to `recording-architecture-decisions`
 
 ### 3.2 Fast-Path Cheapness
 
@@ -339,6 +341,10 @@ Do not force ADR ceremony onto simple wording edits, ordinary README cleanup,
 routine release-note edits, low-risk single-file changes, tests-only coverage
 improvements, or bug fixes that only restore the existing baseline.
 
+When the suggested ADR action is create, amend, or supersede, or when baseline
+sync is needed or unknown, use `recording-architecture-decisions` for the ADR
+lifecycle and Baseline Sync Closure before the final completion claim.
+
 If evidence is incomplete, the claim must be downgraded.
 
 Goal Closure:
@@ -402,6 +408,28 @@ Next: next smallest safe action
 ```
 
 Low-complexity tasks skip `work/`.
+
+### 4.7 `recording-architecture-decisions`
+
+Purpose:
+
+- record durable architecture decisions and close baseline sync without
+  becoming a completion owner
+
+Compact contract:
+
+```text
+Decision Candidate: summary and evidence source
+ADR Gate: hard to reverse / surprising without context / real trade-off
+ADR Action: create | amend | supersede | skip
+Owner Surface: project docs/adr | docs/aegis/adr | existing ADR | lighter record
+Baseline Sync: required, target, action, reason
+Boundary: advisory method-pack signal only; not completion authority
+```
+
+If ADR Action is create, amend, or supersede, Baseline Sync must be checked. If
+the baseline is not changed, the output must state why the existing baseline
+remains valid.
 
 ---
 

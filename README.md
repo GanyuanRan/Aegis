@@ -604,7 +604,7 @@ We thank [Matt Pocock](https://github.com/mattpocock) and all contributors to [m
 |-------------|-------------|-----------------|
 | `communicating-concisely` | `/caveman` | Ultra-compressed communication mode with auto-clarity exception |
 | `establishing-project-context` | `/grill-with-docs` | CONTEXT.md shared language system, terminology tightening during brainstorming |
-| ADR creation gate | `/grill-with-docs` ADR discipline | Three-condition gate before creating architecture decision records |
+| `recording-architecture-decisions` | `/grill-with-docs` ADR discipline | ADR lifecycle plus baseline sync closure |
 | Feedback loop construction | `/diagnose` Phase 1 | Priority ladder for building automated bug reproduction loops |
 
 These ideas were re-implemented in Aegis format — shorter, multi-harness compatible, and integrated with the TLREF/DIVE/Reflection governance spine rather than copied verbatim.

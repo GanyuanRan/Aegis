@@ -23,6 +23,7 @@ KEY_SKILLS = (
     "brainstorming",
     "writing-plans",
     "systematic-debugging",
+    "recording-architecture-decisions",
     "verification-before-completion",
 )
 

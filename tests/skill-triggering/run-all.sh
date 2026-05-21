@@ -18,6 +18,7 @@ if [ "$TEST_CLI" = "codex" ]; then
         "verification-before-completion"
         "writing-plans"
         "requesting-code-review"
+        "recording-architecture-decisions"
     )
 else
     SKILLS=(
@@ -31,6 +32,7 @@ else
         "dispatching-parallel-agents"
         "executing-plans"
         "requesting-code-review"
+        "recording-architecture-decisions"
     )
 fi
 

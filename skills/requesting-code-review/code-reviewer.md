@@ -67,6 +67,8 @@ git diff {BASE_SHA}..{HEAD_SHA}
 - Does the diff align with the baseline ownership map, contract inventory, and dependency direction?
 - If not aligned, is this a baseline defect, architecture drift, or intentional architecture change?
 - If intentional, is ADR Auto Backfill or baseline sync needed?
+- If an ADR action or baseline sync closure is in scope, did the caller use or
+  plan to use `recording-architecture-decisions` before claiming completion?
 
 **Evidence Sufficiency:**
 - Do the provided tests / commands / logs actually prove the claimed behavior?

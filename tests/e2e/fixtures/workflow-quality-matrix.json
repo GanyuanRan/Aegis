@@ -113,12 +113,34 @@
       "id": "architecture-completion-adr-backfill-check",
       "prompt": "We completed a medium-risk architecture change that altered the runtime-ready artifact boundary. Verify completion and tell me whether an ADR or baseline sync is needed.",
       "expectedPrimarySkill": "verification-before-completion",
-      "allowedSecondarySkills": ["requesting-code-review"],
+      "allowedSecondarySkills": ["recording-architecture-decisions", "requesting-code-review"],
       "mustNotDo": ["skip-architecture-alignment", "skip-adr-backfill-check", "create-authoritative-gate-decision", "force-adr-creation-without-trigger"],
       "expectedOutputShape": "evidence-card-plus-architecture-alignment-and-adr-backfill-check",
       "workspacePolicy": "check-workspace-if-docs-aegis-was-touched",
       "expectedArtifacts": ["EvidenceBundleDraft"],
       "verificationSignal": "fresh-evidence-plus-architecture-alignment-trigger-action-baseline-sync-or-skip-reason"
+    },
+    {
+      "id": "direct-adr-lifecycle-request",
+      "prompt": "Help me record this durable architecture decision as an ADR and make sure the architecture baseline is synced if the decision changes current state.",
+      "expectedPrimarySkill": "recording-architecture-decisions",
+      "allowedSecondarySkills": ["verification-before-completion"],
+      "mustNotDo": ["treat-adr-as-completion-authority", "write-adr-without-gate-check", "skip-baseline-sync-closure"],
+      "expectedOutputShape": "decision-candidate-plus-adr-gate-action-owner-surface-and-baseline-sync-closure",
+      "workspacePolicy": "workspace-only-if-adr-or-baseline-writeback-is-needed",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "adr-gate-action-owner-surface-baseline-sync-required-target-action-or-unchanged-reason"
+    },
+    {
+      "id": "direct-adr-skip-request",
+      "prompt": "Does this small implementation detail need an ADR, or should we skip the ADR and keep the baseline unchanged?",
+      "expectedPrimarySkill": "recording-architecture-decisions",
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["force-adr-creation", "force-baseline-writeback", "treat-implementation-detail-as-durable-decision"],
+      "expectedOutputShape": "adr-gate-with-skip-reason-and-baseline-unchanged-reason",
+      "workspacePolicy": "no-workspace-unless-evidence-shows-durable-decision",
+      "expectedArtifacts": [],
+      "verificationSignal": "adr-gate-skip-reason-baseline-sync-not-needed-or-unchanged"
     },
     {
       "id": "core-file-complexity-delta-before-completion",
@@ -193,6 +215,7 @@
     "brainstorming": ["TaskIntentDraft", "BaselineReadSetHint", "ImpactStatementDraft", "Options", "Decision Needed"],
     "writing-plans": ["Plan Basis", "Files", "Compatibility", "Tasks", "Risks", "Retirement"],
     "systematic-debugging": ["Symptom", "Reproduction", "Root Cause", "Fix Boundary", "Verification"],
+    "recording-architecture-decisions": ["Decision Candidate", "ADR Gate", "ADR Action", "Owner Surface", "Baseline Sync", "Boundary"],
     "verification-before-completion": ["Command / Check", "Exit Status", "Covered", "Not Covered", "Residual Risk", "Confidence", "Goal status", "Success evidence", "Stop state", "Complexity Delta", "Architecture Alignment", "ADR Backfill Check", "Retirement Closure"],
     "long-task-continuation": ["TodoCheckpointDraft", "Evidence", "DriftCheckDraft", "Risk / Unknown", "Next"]
   }

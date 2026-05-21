@@ -566,7 +566,7 @@ Aegis 派生自 **[Superpowers](https://github.com/obra/superpowers)**，由 [Je
 |-----------|---------|---------|
 | `communicating-concisely` | `/caveman` | 极简沟通模式，含安全场景自动退出机制 |
 | `establishing-project-context` | `/grill-with-docs` | CONTEXT.md 共享语言系统，brainstorming 中术语收紧 |
-| ADR 创建门控 | `/grill-with-docs` ADR 纪律 | 创建架构决策记录前的三条件核验 |
+| `recording-architecture-decisions` | `/grill-with-docs` ADR 纪律 | ADR 生命周期与架构基线同步闭环 |
 | 反馈回路构建 | `/diagnose` Phase 1 | 构建自动化 bug 复现回路的优先级梯子 |
 
 以上借鉴均为在 Aegis 自有格式中的重新实现——更短、多宿主兼容、与 TLREF/DIVE/Reflection 治理脊柱咬合，而非原样复制。
