@@ -49,7 +49,6 @@ release_checklist="docs/current/AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md"
 root_readme="README.md"
 zh_readme="README.zh-CN.md"
 skill_discipline="skills/using-aegis/references/skill-discipline.md"
-visual_companion="skills/brainstorming/visual-companion.md"
 antigravity_guide="docs/README.antigravity.md"
 antigravity_tools="skills/using-aegis/references/antigravity-tools.md"
 install_check="tests/e2e/install-verification-policy-check.sh"
@@ -95,8 +94,6 @@ assert_contains "$zh_readme" "Antigravity CLI|Antigravity IDE|Antigravity App" \
     "Chinese README lists Antigravity host surfaces"
 assert_contains "$skill_discipline" "references/antigravity-tools.md" \
     "skill discipline links Antigravity tool mapping"
-assert_contains "$visual_companion" "Antigravity CLI / IDE / App" \
-    "visual companion covers Antigravity persistent server launch"
 assert_contains "$install_check" "docs/README.antigravity.md" \
     "install verification policy includes Antigravity host guide"
 

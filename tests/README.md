@@ -14,7 +14,6 @@ Primary public entrypoints:
 - `e2e/` - release and governance verification orchestration
 - `opencode/` - OpenCode host compatibility checks
 - `codex-plugin-sync/` - Codex plugin sync and publishable-set regression checks
-- `brainstorm-server/` - browser brainstorming protocol and lifecycle checks
 - `helpers/` - shared parser and host bridge helpers
 
 Optional or slower public suites:

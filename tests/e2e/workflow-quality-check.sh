@@ -128,6 +128,8 @@ assert_contains "skills/goal-framing/SKILL.md" "TaskIntentDraft" \
     "goal-framing exposes task intent goal frame"
 assert_contains "skills/brainstorming/SKILL.md" "Compact output contract" \
     "brainstorming exposes compact output contract"
+assert_not_contains "skills/brainstorming/SKILL.md" "visual companion|Visual Companion|web browser|local URL" \
+    "brainstorming does not offer retired browser visual companion"
 assert_contains "skills/writing-plans/SKILL.md" "Compact output contract" \
     "writing-plans exposes compact output contract"
 assert_contains "skills/systematic-debugging/SKILL.md" "Quick bug lane" \

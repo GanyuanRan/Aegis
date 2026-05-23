@@ -1,5 +1,40 @@
 # Aegis Release Notes
 
+## v1.5.5 (2026-05-23)
+
+### Retired Browser Visual Companion
+
+- Removed the inherited browser-based visual companion from the `brainstorming`
+  workflow. Aegis no longer offers to open a local browser URL for mockups,
+  diagrams, or visual option selection during brainstorming.
+- Deleted the companion guide, local server scripts, frame/helper assets, and
+  `tests/brainstorm-server/` lifecycle/protocol suite.
+- Kept brainstorming focused on method-pack design discipline: context intake,
+  clarifying questions, options, design/spec approval, and handoff to
+  `writing-plans`.
+
+### Maintenance Guardrails
+
+- Removed the retired `brainstorm-server` version-audit exclusion and updated
+  the Codex plugin sync comment so maintenance scripts no longer refer to the
+  deleted companion surface.
+- Added a workflow-quality regression check that prevents `brainstorming` from
+  reintroducing browser visual companion prompts.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.5.5`
+- `bash scripts/bump-version.sh --check`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `bash tests/e2e/antigravity-host-boundary-check.sh`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile none`
+- `bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/governance-completion-contract-check.sh`
+- `git diff --check`
+
 ## v1.5.4 (2026-05-23)
 
 ### Antigravity Host Targets
