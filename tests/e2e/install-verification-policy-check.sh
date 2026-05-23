@@ -42,6 +42,7 @@ host_docs=(
     "docs/README.codebuddy.md"
     "docs/README.deepseek-tui.md"
     "docs/README.trae.md"
+    "docs/README.antigravity.md"
 )
 
 for file in "${root_docs[@]}"; do

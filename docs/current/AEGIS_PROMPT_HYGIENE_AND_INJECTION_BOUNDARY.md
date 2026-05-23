@@ -134,7 +134,9 @@ The standard order is:
 3. `excerpt`: Only bring the original excerpt that the current judgment must depend on into the prompt.
 4. `expand`: Expand range with justification when the window is insufficient; downgrade to `unknown` or `needs-verification` if still insufficient after expansion.
 
-This discipline applies to high-risk input surfaces in hosts such as Codex, Claude Code, OpenCode, Copilot, and Gemini CLI, including:
+This discipline applies to high-risk input surfaces in hosts such as Codex,
+Claude Code, OpenCode, Copilot, Antigravity CLI, Antigravity IDE,
+Antigravity App, and transitional Gemini CLI, including:
 
 - `.codex/log`, `.codex/sessions`, `history.jsonl`
 - `~/.claude/projects`, host transcripts, chat history

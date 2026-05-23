@@ -71,7 +71,14 @@ When calling this via the Bash tool, set `run_in_background: true`. Then read `$
 scripts/start-server.sh --project-dir /path/to/project
 ```
 
-**Gemini CLI:**
+**Antigravity CLI / IDE / App:**
+```bash
+# Use --foreground and launch it with the host's persistent/background
+# execution mechanism when detached processes are reaped.
+scripts/start-server.sh --project-dir /path/to/project --foreground
+```
+
+**Gemini CLI (transitional compatibility surface):**
 ```bash
 # Use --foreground and set is_background: true on your shell tool call
 # so the process survives across turns

@@ -1,5 +1,49 @@
 # Aegis Release Notes
 
+## v1.5.4 (2026-05-23)
+
+### Antigravity Host Targets
+
+- Added Google Antigravity as a documented Aegis host target across three
+  structural surfaces: `Antigravity CLI`, `Antigravity IDE`, and
+  `Antigravity App`.
+- Added `docs/README.antigravity.md` with install guidance, shape-specific
+  notes, verification expectations, and official reference links.
+- Added `skills/using-aegis/references/antigravity-tools.md` so Aegis skills can
+  map file, shell, search, skill, subagent, and web-tool references onto
+  Antigravity host equivalents.
+
+### Gemini CLI Transition Boundary
+
+- Kept Gemini CLI as a transitional compatibility surface instead of retiring
+  it in this release.
+- Documented Google's `2026-05-19` transition announcement, the `2026-06-18`
+  consumer service-stop boundary, and the enterprise / paid API key caveats.
+- Preserved `GEMINI.md`, `gemini-extension.json`, and the Gemini tool mapping
+  while Antigravity CLI / IDE / App support matures.
+
+### Host Compatibility Guardrails
+
+- Updated the host compatibility matrix, known limitations, release checklist,
+  prompt hygiene boundary, README files, and skill references for Antigravity
+  support.
+- Added `tests/e2e/antigravity-host-boundary-check.sh` and wired it into the
+  Layer 1 fast check.
+- The new guardrail records Antigravity as structural support only, captures
+  Antigravity CLI `1.0.1` plugin discovery evidence, and prevents wording that
+  marks Gemini CLI as retired or retiring.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.5.4`
+- `bash scripts/bump-version.sh --check`
+- `bash tests/e2e/antigravity-host-boundary-check.sh`
+- `bash tests/e2e/install-verification-policy-check.sh`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `git diff --check`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+
 ## v1.5.3 (2026-05-21)
 
 ### Recording Architecture Decisions

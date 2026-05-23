@@ -189,6 +189,10 @@ Aegis 保留多宿主 plugin-installable 目标。
 | `CodeBuddy` | 已有 plugin skeleton 与原生 `SKILL.md` 手动安装说明；release-level fresh host smoke 仍待补证 |
 | `DeepSeek-TUI` | 原生 `SKILL.md` discovery 支持手动安装 Aegis skills；release-level fresh host smoke 仍待补证 |
 | `Trae` | 原生 `SKILL.md` discovery 支持手动安装 Aegis skills；release-level fresh host smoke 仍待补证 |
+| `Antigravity CLI` | 已新增结构性目标；release-level fresh host smoke 仍待补证 |
+| `Antigravity IDE` | 已新增结构性目标；release-level fresh host smoke 仍待补证 |
+| `Antigravity App` | 已新增结构性目标；release-level fresh host smoke 仍待补证 |
+| `Gemini CLI` | 作为过渡兼容面保留，等待 Antigravity 支持成熟，同时兼顾企业版与付费 API key 例外 |
 
 其它宿主仍是产品目标，但还不是当前 release-level verdict。
 
@@ -350,8 +354,31 @@ Copy-Item -Recurse -Force "$env:USERPROFILE\.trae\aegis\skills\*" "$env:USERPROF
 
 重启 Trae，然后询问它有哪些 Aegis skills。
 
+### Antigravity CLI / IDE / App
+
+Google Antigravity 是新的 Google 宿主目标。Aegis 现在区分三种形态：
+
+- `Antigravity CLI`
+- `Antigravity IDE`
+- `Antigravity App`
+
+在 Antigravity 的 plugin / skill 安装 contract 被当前 release 证据确认前，
+先使用 Antigravity 当前的 Skills / plugin 配置界面或 slash commands 暴露
+Aegis skills，然后从 checkout 根目录运行完整安装验证：
+
+```bash
+git clone https://github.com/GanyuanRan/Aegis.git ~/aegis
+cd ~/aegis
+python scripts/aegis-doctor.py --write-config --json
+```
+
+只有当兼容性矩阵记录了 fresh host smoke evidence 后，才把 Antigravity 支持理解为
+release-level closeout。详细说明见
+[docs/README.antigravity.md](docs/README.antigravity.md)。
+
 完整宿主说明：
 
+- [Antigravity](docs/README.antigravity.md)
 - [Claude Code](docs/README.claude-code.md)
 - [CodeBuddy](docs/README.codebuddy.md)
 - [Codex](docs/README.codex.md)
@@ -359,7 +386,11 @@ Copy-Item -Recurse -Force "$env:USERPROFILE\.trae\aegis\skills\*" "$env:USERPROF
 - [OpenCode](docs/README.opencode.md)
 - [Trae](docs/README.trae.md)
 
-本项目仍保留继承自 `superpowers` 的多宿主分发骨架，包括 Cursor、Gemini 等相关包面。但除非兼容性矩阵明确说明，不应把这些目标理解为已经完成当前 fresh release-level closeout。
+本项目仍保留继承自 `superpowers` 的多宿主分发骨架，包括 Cursor 和 Gemini
+相关包面。Google 在 `2026-05-19` 公告中把 consumer Gemini CLI /
+Gemini Code Assist IDE extension 使用迁往 Antigravity CLI / Antigravity 2.0；
+Gemini CLI 现在作为过渡兼容面保留。除非兼容性矩阵明确说明，不应把这些目标
+理解为已经完成当前 fresh release-level closeout。
 
 ## 首次项目基线
 
@@ -389,6 +420,9 @@ Aegis 不是 daemon、后台 runner，也不是 authoritative runtime core。它
 - CodeBuddy 从原生 `SKILL.md` skill 路径发现已复制的 Aegis skill 目录，也可以通过 `.codebuddy-plugin/` 元数据加载 Aegis。
 - DeepSeek-TUI 从原生 `SKILL.md` skill 路径发现已复制的 Aegis skill 目录。
 - Trae 从原生 `SKILL.md` skill 路径发现已复制的 Aegis skill 目录。
+- Antigravity CLI、Antigravity IDE 和 Antigravity App 是结构性目标；在安装 /
+  discovery contract 被验证前，使用 portable skill requests 和 Antigravity
+  当前的 Skills / plugin 配置面。
 - `using-aegis` 会要求 agent 在回应前判断当前任务是否需要加载任务专属 skill。
 - 日常使用不需要每次手动点名 skill；显式命令主要用于你想强制指定某个方法时。
 
@@ -405,6 +439,9 @@ Aegis 不是 daemon、后台 runner，也不是 authoritative runtime core。它
 - 在 CodeBuddy 中要求它加载某个 Aegis skill，例如 `systematic-debugging`。
 - 在 DeepSeek-TUI 中使用原生 skill 命令，例如：`/skill systematic-debugging`。
 - 在 Trae 中要求它加载某个 Aegis skill，例如 `systematic-debugging`。
+- 在 Antigravity surfaces 中，使用 portable skill request，例如
+  `Use the Aegis systematic-debugging skill`；如果当前 Antigravity 形态已有经验证的
+  slash command，也可以使用对应命令。
 
 长任务行为：
 

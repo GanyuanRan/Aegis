@@ -275,6 +275,64 @@ It only records limitations supported by current fresh evidence and does not spe
 
 ---
 
+### 2.15 Antigravity Structural Support Is Not Yet Fresh Host Closeout
+
+**Retained Item**
+- Antigravity CLI, Antigravity IDE, and Antigravity App are structural target
+  surfaces, not release-level fresh smoke verdicts
+
+**Retention Reason**
+- Google positions Antigravity as the successor Google agent platform and
+  documents public capabilities such as Skills, MCP, JSON Hooks, plugins,
+  slash commands, and subagents. The public Antigravity CLI `1.0.1` changelog
+  says plugin discovery for skills and agents from installed plugin directories
+  exists, but the stable local install / discovery contract for this Aegis
+  method pack still needs current release verification before Aegis can claim
+  host closeout.
+
+**Observation Metric**
+- `docs/README.antigravity.md`
+- `bash tests/e2e/antigravity-host-boundary-check.sh`
+- Future Antigravity CLI / IDE / App install smoke that proves skill discovery,
+  restart or reload behavior, and `python scripts/aegis-doctor.py
+  --write-config --json`
+
+**Retirement Trigger**
+- When each Antigravity shape has a verified install/update path that proves
+  both skill discovery and project workspace support without turning Aegis into
+  an authoritative runtime core
+
+---
+
+### 2.16 Gemini CLI Is a Transitional Compatibility Surface
+
+**Retained Item**
+- `GEMINI.md`, `gemini-extension.json`, and the Gemini CLI tool mapping remain
+  as transitional compatibility surfaces
+
+**Retention Reason**
+- Google announced on `2026-05-19` that consumer Gemini CLI and Gemini Code
+  Assist IDE extension usage is transitioning to Antigravity CLI and
+  Antigravity 2.0. On `2026-06-18`, requests stop being served for free usage,
+  Google AI Pro / Ultra, and Gemini Code Assist for individuals. Enterprise
+  Standard / Enterprise, Google Cloud-backed Gemini Code Assist for GitHub, and
+  paid Gemini / Gemini Enterprise Agent Platform API key paths remain outside
+  that consumer stop boundary. Aegis keeps Gemini CLI support as a transition
+  path while Antigravity CLI, Antigravity IDE, and Antigravity App support
+  matures.
+
+**Observation Metric**
+- `docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md`
+- `docs/README.antigravity.md`
+- Future evidence about whether relevant users have moved to Antigravity and
+  whether the transitional Gemini surfaces still provide compatibility value
+
+**Reclassification Trigger**
+- When Antigravity install surfaces have their own stable, verified package
+  artifacts and maintainers explicitly decide whether Gemini CLI remains
+  transitional, becomes legacy-only, or needs a separate retirement proposal in
+  a future cleanup
+
 ## 3. Default Reading Rule
 
 If a limitation appears simultaneously in README, host docs, or test descriptions, use this document as the current reading entry point.

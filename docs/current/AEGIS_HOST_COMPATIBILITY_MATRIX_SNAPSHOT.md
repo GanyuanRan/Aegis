@@ -21,7 +21,8 @@ It does not answer:
 
 ## 2. Snapshot Date
 
-The current snapshot is based on fresh evidence and current docs landed as of `2026-05-06`.
+The current snapshot is based on fresh evidence and current docs landed as of
+`2026-05-23`.
 
 ---
 
@@ -44,7 +45,15 @@ The current snapshot is based on fresh evidence and current docs landed as of `2
 | `Trae` | Native `SKILL.md` discovery supports manual installation; no current release-level fresh smoke verdict | `docs/README.trae.md` established; evidence from Trae skills docs; real host regression still deferred |
 | `Cursor` | Has `.cursor/INSTALL.md` install guide; no current release-level fresh smoke verdict | Structural goal established; not yet entered the current host regression slice |
 | `Windsurf` | Has `.windsurf/INSTALL.md` install guide; no current release-level fresh smoke verdict | Structural goal established; not yet entered the current host regression slice |
-| `Gemini CLI` | No current fresh release-level verdict | Not entered the current slice |
+| `Antigravity CLI` | Structural target added; no current release-level fresh smoke verdict | Google positions Antigravity CLI as the successor terminal surface with skills, hooks, subagents, MCP, plugins, and slash-command configuration; the public CLI `1.0.1` changelog adds plugin discovery for skills and agents from installed plugin directories, but the Aegis install / discovery contract still needs fresh verification |
+| `Antigravity IDE` | Structural target added; no current release-level fresh smoke verdict | Google positions Antigravity IDE as an editor surface with global or workspace-specific Skills, MCPs, and JSON Hooks; Aegis install path still needs fresh verification |
+| `Antigravity App` | Structural target added; no current release-level fresh smoke verdict | Google Antigravity 2.x app / project platform can carry Aegis method-pack projections, but no live host closeout has been run |
+
+### 3.2a Transitional Compatibility Host Surfaces
+
+| Host | Current Status | Why Retained |
+| --- | --- | --- |
+| `Gemini CLI` | Transitional compatibility surface; kept outside ordinary pending-host status | Google announced on `2026-05-19` that consumer Gemini CLI and Gemini Code Assist IDE extension usage transitions to Antigravity CLI / Antigravity 2.0. On `2026-06-18`, requests stop being served for free usage, Google AI Pro / Ultra, and Gemini Code Assist for individuals. Enterprise Standard / Enterprise, Google Cloud-backed Gemini Code Assist for GitHub, and paid Gemini / Gemini Enterprise Agent Platform API key paths remain outside that consumer stop boundary. Aegis keeps Gemini CLI support while Antigravity CLI / IDE / App support matures. |
 
 ### 3.3 Hosts Requiring No Independent Adapter
 
@@ -65,9 +74,11 @@ The current snapshot only states:
 4. `DeepSeek-TUI` can manually install Aegis skills via native `SKILL.md` discovery, but `/skill install github:GanyuanRan/Aegis` is not the current canonical path
 5. `Trae` can manually install Aegis skills via native `SKILL.md` discovery; `.agents/skills/` is an optional Trae capability, not Aegis's canonical Trae path
 6. `Cursor` and `Windsurf` have structured install guides but have not yet entered release-level fresh smoke
-7. `Warp`, as a terminal host, does not itself need an independent adapter
-8. The current method-pack still retains the cross-host installation goal
-9. "Support all plugin hosts" remains a product goal, not equivalent to "all hosts have current fresh closeout"
+7. `Antigravity CLI`, `Antigravity IDE`, and `Antigravity App` are now structural target surfaces, but still lack release-level fresh smoke evidence
+8. `Gemini CLI` is retained as a transitional compatibility surface after Google's `2026-05-19` transition announcement while Antigravity support matures
+9. `Warp`, as a terminal host, does not itself need an independent adapter
+10. The current method-pack still retains the cross-host installation goal
+11. "Support all plugin hosts" remains a product goal, not equivalent to "all hosts have current fresh closeout"
 
 ---
 
@@ -82,8 +93,9 @@ When reading the current host verdict, follow this order:
 5. `docs/README.codebuddy.md`
 6. `docs/README.deepseek-tui.md`
 7. `docs/README.trae.md`
-8. `.windsurf/INSTALL.md`
-9. `.cursor/INSTALL.md`
+8. `docs/README.antigravity.md`
+9. `.windsurf/INSTALL.md`
+10. `.cursor/INSTALL.md`
 
 ---
 

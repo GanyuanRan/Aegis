@@ -26,8 +26,15 @@ is loaded and presented to you. Follow it directly.
 installed plugins. The `skill` tool works the same as Claude Code's `Skill`
 tool.
 
-**In Gemini CLI:** Skills activate via the `activate_skill` tool. Gemini loads
-skill metadata at session start and activates the full content on demand.
+**In Antigravity CLI / IDE / App:** Prefer portable text requests until the
+current Antigravity surface's Skills / plugin contract has been verified. When
+Antigravity exposes a native skill or slash-command surface, use that host
+mechanism and map Aegis tool names through `references/antigravity-tools.md`.
+
+**In Gemini CLI:** Gemini CLI is a transitional compatibility surface while
+Antigravity support matures. Skills activate via the `activate_skill` tool.
+Gemini loads skill metadata at session start and activates the full content on
+demand.
 
 **In other environments:** Check the platform's documentation for how skills
 are loaded.
@@ -38,6 +45,7 @@ Skills use Claude Code tool names. Non-CC platforms: see:
 
 - `references/copilot-tools.md`
 - `references/codex-tools.md`
+- `references/antigravity-tools.md`
 - `references/gemini-tools.md`
 
 ## The Rule

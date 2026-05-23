@@ -111,6 +111,7 @@ run_check "workspace helper skill wiring" bash "$SCRIPT_DIR/workspace-helper-wir
 run_check "workspace helper resolution" bash "$SCRIPT_DIR/workspace-helper-resolution-check.sh"
 run_check "project bootstrap policy" bash "$SCRIPT_DIR/project-bootstrap-policy-check.sh"
 run_check "trigger health policy" bash "$SCRIPT_DIR/trigger-health-check.sh"
+run_check "Antigravity host boundary" bash "$SCRIPT_DIR/antigravity-host-boundary-check.sh"
 run_check "workflow quality policy" bash "$SCRIPT_DIR/workflow-quality-check.sh"
 run_check "goal framing policy" bash "$SCRIPT_DIR/goal-framing-check.sh"
 run_check "first-principles review policy" bash "$SCRIPT_DIR/first-principles-review-check.sh"

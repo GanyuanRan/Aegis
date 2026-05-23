@@ -80,7 +80,8 @@ The following host documentation must be re-read before release:
 4. `docs/README.codebuddy.md`
 5. `docs/README.deepseek-tui.md`
 6. `docs/README.trae.md`
-7. `docs/testing.md`
+7. `docs/README.antigravity.md`
+8. `docs/testing.md`
 
 Confirm:
 
@@ -90,6 +91,12 @@ Confirm:
 - CodeBuddy still distinguishes between `.codebuddy-plugin/` skeleton, manual `SKILL.md` install, and incomplete live smoke
 - DeepSeek-TUI is still described as manual `SKILL.md` copy install, not a one-click GitHub installer for multi-skill repos
 - Trae is still described as manual `.trae/skills` / `~/.trae/skills` install, and the `.agents/skills/` optional capability is not written as the canonical chain
+- Antigravity CLI, Antigravity IDE, and Antigravity App are described as
+  structural target surfaces, not current release-level fresh smoke closeout
+- Gemini CLI is described as a transitional compatibility surface with the
+  `2026-05-19` Google transition announcement and `2026-06-18` consumer
+  service-stop boundary, while preserving enterprise and paid API key caveats
+  and not claiming Aegis has retired Gemini CLI
 
 ---
 
