@@ -1,5 +1,42 @@
 # Aegis Release Notes
 
+## v1.5.6 (2026-05-24)
+
+### Diagnostic Stop Transparency
+
+- Added a `Layer Stop Card` to `systematic-debugging` for cases where the
+  diagnostic stop layer affects the fix boundary, contract owner, spec/product
+  decision, or user correction path.
+- The card makes the current stop layer, checked path, evidence for stop,
+  excluded layers, falsifier, user intervention point, and next action explicit.
+- Kept the card advisory inside the `Aegis Method Pack (runtime-ready)`
+  boundary. It does not grant `GateDecision`, `PolicySnapshot`, or completion
+  authority.
+
+### Workflow Quality Samples
+
+- Added five workflow-quality samples covering local L3 root cause, L5
+  cross-system contract mismatch, L7 spec gap, fast-path no-card behavior, and
+  user falsifier correction from an initial L7-style diagnosis back to L5.
+- Extended the workflow-quality e2e check so future changes must keep the card
+  structured, falsifiable, user-interruptible, and absent from ordinary
+  fast-path explanations.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.5.6`
+- `bash scripts/bump-version.sh --check`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/governance-completion-contract-check.sh`
+- `bash tests/e2e/trigger-health-check.sh`
+- `bash tests/e2e/debugging-patch-shape-gate-check.sh`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+- `git diff --check`
+
 ## v1.5.5 (2026-05-23)
 
 ### Retired Browser Visual Companion

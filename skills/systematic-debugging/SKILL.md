@@ -84,6 +84,25 @@ escalate to the full workflow.
    Hard signal definitions (H/T/D) are in the Quality Gate — apply them there,
    not during initial investigation.
 
+   When the stop layer is not obvious, the user asks where the diagnosis
+   stops, the issue crosses component/system boundaries, or a user-provided
+   fact falsifies the current layer, expose a compact `Layer Stop Card` before
+   fixing:
+
+   ```text
+   Layer Stop Card:
+   - Current Stop Layer: L1 Symptom | L2 Logic | L3 System | L4 Architecture | L5 Cross-system Contract | L6 Platform | L7 Spec Gap | T-class boundary
+   - Checked Path:
+   - Evidence For Stop:
+   - Excluded Layers:
+   - Falsifier:
+   - User Intervention Point:
+   - Next Action:
+   ```
+
+   The card is an advisory readback of the diagnostic stop point. It is not a
+   `GateDecision`, `PolicySnapshot`, or completion authority.
+
 7. **Patch-Shape Triage Before Editing**
 
    Treat the first obvious fix as evidence, not clearance to edit. If the
@@ -221,6 +240,10 @@ Before you claim debugging is complete:
    authoritative completion.
 
 1. **Stop-when review** — re-read the diagnostic layer where you stopped. Did you reach "no deeper why remains" or a T-class terminal boundary? If the chain ended at L1-L2 and the evidence is conclusive, that is a valid endpoint. If there are still unexplained "why" questions, continue upward drilling before claiming done.
+   - Use a `Layer Stop Card` when the stop point affects the fix boundary,
+     contract owner, spec/product decision, or user correction path. Keep
+     simple fast-path explanations cheap; do not emit the card for ordinary
+     factual Q&A about the skill itself.
 2. **Hard signal check** — apply these countable facts, not judgments:
 
    Must continue upward drilling (H-class — ANY hit = NOT done):

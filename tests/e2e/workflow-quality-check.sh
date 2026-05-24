@@ -108,6 +108,10 @@ assert_contains "$baseline" "Largest touched function/block" \
     "workflow quality baseline includes block-level complexity signal"
 assert_contains "$baseline" "Retirement Closure" \
     "workflow quality baseline includes retirement closure"
+assert_contains "$baseline" "Layer Stop Card" \
+    "workflow quality baseline includes layer stop card"
+assert_contains "$baseline" "User Intervention Point" \
+    "workflow quality baseline exposes user intervention point"
 
 for skill in \
     "using-aegis" \
@@ -134,6 +138,12 @@ assert_contains "skills/writing-plans/SKILL.md" "Compact output contract" \
     "writing-plans exposes compact output contract"
 assert_contains "skills/systematic-debugging/SKILL.md" "Quick bug lane" \
     "systematic debugging defines quick bug lane"
+assert_contains "skills/systematic-debugging/SKILL.md" "Layer Stop Card" \
+    "systematic debugging defines layer stop card"
+assert_contains "skills/systematic-debugging/SKILL.md" "User Intervention Point" \
+    "systematic debugging exposes user intervention point"
+assert_contains "skills/systematic-debugging/SKILL.md" "Falsifier" \
+    "systematic debugging exposes falsifier for layer stop"
 assert_contains "skills/verification-before-completion/SKILL.md" "Evidence Card" \
     "verification skill defines evidence card"
 assert_contains "skills/verification-before-completion/SKILL.md" "User-Language Output" \
@@ -245,6 +255,11 @@ expected_ids = {
     "high-risk-merge-independent-review",
     "simple-completion-no-adr-ceremony",
     "architecture-area-bugfix-restores-baseline-no-adr",
+    "layer-stop-local-root-cause",
+    "layer-stop-cross-system-contract",
+    "layer-stop-spec-gap",
+    "fast-path-no-layer-stop-card",
+    "layer-stop-user-falsifier-correction",
     "interrupted-long-task-resume",
     "governance-compat-cleanup",
 }
@@ -335,6 +350,8 @@ if "Retirement Closure" not in contracts["verification-before-completion"]:
     raise SystemExit("verification compact contract must include Retirement Closure")
 if "recording-architecture-decisions" not in contracts:
     raise SystemExit("compact output contracts must include recording-architecture-decisions")
+if "Layer Stop Card" not in contracts["systematic-debugging"]:
+    raise SystemExit("systematic-debugging compact contract must include Layer Stop Card")
 for required in ("Decision Candidate", "ADR Gate", "ADR Action", "Owner Surface", "Baseline Sync", "Boundary"):
     if required not in contracts["recording-architecture-decisions"]:
         raise SystemExit(f"recording-architecture-decisions compact contract must include {required}")
@@ -456,6 +473,70 @@ if "skip-reason" not in baseline_restore_sample.get("verificationSignal", ""):
     raise SystemExit("baseline restoration sample must require a skip reason")
 if "existing-baseline-was-restored" not in baseline_restore_sample.get("verificationSignal", ""):
     raise SystemExit("baseline restoration sample must cite existing baseline restoration")
+
+layer_required = {
+    "layer-stop-local-root-cause": "L3 System",
+    "layer-stop-cross-system-contract": "L5 Cross-system Contract",
+    "layer-stop-spec-gap": "L7 Spec Gap",
+    "layer-stop-user-falsifier-correction": "L5 Cross-system Contract",
+}
+required_layer_fields = {
+    "required",
+    "stopLayer",
+    "checkedPath",
+    "evidenceForStop",
+    "excludedLayers",
+    "falsifier",
+    "userInterventionPoint",
+    "nextAction",
+}
+for sample_id, stop_layer in layer_required.items():
+    sample = by_id[sample_id]
+    if sample.get("expectedPrimarySkill") != "systematic-debugging":
+        raise SystemExit(f"{sample_id} must route to systematic-debugging")
+    card = sample.get("layerStopCard")
+    if not isinstance(card, dict):
+        raise SystemExit(f"{sample_id} must define layerStopCard")
+    missing_card_fields = sorted(required_layer_fields - card.keys())
+    if missing_card_fields:
+        raise SystemExit(f"{sample_id} layerStopCard missing fields: {', '.join(missing_card_fields)}")
+    if card.get("required") is not True:
+        raise SystemExit(f"{sample_id} layerStopCard must be required")
+    if card.get("stopLayer") != stop_layer:
+        raise SystemExit(f"{sample_id} must stop at {stop_layer}")
+    for field in ("checkedPath", "evidenceForStop", "excludedLayers", "falsifier", "userInterventionPoint", "nextAction"):
+        if not card.get(field):
+            raise SystemExit(f"{sample_id} layerStopCard {field} must not be empty")
+    if "layer-stop-card" not in sample.get("expectedOutputShape", ""):
+        raise SystemExit(f"{sample_id} output shape must require layer-stop-card")
+    if "layer-stop-card" not in sample.get("verificationSignal", ""):
+        raise SystemExit(f"{sample_id} verification signal must require layer-stop-card")
+    if "skip-layer-stop-card" not in sample.get("mustNotDo", []):
+        raise SystemExit(f"{sample_id} must forbid skipping layer stop card")
+
+correction_sample = by_id["layer-stop-user-falsifier-correction"]
+for required in (
+    "ignore-user-falsifier",
+    "cling-to-initial-l7-diagnosis",
+    "skip-correction-readback",
+):
+    if required not in correction_sample.get("mustNotDo", []):
+        raise SystemExit(f"user falsifier correction sample must forbid {required}")
+for required_signal in ("user-falsifier", "correction-to-l5", "user-intervention-point"):
+    if required_signal not in correction_sample.get("verificationSignal", ""):
+        raise SystemExit(f"user falsifier correction sample must require {required_signal}")
+
+no_card_sample = by_id["fast-path-no-layer-stop-card"]
+if no_card_sample.get("expectedPrimarySkill") is not None:
+    raise SystemExit("fast-path no-card sample must stay on fast path")
+if no_card_sample.get("layerStopCard", {}).get("required") is not False:
+    raise SystemExit("fast-path no-card sample must mark layerStopCard required false")
+if "emit-layer-stop-card" not in no_card_sample.get("mustNotDo", []):
+    raise SystemExit("fast-path no-card sample must forbid emitting layer stop card")
+if no_card_sample.get("expectedArtifacts"):
+    raise SystemExit("fast-path no-card sample must not expect artifacts")
+if no_card_sample.get("workspacePolicy") != "no-workspace":
+    raise SystemExit("fast-path no-card sample must use no-workspace policy")
 
 print("  [PASS] workflow quality matrix has representative samples and compact contracts")
 PY

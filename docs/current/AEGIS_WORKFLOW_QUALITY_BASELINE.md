@@ -33,6 +33,7 @@ Workflow hardening must optimize for:
 3. less output noise
 4. fresher verification evidence
 5. more stable draft / hint / projection artifacts
+6. clearer diagnostic stop points for debugging work
 
 The stable path is sample-driven hardening:
 
@@ -166,6 +167,24 @@ Pass criteria:
 - entropy increases are either justified by owner / compatibility evidence or
   reported as residual risk
 
+### 3.10 Diagnostic Stop Transparency
+
+Debugging workflows should make the diagnostic stop point visible when the
+root-cause layer affects the fix boundary, contract owner, or spec/product
+decision.
+
+Pass criteria:
+
+- `systematic-debugging` can expose a compact `Layer Stop Card`
+- the card states the current stop layer, checked path, evidence for stop, and
+  excluded layers
+- the card includes a `Falsifier` so new evidence can correct the diagnosis
+- the card includes a `User Intervention Point` so the user can challenge the
+  layer, owner, or authority source early
+- fast-path Q&A about debugging concepts does not emit a full layer card
+- the card remains advisory method-pack output, not a `GateDecision`,
+  `PolicySnapshot`, or completion authority
+
 ---
 
 ## 4. Compact Output Contracts
@@ -275,13 +294,16 @@ Compact contract:
 Symptom: observed failure
 Reproduction: command/input and result
 Root Cause: evidence-backed owner and cause
+Layer Stop Card: stop layer, checked path, evidence, excluded layers, falsifier, user intervention point, next action
 Fix Boundary: canonical owner, compatibility, non-edits
 Verification: failing test or reproduction now passing
 Repair Track / Retirement Track: when fallback, owner, or contract risk exists
 ```
 
 Quick bug lane is allowed for low-risk bugs, but root-cause evidence is still
-required.
+required. Use `Layer Stop Card` when the diagnostic stop point is ambiguous,
+crosses a boundary, reaches L5/L6/L7, or is corrected by a user-provided
+falsifier. Do not use it for simple factual Q&A or tiny fast-path responses.
 
 ### 4.5 `verification-before-completion`
 
