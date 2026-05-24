@@ -94,10 +94,19 @@ def read_config(path: Path) -> dict[str, str]:
     return config
 
 
-def write_config(path: Path, root: Path, helper: Path) -> None:
+def normalized_activation_mode(value: str | None) -> str:
+    return value if value in {"auto", "explicit"} else "auto"
+
+
+def existing_activation_mode(path: Path) -> str:
+    return normalized_activation_mode(read_config(path).get("activation_mode"))
+
+
+def write_config(path: Path, root: Path, helper: Path, activation_mode: str | None = None) -> None:
+    mode = normalized_activation_mode(activation_mode or existing_activation_mode(path))
     content = (
         "# Aegis user-local configuration\n"
-        'activation_mode = "auto"\n'
+        f"activation_mode = {toml_string(mode)}\n"
         f"method_pack_root = {toml_string(root.as_posix())}\n"
         f"workspace_helper = {toml_string(helper.as_posix())}\n"
     )
@@ -151,6 +160,7 @@ def helper_path_result(args: argparse.Namespace) -> dict[str, object]:
     helper_posix = helper.as_posix()
     return {
         "ok": True,
+        "command": "helper-path",
         "workspaceHelper": helper_posix,
         "source": source,
         "configPath": config_path.as_posix(),
@@ -159,6 +169,31 @@ def helper_path_result(args: argparse.Namespace) -> dict[str, object]:
         "note": (
             "The Aegis workspace helper belongs to the installed method-pack root; "
             "the target project is passed separately via --root."
+        ),
+    }
+
+
+def activation_mode_result(args: argparse.Namespace) -> dict[str, object]:
+    root = method_pack_root()
+    helper = root / "scripts" / "aegis-workspace.py"
+    config_path = Path(args.config).expanduser() if args.config else default_config_path()
+    mode = normalized_activation_mode(args.mode)
+    if args.mode != mode:
+        raise DoctorError("activation-mode requires one of: auto, explicit")
+    if not helper.is_file():
+        raise DoctorError(f"Aegis workspace helper unavailable: {helper}")
+    write_config(config_path, root, helper, mode)
+    return {
+        "ok": True,
+        "command": "activation-mode",
+        "activationMode": mode,
+        "configPath": config_path.as_posix(),
+        "methodPackRoot": root.as_posix(),
+        "workspaceHelper": helper.as_posix(),
+        "restartRequired": True,
+        "note": (
+            "Activation mode is read by host bootstrap/profile setup. "
+            "Restart or start a new host session for the change to take effect."
         ),
     }
 
@@ -279,6 +314,7 @@ def perform_check(args: argparse.Namespace) -> dict[str, object]:
 
     return {
         "ok": True,
+        "command": "check",
         "methodPackRoot": root.as_posix(),
         "workspaceSupport": "available",
         "configPath": config_path.as_posix(),
@@ -293,6 +329,21 @@ def perform_check(args: argparse.Namespace) -> dict[str, object]:
 
 
 def print_text(result: dict[str, object]) -> None:
+    if result.get("command") == "helper-path":
+        print(f"Aegis workspace helper path: {result['workspaceHelper']}")
+        print(f"Source: {result['source']}")
+        print(f"Config path: {result['configPath']}")
+        print(f"Target project argument: {result['targetProjectRootArgument']}")
+        print(f"Shell hint: {result['shellHint']}")
+        print(result["note"])
+        return
+
+    if result.get("command") == "activation-mode":
+        print(f"Aegis activation mode set to {result['activationMode']}.")
+        print(f"Config path: {result['configPath']}")
+        print("Restart or start a new host session for the change to take effect.")
+        return
+
     print("Aegis doctor check passed.")
     print(f"Method pack root: {result['methodPackRoot']}")
     print(f"Project workspace support: {result['workspaceSupport']}")
@@ -313,10 +364,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "command",
         nargs="?",
-        choices=("check", "helper-path"),
+        choices=("check", "helper-path", "activation-mode"),
         default="check",
         help="command to run; default is check",
     )
+    parser.add_argument("mode", nargs="?", help="activation mode for the activation-mode command")
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     parser.add_argument("--config", help="config path; defaults to ~/.config/aegis/config.toml")
     parser.add_argument(
@@ -336,8 +388,14 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         if args.command == "helper-path":
+            if args.mode:
+                raise DoctorError("mode is only valid with the activation-mode command")
             result = helper_path_result(args)
+        elif args.command == "activation-mode":
+            result = activation_mode_result(args)
         else:
+            if args.mode:
+                raise DoctorError("mode is only valid with the activation-mode command")
             result = perform_check(args)
     except DoctorError as exc:
         failure = {"ok": False, "error": str(exc)}

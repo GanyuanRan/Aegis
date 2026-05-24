@@ -93,6 +93,20 @@ If the file does not exist, create it manually. Add:
 activation_mode = "explicit"
 ```
 
+You can also write the same config from the installed Aegis method-pack root:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode explicit
+```
+
+Switch back to automatic mode with:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode auto
+```
+
 Then restart Claude Code or reload the plugin session. `AEGIS_ACTIVATION_MODE`
 remains available as an environment-variable override for one-off runs:
 
@@ -159,8 +173,12 @@ When filesystem access to the installed plugin cache or local `--plugin-dir` is
 available, run complete-install verification from the method-pack root:
 
 ```bash
+cd <aegis-method-pack-root>
 python scripts/aegis-doctor.py --write-config --json
 ```
+
+Do not run the doctor command from the target project directory; it belongs to
+the installed Aegis method-pack root.
 
 Treat the install as complete only if the JSON reports `"ok": true`,
 `"workspaceSupport": "available"`, and `"configStatus": "configured"`.
@@ -217,9 +235,15 @@ that supports plugins.
 
 Skill visibility alone does not prove complete project workspace support.
 Confirm the installed plugin cache or local `--plugin-dir` still contains the
-repository scripts, then run `python scripts/aegis-doctor.py --write-config
---json` from that method-pack root when filesystem access is available. The
-JSON should include `"workspaceSupport": "available"` and `"configStatus":
+repository scripts, then run the doctor command from that method-pack root,
+not from the target project directory:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py --write-config --json
+```
+
+The JSON should include `"workspaceSupport": "available"` and `"configStatus":
 "configured"`.
 
 ### Windows hook behavior

@@ -65,6 +65,24 @@ with:
 activation_mode = "explicit"
 ```
 
+You can also write the shared config from the installed Aegis method-pack root:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode explicit
+```
+
+Switch back to automatic mode with:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode auto
+```
+
+Restart Codex or start a new session after changing local Aegis config. In
+Codex, this command does not override the host's own semantic skill matcher;
+it only configures Aegis bootstrap/profile-aware surfaces.
+
 ## Verify
 
 ```bash

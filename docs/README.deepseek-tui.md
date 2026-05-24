@@ -127,8 +127,12 @@ For complete install verification, also run this from the local Aegis checkout
 when filesystem access is available:
 
 ```bash
+cd <aegis-method-pack-root>
 python scripts/aegis-doctor.py --write-config --json
 ```
+
+Do not run the doctor command from the target project directory; it belongs to
+the installed Aegis method-pack root.
 
 Treat the install as complete only if the JSON reports `"ok": true`,
 `"workspaceSupport": "available"`, and `"configStatus": "configured"`.
@@ -165,6 +169,24 @@ skill matcher by itself. For explicit use, load an Aegis skill directly with:
 /skill using-aegis
 ```
 
+You can still write the shared user-local Aegis config from the installed
+method-pack root:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode explicit
+```
+
+Switch back to automatic mode with:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode auto
+```
+
+Restart DeepSeek-TUI or start a new session after changing local Aegis config.
+For this host, the command does not override DeepSeek-TUI's native matcher.
+
 ## Uninstalling
 
 Remove the copied Aegis skill directories from:
@@ -195,8 +217,15 @@ single-skill GitHub installer is not the stable canonical path for this host.
 
 If only `skills/` were copied and the local checkout was removed, skill
 discovery may still work but complete project workspace support is not proven.
-Restore the checkout and run `python scripts/aegis-doctor.py --write-config
---json`. The JSON should include `"workspaceSupport": "available"` and
+Restore the checkout and run this from the method-pack root, not from the
+target project directory:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py --write-config --json
+```
+
+The JSON should include `"workspaceSupport": "available"` and
 `"configStatus": "configured"`.
 
 ## DeepSeek-TUI References

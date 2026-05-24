@@ -27,7 +27,7 @@ assert_contains() {
     local pattern="$2"
     local label="$3"
 
-    if grep -qF "$pattern" "$file"; then
+    if grep -qF -- "$pattern" "$file"; then
         pass "$label"
     else
         fail "$label"
@@ -41,6 +41,10 @@ trap 'rm -rf "$TMP_ROOT"' EXIT
 CONFIG_PATH="$TMP_ROOT/config.toml"
 TEXT_OUT="$TMP_ROOT/doctor.txt"
 JSON_OUT="$TMP_ROOT/doctor.json"
+HELPER_TEXT_OUT="$TMP_ROOT/helper-path.txt"
+ACTIVATION_TEXT_OUT="$TMP_ROOT/activation-mode.txt"
+ACTIVATION_JSON_OUT="$TMP_ROOT/activation-mode.json"
+PRESERVE_CONFIG_PATH="$TMP_ROOT/preserve-config.toml"
 
 DOCTOR="$REPO_ROOT/scripts/aegis-doctor.py"
 
@@ -60,6 +64,17 @@ assert_contains "$CONFIG_PATH" "activation_mode = \"auto\"" "doctor writes activ
 assert_contains "$CONFIG_PATH" "method_pack_root =" "doctor writes method-pack root"
 assert_contains "$CONFIG_PATH" "workspace_helper =" "doctor writes workspace support path"
 
+"${PYTHON_CMD[@]}" "$DOCTOR" helper-path --config "$CONFIG_PATH" >"$HELPER_TEXT_OUT"
+assert_contains "$HELPER_TEXT_OUT" "Aegis workspace helper path:" "helper-path text mode reports helper path"
+assert_contains "$HELPER_TEXT_OUT" "--root <target-project-root>" "helper-path text mode preserves target root hint"
+
+cat >"$PRESERVE_CONFIG_PATH" <<'EOF'
+activation_mode = "explicit"
+EOF
+"${PYTHON_CMD[@]}" "$DOCTOR" --config "$PRESERVE_CONFIG_PATH" --write-config >/dev/null
+assert_contains "$PRESERVE_CONFIG_PATH" "activation_mode = \"explicit\"" \
+    "doctor write-config preserves an existing explicit activation mode"
+
 "${PYTHON_CMD[@]}" "$DOCTOR" --config "$CONFIG_PATH" --json >"$JSON_OUT"
 assert_contains "$JSON_OUT" '"ok": true' "doctor JSON mode reports ok"
 assert_contains "$JSON_OUT" '"workspaceSupport": "available"' "doctor JSON mode reports workspace support"
@@ -71,6 +86,21 @@ assert_contains "$JSON_OUT" '"name": "using-aegis-hot-path-current"' "doctor JSO
 
 "${PYTHON_CMD[@]}" "$DOCTOR" --config "$CONFIG_PATH" --discovery-root "$REPO_ROOT/skills" >"$TMP_ROOT/discovery.txt"
 assert_contains "$TMP_ROOT/discovery.txt" "discovery-root-current: ok" "doctor verifies host discovery root points at current skills"
+
+"${PYTHON_CMD[@]}" "$DOCTOR" activation-mode explicit --config "$CONFIG_PATH" >"$ACTIVATION_TEXT_OUT"
+assert_contains "$ACTIVATION_TEXT_OUT" "Aegis activation mode set to explicit" \
+    "activation-mode text command sets explicit mode"
+assert_contains "$ACTIVATION_TEXT_OUT" "Restart or start a new host session" \
+    "activation-mode text command states restart boundary"
+assert_contains "$CONFIG_PATH" "activation_mode = \"explicit\"" \
+    "activation-mode command writes explicit mode"
+
+"${PYTHON_CMD[@]}" "$DOCTOR" activation-mode auto --config "$CONFIG_PATH" --json >"$ACTIVATION_JSON_OUT"
+assert_contains "$ACTIVATION_JSON_OUT" '"ok": true' "activation-mode JSON reports ok"
+assert_contains "$ACTIVATION_JSON_OUT" '"activationMode": "auto"' "activation-mode JSON reports auto mode"
+assert_contains "$ACTIVATION_JSON_OUT" '"restartRequired": true' "activation-mode JSON reports restart boundary"
+assert_contains "$CONFIG_PATH" "activation_mode = \"auto\"" \
+    "activation-mode command writes auto mode"
 
 if [[ -e "$REPO_ROOT/docs/aegis" ]]; then
     fail "doctor must not create docs/aegis in the Aegis method-pack repository"

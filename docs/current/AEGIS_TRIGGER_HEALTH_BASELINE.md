@@ -53,7 +53,7 @@ Question:
 
 Evidence:
 
-- `python scripts/aegis-doctor.py --write-config --json`
+- `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
 - JSON readback includes `"workspaceSupport": "available"` and
   `"configStatus": "configured"`
 - `bash scripts/bump-version.sh --check` in the method-pack checkout
@@ -71,7 +71,7 @@ Question:
 
 Evidence:
 
-- `python scripts/aegis-doctor.py --discovery-root <host-skill-discovery-root>`
+- `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --discovery-root <host-skill-discovery-root>`
 - host-specific `/skills`, plugin reload, or fresh-session smoke
 
 Failure owner:

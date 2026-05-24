@@ -46,7 +46,21 @@ If the file does not exist, create it manually. Add:
 activation_mode = "explicit"
 ```
 
-Then restart OpenCode. `AEGIS_ACTIVATION_MODE` remains available as an
+You can also write the same config from the installed Aegis method-pack root:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode explicit
+```
+
+Switch back to automatic mode with:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode auto
+```
+
+Then restart OpenCode or start a new session. `AEGIS_ACTIVATION_MODE` remains available as an
 environment-variable override for one-off runs:
 
 ```bash

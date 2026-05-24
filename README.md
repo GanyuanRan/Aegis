@@ -36,7 +36,7 @@
 If you are using an AI coding agent, you can ask it to install Aegis for you:
 
 ```text
-Please read the installation instructions in https://github.com/GanyuanRan/Aegis carefully, identify the correct path for my AI coding host, install Aegis globally, restart or reload the host if needed, then run complete-install verification from the Aegis method-pack root with `python scripts/aegis-doctor.py --write-config --json`. Treat the install as complete only if the JSON output includes `"ok": true`, `"workspaceSupport": "available"`, and `"configStatus": "configured"`; if the host uses a separate skill discovery directory, also verify it with `--discovery-root <path>`.
+Please read the installation instructions in https://github.com/GanyuanRan/Aegis carefully, identify the correct path for my AI coding host, install Aegis globally, restart or reload the host if needed, then run complete-install verification from the installed Aegis method-pack root. Do not run the doctor command from the target project directory. First locate `<aegis-method-pack-root>`, then run `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`. Treat the install as complete only if the JSON output includes `"ok": true`, `"workspaceSupport": "available"`, and `"configStatus": "configured"`; if the host uses a separate skill discovery directory, also verify it with `--discovery-root <path>`.
 ```
 
 ## Updating Aegis
@@ -44,7 +44,7 @@ Please read the installation instructions in https://github.com/GanyuanRan/Aegis
 If Aegis is already installed, you can ask your AI coding agent to update it for you:
 
 ```text
-Please update my installed Aegis to the latest main branch version from https://github.com/GanyuanRan/Aegis, using the correct update path for my current AI coding host, then restart or reload the host if needed and run complete-install verification from the Aegis method-pack root with `python scripts/aegis-doctor.py --write-config --json`. Treat the update as complete only if the JSON output includes `"ok": true`, `"workspaceSupport": "available"`, and `"configStatus": "configured"`; if the host uses a separate skill discovery directory, also verify it with `--discovery-root <path>`.
+Please update my installed Aegis to the latest main branch version from https://github.com/GanyuanRan/Aegis, using the correct update path for my current AI coding host, then restart or reload the host if needed and run complete-install verification from the installed Aegis method-pack root. Do not run the doctor command from the target project directory. First locate `<aegis-method-pack-root>`, then run `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`. Treat the update as complete only if the JSON output includes `"ok": true`, `"workspaceSupport": "available"`, and `"configStatus": "configured"`; if the host uses a separate skill discovery directory, also verify it with `--discovery-root <path>`.
 ```
 
 ## Optional Lite Global Rules
@@ -101,7 +101,20 @@ If the file does not exist, create it manually. Add:
 activation_mode = "explicit"
 ```
 
+Or run this from the installed Aegis method-pack root:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode explicit
+```
+
 To return to automatic mode, set `activation_mode = "auto"` or delete the file.
+The command form is:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode auto
+```
 
 Then restart the host. In explicit mode, supported bootstrap hooks stop
 injecting Aegis automatically, while direct skill calls such as
@@ -529,8 +542,13 @@ Maintainers can verify a complete install and write the durable local helper
 paths with:
 
 ```bash
+cd <aegis-method-pack-root>
 python scripts/aegis-doctor.py --write-config --json
 ```
+
+Do not run this command from the target project directory; the script belongs
+to the installed Aegis method-pack root. Target projects are passed separately
+to workspace helper commands with `--root <target-project-root>`.
 
 Complete-install verification must report `"ok": true`,
 `"workspaceSupport": "available"`, and `"configStatus": "configured"`.

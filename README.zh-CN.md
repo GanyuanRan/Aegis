@@ -36,7 +36,7 @@
 如果你正在使用 AI 编程 agent，可以直接把下面这段话复制给它：
 
 ```text
-请仔细阅读 https://github.com/GanyuanRan/Aegis 这个仓库的安装说明，识别我当前使用的 AI 编程宿主，为我完成全局安装；如果需要重启或重新加载宿主，请明确告诉我；然后从 Aegis method-pack 根目录运行完整安装验证：`python scripts/aegis-doctor.py --write-config --json`。只有当 JSON 输出包含 `"ok": true`、`"workspaceSupport": "available"` 和 `"configStatus": "configured"` 时，才把安装视为完成；如果宿主有单独的 skill discovery 目录，也要额外用 `--discovery-root <path>` 验证它指向当前版本。
+请仔细阅读 https://github.com/GanyuanRan/Aegis 这个仓库的安装说明，识别我当前使用的 AI 编程宿主，为我完成全局安装；如果需要重启或重新加载宿主，请明确告诉我；然后从已安装的 Aegis method-pack 根目录运行完整安装验证。不要在目标项目目录中运行 doctor 命令。先定位 `<aegis-method-pack-root>`，再运行 `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`。只有当 JSON 输出包含 `"ok": true`、`"workspaceSupport": "available"` 和 `"configStatus": "configured"` 时，才把安装视为完成；如果宿主有单独的 skill discovery 目录，也要额外用 `--discovery-root <path>` 验证它指向当前版本。
 ```
 
 ## 更新 Aegis
@@ -44,7 +44,7 @@
 如果你已经安装过 Aegis，可以直接把下面这段话复制给你的 AI 编程 agent：
 
 ```text
-请将我已安装的 Aegis 更新到 https://github.com/GanyuanRan/Aegis 的最新 main 分支版本；请根据我当前使用的 AI 编程宿主选择正确的更新路径；如果需要重启或重新加载宿主，请明确告诉我；然后从 Aegis method-pack 根目录运行完整安装验证：`python scripts/aegis-doctor.py --write-config --json`。只有当 JSON 输出包含 `"ok": true`、`"workspaceSupport": "available"` 和 `"configStatus": "configured"` 时，才把更新视为完成；如果宿主有单独的 skill discovery 目录，也要额外用 `--discovery-root <path>` 验证它指向当前版本。
+请将我已安装的 Aegis 更新到 https://github.com/GanyuanRan/Aegis 的最新 main 分支版本；请根据我当前使用的 AI 编程宿主选择正确的更新路径；如果需要重启或重新加载宿主，请明确告诉我；然后从已安装的 Aegis method-pack 根目录运行完整安装验证。不要在目标项目目录中运行 doctor 命令。先定位 `<aegis-method-pack-root>`，再运行 `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`。只有当 JSON 输出包含 `"ok": true`、`"workspaceSupport": "available"` 和 `"configStatus": "configured"` 时，才把更新视为完成；如果宿主有单独的 skill discovery 目录，也要额外用 `--discovery-root <path>` 验证它指向当前版本。
 ```
 
 ## 可选：轻量全局规则
@@ -91,7 +91,20 @@ Windows：
 activation_mode = "explicit"
 ```
 
+也可以在已安装的 Aegis method-pack 根目录运行：
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode explicit
+```
+
 要切回自动模式，写 `activation_mode = "auto"`，或删除该文件。
+对应命令是：
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode auto
+```
 
 然后重启宿主。显式模式下，已支持该开关的 bootstrap hook 不再自动注入
 Aegis，但 `aegis:using-aegis` 等显式 skill 调用仍可使用。详细宿主注意事项见
@@ -489,8 +502,12 @@ evidence sufficiency，也不授予 completion authority。
 维护者可以用下面的命令验证完整安装，并写入稳定的本地 helper 路径：
 
 ```bash
+cd <aegis-method-pack-root>
 python scripts/aegis-doctor.py --write-config --json
 ```
+
+不要在目标项目目录中运行这个命令；该脚本属于已安装的 Aegis method-pack 根目录。
+目标项目应在 workspace helper 命令里通过 `--root <target-project-root>` 单独传入。
 
 完整安装验证必须返回 `"ok": true`、`"workspaceSupport": "available"` 和
 `"configStatus": "configured"`。

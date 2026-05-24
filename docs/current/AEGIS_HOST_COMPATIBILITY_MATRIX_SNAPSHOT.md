@@ -106,7 +106,8 @@ The current snapshot only covers:
 - Method-pack installation and distribution
 - skill discovery / representative triggering
 - Project workspace support when the installed method-pack root remains
-  available and can be verified by `python scripts/aegis-doctor.py --write-config --json`
+  available and can be verified by
+  `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
 - Plugin loading / priority / distribution sync
 
 The current snapshot does not cover:
@@ -123,6 +124,10 @@ bootstrap, indexing, work records, and structural checks remain available.
 Complete-install verification should write local helper paths and read back
 `"ok": true`, `"workspaceSupport": "available"`, and `"configStatus":
 "configured"` from `aegis-doctor.py`.
+
+Do not run `aegis-doctor.py` from the target project directory. The script
+belongs to the installed Aegis method-pack root; target projects are passed
+separately to workspace helper commands with `--root <target-project-root>`.
 
 ---
 

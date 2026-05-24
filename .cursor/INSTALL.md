@@ -136,6 +136,22 @@ with:
 activation_mode = "explicit"
 ```
 
+You can also write the same config from the installed Aegis method-pack root:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode explicit
+```
+
+Switch back to automatic mode with:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode auto
+```
+
+Restart Cursor or start a new agent session after changing local Aegis config.
+
 ## Skill Names
 
 After installation, the following skills are available in Cursor's agent:

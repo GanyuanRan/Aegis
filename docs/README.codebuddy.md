@@ -106,8 +106,12 @@ Tell me about your Aegis skills and which one you would use before debugging a f
 Then run complete-install verification from the local Aegis checkout:
 
 ```bash
+cd <aegis-method-pack-root>
 python scripts/aegis-doctor.py --write-config --json
 ```
+
+Do not run the doctor command from the target project directory; it belongs to
+the installed Aegis method-pack root.
 
 Treat the install as complete only if the JSON reports `"ok": true`,
 `"workspaceSupport": "available"`, and `"configStatus": "configured"`.
@@ -163,6 +167,24 @@ That means `AEGIS_ACTIVATION_MODE=explicit` does not override CodeBuddy's own
 skill matcher by itself. For explicit use, ask CodeBuddy to load an Aegis skill
 directly, such as `using-aegis` or `systematic-debugging`.
 
+You can still write the shared user-local Aegis config from the installed
+method-pack root:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode explicit
+```
+
+Switch back to automatic mode with:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode auto
+```
+
+Restart CodeBuddy or start a new session after changing local Aegis config.
+For this host, the command does not override CodeBuddy's native matcher.
+
 ## Uninstalling
 
 For manual skills installs, remove the copied Aegis skill directories from:
@@ -188,8 +210,15 @@ plugin manager and then restart the host.
 
 If Aegis was installed by copying only `skills/`, the host may discover skills
 but not prove complete project workspace support. Keep or restore the local
-checkout, then run `python scripts/aegis-doctor.py --write-config --json` from
-that checkout. The JSON should include `"workspaceSupport": "available"` and
+checkout, then run this from that checkout, not from the target project
+directory:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py --write-config --json
+```
+
+The JSON should include `"workspaceSupport": "available"` and
 `"configStatus": "configured"`.
 
 ### CodeBuddy CLI is installed but not runnable

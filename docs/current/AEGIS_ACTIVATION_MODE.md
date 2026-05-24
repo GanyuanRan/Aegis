@@ -57,13 +57,29 @@ Installation does not automatically create this file. When explicit mode is need
 activation_mode = "explicit"
 ```
 
+The same config can be written from the installed Aegis method-pack root:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode explicit
+```
+
 To switch back to auto mode, write:
 
 ```toml
 activation_mode = "auto"
 ```
 
-You may also delete the file to return to the default `auto`.
+You may also delete the file to return to the default `auto`. The command form
+is:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode auto
+```
+
+Do not run these commands from the target project directory; `aegis-doctor.py`
+belongs to the installed Aegis method-pack root.
 
 The advanced temporary override method is the environment variable `AEGIS_ACTIVATION_MODE`. It must be present in the process environment before the host process starts, and takes precedence over the user-local configuration file.
 
@@ -87,7 +103,7 @@ Long-term configuration methods:
 - bash/zsh users may write `export AEGIS_ACTIVATION_MODE=explicit` into `~/.zshrc` or `~/.bashrc`
 - PowerShell users may write `$env:AEGIS_ACTIVATION_MODE = "explicit"` into `$PROFILE`, or use `[Environment]::SetEnvironmentVariable(...)` to set a system / user environment variable
 - GUI-launched hosts must be started from a launcher, shell, or system environment that already carries the environment variable
-- After modification, the host must be restarted or reloaded; an already-running session typically does not automatically inherit the new value
+- After modification, the host must be restarted, reloaded, or opened as a new host session; an already-running session typically does not automatically inherit the new value
 
 Read priority:
 

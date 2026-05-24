@@ -62,6 +62,12 @@ assert_contains "$activation_doc" "~/.config/aegis/config.toml" \
     "activation mode canonical doc defines user-local config path"
 assert_contains "$activation_doc" 'activation_mode = "explicit"' \
     "activation mode canonical doc shows explicit config value"
+assert_contains "$activation_doc" 'aegis-doctor\.py activation-mode explicit' \
+    "activation mode canonical doc documents doctor explicit command"
+assert_contains "$activation_doc" 'aegis-doctor\.py activation-mode auto' \
+    "activation mode canonical doc documents doctor auto command"
+assert_contains "$activation_doc" 'restart|new host session|重新.*宿主|新会话' \
+    "activation mode canonical doc states command changes need restart or new session"
 
 assert_contains "$session_hook" "AEGIS_ACTIVATION_MODE" \
     "session hook reads activation mode"
@@ -120,12 +126,18 @@ assert_contains "docs/README.opencode.md" "AEGIS_ACTIVATION_MODE=explicit" \
     "OpenCode guide documents explicit activation mode"
 assert_contains "docs/README.opencode.md" 'not a field in `opencode.json`' \
     "OpenCode guide clarifies activation mode is not opencode.json config"
+assert_contains "docs/README.opencode.md" 'aegis-doctor\.py activation-mode explicit' \
+    "OpenCode guide documents doctor activation command"
 assert_contains "docs/README.claude-code.md" "AEGIS_ACTIVATION_MODE=explicit" \
     "Claude Code guide documents explicit activation mode"
 assert_contains "docs/README.claude-code.md" "PowerShell" \
     "Claude Code guide includes PowerShell usage"
+assert_contains "docs/README.claude-code.md" 'aegis-doctor\.py activation-mode explicit' \
+    "Claude Code guide documents doctor activation command"
 assert_contains "docs/README.codex.md" "explicit" \
     "Codex guide documents explicit activation caveat"
+assert_contains "docs/README.codex.md" 'aegis-doctor\.py activation-mode explicit' \
+    "Codex guide documents doctor activation command"
 assert_contains "docs/README.codebuddy.md" "AEGIS_ACTIVATION_MODE=explicit" \
     "CodeBuddy guide documents explicit activation caveat"
 assert_contains "docs/README.codebuddy.md" "does not override CodeBuddy" \
@@ -140,12 +152,24 @@ assert_contains "docs/README.trae.md" "does not override Trae" \
     "Trae guide clarifies activation mode does not control native matcher"
 assert_contains "README.md" "~/.config/aegis/config.toml" \
     "English README gives concise user-local config path"
+assert_contains "README.md" 'aegis-doctor\.py activation-mode explicit' \
+    "English README gives concise doctor activation command"
 assert_contains "README.zh-CN.md" "~/.config/aegis/config.toml" \
     "Chinese README gives concise user-local config path"
+assert_contains "README.zh-CN.md" 'aegis-doctor\.py activation-mode explicit' \
+    "Chinese README gives concise doctor activation command"
 assert_contains "README.zh-CN.md" "如果没有这个文件.*手动创建|没有.*手动创建" \
     "Chinese README says to create the config file if it is missing"
 assert_contains "README.zh-CN.md" "长期设置方式和宿主注意事项|详细.*宿主" \
     "Chinese README delegates detailed activation setup to canonical docs"
+assert_contains ".codex/INSTALL.md" 'aegis-doctor\.py activation-mode explicit' \
+    "Codex install surface documents doctor activation command"
+assert_contains ".opencode/INSTALL.md" 'aegis-doctor\.py activation-mode explicit' \
+    "OpenCode install surface documents doctor activation command"
+assert_contains ".cursor/INSTALL.md" 'aegis-doctor\.py activation-mode explicit' \
+    "Cursor install surface documents doctor activation command"
+assert_contains ".windsurf/INSTALL.md" 'aegis-doctor\.py activation-mode explicit' \
+    "Windsurf install surface documents doctor activation command"
 
 if (( failures > 0 )); then
     echo ""

@@ -1,5 +1,48 @@
 # Aegis Release Notes
 
+## v1.5.7 (2026-05-24)
+
+### Method-Pack Root Doctor Commands
+
+- Hardened install and update guidance so agents run `aegis-doctor.py` from
+  the installed Aegis method-pack root instead of the target project directory.
+- Updated root, host-specific, hidden install, compatibility, known-limitation,
+  and trigger-health docs with `cd <aegis-method-pack-root>` anchored command
+  shapes.
+- Extended install verification guardrails so future docs must keep the doctor
+  command rooted at the method-pack install location.
+
+### Activation Mode CLI
+
+- Added `python scripts/aegis-doctor.py activation-mode explicit` and
+  `python scripts/aegis-doctor.py activation-mode auto` as concise commands for
+  switching Aegis automatic bootstrap behavior through the user-local config.
+- Kept the boundary explicit: the command writes Aegis config and requires a
+  restart, reload, or new host session; it is not an authoritative runtime
+  decision or a guaranteed same-session slash command for every host.
+- Updated activation mode docs for Codex, OpenCode, Claude Code, CodeBuddy,
+  DeepSeek-TUI, Trae, Cursor, Windsurf, and Antigravity surfaces.
+
+### Doctor Usability
+
+- Fixed `aegis-doctor.py helper-path` text output so it no longer crashes when
+  run without `--json`.
+- Preserved an existing `activation_mode` value when `--write-config` refreshes
+  method-pack and workspace-helper paths, avoiding accidental resets from
+  `explicit` back to `auto`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.5.7`
+- `bash tests/e2e/aegis-doctor-check.sh`
+- `bash tests/e2e/activation-mode-check.sh`
+- `bash tests/e2e/install-verification-policy-check.sh`
+- `bash tests/e2e/workspace-helper-resolution-check.sh`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `python tests/helpers/test_workspace_text_write_compat.py`
+- `git diff --check`
+
 ## v1.5.6 (2026-05-24)
 
 ### Diagnostic Stop Transparency

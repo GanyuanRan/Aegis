@@ -176,7 +176,7 @@ It only records limitations supported by current fresh evidence and does not spe
 - Some hosts support only copying `skills/` into a native discovery directory. That keeps workflows usable, but the repo-local workspace support scripts may not be discoverable unless the method-pack root remains available or is configured
 
 **Observation Metric**
-- `python scripts/aegis-doctor.py --write-config --json`
+- `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
 - JSON readback includes `"workspaceSupport": "available"` and
   `"configStatus": "configured"`
 - Host docs distinguish recommended complete install from compatibility fallback
@@ -215,8 +215,8 @@ It only records limitations supported by current fresh evidence and does not spe
   the updated hot path is active.
 
 **Observation Metric**
-- `python scripts/aegis-doctor.py --write-config --json`
-- `python scripts/aegis-doctor.py --discovery-root <host-skill-discovery-root>`
+- `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
+- `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --discovery-root <host-skill-discovery-root>`
 - Host-specific restart/reload plus skill discovery smoke where available
 
 **Retirement Trigger**
@@ -294,8 +294,8 @@ It only records limitations supported by current fresh evidence and does not spe
 - `docs/README.antigravity.md`
 - `bash tests/e2e/antigravity-host-boundary-check.sh`
 - Future Antigravity CLI / IDE / App install smoke that proves skill discovery,
-  restart or reload behavior, and `python scripts/aegis-doctor.py
-  --write-config --json`
+  restart or reload behavior, and
+  `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
 
 **Retirement Trigger**
 - When each Antigravity shape has a verified install/update path that proves

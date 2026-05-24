@@ -29,8 +29,12 @@ Verify by asking: "Tell me about your aegis"
 Then run complete-install verification from the method-pack root:
 
 ```bash
+cd <aegis-method-pack-root>
 python scripts/aegis-doctor.py --write-config --json
 ```
+
+Do not run the doctor command from the target project directory; it belongs to
+the installed Aegis method-pack root.
 
 Treat the install as complete only if the JSON reports `"ok": true`,
 `"workspaceSupport": "available"`, and `"configStatus": "configured"`.
@@ -55,7 +59,21 @@ If the file does not exist, create it manually. Add:
 activation_mode = "explicit"
 ```
 
-Then restart OpenCode.
+You can also write the same config from the installed Aegis method-pack root:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode explicit
+```
+
+Switch back to automatic mode with:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode auto
+```
+
+Then restart OpenCode or start a new session.
 
 `AEGIS_ACTIVATION_MODE` is still available as an environment-variable override
 for one-off runs:
@@ -243,8 +261,15 @@ Override `OPENCODE_TEST_MODEL` to a model/provider pair that is valid on your ma
 
 Skill discovery and project workspace support are separate checks. If skills
 are visible but workspace support is not verified, confirm the plugin-backed
-method-pack checkout/cache is present, then run `python scripts/aegis-doctor.py
---write-config --json` from that method-pack root. The JSON should include
+method-pack checkout/cache is present, then run this from that method-pack root,
+not from the target project directory:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py --write-config --json
+```
+
+The JSON should include
 `"workspaceSupport": "available"` and `"configStatus": "configured"`.
 
 ### Bootstrap not appearing

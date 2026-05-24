@@ -66,6 +66,9 @@ cd ~/aegis
 python scripts/aegis-doctor.py --write-config --json
 ```
 
+Do not run the doctor command from the target project directory; it belongs to
+the installed Aegis method-pack root.
+
 Treat the install as complete only if the JSON reports `"ok": true`,
 `"workspaceSupport": "available"`, and `"configStatus": "configured"`.
 
@@ -73,6 +76,7 @@ If Antigravity exposes a separate skill discovery directory in the current
 release you are using, also verify that directory:
 
 ```bash
+cd <aegis-method-pack-root>
 python scripts/aegis-doctor.py --discovery-root <antigravity-skill-discovery-root>
 ```
 
@@ -121,6 +125,25 @@ Antigravity-specific slash commands can be used when the current surface exposes
 them, but Aegis docs should keep the portable text form as the stable path until
 the host contract is verified.
 
+To disable Aegis automatic bootstrap for hook/profile-aware surfaces, write the
+shared local Aegis config from the installed method-pack root:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode explicit
+```
+
+Switch back to automatic mode with:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py activation-mode auto
+```
+
+Restart or reload the relevant Antigravity CLI / IDE / App surface after the
+change. This command configures Aegis; it is not yet a verified Antigravity
+slash command contract.
+
 ## Verification
 
 After installing or updating Aegis in any Antigravity shape:
@@ -128,8 +151,9 @@ After installing or updating Aegis in any Antigravity shape:
 1. Restart or reload the Antigravity surface.
 2. Ask the host to list or describe Aegis skills.
 3. Ask it which Aegis skill it would use before debugging a failing test.
-4. Run `python scripts/aegis-doctor.py --write-config --json` from the Aegis
-   method-pack root.
+4. Do not run the doctor command from the target project directory. From the
+   Aegis method-pack root, run
+   `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`.
 5. If a separate skill discovery directory exists, run
    `python scripts/aegis-doctor.py --discovery-root <path>`.
 
@@ -145,7 +169,7 @@ Expected result:
 ## Updating
 
 ```bash
-cd ~/aegis
+cd <aegis-method-pack-root>
 git pull
 python scripts/aegis-doctor.py --write-config --json
 ```
