@@ -69,6 +69,14 @@ assert_contains "$debugging_skill" "UpwardDrillSignal:" \
     "debugging requires UpwardDrillSignal output before editing"
 assert_contains "$debugging_skill" "Decision: fix owner \\| continue investigation \\| escalate" \
     "debugging requires Decision output before editing"
+assert_contains "$debugging_skill" "Minimality Check" \
+    "debugging defines minimality check for stable repair"
+assert_contains "$debugging_skill" "smallest textual diff|textual diff" \
+    "debugging distinguishes smallest textual diff from sufficient repair"
+assert_contains "$debugging_skill" "sufficient repair \\| local patch \\| needs first-principles review" \
+    "debugging classifies local patch versus sufficient repair"
+assert_contains "$debugging_skill" "not the smallest textual diff" \
+    "debugging states minimal fix is not smallest textual diff"
 assert_contains "$debugging_skill" "H7.*keyword, phrase, regex" \
     "debugging quality gate adds H7 keyword/phrase/regex signal"
 assert_contains "$debugging_skill" "H10.*re-parses raw text|H10.*re-infers action/state" \
@@ -82,6 +90,10 @@ assert_contains "$process_baseline" "downstream logic re-parses raw text|re-infe
     "process baseline defines downstream re-inference signal"
 assert_contains "$process_baseline" "PatchShape.*CanonicalOwner.*UpwardDrillSignal.*Decision" \
     "process baseline requires patch-shape triage output"
+assert_contains "$process_baseline" "Minimal Necessary Change means the smallest sufficient change" \
+    "process baseline defines minimal necessary change as sufficient repair"
+assert_contains "$process_baseline" "correct owner and abstraction layer" \
+    "process baseline ties minimality to owner and abstraction layer"
 assert_contains "$process_baseline" "Diagnosis must drill upward layer by layer" \
     "process baseline uses upward drilling wording"
 

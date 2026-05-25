@@ -333,6 +333,38 @@ It only records limitations supported by current fresh evidence and does not spe
   transitional, becomes legacy-only, or needs a separate retirement proposal in
   a future cleanup
 
+---
+
+### 2.17 OpenClaw and Hermes Agent Structural Support Is Not Yet Fresh Host Closeout
+
+**Retained Item**
+- OpenClaw and Hermes Agent are structural host targets, not release-level fresh
+  smoke verdicts
+
+**Retention Reason**
+- OpenClaw documents `openclaw skills install` for Git and local skill
+  directories whose source root contains `SKILL.md`. That supports Aegis
+  individual skill-directory installs, but not a canonical whole-repo
+  `git:GanyuanRan/Aegis` install because Aegis is a multi-skill method pack.
+- Hermes Agent exposes a Skills Hub, a documented `~/.hermes/skills/` local
+  skill path, GitHub path installs such as
+  `hermes skills install owner/repo/skills/my-workflow`, and built-in
+  coding-agent delegation skills. Aegis still needs current release live smoke
+  before claiming host closeout.
+
+**Observation Metric**
+- `docs/README.openclaw.md`
+- `docs/README.hermes-agent.md`
+- `bash tests/e2e/popular-agent-host-boundary-check.sh`
+- Future OpenClaw and Hermes Agent install smoke that proves skill discovery,
+  restart or reload behavior, and
+  `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
+
+**Retirement Trigger**
+- When OpenClaw and Hermes Agent each have a verified install/update path that
+  proves both skill discovery and project workspace support without turning
+  Aegis into an authoritative runtime core
+
 ## 3. Default Reading Rule
 
 If a limitation appears simultaneously in README, host docs, or test descriptions, use this document as the current reading entry point.

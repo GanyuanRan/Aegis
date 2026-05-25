@@ -22,7 +22,7 @@ It does not answer:
 ## 2. Snapshot Date
 
 The current snapshot is based on fresh evidence and current docs landed as of
-`2026-05-23`.
+`2026-05-25`.
 
 ---
 
@@ -48,6 +48,8 @@ The current snapshot is based on fresh evidence and current docs landed as of
 | `Antigravity CLI` | Structural target added; no current release-level fresh smoke verdict | Google positions Antigravity CLI as the successor terminal surface with skills, hooks, subagents, MCP, plugins, and slash-command configuration; the public CLI `1.0.1` changelog adds plugin discovery for skills and agents from installed plugin directories, but the Aegis install / discovery contract still needs fresh verification |
 | `Antigravity IDE` | Structural target added; no current release-level fresh smoke verdict | Google positions Antigravity IDE as an editor surface with global or workspace-specific Skills, MCPs, and JSON Hooks; Aegis install path still needs fresh verification |
 | `Antigravity App` | Structural target added; no current release-level fresh smoke verdict | Google Antigravity 2.x app / project platform can carry Aegis method-pack projections, but no live host closeout has been run |
+| `OpenClaw` | Native `SKILL.md` skill installer supports local skill directories; no current release-level fresh smoke verdict | `docs/README.openclaw.md` established; evidence from OpenClaw `openclaw skills install` docs that Git/local installs expect `SKILL.md` at the source root; Aegis is multi-skill, so individual skill-directory install is the structural path pending live smoke |
+| `Hermes Agent` | Skills Hub / `~/.hermes/skills/` skill host surface supports method-pack exposure; no current release-level fresh smoke verdict | `docs/README.hermes-agent.md` established; evidence from Hermes Skills Hub, documented local skills path, GitHub path installs, and built-in coding delegation skills; live host regression still deferred |
 
 ### 3.2a Transitional Compatibility Host Surfaces
 
@@ -76,9 +78,11 @@ The current snapshot only states:
 6. `Cursor` and `Windsurf` have structured install guides but have not yet entered release-level fresh smoke
 7. `Antigravity CLI`, `Antigravity IDE`, and `Antigravity App` are now structural target surfaces, but still lack release-level fresh smoke evidence
 8. `Gemini CLI` is retained as a transitional compatibility surface after Google's `2026-05-19` transition announcement while Antigravity support matures
-9. `Warp`, as a terminal host, does not itself need an independent adapter
-10. The current method-pack still retains the cross-host installation goal
-11. "Support all plugin hosts" remains a product goal, not equivalent to "all hosts have current fresh closeout"
+9. `OpenClaw` can expose Aegis through individual local skill-directory installs, but `git:owner/repo` should not be written as the canonical whole-repo Aegis installer because OpenClaw expects `SKILL.md` at the source root
+10. `Hermes Agent` can expose Aegis through `~/.hermes/skills/` or documented GitHub path installs, but support remains structural until a fresh Hermes install smoke proves it for the current release
+11. `Warp`, as a terminal host, does not itself need an independent adapter
+12. The current method-pack still retains the cross-host installation goal
+13. "Support all plugin hosts" remains a product goal, not equivalent to "all hosts have current fresh closeout"
 
 ---
 
@@ -94,8 +98,10 @@ When reading the current host verdict, follow this order:
 6. `docs/README.deepseek-tui.md`
 7. `docs/README.trae.md`
 8. `docs/README.antigravity.md`
-9. `.windsurf/INSTALL.md`
-10. `.cursor/INSTALL.md`
+9. `docs/README.openclaw.md`
+10. `docs/README.hermes-agent.md`
+11. `.windsurf/INSTALL.md`
+12. `.cursor/INSTALL.md`
 
 ---
 

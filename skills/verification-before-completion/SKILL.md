@@ -11,7 +11,7 @@ description: Use when about to claim work is complete, fixed, passing, verified,
   3. Read: output, exit code, failures
   4. Verify: output confirms claim? → state claim WITH evidence. Doesn't? → state actual status.
 → Done when: exact command run, output confirms, residual risk stated, confidence graded.
-  Non-trivial code changes → also report Complexity Delta.
+  Non-trivial code changes → also report Complexity Delta and Complexity Governance Suggestion.
   Governance/retirement work → also close Repair Track + Retirement Track + Residual Risk.
 
 # Verification Before Completion
@@ -126,6 +126,21 @@ Evidence Card:
    - Required follow-up:
    ```
 
+   When the delta finds meaningful pressure, add:
+
+   ```text
+   Complexity Governance Suggestion:
+   - Recommendation: none | monitor | schedule-refactor | extract helper | split owner | open follow-up
+   - Why:
+   - Suggested scope:
+   - Timing:
+   ```
+
+   Use `none` for small owner-correct diffs, `monitor` for acceptable visible
+   growth, and stronger recommendations for 800+ line files, 80+ line blocks,
+   branch/fallback/adapter growth without retirement, or owner mismatch. The
+   suggestion is advisory; keep residual risk visible.
+
    Rules:
    - A maintained source file over 800 lines is a review signal. If this slice
      added logic there or pushed it across 800 lines, explain why the owner
@@ -229,6 +244,6 @@ Evidence Card:
 - Adding new verification branches without saying what old check or fallback now retires
 - Closing governance or retirement work without Repair Track, Retirement Track, and Residual Risk
 - Claiming completion after growing a core file or complex block without a
-  Complexity Delta or residual-risk note
+  Complexity Delta, Complexity Governance Suggestion, or residual-risk note
 - Retaining old logic without a Retention reason, Retirement trigger, and
   lingering-reference check

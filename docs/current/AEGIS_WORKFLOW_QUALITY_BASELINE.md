@@ -148,7 +148,20 @@ Pass criteria:
 - skills do not grant `completion authority`
 - tests check wording for authority drift
 
-### 3.9 Completion-Time Complexity Delta
+### 3.9 Three-Stage Complexity Governance
+
+Complexity governance should help agents choose safer boundaries before code is
+written, then report what actually happened after the diff exists.
+
+Pass criteria:
+
+- plan-time checks appear in `brainstorming` and `writing-plans`
+- pre-edit checks appear in implementation workflows before risky source edits
+- completion keeps `Complexity Delta` and adds a useful governance suggestion
+- checks stay advisory, cheap for low-risk work, and do not treat new files as
+  automatically better
+
+### 3.10 Completion-Time Complexity Delta
 
 Non-trivial code changes should report actual complexity movement before a
 completion claim.
@@ -166,8 +179,10 @@ Pass criteria:
   with retired paths or a retirement trigger
 - entropy increases are either justified by owner / compatibility evidence or
   reported as residual risk
+- complexity movement is paired with a governance suggestion when follow-up is
+  useful
 
-### 3.10 Diagnostic Stop Transparency
+### 3.11 Diagnostic Stop Transparency
 
 Debugging workflows should make the diagnostic stop point visible when the
 root-cause layer affects the fix boundary, contract owner, or spec/product
@@ -185,7 +200,7 @@ Pass criteria:
 - the card remains advisory method-pack output, not a `GateDecision`,
   `PolicySnapshot`, or completion authority
 
-### 3.11 Strong-Opinion Review Lenses
+### 3.12 Strong-Opinion Review Lenses
 
 High-value workflows should be opinionated enough to catch bad direction early
 without turning Aegis into a roleplay system, approval board, or runtime gate.
@@ -196,10 +211,18 @@ Pass criteria:
   non-goals, trade-offs, and decision-needed clarity
 - `writing-plans` can use a compact `Plan Pressure Test` for owner / contract /
   retirement risk, verification scope, and task executability
+- `brainstorming` and `writing-plans` can use a compact
+  `Plan-Time Complexity Check` to identify target file pressure, add-in-place
+  risk, and safer file boundaries before implementation
+- `test-driven-development`, `systematic-debugging`, and `executing-plans` can
+  use a compact `Pre-Edit Complexity Check` to avoid stuffing new logic into an
+  overloaded or wrong owner
 - `requesting-code-review` uses `Findings First` and prioritizes bugs first,
   risk first, tests first
 - `verification-before-completion` can emit a `Readiness Summary` for tests,
   docs, version, host compatibility, uncovered scope, and residual risk
+- `verification-before-completion` can emit a `Complexity Governance
+  Suggestion` after `Complexity Delta`
 - `recording-architecture-decisions` can use a `Retro / Memory Filter` to
   distinguish executed durable decisions from unexecuted ideas
 - a role persona is not a review lens; Aegis borrows sharp evaluation angles,
@@ -249,6 +272,7 @@ TaskIntentDraft: outcome, scope, risk hints
 BaselineReadSetHint: candidate docs, missing authority
 ImpactStatementDraft: affected layers, owners, invariants, non-goals
 Product Risk Lens: value, non-goals, trade-offs, decision-needed
+Plan-Time Complexity Check: target files, shape signals, owner fit, recommendation
 Options: 2-3 choices with trade-offs and recommendation
 Decision Needed: approve brief/design, revise, or defer
 ```
@@ -300,6 +324,7 @@ Plan Basis: approved requirement/spec refs
 Files: owners and edit boundaries
 Compatibility: invariants and non-goals
 Plan Pressure Test: owner / contract / retirement risk and verification scope
+Plan-Time Complexity Check: target files, add-in-place risk, better boundary, recommendation
 Tasks: bite-sized steps with verification
 Risks: residual unknowns and rollback surface
 Retirement: old owner/fallback handling when applicable
@@ -321,6 +346,7 @@ Reproduction: command/input and result
 Root Cause: evidence-backed owner and cause
 Layer Stop Card: stop layer, checked path, evidence, excluded layers, falsifier, user intervention point, next action
 Fix Boundary: canonical owner, compatibility, non-edits
+Pre-Edit Complexity Check: target edit file, pressure signal, safer boundary, decision
 Verification: failing test or reproduction now passing
 Repair Track / Retirement Track: when fallback, owner, or contract risk exists
 ```
@@ -445,6 +471,16 @@ Complexity Delta:
 - Retired branches/fallbacks/adapters:
 - Net entropy: decreased | stable | increased-with-justification
 - Required follow-up:
+```
+
+When useful, add `Complexity Governance Suggestion`:
+
+```text
+Complexity Governance Suggestion:
+- Recommendation: none | monitor | schedule-refactor | extract helper | split owner | open follow-up
+- Why:
+- Suggested scope:
+- Timing:
 ```
 
 For governance, compatibility, cleanup, or retirement work that adds, replaces,

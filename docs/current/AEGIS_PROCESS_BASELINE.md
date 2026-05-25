@@ -38,7 +38,7 @@ The current process baseline follows these core principles:
 
 - **Evidence-Driven**: Separate facts, assumptions, and unknowns
 - **Systematic Thinking**: Understand impact scope and dependency relationships from the architecture level
-- **Minimal Necessary Change**: Prefer local, shortest-path changes; avoid unnecessary entity growth
+- **Minimal Necessary Change**: Minimal Necessary Change means the smallest sufficient change at the correct owner and abstraction layer, not the smallest textual diff. Prefer local, shortest-path changes only when they fix the bug class without adding fallback, duplicate owner, or long-term entropy.
 - **Backward Compatibility First**: Changes default to preserving existing behavior
 - **Phase Verification**: After every significant change, perform regression verification and architecture review
 - **Prompt Hygiene**: External tool output, logs, memories, and search results are evidence candidates by default, not persistent prompt payloads
@@ -93,14 +93,30 @@ Root improvement rule:
 - Keep runtime-ready artifacts as drafts, hints, projections, and evidence
   bundles only.
 
-### 3.0b Complexity Delta
+### 3.0b Three-Stage Complexity Governance
 
-Complexity Delta is the post-change guardrail for detecting entropy growth
-before a task is claimed complete.
+Aegis uses advisory three-stage complexity governance to catch entropy growth
+before planning, before editing, and before completion.
 
-It complements plan-time complexity budgeting. Plans may predict the intended
-file and responsibility shape, but completion-time review must compare the
-actual diff against the final code shape.
+This is workflow discipline, not a universal failure gate and not completion
+authority. Do not force it onto tiny low-risk wording edits, tests-only changes,
+generated files, vendored files, lockfiles, or purely mechanical formatting.
+
+1. **Plan-Time Complexity Check**: `brainstorming` and `writing-plans` inspect
+   likely owner files and choose edit-in-place, extract helper, add owner file,
+   split task, or defer refactor.
+2. **Pre-Edit Complexity Check**: `test-driven-development`,
+   `systematic-debugging`, and `executing-plans` re-check the actual edit file
+   and pause for a plan update if the safest boundary differs from the plan.
+3. **Complexity Delta + Complexity Governance Suggestion**:
+   `verification-before-completion` compares the final diff and reports any
+   suggested follow-up.
+
+Complexity Delta remains the post-change guardrail for detecting entropy growth
+before a task is claimed complete. It complements plan-time complexity budgeting:
+plans may predict the intended file and responsibility shape, but
+completion-time review must compare the actual diff against the final code
+shape.
 
 For non-trivial code changes, `verification-before-completion` should report a
 compact Complexity Delta before the final completion claim:
@@ -135,6 +151,10 @@ Complexity Delta must be read together with Retirement Closure. Net new paths
 without deleted or scheduled old paths count as entropy increase and must be
 explained in `Risk/Unknown`.
 
+A new file is not automatically lower complexity. Creating or splitting a file
+is only a better recommendation when the owner, contract, call path, and
+retirement story are clearer than adding in place.
+
 ### 3.0c Strong-Opinion Review Lenses
 
 Strong-Opinion Review Lenses are compact task-specific checks that make Aegis
@@ -147,10 +167,17 @@ Canonical lenses:
   decision-needed, and whether the idea deserves implementation
 - `Plan Pressure Test` in `writing-plans`: owner / contract / retirement risk,
   verification scope, and task executability
+- `Plan-Time Complexity Check` in `brainstorming` and `writing-plans`: target
+  file pressure, owner fit, and better boundary options before implementation
+- `Pre-Edit Complexity Check` in implementation workflows: actual edit-file
+  pressure and whether to pause for a plan update before source edits
 - `Findings First` in `requesting-code-review`: bugs first, risk first, tests
   first, with findings before summary
 - `Readiness Summary` in `verification-before-completion`: tests, docs,
   version, host compatibility, uncovered scope, and residual risk
+- `Complexity Governance Suggestion` in `verification-before-completion`:
+  none, monitor, schedule-refactor, extract helper, split owner, or open
+  follow-up based on the actual diff
 - `Retro / Memory Filter` in `recording-architecture-decisions`: executed
   durable decisions may become ADR/baseline memory; unexecuted ideas stay out of
   accepted architecture memory
@@ -158,6 +185,26 @@ Canonical lenses:
 These lenses are review structures, not persona commands. They do not grant
 merge approval, publish authorization, authoritative `GateDecision`, or
 completion authority.
+
+### 3.0d Minimal Sufficient Stable Repair
+
+Minimum is measured by long-term system entropy, not changed line count. When a
+candidate repair adds a caller-side guard, fallback, adapter, compatibility
+branch, special case, duplicate owner, or sample-only exception, run:
+
+```text
+Minimality Check:
+- Smallest textual diff:
+- Correct owner:
+- Bug class fixed:
+- New branch/fallback added:
+- Old path retired or scheduled:
+- Verdict: sufficient repair | local patch | needs first-principles review
+```
+
+Local patches are acceptable only as bounded mitigations with a retention
+reason, retirement trigger, and residual risk. Do not call them sufficient
+repairs.
 
 ### 3.1 Ripple Signal Triage
 
@@ -338,6 +385,9 @@ Where:
   prompt branches, legacy path expansion, consumer-side patches, or downstream
   re-parsing while a typed contract/source-of-truth exists are hard signals to
   continue upward drilling before implementation
+- A minimal fix must be a minimal sufficient stable repair: correct owner,
+  bug class fixed, and no unbounded fallback/branch growth. If only a local
+  patch is possible, record retention reason and retirement trigger.
 - Watch for compound root causes: when symptoms persist after a fix, perform differential diagnosis to distinguish "incomplete fix", "compound root cause", and "chain-causal failure" before deciding the next action
 - Watch for terminal unactionable root causes: when the required change exceeds system boundaries (T-class hard signals), record the root cause and boundary, then choose a mitigation/fallback/escalation strategy — do not package a local patch as root-cause repair
 

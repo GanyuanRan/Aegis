@@ -10,7 +10,7 @@ description: Use when implementing any feature or bugfix, before writing impleme
   Cycle: RED (write test → watch it fail) → GREEN (minimal code → watch it pass) → REFACTOR (clean up → keep green)
   Regression: shared module → related tests. contract change → producer + consumer. core logic → old + new tests.
   Ripple signal hit → cover producer+consumer or real user path before claiming green.
-→ Done when: all tests pass, every new function has a test that failed first, TDD preflight gate passed.
+→ Done when: all tests pass, every new function has a test that failed first, TDD preflight gate passed, and pre-edit complexity risk was checked when source edits were non-trivial.
 
 # Test-Driven Development (TDD)
 
@@ -46,6 +46,25 @@ For these tasks, require a baseline read-set, plan, and atomic tasks before TDD.
 High-complexity or ambiguous tasks also need a spec/design review before
 planning. Only proceed directly with TDD for low-complexity work whose intent,
 owner, compatibility boundary, and verification path are already clear.
+
+## Pre-Edit Complexity Check
+
+Before production code edits, check whether the intended source edit would add
+logic to an overloaded or wrong owner. Tiny edits can keep this to one line.
+
+```text
+Pre-Edit Complexity Check:
+- Target edit file:
+- Existing pressure signal:
+- Owner fit:
+- Safer edit boundary:
+- Decision: edit-in-place | extract helper | add owner file | split task | pause for plan update
+```
+
+Pressure signals: 800+ line file, 80+ line block, deep nesting, mixed reasons
+to change, generic owner receiving new responsibility, owner mismatch, or new
+fallback/adapter/guard paths. If the decision is `pause for plan update`, stop
+TDD and return to `writing-plans` or `brainstorming` with the evidence.
 
 When a medium- or high-complexity task needs project records, use configured Aegis workspace support
 lazily. Prefer the installed Aegis workspace helper

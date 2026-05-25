@@ -1,5 +1,73 @@
 # Aegis Release Notes
 
+## v1.6.6 (2026-05-25)
+
+### README And Install Guidance
+
+- Streamlined the English and Chinese root READMEs into compact user-facing
+  entry points that emphasize Aegis as a baseline-first, evidence-driven
+  method-pack upgrade for AI coding agents.
+- Replaced separate minimal install and update prompts with a single
+  install-or-update prompt that asks the agent to detect the current host,
+  install or update Aegis, reload when needed, and verify from the installed
+  method-pack root.
+- Moved optional lite global rules into dedicated English and Chinese files so
+  the root README stays focused on the information users need before trying
+  Aegis.
+
+### Host Compatibility
+
+- Added structural host guidance for OpenClaw and Hermes Agent, including
+  individual `SKILL.md` skill-directory install paths, update guidance, doctor
+  verification, activation-mode caveats, and authority-boundary reminders.
+- Updated the compatibility matrix, known limitations, release checklist,
+  prompt-hygiene boundary, current docs index, and README host lists to include
+  OpenClaw and Hermes Agent without claiming release-level fresh host smoke.
+- Added `popular-agent-host-boundary-check.sh` and wired it into the Layer 1
+  fast check to guard these host boundaries.
+
+### Complexity And Repair Discipline
+
+- Expanded complexity governance from a completion-only delta into a
+  three-stage advisory flow: `Plan-Time Complexity Check`,
+  `Pre-Edit Complexity Check`, and completion-time
+  `Complexity Governance Suggestion`.
+- Updated `brainstorming`, `writing-plans`, `test-driven-development`,
+  `systematic-debugging`, `executing-plans`, and
+  `verification-before-completion` so agents can choose safer owner/file
+  boundaries before code edits and report useful follow-up recommendations
+  after the diff exists.
+- Tightened `Minimal Necessary Change` into `Minimal Sufficient Stable Repair`:
+  the smallest acceptable repair is the smallest sufficient fix at the correct
+  owner and abstraction layer, not the smallest textual diff.
+- Added a `Minimality Check` for fallback, guard, adapter, special-case, or
+  duplicate-owner repairs so local patches remain bounded mitigations with
+  retention reasons and retirement triggers.
+
+### Workflow Quality Coverage
+
+- Added representative workflow-quality samples for plan-time complexity,
+  pre-edit complexity, completion-time governance suggestions, and minimal
+  sufficient repair.
+- Extended e2e checks for workflow-quality contracts, first-principles repair
+  classification, debugging patch-shape gates, install verification policy,
+  activation-mode host caveats, and goal-framing host documentation coverage.
+- Preserved the method-pack boundary: all new checks are advisory workflow
+  discipline and do not grant authoritative `GateDecision`, `PolicySnapshot`,
+  publish approval, or completion authority.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.6.6`
+- `bash scripts/bump-version.sh --check`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/debugging-patch-shape-gate-check.sh`
+- `bash tests/e2e/first-principles-review-check.sh`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+- `git diff --check`
+
 ## v1.6.0 (2026-05-25)
 
 ### Strong-Opinion Review Lenses

@@ -76,6 +76,12 @@ assert_contains "$process_doc" "Workflow Quality" \
     "process baseline references workflow quality"
 assert_contains "$process_doc" "Complexity Delta" \
     "process baseline defines completion-time complexity delta"
+assert_contains "$process_doc" "Plan-Time Complexity Check" \
+    "process baseline defines plan-time complexity check"
+assert_contains "$process_doc" "Pre-Edit Complexity Check" \
+    "process baseline defines pre-edit complexity check"
+assert_contains "$process_doc" "Complexity Governance Suggestion" \
+    "process baseline defines post-change complexity governance suggestion"
 assert_contains "$process_doc" "Files newly crossing 800 lines" \
     "process baseline defines file threshold complexity signal"
 assert_contains "$process_doc" "Largest touched function/block" \
@@ -98,11 +104,18 @@ for dimension in \
     "Artifact Stability" \
     "Workspace Laziness" \
     "Authority Boundary" \
+    "Three-Stage Complexity Governance" \
     "Completion-Time Complexity Delta" \
     "Strong-Opinion Review Lenses"; do
     assert_contains "$baseline" "$dimension" "baseline defines $dimension"
 done
 
+assert_contains "$baseline" "Plan-Time Complexity Check" \
+    "workflow quality baseline includes plan-time complexity check"
+assert_contains "$baseline" "Pre-Edit Complexity Check" \
+    "workflow quality baseline includes pre-edit complexity check"
+assert_contains "$baseline" "Complexity Governance Suggestion" \
+    "workflow quality baseline includes complexity governance suggestion"
 assert_contains "$baseline" "Files newly crossing 800 lines" \
     "workflow quality baseline includes file threshold complexity signal"
 assert_contains "$baseline" "Largest touched function/block" \
@@ -151,6 +164,10 @@ assert_contains "skills/brainstorming/SKILL.md" "Compact output contract" \
     "brainstorming exposes compact output contract"
 assert_contains "skills/brainstorming/SKILL.md" "Product Risk Lens" \
     "brainstorming includes product risk lens"
+assert_contains "skills/brainstorming/SKILL.md" "Plan-Time Complexity Check" \
+    "brainstorming includes plan-time complexity check"
+assert_contains "skills/brainstorming/SKILL.md" "Better file boundary" \
+    "brainstorming checks better file boundary"
 assert_contains "skills/brainstorming/SKILL.md" "review lens, not persona|not a persona" \
     "brainstorming keeps product lens out of persona roleplay"
 assert_contains "skills/brainstorming/SKILL.md" "does not override baseline evidence" \
@@ -161,10 +178,18 @@ assert_contains "skills/writing-plans/SKILL.md" "Compact output contract" \
     "writing-plans exposes compact output contract"
 assert_contains "skills/writing-plans/SKILL.md" "Plan Pressure Test" \
     "writing-plans includes plan pressure test"
+assert_contains "skills/writing-plans/SKILL.md" "Plan-Time Complexity Check" \
+    "writing-plans includes plan-time complexity check"
 assert_contains "skills/writing-plans/SKILL.md" "owner / contract / retirement" \
     "writing-plans pressure-tests owner contract retirement risk"
+assert_contains "skills/test-driven-development/SKILL.md" "Pre-Edit Complexity Check" \
+    "test-driven-development includes pre-edit complexity check"
+assert_contains "skills/test-driven-development/SKILL.md" "pause for plan update" \
+    "test-driven-development can pause for plan update when complexity risk appears"
 assert_contains "skills/systematic-debugging/SKILL.md" "Quick bug lane" \
     "systematic debugging defines quick bug lane"
+assert_contains "skills/systematic-debugging/SKILL.md" "Pre-Edit Complexity Check" \
+    "systematic debugging includes pre-edit complexity check"
 assert_contains "skills/systematic-debugging/SKILL.md" "Layer Stop Card" \
     "systematic debugging defines layer stop card"
 assert_contains "skills/systematic-debugging/SKILL.md" "User Intervention Point" \
@@ -189,6 +214,8 @@ assert_contains "skills/verification-before-completion/SKILL.md" "recording-arch
     "verification skill routes ADR lifecycle closure to the dedicated skill when needed"
 assert_contains "skills/verification-before-completion/SKILL.md" "Complexity Delta" \
     "verification skill defines complexity delta check"
+assert_contains "skills/verification-before-completion/SKILL.md" "Complexity Governance Suggestion" \
+    "verification skill defines complexity governance suggestion"
 assert_contains "skills/verification-before-completion/SKILL.md" "Files newly crossing 800 lines" \
     "verification skill checks file threshold crossings"
 assert_contains "skills/verification-before-completion/SKILL.md" "Largest touched function/block" \
@@ -201,6 +228,8 @@ assert_contains "skills/verification-before-completion/SKILL.md" "Retirement tri
     "verification skill requires retirement trigger"
 assert_contains "skills/long-task-continuation/SKILL.md" "Minimal Reporting Shape" \
     "long-task continuation keeps minimal reporting shape"
+assert_contains "skills/executing-plans/SKILL.md" "Pre-Edit Complexity Check" \
+    "executing-plans re-checks complexity before source edits"
 assert_contains "skills/brainstorming/SKILL.md" "ADR signals" \
     "brainstorming marks ADR signals without creating accepted memory"
 assert_contains "skills/brainstorming/SKILL.md" "unexecuted ideas" \
@@ -298,6 +327,11 @@ expected_ids = {
     "approved-spec-to-plan",
     "completion-claim",
     "architecture-completion-adr-backfill-check",
+    "plan-time-complexity-check-before-design",
+    "plan-time-complexity-check-before-plan",
+    "pre-edit-complexity-check-before-code",
+    "pre-edit-complexity-check-debugging-fix",
+    "minimal-sufficient-repair-not-local-patch",
     "core-file-complexity-delta-before-completion",
     "high-risk-merge-independent-review",
     "simple-completion-no-adr-ceremony",
@@ -362,6 +396,7 @@ required_skills = {
     "brainstorming",
     "writing-plans",
     "systematic-debugging",
+    "test-driven-development",
     "verification-before-completion",
     "long-task-continuation",
     "requesting-code-review",
@@ -384,6 +419,8 @@ required_contracts = {
     "brainstorming",
     "writing-plans",
     "systematic-debugging",
+    "test-driven-development",
+    "executing-plans",
     "verification-before-completion",
     "long-task-continuation",
 }
@@ -395,6 +432,8 @@ if "Confidence" not in contracts["verification-before-completion"]:
     raise SystemExit("verification compact contract must include Confidence")
 if "Complexity Delta" not in contracts["verification-before-completion"]:
     raise SystemExit("verification compact contract must include Complexity Delta")
+if "Complexity Governance Suggestion" not in contracts["verification-before-completion"]:
+    raise SystemExit("verification compact contract must include Complexity Governance Suggestion")
 if "Architecture Alignment" not in contracts["verification-before-completion"]:
     raise SystemExit("verification compact contract must include Architecture Alignment")
 if "ADR Backfill Check" not in contracts["verification-before-completion"]:
@@ -405,6 +444,15 @@ if "recording-architecture-decisions" not in contracts:
     raise SystemExit("compact output contracts must include recording-architecture-decisions")
 if "Layer Stop Card" not in contracts["systematic-debugging"]:
     raise SystemExit("systematic-debugging compact contract must include Layer Stop Card")
+if "Pre-Edit Complexity Check" not in contracts["systematic-debugging"]:
+    raise SystemExit("systematic-debugging compact contract must include Pre-Edit Complexity Check")
+if "Pre-Edit Complexity Check" not in contracts["test-driven-development"]:
+    raise SystemExit("test-driven-development compact contract must include Pre-Edit Complexity Check")
+if "Pre-Edit Complexity Check" not in contracts["executing-plans"]:
+    raise SystemExit("executing-plans compact contract must include Pre-Edit Complexity Check")
+for contract in ("brainstorming", "writing-plans"):
+    if "Plan-Time Complexity Check" not in contracts[contract]:
+        raise SystemExit(f"{contract} compact contract must include Plan-Time Complexity Check")
 for required in ("Decision Candidate", "ADR Gate", "ADR Action", "Owner Surface", "Baseline Sync", "Boundary"):
     if required not in contracts["recording-architecture-decisions"]:
         raise SystemExit(f"recording-architecture-decisions compact contract must include {required}")
@@ -486,6 +534,7 @@ if complexity_sample.get("expectedPrimarySkill") != "verification-before-complet
     raise SystemExit("core file complexity sample must use verification-before-completion")
 for required in (
     "skip-complexity-delta",
+    "skip-complexity-governance-suggestion",
     "ignore-file-crossing-800-lines",
     "retain-old-logic-without-retirement-trigger",
     "claim-completion-with-entropy-increase-hidden",
@@ -494,14 +543,54 @@ for required in (
         raise SystemExit(f"core file complexity sample must forbid {required}")
 for required_signal in (
     "complexity-delta",
+    "complexity-governance-suggestion",
     "file-thresholds",
     "net-entropy",
     "retirement-closure",
 ):
     if required_signal not in complexity_sample.get("verificationSignal", ""):
         raise SystemExit(f"core file complexity sample must require {required_signal}")
-if "complexity-delta" not in complexity_sample.get("expectedOutputShape", ""):
-    raise SystemExit("core file complexity sample must include complexity delta in output shape")
+for required_shape in ("complexity-delta", "governance-suggestion"):
+    if required_shape not in complexity_sample.get("expectedOutputShape", ""):
+        raise SystemExit(f"core file complexity sample must include {required_shape} in output shape")
+
+complexity_stage_samples = {
+    "plan-time-complexity-check-before-design": ("brainstorming", "plan-time-complexity-check"),
+    "plan-time-complexity-check-before-plan": ("writing-plans", "plan-time-complexity-check"),
+    "pre-edit-complexity-check-before-code": ("test-driven-development", "pre-edit-complexity-check"),
+    "pre-edit-complexity-check-debugging-fix": ("systematic-debugging", "pre-edit-complexity-check"),
+}
+for sample_id, (skill, signal) in complexity_stage_samples.items():
+    sample = by_id[sample_id]
+    if sample.get("expectedPrimarySkill") != skill:
+        raise SystemExit(f"{sample_id} must use {skill}")
+    if signal not in sample.get("expectedOutputShape", ""):
+        raise SystemExit(f"{sample_id} output shape must include {signal}")
+    if signal not in sample.get("verificationSignal", ""):
+        raise SystemExit(f"{sample_id} verification signal must include {signal}")
+    if "complexity-check" not in " ".join(sample.get("mustNotDo", [])):
+        raise SystemExit(f"{sample_id} must forbid skipping {signal}")
+
+minimal_repair_sample = by_id["minimal-sufficient-repair-not-local-patch"]
+if minimal_repair_sample.get("expectedPrimarySkill") != "systematic-debugging":
+    raise SystemExit("minimal sufficient repair sample must use systematic-debugging")
+for required in (
+    "equate-minimal-change-with-smallest-diff",
+    "add-fallback-without-owner-check",
+    "skip-minimality-check",
+    "skip-retirement-trigger",
+):
+    if required not in minimal_repair_sample.get("mustNotDo", []):
+        raise SystemExit(f"minimal sufficient repair sample must forbid {required}")
+for required_signal in (
+    "minimality-check",
+    "correct-owner",
+    "bug-class-fixed",
+    "retirement",
+    "verdict",
+):
+    if required_signal not in minimal_repair_sample.get("verificationSignal", ""):
+        raise SystemExit(f"minimal sufficient repair sample must require {required_signal}")
 
 product_lens_sample = by_id["strong-opinion-product-risk-lens"]
 if product_lens_sample.get("expectedPrimarySkill") != "brainstorming":

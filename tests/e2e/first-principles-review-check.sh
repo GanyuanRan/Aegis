@@ -72,6 +72,8 @@ assert_contains "$skill" "not a standalone workflow|Do not replace" \
     "skill is compositional rather than standalone"
 assert_contains "$skill" "First Principle|Non-negotiables|Assumptions to Drop|Smallest Sufficient Path|Escalation Signal" \
     "skill keeps a compact output shape"
+assert_contains "$skill" "Minimality Check|Correct owner|Bug class fixed|Verdict: sufficient repair \\| local patch \\| needs first-principles review" \
+    "skill can distinguish sufficient repair from local patch"
 assert_contains "$skill" "Decision Hygiene Review|first-principles invariants|Owner / retirement matrix|Falsification matrix" \
     "skill owns the decision hygiene escalation template"
 assert_contains "$skill" "Adopt / revise / reject / needs evidence|needs evidence" \

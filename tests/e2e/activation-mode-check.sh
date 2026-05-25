@@ -150,6 +150,14 @@ assert_contains "docs/README.trae.md" "AEGIS_ACTIVATION_MODE=explicit" \
     "Trae guide documents explicit activation caveat"
 assert_contains "docs/README.trae.md" "does not override Trae" \
     "Trae guide clarifies activation mode does not control native matcher"
+assert_contains "docs/README.openclaw.md" "AEGIS_ACTIVATION_MODE=explicit" \
+    "OpenClaw guide documents explicit activation caveat"
+assert_contains "docs/README.openclaw.md" "does not override OpenClaw" \
+    "OpenClaw guide clarifies activation mode does not control native matcher"
+assert_contains "docs/README.hermes-agent.md" "AEGIS_ACTIVATION_MODE=explicit" \
+    "Hermes Agent guide documents explicit activation caveat"
+assert_contains "docs/README.hermes-agent.md" "does not override Hermes Agent" \
+    "Hermes Agent guide clarifies activation mode does not control native matcher"
 assert_contains "README.md" "~/.config/aegis/config.toml" \
     "English README gives concise user-local config path"
 assert_contains "README.md" 'aegis-doctor\.py activation-mode explicit' \
