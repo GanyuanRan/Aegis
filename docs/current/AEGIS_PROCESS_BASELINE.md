@@ -155,7 +155,23 @@ A new file is not automatically lower complexity. Creating or splitting a file
 is only a better recommendation when the owner, contract, call path, and
 retirement story are clearer than adding in place.
 
-### 3.0c Strong-Opinion Review Lenses
+### 3.0c TDD Mode
+
+TDD Mode controls test-first discipline, not completion evidence.
+
+The two supported values are:
+
+- `auto`: Aegis chooses a `TDD Route` before implementation. The route is
+  `strict` for risky behavior work, `light` for tiny low-risk edits, and
+  `skipped` when TDD does not fit the task shape.
+- `off`: Aegis does not automatically require
+  `test-driven-development`. Explicit user/project TDD requests still apply,
+  and completion still requires `verification-before-completion`.
+
+TDD Mode is method-pack guidance only. It does not grant runtime authority,
+final completion authority, or permission to skip verification.
+
+### 3.0d Strong-Opinion Review Lenses
 
 Strong-Opinion Review Lenses are compact task-specific checks that make Aegis
 more decisive without turning the method pack into a roleplay system or runtime
@@ -186,7 +202,7 @@ These lenses are review structures, not persona commands. They do not grant
 merge approval, publish authorization, authoritative `GateDecision`, or
 completion authority.
 
-### 3.0d Minimal Sufficient Stable Repair
+### 3.0e Minimal Sufficient Stable Repair
 
 Minimum is measured by long-term system entropy, not changed line count. When a
 candidate repair adds a caller-side guard, fallback, adapter, compatibility
@@ -549,17 +565,21 @@ the preferred authority when they already own the truth.
 
 ### 12.5 Complexity Routing
 
-- **Low complexity**: concise intent + baseline check → TDD, no `work/` created
+- **Low complexity**: concise intent + baseline check → TDD Route +
+  verification, no `work/` created
 - **Medium complexity**: baseline read-set + Spec Brief or requirements + plan
-  + atomic tasks → TDD; create `work/` only when a process trail is needed
-- **High complexity**: Design Spec + plan + user confirmation → TDD, `work/`
-  created
+  + atomic tasks → TDD Route + verification; create `work/` only when a process
+  trail is needed
+- **High complexity**: Design Spec + plan + user confirmation → TDD Route +
+  verification, `work/` created
 
 Mid-stream complexity escalation: pause implementation, initialize workspace if
 missing, backfill required artifacts, then continue.
 
 TDD is the implementation discipline, not the first entry point for medium- or
-high-complexity tasks.
+high-complexity tasks. In `auto` mode, TDD Route decides strict, light, or
+skipped. In `off` mode, automatic TDD is disabled, but completion verification
+remains mandatory.
 
 ### 12.6 Workspace Integrity Checks
 

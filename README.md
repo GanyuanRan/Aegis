@@ -89,6 +89,17 @@ python scripts/aegis-doctor.py activation-mode explicit
 Restart the host after changing activation mode. Details and host caveats live
 in [docs/current/AEGIS_ACTIVATION_MODE.md](docs/current/AEGIS_ACTIVATION_MODE.md).
 
+TDD mode defaults to `auto`: Aegis chooses strict TDD only when risk warrants,
+uses light verification for tiny edits, and skips TDD where it does not fit. To
+disable automatic TDD routing without disabling completion verification:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py tdd-mode off
+```
+
+Details live in [docs/current/AEGIS_TDD_MODE.md](docs/current/AEGIS_TDD_MODE.md).
+
 ## Supported Hosts
 
 Aegis keeps a multi-host, plugin-installable distribution goal.
@@ -135,7 +146,7 @@ verify install/version visibility, host skill discovery, activation mode,
 
 Aegis routes work by complexity:
 
-- Low-complexity: concise intent, baseline check, implementation, verification.
+- Low-complexity: concise intent, baseline check, TDD Route, verification.
 - Medium-complexity: baseline read set, Spec Brief or stable requirements,
   writing plan, atomic tasks, verification.
 - High-complexity: Design Spec, plan, user review when required, then execution.

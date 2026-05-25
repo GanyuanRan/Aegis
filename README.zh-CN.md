@@ -87,6 +87,16 @@ python scripts/aegis-doctor.py activation-mode explicit
 修改后需要重启宿主。长期设置方式和宿主注意事项见
 [docs/current/AEGIS_ACTIVATION_MODE.md](docs/current/AEGIS_ACTIVATION_MODE.md)。
 
+TDD mode 默认是 `auto`：Aegis 会按风险自动选择严格 TDD、轻量验证，或在
+不适合 TDD 的任务中跳过 TDD。若只想关闭自动 TDD 路由，但仍保留完成前验证：
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py tdd-mode off
+```
+
+详细语义见 [docs/current/AEGIS_TDD_MODE.md](docs/current/AEGIS_TDD_MODE.md)。
+
 ## 宿主兼容性
 
 Aegis 保留多宿主、plugin-installable 的分发目标。
@@ -133,7 +143,7 @@ Aegis goal: 修复登录后偶发跳回登录页，不重写 auth 系统。
 
 Aegis 在实施前按复杂度路由：
 
-- 低复杂度：简短 intent、baseline check、实现、验证。
+- 低复杂度：简短 intent、baseline check、TDD Route、验证。
 - 中复杂度：baseline read set、Spec Brief 或稳定需求、writing plan、atomic tasks、验证。
 - 高复杂度：Design Spec、plan、必要时用户确认，然后执行。
 

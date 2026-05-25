@@ -44,6 +44,8 @@ JSON_OUT="$TMP_ROOT/doctor.json"
 HELPER_TEXT_OUT="$TMP_ROOT/helper-path.txt"
 ACTIVATION_TEXT_OUT="$TMP_ROOT/activation-mode.txt"
 ACTIVATION_JSON_OUT="$TMP_ROOT/activation-mode.json"
+TDD_TEXT_OUT="$TMP_ROOT/tdd-mode.txt"
+TDD_JSON_OUT="$TMP_ROOT/tdd-mode.json"
 PRESERVE_CONFIG_PATH="$TMP_ROOT/preserve-config.toml"
 
 DOCTOR="$REPO_ROOT/scripts/aegis-doctor.py"
@@ -61,6 +63,7 @@ assert_contains "$TEXT_OUT" "using-aegis-hot-path-current: ok" "doctor verifies 
 assert_contains "$TEXT_OUT" "Trigger health baseline:" "doctor text mode reports trigger health baseline"
 assert_contains "$TEXT_OUT" "Trigger health layers:" "doctor text mode reports trigger health layers"
 assert_contains "$CONFIG_PATH" "activation_mode = \"auto\"" "doctor writes activation mode"
+assert_contains "$CONFIG_PATH" "tdd_mode = \"auto\"" "doctor writes TDD mode"
 assert_contains "$CONFIG_PATH" "method_pack_root =" "doctor writes method-pack root"
 assert_contains "$CONFIG_PATH" "workspace_helper =" "doctor writes workspace support path"
 
@@ -70,15 +73,19 @@ assert_contains "$HELPER_TEXT_OUT" "--root <target-project-root>" "helper-path t
 
 cat >"$PRESERVE_CONFIG_PATH" <<'EOF'
 activation_mode = "explicit"
+tdd_mode = "off"
 EOF
 "${PYTHON_CMD[@]}" "$DOCTOR" --config "$PRESERVE_CONFIG_PATH" --write-config >/dev/null
 assert_contains "$PRESERVE_CONFIG_PATH" "activation_mode = \"explicit\"" \
     "doctor write-config preserves an existing explicit activation mode"
+assert_contains "$PRESERVE_CONFIG_PATH" "tdd_mode = \"off\"" \
+    "doctor write-config preserves an existing off TDD mode"
 
 "${PYTHON_CMD[@]}" "$DOCTOR" --config "$CONFIG_PATH" --json >"$JSON_OUT"
 assert_contains "$JSON_OUT" '"ok": true' "doctor JSON mode reports ok"
 assert_contains "$JSON_OUT" '"workspaceSupport": "available"' "doctor JSON mode reports workspace support"
 assert_contains "$JSON_OUT" '"configStatus": "configured"' "doctor JSON mode reports configured status"
+assert_contains "$JSON_OUT" '"tddMode": "auto"' "doctor JSON mode reports TDD mode"
 assert_contains "$JSON_OUT" '"triggerHealth": {' "doctor JSON mode reports trigger health block"
 assert_contains "$JSON_OUT" '"host discovery"' "doctor JSON mode reports host discovery trigger layer"
 assert_contains "$JSON_OUT" '"context pressure and re-entry"' "doctor JSON mode reports context-pressure trigger layer"
@@ -101,6 +108,25 @@ assert_contains "$ACTIVATION_JSON_OUT" '"activationMode": "auto"' "activation-mo
 assert_contains "$ACTIVATION_JSON_OUT" '"restartRequired": true' "activation-mode JSON reports restart boundary"
 assert_contains "$CONFIG_PATH" "activation_mode = \"auto\"" \
     "activation-mode command writes auto mode"
+assert_contains "$CONFIG_PATH" "tdd_mode = \"auto\"" \
+    "activation-mode command preserves TDD mode"
+
+"${PYTHON_CMD[@]}" "$DOCTOR" tdd-mode off --config "$CONFIG_PATH" >"$TDD_TEXT_OUT"
+assert_contains "$TDD_TEXT_OUT" "Aegis TDD mode set to off" \
+    "tdd-mode text command sets off mode"
+assert_contains "$TDD_TEXT_OUT" "verification-before-completion still applies" \
+    "tdd-mode text command preserves completion verification boundary"
+assert_contains "$CONFIG_PATH" "tdd_mode = \"off\"" \
+    "tdd-mode command writes off mode"
+assert_contains "$CONFIG_PATH" "activation_mode = \"auto\"" \
+    "tdd-mode command preserves activation mode"
+
+"${PYTHON_CMD[@]}" "$DOCTOR" tdd-mode auto --config "$CONFIG_PATH" --json >"$TDD_JSON_OUT"
+assert_contains "$TDD_JSON_OUT" '"ok": true' "tdd-mode JSON reports ok"
+assert_contains "$TDD_JSON_OUT" '"tddMode": "auto"' "tdd-mode JSON reports auto mode"
+assert_contains "$TDD_JSON_OUT" '"restartRequired": true' "tdd-mode JSON reports restart boundary"
+assert_contains "$CONFIG_PATH" "tdd_mode = \"auto\"" \
+    "tdd-mode command writes auto mode"
 
 if [[ -e "$REPO_ROOT/docs/aegis" ]]; then
     fail "doctor must not create docs/aegis in the Aegis method-pack repository"

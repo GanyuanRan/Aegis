@@ -54,6 +54,7 @@ baseline="docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md"
 current_index="docs/current/README.md"
 process_doc="docs/current/AEGIS_PROCESS_BASELINE.md"
 trigger_doc="docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md"
+tdd_mode_doc="docs/current/AEGIS_TDD_MODE.md"
 readme_en="README.md"
 readme_zh="README.zh-CN.md"
 matrix="tests/e2e/fixtures/workflow-quality-matrix.json"
@@ -72,8 +73,17 @@ fi
 
 assert_contains "$current_index" "AEGIS_WORKFLOW_QUALITY_BASELINE.md" \
     "current docs index lists workflow quality baseline"
+assert_contains "$current_index" "AEGIS_TDD_MODE.md" \
+    "current docs index lists TDD mode baseline"
+if [[ -f "$tdd_mode_doc" ]]; then
+    pass "TDD mode baseline exists"
+else
+    fail "TDD mode baseline exists"
+fi
 assert_contains "$process_doc" "Workflow Quality" \
     "process baseline references workflow quality"
+assert_contains "$process_doc" "TDD Mode" \
+    "process baseline references TDD mode"
 assert_contains "$process_doc" "Complexity Delta" \
     "process baseline defines completion-time complexity delta"
 assert_contains "$process_doc" "Plan-Time Complexity Check" \
@@ -106,12 +116,34 @@ for dimension in \
     "Authority Boundary" \
     "Three-Stage Complexity Governance" \
     "Completion-Time Complexity Delta" \
+    "TDD Route Mode" \
     "Strong-Opinion Review Lenses"; do
     assert_contains "$baseline" "$dimension" "baseline defines $dimension"
 done
 
+assert_contains "$tdd_mode_doc" 'tdd_mode = "auto"' \
+    "TDD mode doc defines auto config"
+assert_contains "$tdd_mode_doc" 'tdd_mode = "off"' \
+    "TDD mode doc defines off config"
+assert_contains "$tdd_mode_doc" "strict.*light.*skipped|strict.*skipped.*light|strict.*\`light\`.*skipped" \
+    "TDD mode doc defines strict light skipped route"
+assert_contains "$tdd_mode_doc" "verification-before-completion" \
+    "TDD mode doc preserves completion verification"
+assert_contains "$tdd_mode_doc" "AEGIS_TDD_MODE" \
+    "TDD mode doc names environment override"
+assert_contains "$tdd_mode_doc" 'aegis-doctor\.py tdd-mode off' \
+    "TDD mode doc documents doctor off command"
+assert_contains "$tdd_mode_doc" 'aegis-doctor\.py tdd-mode auto' \
+    "TDD mode doc documents doctor auto command"
+
 assert_contains "$baseline" "Plan-Time Complexity Check" \
     "workflow quality baseline includes plan-time complexity check"
+assert_contains "$baseline" "TDD Route" \
+    "workflow quality baseline includes TDD route"
+assert_contains "$baseline" "auto.*strict.*light.*skipped|strict.*light.*skipped" \
+    "workflow quality baseline includes auto TDD routing"
+assert_contains "$baseline" "off.*verification-before-completion|verification-before-completion.*off" \
+    "workflow quality baseline keeps completion verification on when TDD mode is off"
 assert_contains "$baseline" "Pre-Edit Complexity Check" \
     "workflow quality baseline includes pre-edit complexity check"
 assert_contains "$baseline" "Complexity Governance Suggestion" \
@@ -184,6 +216,14 @@ assert_contains "skills/writing-plans/SKILL.md" "owner / contract / retirement" 
     "writing-plans pressure-tests owner contract retirement risk"
 assert_contains "skills/test-driven-development/SKILL.md" "Pre-Edit Complexity Check" \
     "test-driven-development includes pre-edit complexity check"
+assert_contains "skills/test-driven-development/SKILL.md" "TDD Mode" \
+    "test-driven-development includes TDD mode"
+assert_contains "skills/test-driven-development/SKILL.md" "TDD Route" \
+    "test-driven-development includes TDD route"
+assert_contains "skills/test-driven-development/SKILL.md" "strict.*light.*skipped|strict.*skipped.*light" \
+    "test-driven-development defines strict light skipped route"
+assert_contains "skills/test-driven-development/SKILL.md" "verification-before-completion" \
+    "test-driven-development keeps completion verification independent of TDD mode"
 assert_contains "skills/test-driven-development/SKILL.md" "pause for plan update" \
     "test-driven-development can pause for plan update when complexity risk appears"
 assert_contains "skills/systematic-debugging/SKILL.md" "Quick bug lane" \
@@ -331,6 +371,9 @@ expected_ids = {
     "plan-time-complexity-check-before-plan",
     "pre-edit-complexity-check-before-code",
     "pre-edit-complexity-check-debugging-fix",
+    "tdd-auto-small-task-light-verification",
+    "tdd-auto-risky-code-strict",
+    "tdd-off-no-automatic-tdd",
     "minimal-sufficient-repair-not-local-patch",
     "core-file-complexity-delta-before-completion",
     "high-risk-merge-independent-review",
@@ -448,6 +491,8 @@ if "Pre-Edit Complexity Check" not in contracts["systematic-debugging"]:
     raise SystemExit("systematic-debugging compact contract must include Pre-Edit Complexity Check")
 if "Pre-Edit Complexity Check" not in contracts["test-driven-development"]:
     raise SystemExit("test-driven-development compact contract must include Pre-Edit Complexity Check")
+if "TDD Route" not in contracts["test-driven-development"]:
+    raise SystemExit("test-driven-development compact contract must include TDD Route")
 if "Pre-Edit Complexity Check" not in contracts["executing-plans"]:
     raise SystemExit("executing-plans compact contract must include Pre-Edit Complexity Check")
 for contract in ("brainstorming", "writing-plans"):
@@ -570,6 +615,45 @@ for sample_id, (skill, signal) in complexity_stage_samples.items():
         raise SystemExit(f"{sample_id} verification signal must include {signal}")
     if "complexity-check" not in " ".join(sample.get("mustNotDo", [])):
         raise SystemExit(f"{sample_id} must forbid skipping {signal}")
+
+tdd_auto_small = by_id["tdd-auto-small-task-light-verification"]
+if tdd_auto_small.get("expectedPrimarySkill") is not None:
+    raise SystemExit("AUTO small-task TDD sample must stay fast path")
+for required in (
+    "force-red-green-refactor",
+    "load-test-driven-development-for-tiny-edit",
+    "skip-verification-before-completion",
+):
+    if required not in tdd_auto_small.get("mustNotDo", []):
+        raise SystemExit(f"AUTO small-task TDD sample must forbid {required}")
+if "tdd-route-auto-light-or-skipped" not in tdd_auto_small.get("verificationSignal", ""):
+    raise SystemExit("AUTO small-task TDD sample must require light or skipped route signal")
+
+tdd_auto_risky = by_id["tdd-auto-risky-code-strict"]
+if tdd_auto_risky.get("expectedPrimarySkill") != "test-driven-development":
+    raise SystemExit("AUTO risky-code TDD sample must use test-driven-development")
+for required in (
+    "skip-strict-tdd-route",
+    "write-production-code-before-failing-test",
+    "skip-producer-consumer-regression",
+):
+    if required not in tdd_auto_risky.get("mustNotDo", []):
+        raise SystemExit(f"AUTO risky-code TDD sample must forbid {required}")
+if "tdd-route-auto-strict" not in tdd_auto_risky.get("verificationSignal", ""):
+    raise SystemExit("AUTO risky-code TDD sample must require strict route signal")
+
+tdd_off = by_id["tdd-off-no-automatic-tdd"]
+if tdd_off.get("expectedPrimarySkill") is not None:
+    raise SystemExit("OFF TDD sample must not auto-trigger a primary TDD skill")
+for required in (
+    "auto-trigger-tdd",
+    "treat-off-as-skip-verification",
+    "skip-verification-before-completion",
+):
+    if required not in tdd_off.get("mustNotDo", []):
+        raise SystemExit(f"OFF TDD sample must forbid {required}")
+if "fresh-completion-evidence" not in tdd_off.get("verificationSignal", ""):
+    raise SystemExit("OFF TDD sample must still require completion evidence")
 
 minimal_repair_sample = by_id["minimal-sufficient-repair-not-local-patch"]
 if minimal_repair_sample.get("expectedPrimarySkill") != "systematic-debugging":

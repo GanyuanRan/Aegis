@@ -55,6 +55,7 @@ The public current set is:
 - `docs/current/AEGIS_WORKFLOW_GUIDE.md`
 - `docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md`
 - `docs/current/AEGIS_ACTIVATION_MODE.md`
+- `docs/current/AEGIS_TDD_MODE.md`
 - `docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md`
 - `docs/current/AEGIS_RULE_LAYERING.md`
 - `docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md`
@@ -89,6 +90,9 @@ The public current set is:
 
 `AEGIS_ACTIVATION_MODE.md`
 : `auto` and `explicit` activation mode semantics.
+
+`AEGIS_TDD_MODE.md`
+: `auto` and `off` TDD mode semantics for automatic test-first routing.
 
 `AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md`
 : Bounded context intake, evidence indexing, and log/output hygiene.

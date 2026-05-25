@@ -16,6 +16,7 @@ This document is not responsible for answering the following questions:
 
 - Final policy enforcement of a future runtime core
 - Per-host internal token budget implementation
+- Automatic TDD strictness; see `docs/current/AEGIS_TDD_MODE.md`
 - Whether the host-native skill matcher still auto-matches a skill when bootstrap is not injected
 
 ---

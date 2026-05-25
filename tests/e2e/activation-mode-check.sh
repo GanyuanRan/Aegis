@@ -45,6 +45,7 @@ echo "=== Activation Mode Check ==="
 session_hook="hooks/session-start"
 opencode_plugin=".opencode/plugins/aegis.js"
 activation_doc="docs/current/AEGIS_ACTIVATION_MODE.md"
+tdd_mode_doc="docs/current/AEGIS_TDD_MODE.md"
 
 assert_contains "$activation_doc" "AEGIS_ACTIVATION_MODE" \
     "activation mode canonical doc names the environment variable"
@@ -71,6 +72,8 @@ assert_contains "$activation_doc" 'restart|new host session|重新.*宿主|新�
 
 assert_contains "$session_hook" "AEGIS_ACTIVATION_MODE" \
     "session hook reads activation mode"
+assert_contains "$session_hook" "AEGIS_TDD_MODE" \
+    "session hook reads TDD mode"
 assert_contains "$session_hook" "explicit" \
     "session hook handles explicit activation mode"
 if [[ -x "$session_hook" ]]; then
@@ -84,6 +87,8 @@ fi
 
 assert_contains "$opencode_plugin" "AEGIS_ACTIVATION_MODE" \
     "OpenCode plugin reads activation mode"
+assert_contains "$opencode_plugin" "AEGIS_TDD_MODE" \
+    "OpenCode plugin reads TDD mode"
 assert_contains "$opencode_plugin" "explicit" \
     "OpenCode plugin handles explicit activation mode"
 
@@ -92,6 +97,18 @@ if printf '%s' "$hook_auto_output" | grep -q "You have Aegis"; then
     pass "session hook auto mode injects bootstrap by default"
 else
     fail "session hook auto mode injects bootstrap by default"
+fi
+if printf '%s' "$hook_auto_output" | grep -q "Aegis TDD mode: auto"; then
+    pass "session hook auto mode reports default TDD mode"
+else
+    fail "session hook auto mode reports default TDD mode"
+fi
+
+hook_tdd_off_output="$(AEGIS_TDD_MODE=off "$session_hook")"
+if printf '%s' "$hook_tdd_off_output" | grep -q "Aegis TDD mode: off"; then
+    pass "session hook environment variable overrides TDD mode"
+else
+    fail "session hook environment variable overrides TDD mode"
 fi
 
 hook_explicit_output="$(AEGIS_ACTIVATION_MODE=explicit "$session_hook")"
@@ -109,6 +126,7 @@ trap 'rm -rf "$tmp_home"' EXIT
 mkdir -p "$tmp_home/.config/aegis"
 cat > "$tmp_home/.config/aegis/config.toml" <<'EOF'
 activation_mode = "explicit"
+tdd_mode = "off"
 EOF
 
 hook_config_output="$(HOME="$tmp_home" "$session_hook")"
@@ -121,6 +139,20 @@ if printf '%s' "$hook_env_override_output" | grep -q "You have Aegis"; then
 else
     fail "session hook environment variable overrides user-local config"
 fi
+if printf '%s' "$hook_env_override_output" | grep -q "Aegis TDD mode: off"; then
+    pass "session hook reads TDD mode from user-local config"
+else
+    fail "session hook reads TDD mode from user-local config"
+fi
+
+assert_contains "$tdd_mode_doc" "AEGIS_TDD_MODE" \
+    "TDD mode canonical doc names the environment variable"
+assert_contains "$tdd_mode_doc" 'tdd_mode = "off"' \
+    "TDD mode canonical doc shows off config value"
+assert_contains "$tdd_mode_doc" 'aegis-doctor\.py tdd-mode off' \
+    "TDD mode canonical doc documents doctor off command"
+assert_contains "$tdd_mode_doc" 'restart|new host session|重新.*宿主|新会话' \
+    "TDD mode canonical doc states command changes need restart or new session"
 
 assert_contains "docs/README.opencode.md" "AEGIS_ACTIVATION_MODE=explicit" \
     "OpenCode guide documents explicit activation mode"

@@ -9,6 +9,7 @@
     "workspace-laziness",
     "authority-boundary",
     "three-stage-complexity-governance",
+    "tdd-route-mode",
     "strong-opinion-review-lenses"
   ],
   "samples": [
@@ -165,6 +166,39 @@
       "workspacePolicy": "workspace-if-medium-risk-or-plan-update-needed",
       "expectedArtifacts": ["EvidenceBundleDraft"],
       "verificationSignal": "pre-edit-complexity-check-canonical-owner-existing-pressure-signal-safer-edit-boundary-decision"
+    },
+    {
+      "id": "tdd-auto-small-task-light-verification",
+      "prompt": "TDD mode is auto. Fix a tiny README typo and keep the task lightweight.",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": ["verification-before-completion"],
+      "mustNotDo": ["force-red-green-refactor", "load-test-driven-development-for-tiny-edit", "skip-verification-before-completion", "create-project-workspace-records"],
+      "expectedOutputShape": "fast-path-with-tdd-route-light-or-skipped-and-short-verification",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "tdd-route-auto-light-or-skipped-fresh-evidence"
+    },
+    {
+      "id": "tdd-auto-risky-code-strict",
+      "prompt": "TDD mode is auto. Implement a risky shared-module behavior fix that changes a contract between producer and consumer.",
+      "expectedPrimarySkill": "test-driven-development",
+      "allowedSecondarySkills": ["writing-plans", "systematic-debugging", "verification-before-completion"],
+      "mustNotDo": ["skip-strict-tdd-route", "write-production-code-before-failing-test", "skip-producer-consumer-regression", "treat-auto-as-off"],
+      "expectedOutputShape": "tdd-route-strict-plus-preflight-pre-edit-complexity-red-green-refactor",
+      "workspacePolicy": "workspace-if-medium-risk-or-plan-update-needed",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "tdd-route-auto-strict-failing-test-first-producer-consumer-regression"
+    },
+    {
+      "id": "tdd-off-no-automatic-tdd",
+      "prompt": "TDD mode is off. Make a small implementation edit and verify it, but do not automatically force TDD unless I explicitly ask for it.",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": ["verification-before-completion"],
+      "mustNotDo": ["auto-trigger-tdd", "treat-off-as-skip-verification", "skip-verification-before-completion", "delete-tests-because-tdd-is-off"],
+      "expectedOutputShape": "implementation-with-tdd-route-off-and-evidence-card",
+      "workspacePolicy": "no-workspace-unless-risk-escalates",
+      "expectedArtifacts": [],
+      "verificationSignal": "tdd-route-off-no-automatic-tdd-fresh-completion-evidence"
     },
     {
       "id": "minimal-sufficient-repair-not-local-patch",
@@ -436,7 +470,7 @@
     "brainstorming": ["TaskIntentDraft", "BaselineReadSetHint", "ImpactStatementDraft", "Product Risk Lens", "Plan-Time Complexity Check", "Options", "Decision Needed"],
     "writing-plans": ["Plan Basis", "Files", "Compatibility", "Plan Pressure Test", "Plan-Time Complexity Check", "Tasks", "Risks", "Retirement"],
     "systematic-debugging": ["Symptom", "Reproduction", "Root Cause", "Layer Stop Card", "Fix Boundary", "Pre-Edit Complexity Check", "Verification"],
-    "test-driven-development": ["Preflight Gate", "Pre-Edit Complexity Check", "RED", "GREEN", "REFACTOR", "Regression Scope"],
+    "test-driven-development": ["TDD Route", "Preflight Gate", "Pre-Edit Complexity Check", "RED", "GREEN", "REFACTOR", "Regression Scope"],
     "requesting-code-review": ["Findings First", "Evidence Review", "Baseline / Current Authority", "Compatibility / Retirement", "Review Readiness"],
     "recording-architecture-decisions": ["Decision Candidate", "ADR Gate", "Retro / Memory Filter", "ADR Action", "Owner Surface", "Baseline Sync", "Boundary"],
     "verification-before-completion": ["Command / Check", "Exit Status", "Covered", "Not Covered", "Residual Risk", "Confidence", "Goal status", "Success evidence", "Stop state", "Readiness Summary", "Complexity Delta", "Complexity Governance Suggestion", "Architecture Alignment", "ADR Backfill Check", "Retirement Closure"],

@@ -77,6 +77,7 @@ class WorkspaceTextWriteCompatibilityTests(unittest.TestCase):
 
             text = config.read_text(encoding="utf-8")
             self.assertIn('activation_mode = "auto"', text)
+            self.assertIn('tdd_mode = "auto"', text)
             self.assertIn("method_pack_root =", text)
             self.assertIn("workspace_helper =", text)
 

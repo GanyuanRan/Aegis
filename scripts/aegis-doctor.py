@@ -98,15 +98,31 @@ def normalized_activation_mode(value: str | None) -> str:
     return value if value in {"auto", "explicit"} else "auto"
 
 
+def normalized_tdd_mode(value: str | None) -> str:
+    return value if value in {"auto", "off"} else "auto"
+
+
 def existing_activation_mode(path: Path) -> str:
     return normalized_activation_mode(read_config(path).get("activation_mode"))
 
 
-def write_config(path: Path, root: Path, helper: Path, activation_mode: str | None = None) -> None:
+def existing_tdd_mode(path: Path) -> str:
+    return normalized_tdd_mode(read_config(path).get("tdd_mode"))
+
+
+def write_config(
+    path: Path,
+    root: Path,
+    helper: Path,
+    activation_mode: str | None = None,
+    tdd_mode: str | None = None,
+) -> None:
     mode = normalized_activation_mode(activation_mode or existing_activation_mode(path))
+    tdd = normalized_tdd_mode(tdd_mode or existing_tdd_mode(path))
     content = (
         "# Aegis user-local configuration\n"
         f"activation_mode = {toml_string(mode)}\n"
+        f"tdd_mode = {toml_string(tdd)}\n"
         f"method_pack_root = {toml_string(root.as_posix())}\n"
         f"workspace_helper = {toml_string(helper.as_posix())}\n"
     )
@@ -117,8 +133,10 @@ def config_status(path: Path, root: Path, helper: Path) -> str:
     config = read_config(path)
     if not config:
         return "missing"
+    tdd_value = config.get("tdd_mode")
     if (
         config.get("activation_mode") in {"auto", "explicit"}
+        and (tdd_value is None or tdd_value in {"auto", "off"})
         and Path(config.get("method_pack_root", "")).expanduser() == root
         and Path(config.get("workspace_helper", "")).expanduser() == helper
     ):
@@ -194,6 +212,31 @@ def activation_mode_result(args: argparse.Namespace) -> dict[str, object]:
         "note": (
             "Activation mode is read by host bootstrap/profile setup. "
             "Restart or start a new host session for the change to take effect."
+        ),
+    }
+
+
+def tdd_mode_result(args: argparse.Namespace) -> dict[str, object]:
+    root = method_pack_root()
+    helper = root / "scripts" / "aegis-workspace.py"
+    config_path = Path(args.config).expanduser() if args.config else default_config_path()
+    mode = normalized_tdd_mode(args.mode)
+    if args.mode != mode:
+        raise DoctorError("tdd-mode requires one of: auto, off")
+    if not helper.is_file():
+        raise DoctorError(f"Aegis workspace helper unavailable: {helper}")
+    write_config(config_path, root, helper, tdd_mode=mode)
+    return {
+        "ok": True,
+        "command": "tdd-mode",
+        "tddMode": mode,
+        "configPath": config_path.as_posix(),
+        "methodPackRoot": root.as_posix(),
+        "workspaceHelper": helper.as_posix(),
+        "restartRequired": True,
+        "note": (
+            "TDD mode controls automatic test-first discipline only; "
+            "verification-before-completion still applies."
         ),
     }
 
@@ -319,6 +362,7 @@ def perform_check(args: argparse.Namespace) -> dict[str, object]:
         "workspaceSupport": "available",
         "configPath": config_path.as_posix(),
         "configStatus": status,
+        "tddMode": existing_tdd_mode(config_path),
         "triggerHealth": {
             "baseline": (root / "docs" / "current" / "AEGIS_TRIGGER_HEALTH_BASELINE.md").as_posix(),
             "layers": list(TRIGGER_HEALTH_LAYERS),
@@ -344,10 +388,18 @@ def print_text(result: dict[str, object]) -> None:
         print("Restart or start a new host session for the change to take effect.")
         return
 
+    if result.get("command") == "tdd-mode":
+        print(f"Aegis TDD mode set to {result['tddMode']}.")
+        print(f"Config path: {result['configPath']}")
+        print("Restart or start a new host session for the change to take effect.")
+        print("TDD mode controls automatic test-first discipline; verification-before-completion still applies.")
+        return
+
     print("Aegis doctor check passed.")
     print(f"Method pack root: {result['methodPackRoot']}")
     print(f"Project workspace support: {result['workspaceSupport']}")
     print(f"Config status: {result['configStatus']} ({result['configPath']})")
+    print(f"TDD mode: {result['tddMode']}")
     trigger_health = result.get("triggerHealth", {})
     if isinstance(trigger_health, dict):
         print(f"Trigger health baseline: {trigger_health.get('baseline')}")
@@ -364,11 +416,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "command",
         nargs="?",
-        choices=("check", "helper-path", "activation-mode"),
+        choices=("check", "helper-path", "activation-mode", "tdd-mode"),
         default="check",
         help="command to run; default is check",
     )
-    parser.add_argument("mode", nargs="?", help="activation mode for the activation-mode command")
+    parser.add_argument("mode", nargs="?", help="mode for activation-mode or tdd-mode commands")
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     parser.add_argument("--config", help="config path; defaults to ~/.config/aegis/config.toml")
     parser.add_argument(
@@ -389,13 +441,15 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.command == "helper-path":
             if args.mode:
-                raise DoctorError("mode is only valid with the activation-mode command")
+                raise DoctorError("mode is only valid with activation-mode or tdd-mode commands")
             result = helper_path_result(args)
         elif args.command == "activation-mode":
             result = activation_mode_result(args)
+        elif args.command == "tdd-mode":
+            result = tdd_mode_result(args)
         else:
             if args.mode:
-                raise DoctorError("mode is only valid with the activation-mode command")
+                raise DoctorError("mode is only valid with activation-mode or tdd-mode commands")
             result = perform_check(args)
     except DoctorError as exc:
         failure = {"ok": False, "error": str(exc)}

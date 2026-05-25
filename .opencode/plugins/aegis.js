@@ -101,6 +101,27 @@ const readConfigActivationMode = (homeDir) => {
 
 const activationMode = (homeDir) => process.env.AEGIS_ACTIVATION_MODE || readConfigActivationMode(homeDir);
 
+const readConfigTddMode = (homeDir) => {
+  const configPath = path.join(homeDir, '.config/aegis/config.toml');
+  if (!fs.existsSync(configPath)) return 'auto';
+
+  const content = fs.readFileSync(configPath, 'utf8');
+  const lines = content.split(/\r?\n/);
+  let configured = null;
+
+  for (const line of lines) {
+    const match = line.match(/^\s*tdd_mode\s*=\s*([^#]+)/);
+    if (match) configured = match[1].trim().replace(/^["']|["']$/g, '');
+  }
+
+  return configured === 'off' || configured === 'auto' ? configured : 'auto';
+};
+
+const tddMode = (homeDir) => {
+  const configured = process.env.AEGIS_TDD_MODE || readConfigTddMode(homeDir);
+  return configured === 'off' || configured === 'auto' ? configured : 'auto';
+};
+
 export const AegisPlugin = async ({ client, directory }) => {
   const homeDir = os.homedir();
   const aegisSkillsDir = path.resolve(__dirname, '../../skills');
@@ -133,6 +154,8 @@ Use OpenCode's native \`skill\` tool to list and load skills.`;
 
     return `<EXTREMELY_IMPORTANT>
 You have Aegis.
+
+Aegis TDD mode: ${tddMode(homeDir)}. auto routes strict TDD only when risk warrants; off disables automatic TDD, but verification-before-completion still applies.
 
 **IMPORTANT: The compact using-aegis hot path is included below. For task-specific workflows, use OpenCode's native \`skill\` tool to load only the relevant skill or reference.**
 

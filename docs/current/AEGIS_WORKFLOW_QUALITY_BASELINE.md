@@ -34,6 +34,7 @@ Workflow hardening must optimize for:
 4. fresher verification evidence
 5. more stable draft / hint / projection artifacts
 6. clearer diagnostic stop points for debugging work
+7. TDD strictness that scales by task risk instead of burdening every edit
 
 The stable path is sample-driven hardening:
 
@@ -75,6 +76,7 @@ Pass criteria:
   path
 - low-complexity tasks can proceed with concise intent, baseline check, and
   verification
+- TDD Route may be light or skipped for tiny low-risk work in `auto` mode
 
 ### 3.3 Output Compactness
 
@@ -182,7 +184,24 @@ Pass criteria:
 - complexity movement is paired with a governance suggestion when follow-up is
   useful
 
-### 3.11 Diagnostic Stop Transparency
+### 3.11 TDD Route Mode
+
+TDD Mode should make test-first discipline adaptive without weakening
+completion evidence.
+
+Pass criteria:
+
+- `auto` mode chooses a `TDD Route`: `strict`, `light`, or `skipped`
+- `strict` is used for behavior, bugfix, contract, shared/core, producer /
+  consumer, persistence, permission, migration, or meaningful regression risk
+- `light` or `skipped` may be used for tiny low-risk edits, read-only tasks,
+  docs-only changes, generated files, throwaway spikes, or environment-bound
+  work where TDD does not fit
+- `off` disables automatic TDD routing, but does not disable
+  `verification-before-completion`
+- explicit user/project TDD requests still apply in `off` mode
+
+### 3.12 Diagnostic Stop Transparency
 
 Debugging workflows should make the diagnostic stop point visible when the
 root-cause layer affects the fix boundary, contract owner, or spec/product
@@ -200,7 +219,7 @@ Pass criteria:
 - the card remains advisory method-pack output, not a `GateDecision`,
   `PolicySnapshot`, or completion authority
 
-### 3.12 Strong-Opinion Review Lenses
+### 3.13 Strong-Opinion Review Lenses
 
 High-value workflows should be opinionated enough to catch bad direction early
 without turning Aegis into a roleplay system, approval board, or runtime gate.
@@ -356,6 +375,28 @@ required. Use `Layer Stop Card` when the diagnostic stop point is ambiguous,
 crosses a boundary, reaches L5/L6/L7, or is corrected by a user-provided
 falsifier. Do not use it for simple factual Q&A or tiny fast-path responses.
 
+### 4.4a `test-driven-development`
+
+Purpose:
+
+- apply strict TDD only when the TDD Route calls for it
+
+Compact contract:
+
+```text
+TDD Route: mode, decision, reason, verification
+Preflight Gate: low | route-to-plan | route-to-spec
+Pre-Edit Complexity Check: target edit file, pressure signal, safer boundary, decision
+RED: failing test or reason strict TDD does not fit
+GREEN: minimal code and passing target test
+REFACTOR: cleanup with tests still green
+Regression Scope: target, related, producer/consumer, manual fallback
+```
+
+In `auto` mode, strict/light/skipped route decisions scale with risk. In `off`
+mode, do not automatically require TDD, but `verification-before-completion`
+still requires fresh completion evidence.
+
 ### 4.5 `requesting-code-review`
 
 Purpose:
@@ -442,6 +483,9 @@ If evidence is incomplete, the claim must be downgraded.
 
 A `Readiness Summary` can organize release or handoff evidence, but it is not
 authorization to commit, tag, publish, merge, or release.
+
+TDD Mode `off` does not reduce this contract. Completion claims still require
+fresh verification evidence.
 
 Goal Closure:
 

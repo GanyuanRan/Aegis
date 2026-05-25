@@ -5,12 +5,13 @@ description: Use when implementing any feature or bugfix, before writing impleme
 
 # Execute
 
-→ Implementing a feature or bugfix? → **No production code without a failing test first.**
+→ Implementing a feature or bugfix under TDD Route `strict`? → **No production code without a failing test first.**
   Gate: medium/high complexity? → route to brainstorming or writing-plans first.
+  Mode: `auto` chooses strict/light/skipped by risk; `off` disables automatic TDD, not completion verification.
   Cycle: RED (write test → watch it fail) → GREEN (minimal code → watch it pass) → REFACTOR (clean up → keep green)
   Regression: shared module → related tests. contract change → producer + consumer. core logic → old + new tests.
   Ripple signal hit → cover producer+consumer or real user path before claiming green.
-→ Done when: all tests pass, every new function has a test that failed first, TDD preflight gate passed, and pre-edit complexity risk was checked when source edits were non-trivial.
+→ Done when: chosen TDD Route is recorded, strict-route tests pass, TDD preflight gate passed when applicable, pre-edit complexity risk was checked for non-trivial source edits, and `verification-before-completion` has fresh evidence.
 
 # Test-Driven Development (TDD)
 
@@ -20,11 +21,37 @@ Write the test first. Watch it fail. Write minimal code to pass.
 
 If you didn't watch the test fail, you don't know if it tests the right thing.
 
+TDD Mode has two values: `auto` and `off`. `auto` lets Aegis choose a
+`TDD Route`; `off` disables automatic TDD routing but never disables
+`verification-before-completion`.
+
 ## When to Use
 
 New features, bug fixes, refactoring, behavior/logic changes, interface/data contract changes, cross-module or shared module changes, core logic refactors.
 
 Exceptions (ask your human partner): throwaway prototypes, generated code, config files, pure docs cleanup, read-only diagnosis, comment-only changes.
+
+## TDD Mode and Route
+
+Before source edits, decide:
+
+```text
+TDD Route:
+- Mode: auto | off
+- Decision: strict | light | skipped
+- Reason:
+- Verification:
+```
+
+In `auto`, use `strict` for behavior, bugfix, contract, shared/core, producer /
+consumer, persistence, permission, migration, or meaningful regression risk.
+Use `light` for tiny low-risk edits with an obvious readback or command check.
+Use `skipped` for read-only, docs-only, generated, throwaway, comment-only, or
+environment-bound work where TDD does not fit.
+
+In `off`, do not automatically require TDD. Explicit user/project TDD requests
+still apply, and risky work may still justify recommending strict TDD.
+`verification-before-completion` still applies before any completion claim.
 
 ## Preflight Gate
 

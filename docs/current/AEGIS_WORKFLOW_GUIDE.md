@@ -55,7 +55,7 @@ startup routing
   -> problem definition
   -> investigation and approach decision
   -> plan and minimal slices
-  -> TDD / implementation
+  -> TDD Route / implementation
   -> verification and regression
   -> reflection and QA closure
   -> output facts, evidence, impact scope, and residual risk
@@ -96,7 +96,7 @@ Route from the goal frame by signal:
 
 | Goal signal | Route |
 | --- | --- |
-| single-owner, low-risk, clear verification | fast path or `test-driven-development` |
+| single-owner, low-risk, clear verification | fast path or TDD Route `light` / `skipped` |
 | bug, failure, regression, unexpected behavior | `systematic-debugging` |
 | ambiguous product, architecture, contract, cross-module behavior | `brainstorming` |
 | approved spec, stable requirements, implementation slicing | `writing-plans` |
@@ -299,6 +299,14 @@ slice. Do not add new branches without explaining the old branches.
 
 TDD is the implementation discipline. It is not the first entry point for every
 complex task.
+
+TDD Mode has two values:
+
+- `auto`: choose TDD Route `strict`, `light`, or `skipped` by task risk
+- `off`: do not automatically require TDD; explicit TDD requests still apply
+
+TDD Mode controls test-first discipline, not completion evidence.
+`verification-before-completion` still applies in both modes.
 
 Before implementation, confirm:
 

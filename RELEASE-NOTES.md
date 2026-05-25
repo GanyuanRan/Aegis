@@ -1,5 +1,58 @@
 # Aegis Release Notes
 
+## v1.7.0 (2026-05-25)
+
+### Adaptive TDD Mode
+
+- Added `TDD Mode` with two user-facing modes: `auto` and `off`.
+- In `auto`, Aegis now routes implementation through a `TDD Route`:
+  `strict` for risky behavior or contract work, `light` for tiny low-risk
+  edits, and `skipped` when TDD does not fit the task shape.
+- In `off`, Aegis disables automatic TDD routing while preserving explicit
+  user/project TDD requests and `verification-before-completion`.
+- Added `docs/current/AEGIS_TDD_MODE.md` and updated the process baseline,
+  workflow guides, workflow quality baseline, and README guidance to clarify
+  that TDD Mode controls test-first discipline, not completion evidence.
+
+### Configuration And Host Bootstrap
+
+- Extended `scripts/aegis-doctor.py` with:
+  - `python scripts/aegis-doctor.py tdd-mode auto`
+  - `python scripts/aegis-doctor.py tdd-mode off`
+- Added `tdd_mode` to user-local config while preserving existing
+  `activation_mode` behavior.
+- Updated the Claude/Cursor/Copilot session-start hook and OpenCode plugin to
+  read `AEGIS_TDD_MODE` or `tdd_mode` and inject a compact TDD mode boundary
+  line without expanding the `using-aegis` hot path.
+
+### Workflow Quality Coverage
+
+- Updated `test-driven-development` so strict RED / GREEN / REFACTOR is tied
+  to `TDD Route: strict`, not forced onto every tiny edit.
+- Updated `using-aegis` and its discipline reference to route low-complexity
+  implementation through `TDD Route + verification` while keeping the hot path
+  under the context budget.
+- Added workflow-quality samples and e2e checks for `auto` small-task light
+  verification, `auto` risky-code strict TDD, and `off` no-automatic-TDD
+  behavior.
+- Preserved the method-pack boundary: TDD Mode is advisory workflow discipline
+  only and does not add authoritative `GateDecision`, `PolicySnapshot`, or
+  completion authority.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.7.0`
+- `bash tests/e2e/tdd-policy-check.sh`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/aegis-doctor-check.sh`
+- `bash tests/e2e/activation-mode-check.sh`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `python tests/helpers/test_workspace_text_write_compat.py`
+- `git diff --check`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+
 ## v1.6.6 (2026-05-25)
 
 ### README And Install Guidance

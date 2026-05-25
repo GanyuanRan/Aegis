@@ -54,7 +54,7 @@ Aegis 的一次标准工作流可以概括为：
   -> 问题定义
   -> 调查与方案判断
   -> 计划与最小切片
-  -> TDD / 实施
+  -> TDD Route / 实施
   -> 验证与回归
   -> 反思与质量收口
   -> 输出事实、证据、影响面和剩余风险
@@ -94,7 +94,7 @@ Aegis goal: 修复登录后偶发跳回登录页，不重写 auth 系统。
 
 | Goal signal | Route |
 | --- | --- |
-| 单 owner、低风险、验证路径清楚 | fast path 或 `test-driven-development` |
+| 单 owner、低风险、验证路径清楚 | fast path 或 TDD Route `light` / `skipped` |
 | bug、失败、回归、异常行为 | `systematic-debugging` |
 | 产品、架构、contract、跨模块行为不清 | `brainstorming` |
 | spec 已批准、需求稳定、需要切任务 | `writing-plans` |
@@ -288,6 +288,14 @@ Decision:
 ## 10. TDD 与测试铁律
 
 TDD 是实施阶段的纪律，不是所有复杂任务的第一入口。
+
+TDD Mode 只有两个值：
+
+- `auto`：按任务风险自动选择 TDD Route `strict`、`light` 或 `skipped`
+- `off`：不自动要求 TDD；用户或项目显式要求 TDD 时仍然适用
+
+TDD Mode 控制 test-first 纪律，不控制完成证据。两种模式下
+`verification-before-completion` 仍然适用。
 
 进入实现前，需要先确认：
 
