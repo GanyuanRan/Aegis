@@ -1,5 +1,53 @@
 # Aegis Release Notes
 
+## v1.6.0 (2026-05-25)
+
+### Strong-Opinion Review Lenses
+
+- Added `Strong-Opinion Review Lenses` to the workflow quality and process
+  baselines so high-value workflows can catch weak direction earlier without
+  becoming persona commands, approval gates, or runtime authority.
+- Added a `Product Risk Lens` to `brainstorming` for value, non-goals,
+  trade-offs, and decision-needed clarity before implementation.
+- Added a `Plan Pressure Test` to `writing-plans` for owner / contract /
+  retirement risk, verification scope, and task executability before task
+  decomposition.
+
+### Review, Readiness, And Memory Closure
+
+- Updated `requesting-code-review` and the canonical reviewer template with a
+  `Findings First` lens that prioritizes bugs first, risk first, tests first.
+- Added a `Readiness Summary` to `verification-before-completion` for release,
+  merge, and handoff checks covering tests, docs, version, host compatibility,
+  uncovered scope, and residual risk.
+- Added a `Retro / Memory Filter` to `recording-architecture-decisions` so
+  executed durable decisions can become ADR or baseline memory while unexecuted
+  ideas stay out of accepted architecture memory.
+
+### Workflow Quality Coverage
+
+- Added six representative workflow-quality samples covering product risk,
+  plan pressure, findings-first review, release readiness, retro memory
+  filtering, and fast-path no-persona behavior.
+- Extended `workflow-quality-check.sh` to lock the new lenses, compact output
+  contracts, and boundary rules across the owning skills.
+- Preserved the method-pack boundary: these lenses are advisory workflow
+  structures only and do not add merge approval, publish authorization,
+  authoritative `GateDecision`, or completion authority.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.6.0`
+- `bash scripts/bump-version.sh --check`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/governance-completion-contract-check.sh`
+- `bash tests/e2e/artifact-schema-check.sh`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `git diff --check`
+
 ## v1.5.7 (2026-05-24)
 
 ### Method-Pack Root Doctor Commands

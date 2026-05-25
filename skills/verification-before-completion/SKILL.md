@@ -80,7 +80,23 @@ Evidence Card:
    workspace check validate method-pack structure, index coverage, and
    recognizable JSON artifact sidecars only; they do not judge evidence
    sufficiency and do not grant completion authority.
-9. **User-Language Output**: final response cards must localize user-facing
+9. **Readiness Summary**: for release, merge, handoff, or "ready?" requests,
+   organize the evidence into a compact readiness view after the Evidence Card:
+
+   ```text
+   Readiness Summary:
+   - Tests:
+   - Docs:
+   - Version:
+   - Host compatibility:
+   - Uncovered scope:
+   - Residual risk:
+   ```
+
+   A readiness summary is advisory evidence organization only. It is not
+   authorization to commit, tag, publish, merge, or release. It cannot provide
+   completion authority.
+10. **User-Language Output**: final response cards must localize user-facing
    section labels, field labels, and explanatory prose to the user's language.
    Keep commands, file paths, code identifiers, stable enum values, and product
    terms in English when that preserves precision. For important Aegis product
@@ -88,7 +104,7 @@ Evidence Card:
    `架构对齐（Architecture Alignment）`; later references may use the user's
    language alone.
 
-10. **Complexity Delta**: for non-trivial code changes, inspect the actual
+11. **Complexity Delta**: for non-trivial code changes, inspect the actual
    diff before claiming completion. This is a completion-time entropy check,
    not a universal failure gate. Skip or keep it one-line for tiny wording
    edits, tests-only additions, generated files, vendored files, fixtures,
@@ -124,7 +140,7 @@ Evidence Card:
    - If entropy increased and no stronger owner/compatibility reason exists,
      downgrade the completion claim or state the residual risk.
 
-11. **Architecture Alignment Check**: before final response, if project
+12. **Architecture Alignment Check**: before final response, if project
    instructions require architecture reporting or the task touched durable
    architecture surfaces, include an explicit architecture alignment result.
    This is separate from ADR Backfill: alignment states whether the completed
@@ -149,7 +165,7 @@ Evidence Card:
    - Residual architecture risk:
    ```
 
-12. **ADR Backfill Check**: for completed medium/high work that touched durable
+13. **ADR Backfill Check**: for completed medium/high work that touched durable
    architecture surfaces, run the ADR Auto Backfill check before final
    completion claims. Use `Trigger: no` or skip the expanded block for simple
    wording edits, ordinary README cleanup, routine release-note edits, low-risk
@@ -182,7 +198,7 @@ Evidence Card:
    claim. This keeps `verification-before-completion` as the completion owner
    while delegating the ADR/baseline writeback decision to the dedicated skill.
 
-13. **Governance Closure**: for governance/cleanup/migration/compatibility/retirement work → final response must include. Do not skip this structure just because the implementation was small. Localize section labels and prose to the user's language; keep internal concepts in English only when they are product terms or file/path identifiers.
+14. **Governance Closure**: for governance/cleanup/migration/compatibility/retirement work → final response must include. Do not skip this structure just because the implementation was small. Localize section labels and prose to the user's language; keep internal concepts in English only when they are product terms or file/path identifiers.
 
    ```
    Repair Track: repaired object | action | impact | verification

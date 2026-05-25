@@ -98,7 +98,8 @@ for dimension in \
     "Artifact Stability" \
     "Workspace Laziness" \
     "Authority Boundary" \
-    "Completion-Time Complexity Delta"; do
+    "Completion-Time Complexity Delta" \
+    "Strong-Opinion Review Lenses"; do
     assert_contains "$baseline" "$dimension" "baseline defines $dimension"
 done
 
@@ -112,6 +113,20 @@ assert_contains "$baseline" "Layer Stop Card" \
     "workflow quality baseline includes layer stop card"
 assert_contains "$baseline" "User Intervention Point" \
     "workflow quality baseline exposes user intervention point"
+assert_contains "$baseline" "Product Risk Lens" \
+    "workflow quality baseline includes product risk lens"
+assert_contains "$baseline" "Plan Pressure Test" \
+    "workflow quality baseline includes plan pressure test"
+assert_contains "$baseline" "Findings First" \
+    "workflow quality baseline includes findings-first review lens"
+assert_contains "$baseline" "Readiness Summary" \
+    "workflow quality baseline includes readiness summary"
+assert_contains "$baseline" "Retro / Memory Filter" \
+    "workflow quality baseline includes retro memory filter"
+assert_contains "$baseline" "role persona.*review lens|review lens.*role persona" \
+    "workflow quality baseline keeps role personas out of strong-opinion lenses"
+assert_contains "$process_doc" "Strong-Opinion Review Lenses" \
+    "process baseline references strong-opinion review lenses"
 
 for skill in \
     "using-aegis" \
@@ -119,7 +134,9 @@ for skill in \
     "brainstorming" \
     "writing-plans" \
     "systematic-debugging" \
+    "requesting-code-review" \
     "verification-before-completion" \
+    "recording-architecture-decisions" \
     "long-task-continuation"; do
     assert_contains "$baseline" "\`$skill\`" "baseline defines compact contract for $skill"
 done
@@ -132,10 +149,20 @@ assert_contains "skills/goal-framing/SKILL.md" "TaskIntentDraft" \
     "goal-framing exposes task intent goal frame"
 assert_contains "skills/brainstorming/SKILL.md" "Compact output contract" \
     "brainstorming exposes compact output contract"
+assert_contains "skills/brainstorming/SKILL.md" "Product Risk Lens" \
+    "brainstorming includes product risk lens"
+assert_contains "skills/brainstorming/SKILL.md" "review lens, not persona|not a persona" \
+    "brainstorming keeps product lens out of persona roleplay"
+assert_contains "skills/brainstorming/SKILL.md" "does not override baseline evidence" \
+    "brainstorming product lens cannot override baseline evidence"
 assert_not_contains "skills/brainstorming/SKILL.md" "visual companion|Visual Companion|web browser|local URL" \
     "brainstorming does not offer retired browser visual companion"
 assert_contains "skills/writing-plans/SKILL.md" "Compact output contract" \
     "writing-plans exposes compact output contract"
+assert_contains "skills/writing-plans/SKILL.md" "Plan Pressure Test" \
+    "writing-plans includes plan pressure test"
+assert_contains "skills/writing-plans/SKILL.md" "owner / contract / retirement" \
+    "writing-plans pressure-tests owner contract retirement risk"
 assert_contains "skills/systematic-debugging/SKILL.md" "Quick bug lane" \
     "systematic debugging defines quick bug lane"
 assert_contains "skills/systematic-debugging/SKILL.md" "Layer Stop Card" \
@@ -146,6 +173,10 @@ assert_contains "skills/systematic-debugging/SKILL.md" "Falsifier" \
     "systematic debugging exposes falsifier for layer stop"
 assert_contains "skills/verification-before-completion/SKILL.md" "Evidence Card" \
     "verification skill defines evidence card"
+assert_contains "skills/verification-before-completion/SKILL.md" "Readiness Summary" \
+    "verification skill defines readiness summary"
+assert_contains "skills/verification-before-completion/SKILL.md" "commit, tag, publish, merge, or release" \
+    "verification readiness does not authorize publishing actions"
 assert_contains "skills/verification-before-completion/SKILL.md" "User-Language Output" \
     "verification skill defines user-language output rule"
 assert_contains "skills/verification-before-completion/SKILL.md" "section labels, field labels, and explanatory prose" \
@@ -188,12 +219,22 @@ assert_contains "skills/requesting-code-review/SKILL.md" "recording-architecture
     "requesting code review references dedicated ADR lifecycle skill"
 assert_contains "skills/requesting-code-review/SKILL.md" "independent code review" \
     "requesting code review is framed as independent review"
+assert_contains "skills/requesting-code-review/SKILL.md" "Findings First|Findings-first" \
+    "requesting code review uses findings-first lens"
+assert_contains "skills/requesting-code-review/SKILL.md" "bugs first, risk first, tests first" \
+    "requesting code review prioritizes bugs risks and tests"
+assert_contains "skills/requesting-code-review/SKILL.md" "[Rr]eview readiness is not merge approval" \
+    "requesting code review preserves merge authority boundary"
 assert_contains "skills/requesting-code-review/SKILL.md" "baseline / current authority" \
     "requesting code review checks baseline and current authority refs"
 assert_contains "skills/requesting-code-review/SKILL.md" "baseline defect vs architecture drift" \
     "requesting code review distinguishes baseline defect from architecture drift"
 assert_contains "skills/requesting-code-review/code-reviewer.md" "Baseline / Current Authority" \
     "code reviewer template includes baseline/current authority section"
+assert_contains "skills/requesting-code-review/code-reviewer.md" "Findings First|Findings-first" \
+    "code reviewer template leads with findings"
+assert_contains "skills/requesting-code-review/code-reviewer.md" "bugs first, risk first, tests first" \
+    "code reviewer template prioritizes bugs risks and tests"
 assert_contains "skills/requesting-code-review/code-reviewer.md" "ownership map, contract inventory, and dependency direction" \
     "code reviewer template checks baseline ownership contracts and dependencies"
 assert_contains "skills/requesting-code-review/code-reviewer.md" "baseline defect, architecture drift, or intentional architecture change" \
@@ -219,6 +260,12 @@ assert_contains "skills/recording-architecture-decisions/SKILL.md" "AEGIS_ADR_AU
     "recording architecture decisions skill reads ADR auto backfill baseline"
 assert_contains "skills/recording-architecture-decisions/SKILL.md" "Baseline Sync" \
     "recording architecture decisions skill defines baseline sync closure"
+assert_contains "skills/recording-architecture-decisions/SKILL.md" "Retro / Memory Filter" \
+    "recording architecture decisions skill defines retro memory filter"
+assert_contains "skills/recording-architecture-decisions/SKILL.md" "executed durable decisions" \
+    "recording architecture decisions records executed durable decisions only"
+assert_contains "skills/recording-architecture-decisions/SKILL.md" "unexecuted ideas" \
+    "recording architecture decisions rejects unexecuted ideas as accepted memory"
 assert_contains "skills/recording-architecture-decisions/SKILL.md" "create.*amend.*supersede.*skip" \
     "recording architecture decisions skill covers ADR lifecycle actions"
 assert_contains "skills/recording-architecture-decisions/SKILL.md" "existing baseline remains valid|baseline remains valid" \
@@ -260,6 +307,12 @@ expected_ids = {
     "layer-stop-spec-gap",
     "fast-path-no-layer-stop-card",
     "layer-stop-user-falsifier-correction",
+    "strong-opinion-product-risk-lens",
+    "strong-opinion-plan-pressure-test",
+    "strong-opinion-review-findings-first",
+    "strong-opinion-release-readiness-summary",
+    "strong-opinion-retro-memory-filter",
+    "strong-opinion-fast-path-no-persona",
     "interrupted-long-task-resume",
     "governance-compat-cleanup",
 }
@@ -362,6 +415,19 @@ if "Stop condition" not in contracts["goal-framing"]:
 if "DriftCheckDraft" not in contracts["long-task-continuation"]:
     raise SystemExit("long-task compact contract must include DriftCheckDraft")
 
+strong_lens_contracts = {
+    "brainstorming": "Product Risk Lens",
+    "writing-plans": "Plan Pressure Test",
+    "requesting-code-review": "Findings First",
+    "verification-before-completion": "Readiness Summary",
+    "recording-architecture-decisions": "Retro / Memory Filter",
+}
+for contract, required in strong_lens_contracts.items():
+    if contract not in contracts:
+        raise SystemExit(f"compact output contracts must include {contract}")
+    if required not in contracts[contract]:
+        raise SystemExit(f"{contract} compact contract must include {required}")
+
 by_id = {item["id"]: item for item in samples}
 adr_sample = by_id["architecture-completion-adr-backfill-check"]
 if adr_sample.get("expectedPrimarySkill") != "verification-before-completion":
@@ -436,6 +502,92 @@ for required_signal in (
         raise SystemExit(f"core file complexity sample must require {required_signal}")
 if "complexity-delta" not in complexity_sample.get("expectedOutputShape", ""):
     raise SystemExit("core file complexity sample must include complexity delta in output shape")
+
+product_lens_sample = by_id["strong-opinion-product-risk-lens"]
+if product_lens_sample.get("expectedPrimarySkill") != "brainstorming":
+    raise SystemExit("product risk lens sample must use brainstorming")
+for required in (
+    "role-persona-theater",
+    "override-baseline-evidence",
+    "start-implementation-immediately",
+):
+    if required not in product_lens_sample.get("mustNotDo", []):
+        raise SystemExit(f"product risk lens sample must forbid {required}")
+for required_signal in ("product-risk-lens", "non-goals", "tradeoff", "decision-needed"):
+    if required_signal not in product_lens_sample.get("verificationSignal", ""):
+        raise SystemExit(f"product risk lens sample must require {required_signal}")
+
+plan_pressure_sample = by_id["strong-opinion-plan-pressure-test"]
+if plan_pressure_sample.get("expectedPrimarySkill") != "writing-plans":
+    raise SystemExit("plan pressure test sample must use writing-plans")
+for required in (
+    "write-tasks-without-owner-contract-retirement-check",
+    "turn-pressure-test-into-approval-gate",
+    "redesign-approved-spec-without-cause",
+):
+    if required not in plan_pressure_sample.get("mustNotDo", []):
+        raise SystemExit(f"plan pressure test sample must forbid {required}")
+for required_signal in ("plan-pressure-test", "owner-contract-retirement", "verification-scope"):
+    if required_signal not in plan_pressure_sample.get("verificationSignal", ""):
+        raise SystemExit(f"plan pressure test sample must require {required_signal}")
+
+review_lens_sample = by_id["strong-opinion-review-findings-first"]
+if review_lens_sample.get("expectedPrimarySkill") != "requesting-code-review":
+    raise SystemExit("findings-first review sample must use requesting-code-review")
+for required in (
+    "lead-with-summary-before-findings",
+    "treat-review-as-merge-approval",
+    "skip-tests-risk-check",
+):
+    if required not in review_lens_sample.get("mustNotDo", []):
+        raise SystemExit(f"findings-first review sample must forbid {required}")
+for required_signal in ("findings-first", "bugs-risk-tests", "advisory-review"):
+    if required_signal not in review_lens_sample.get("verificationSignal", ""):
+        raise SystemExit(f"findings-first review sample must require {required_signal}")
+
+readiness_sample = by_id["strong-opinion-release-readiness-summary"]
+if readiness_sample.get("expectedPrimarySkill") != "verification-before-completion":
+    raise SystemExit("release readiness sample must use verification-before-completion")
+for required in (
+    "auto-commit",
+    "auto-tag",
+    "auto-publish",
+    "treat-readiness-as-completion-authority",
+):
+    if required not in readiness_sample.get("mustNotDo", []):
+        raise SystemExit(f"release readiness sample must forbid {required}")
+for required_signal in ("readiness-summary", "tests-docs-version-hosts", "residual-risk"):
+    if required_signal not in readiness_sample.get("verificationSignal", ""):
+        raise SystemExit(f"release readiness sample must require {required_signal}")
+
+retro_sample = by_id["strong-opinion-retro-memory-filter"]
+if retro_sample.get("expectedPrimarySkill") != "recording-architecture-decisions":
+    raise SystemExit("retro memory filter sample must use recording-architecture-decisions")
+for required in (
+    "record-unexecuted-ideas-as-accepted-memory",
+    "force-adr-for-every-retro",
+    "skip-baseline-sync-question",
+):
+    if required not in retro_sample.get("mustNotDo", []):
+        raise SystemExit(f"retro memory filter sample must forbid {required}")
+for required_signal in ("retro-memory-filter", "executed-durable-decision", "skip-or-record"):
+    if required_signal not in retro_sample.get("verificationSignal", ""):
+        raise SystemExit(f"retro memory filter sample must require {required_signal}")
+
+fast_path_persona_sample = by_id["strong-opinion-fast-path-no-persona"]
+if fast_path_persona_sample.get("expectedPrimarySkill") is not None:
+    raise SystemExit("fast-path strong-opinion no-persona sample must stay fast path")
+if fast_path_persona_sample.get("expectedArtifacts"):
+    raise SystemExit("fast-path strong-opinion no-persona sample must not expect artifacts")
+if fast_path_persona_sample.get("workspacePolicy") != "no-workspace":
+    raise SystemExit("fast-path strong-opinion no-persona sample must use no-workspace policy")
+for required in (
+    "emit-ceo-persona",
+    "force-strong-opinion-lens",
+    "create-project-workspace-records",
+):
+    if required not in fast_path_persona_sample.get("mustNotDo", []):
+        raise SystemExit(f"fast-path strong-opinion no-persona sample must forbid {required}")
 
 review_sample = by_id["high-risk-merge-independent-review"]
 if review_sample.get("expectedPrimarySkill") != "requesting-code-review":

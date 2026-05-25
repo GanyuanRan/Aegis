@@ -185,6 +185,29 @@ Pass criteria:
 - the card remains advisory method-pack output, not a `GateDecision`,
   `PolicySnapshot`, or completion authority
 
+### 3.11 Strong-Opinion Review Lenses
+
+High-value workflows should be opinionated enough to catch bad direction early
+without turning Aegis into a roleplay system, approval board, or runtime gate.
+
+Pass criteria:
+
+- `brainstorming` can use a compact `Product Risk Lens` for product value,
+  non-goals, trade-offs, and decision-needed clarity
+- `writing-plans` can use a compact `Plan Pressure Test` for owner / contract /
+  retirement risk, verification scope, and task executability
+- `requesting-code-review` uses `Findings First` and prioritizes bugs first,
+  risk first, tests first
+- `verification-before-completion` can emit a `Readiness Summary` for tests,
+  docs, version, host compatibility, uncovered scope, and residual risk
+- `recording-architecture-decisions` can use a `Retro / Memory Filter` to
+  distinguish executed durable decisions from unexecuted ideas
+- a role persona is not a review lens; Aegis borrows sharp evaluation angles,
+  not CEO/CSO/QA persona commands
+- readiness, review, retro, and plan pressure outputs remain advisory
+  method-pack guidance, not merge approval, publish authorization,
+  authoritative `GateDecision`, or completion authority
+
 ---
 
 ## 4. Compact Output Contracts
@@ -225,6 +248,7 @@ Compact contract:
 TaskIntentDraft: outcome, scope, risk hints
 BaselineReadSetHint: candidate docs, missing authority
 ImpactStatementDraft: affected layers, owners, invariants, non-goals
+Product Risk Lens: value, non-goals, trade-offs, decision-needed
 Options: 2-3 choices with trade-offs and recommendation
 Decision Needed: approve brief/design, revise, or defer
 ```
@@ -275,6 +299,7 @@ Compact contract:
 Plan Basis: approved requirement/spec refs
 Files: owners and edit boundaries
 Compatibility: invariants and non-goals
+Plan Pressure Test: owner / contract / retirement risk and verification scope
 Tasks: bite-sized steps with verification
 Risks: residual unknowns and rollback surface
 Retirement: old owner/fallback handling when applicable
@@ -305,7 +330,26 @@ required. Use `Layer Stop Card` when the diagnostic stop point is ambiguous,
 crosses a boundary, reaches L5/L6/L7, or is corrected by a user-provided
 falsifier. Do not use it for simple factual Q&A or tiny fast-path responses.
 
-### 4.5 `verification-before-completion`
+### 4.5 `requesting-code-review`
+
+Purpose:
+
+- request advisory independent review with sharp findings and bounded authority
+
+Compact contract:
+
+```text
+Findings First: Critical, Important, Minor findings before summary
+Evidence Review: supplied evidence, unsupported claims, missing proof
+Baseline / Current Authority: refs checked, drift or defect distinction
+Compatibility / Retirement: preserved behavior, old path disposition
+Review Readiness: ready | with fixes | not ready, advisory only
+```
+
+Review readiness is not merge approval and does not replace
+`verification-before-completion`.
+
+### 4.6 `verification-before-completion`
 
 Purpose:
 
@@ -321,6 +365,7 @@ Evidence Card:
 - Not Covered:
 - Residual Risk:
 - Confidence: A | B | C
+Readiness Summary: tests, docs, version, host compatibility, residual risk
 ```
 
 Localize completion card labels and explanatory prose to the user's language.
@@ -369,6 +414,9 @@ lifecycle and Baseline Sync Closure before the final completion claim.
 
 If evidence is incomplete, the claim must be downgraded.
 
+A `Readiness Summary` can organize release or handoff evidence, but it is not
+authorization to commit, tag, publish, merge, or release.
+
 Goal Closure:
 
 When a task used `goal-framing`, `verification-before-completion` must compare
@@ -412,7 +460,7 @@ Retirement Closure:
 - Lingering references checked:
 ```
 
-### 4.6 `long-task-continuation`
+### 4.7 `long-task-continuation`
 
 Purpose:
 
@@ -431,7 +479,7 @@ Next: next smallest safe action
 
 Low-complexity tasks skip `work/`.
 
-### 4.7 `recording-architecture-decisions`
+### 4.8 `recording-architecture-decisions`
 
 Purpose:
 
@@ -443,6 +491,7 @@ Compact contract:
 ```text
 Decision Candidate: summary and evidence source
 ADR Gate: hard to reverse / surprising without context / real trade-off
+Retro / Memory Filter: executed durable decision | unexecuted idea | process note
 ADR Action: create | amend | supersede | skip
 Owner Surface: project docs/adr | docs/aegis/adr | existing ADR | lighter record
 Baseline Sync: required, target, action, reason

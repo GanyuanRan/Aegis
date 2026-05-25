@@ -58,8 +58,23 @@ what/why/acceptance and do not expand into a formal design unless new
 architecture, contract, migration, or cross-module uncertainty appears.
 
 Compact output contract before writing the plan: `Plan Basis`, `Files`,
-`Compatibility`, `Tasks`, `Risks`, and `Retirement`. Expand only where the
-approved scope, risk, or verification surface requires it.
+`Compatibility`, `Plan Pressure Test`, `Tasks`, `Risks`, and `Retirement`.
+Expand only where the approved scope, risk, or verification surface requires
+it.
+
+Use a compact `Plan Pressure Test` before task decomposition:
+
+```text
+Plan Pressure Test:
+- Owner / contract / retirement:
+- Verification scope:
+- Task executability:
+- Pressure result: proceed | revise plan | return to design
+```
+
+The pressure test is not an approval gate and should not redesign an approved
+spec without cause. It exists to catch owner / contract / retirement risk,
+missing verification, and tasks that are too vague to execute safely.
 
 If the spec covers multiple independent subsystems, suggest breaking into
 separate plans. Before writing tasks, check: fact/assumption/unknown, baseline

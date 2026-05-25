@@ -65,8 +65,23 @@ success evidence, stop condition, non-goals, scope, risks),
 changes.
 
 **Compact output contract:** `TaskIntentDraft`, `BaselineReadSetHint`,
-`ImpactStatementDraft`, `Options`, and `Decision Needed`. Use this compact
-shape before expanding into a full design structure.
+`ImpactStatementDraft`, `Product Risk Lens`, `Options`, and `Decision Needed`.
+Use this compact shape before expanding into a full design structure.
+
+**Product Risk Lens:** For ambiguous product, feature, UI, workflow, or
+architecture choices, add a compact review lens, not persona roleplay:
+
+```text
+Product Risk Lens:
+- Value:
+- Non-goals:
+- Trade-offs:
+- Decision needed:
+```
+
+This is a review lens, not persona output. It does not override baseline evidence,
+approved requirements, or current authority docs; it only makes the product risk
+and decision point visible before implementation.
 
 **Exploring approaches:** Propose 2-3 approaches with trade-offs and
 recommendation. Make scope boundary explicit: what's in, what's deferred, what

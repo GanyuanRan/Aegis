@@ -135,6 +135,30 @@ Complexity Delta must be read together with Retirement Closure. Net new paths
 without deleted or scheduled old paths count as entropy increase and must be
 explained in `Risk/Unknown`.
 
+### 3.0c Strong-Opinion Review Lenses
+
+Strong-Opinion Review Lenses are compact task-specific checks that make Aegis
+more decisive without turning the method pack into a roleplay system or runtime
+approval layer.
+
+Canonical lenses:
+
+- `Product Risk Lens` in `brainstorming`: value, non-goals, trade-offs,
+  decision-needed, and whether the idea deserves implementation
+- `Plan Pressure Test` in `writing-plans`: owner / contract / retirement risk,
+  verification scope, and task executability
+- `Findings First` in `requesting-code-review`: bugs first, risk first, tests
+  first, with findings before summary
+- `Readiness Summary` in `verification-before-completion`: tests, docs,
+  version, host compatibility, uncovered scope, and residual risk
+- `Retro / Memory Filter` in `recording-architecture-decisions`: executed
+  durable decisions may become ADR/baseline memory; unexecuted ideas stay out of
+  accepted architecture memory
+
+These lenses are review structures, not persona commands. They do not grant
+merge approval, publish authorization, authoritative `GateDecision`, or
+completion authority.
+
 ### 3.1 Ripple Signal Triage
 
 Ripple Signal Triage is the pre-change entry point for dependency-aware work.
