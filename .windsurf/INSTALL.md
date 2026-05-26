@@ -22,7 +22,7 @@ Fetch and follow instructions from https://raw.githubusercontent.com/GanyuanRan/
 
 ## Installation
 
-Aegis contains 17 skills. Windsurf discovers skills one level under the skills directory,
+Aegis contains 21 skills. Windsurf discovers skills one level under the skills directory,
 so each Aegis skill is symlinked individually with an `aegis-` prefix.
 
 ### Global Install (available in all workspaces)
@@ -92,7 +92,13 @@ Get-ChildItem "$AegisDir\skills" -Directory | ForEach-Object {
 To update Aegis skills after installation:
 
 ```bash
-git -C ~/.codeium/windsurf/aegis pull
+cd ~/.codeium/windsurf/aegis
+python scripts/aegis-update.py register \
+  --host windsurf \
+  --sync-mode symlink \
+  --discovery-root ~/.codeium/windsurf/skills \
+  --reload-hint "restart Windsurf"
+python scripts/aegis-update.py update --host windsurf --json
 ```
 
 No need to recreate symlinks — they point into the repo directory and pick up
@@ -146,12 +152,16 @@ After installation, the following skills are available in Cascade:
 | `aegis-establishing-project-context` | Project context baseline |
 | `aegis-executing-plans` | Batch plan execution |
 | `aegis-finishing-a-development-branch` | Branch completion |
+| `aegis-first-principles-review` | Direction and owner review |
+| `aegis-goal-framing` | Goal and stop-condition framing |
 | `aegis-long-task-continuation` | Cross-session task resume |
 | `aegis-receiving-code-review` | Code review response |
+| `aegis-recording-architecture-decisions` | Architecture decision records |
 | `aegis-requesting-code-review` | Code review request |
 | `aegis-subagent-driven-development` | Fresh subagent per task |
 | `aegis-systematic-debugging` | Root cause analysis |
 | `aegis-test-driven-development` | RED-GREEN-REFACTOR cycle |
+| `aegis-update-aegis` | Host-scoped Aegis update |
 | `aegis-using-git-worktrees` | Git worktree isolation |
 | `aegis-verification-before-completion` | Evidence before claims |
 | `aegis-writing-plans` | Implementation plans |
@@ -163,7 +173,7 @@ After installation, the following skills are available in Cascade:
 ls -la ~/.codeium/windsurf/skills/aegis-*
 ```
 
-You should see 17 symlinks or junctions pointing into the Aegis skills directory.
+You should see 21 symlinks or junctions pointing into the Aegis skills directory.
 
 Open a project in Windsurf, open Cascade, and type `@aegis-` to see the
 auto-completion list of available Aegis skills.

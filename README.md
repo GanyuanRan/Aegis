@@ -50,6 +50,12 @@ coding agent:
 Read https://github.com/GanyuanRan/Aegis, identify my current AI coding host, and check whether Aegis is already installed. If it is not installed, install Aegis globally using the correct host guide. If it is already installed, update the installed Aegis method-pack to the latest main branch and repeat any host-specific sync steps. Restart or reload the host if needed, then run complete-install verification from the installed Aegis method-pack root. Do not run the doctor command from the target project directory. First locate `<aegis-method-pack-root>`, then run `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`. Treat the install or update as complete only if the JSON includes `"ok": true`, `"workspaceSupport": "available"`, and `"configStatus": "configured"`; if the host uses a separate skill discovery directory, also verify it with `--discovery-root <path>`.
 ```
 
+After a complete install has registered the current host, later updates can use
+the explicit skill request `aegis:update`. That path uses the local
+host-scoped registry and updates only the current host by default; updating
+every registered host requires an explicit `--all` request. Aegis does not run
+background automatic updates by default.
+
 ## Before You Use It
 
 Aegis is currently:

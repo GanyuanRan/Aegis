@@ -1,5 +1,43 @@
 # Aegis Release Notes
 
+## v1.8.0 (2026-05-26)
+
+### Host-Scoped Aegis Updates
+
+- Added `aegis:update` as an explicit user-triggered update workflow for
+  installed Aegis method packs.
+- Added `scripts/aegis-update.py` with host-scoped installation registration,
+  status readback, dry-run support, and explicit `--all` handling for users who
+  want to update every registered host.
+- Preserved predictable multi-host behavior: a plain update targets the current
+  or explicitly selected host, while all-host updates require an explicit
+  request.
+- Kept automatic background updates out of the default path. The registry can
+  record `updateMode`, but the method pack does not become a daemon, runtime
+  core, or final update authority.
+
+### Install And Documentation Updates
+
+- Added an `update-aegis` skill that routes `aegis:update` requests through the
+  host-scoped registry rather than re-discovering every install from scratch.
+- Updated Codex install guidance to register the Codex host, verify the
+  discovery root, and update through `aegis-update.py update --host codex`.
+- Updated the root READMEs, compatibility snapshot, and known limitations to
+  describe the new explicit update behavior and its multi-host boundary.
+- Refreshed Cursor and Windsurf skill counts and skill tables so their install
+  guides match the current method-pack skill set.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.8.0`
+- `python tests/helpers/test_aegis_update.py`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/aegis-doctor-check.sh`
+- `bash tests/e2e/install-verification-policy-check.sh`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+- `git diff --check`
+
 ## v1.7.0 (2026-05-25)
 
 ### Adaptive TDD Mode

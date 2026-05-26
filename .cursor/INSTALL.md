@@ -22,7 +22,7 @@ Fetch and follow instructions from https://raw.githubusercontent.com/GanyuanRan/
 
 ## Installation
 
-Aegis contains 17 skills following the agentskills.io specification. Cursor
+Aegis contains 21 skills following the agentskills.io specification. Cursor
 discovers skills from the skills directory. Each Aegis skill is symlinked
 individually with an `aegis-` prefix.
 
@@ -113,7 +113,13 @@ Restart Cursor after installation.
 To update Aegis skills after installation:
 
 ```bash
-git -C ~/.cursor/aegis pull
+cd ~/.cursor/aegis
+python scripts/aegis-update.py register \
+  --host cursor \
+  --sync-mode symlink \
+  --discovery-root ~/.cursor/skills \
+  --reload-hint "restart Cursor"
+python scripts/aegis-update.py update --host cursor --json
 ```
 
 Symlinks point into the repo directory and pick up changes automatically.
@@ -165,12 +171,16 @@ After installation, the following skills are available in Cursor's agent:
 | `aegis-establishing-project-context` | Project context baseline |
 | `aegis-executing-plans` | Batch plan execution |
 | `aegis-finishing-a-development-branch` | Branch completion |
+| `aegis-first-principles-review` | Direction and owner review |
+| `aegis-goal-framing` | Goal and stop-condition framing |
 | `aegis-long-task-continuation` | Cross-session task resume |
 | `aegis-receiving-code-review` | Code review response |
+| `aegis-recording-architecture-decisions` | Architecture decision records |
 | `aegis-requesting-code-review` | Code review request |
 | `aegis-subagent-driven-development` | Fresh subagent per task |
 | `aegis-systematic-debugging` | Root cause analysis |
 | `aegis-test-driven-development` | RED-GREEN-REFACTOR cycle |
+| `aegis-update-aegis` | Host-scoped Aegis update |
 | `aegis-using-git-worktrees` | Git worktree isolation |
 | `aegis-verification-before-completion` | Evidence before claims |
 | `aegis-writing-plans` | Implementation plans |
@@ -182,7 +192,7 @@ After installation, the following skills are available in Cursor's agent:
 ls -la ~/.cursor/skills/aegis-*
 ```
 
-You should see 17 symlinks or junctions pointing into the Aegis skills directory.
+You should see 21 symlinks or junctions pointing into the Aegis skills directory.
 
 Open a project in Cursor, start a new agent session, and verify the SessionStart
 hook loads Aegis context. You can also ask the agent:

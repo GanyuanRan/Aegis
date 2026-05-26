@@ -172,12 +172,20 @@ opencode
 ## Updating
 
 ```bash
-cd ~/.codex/aegis && git pull
+cd ~/.codex/aegis
+python scripts/aegis-update.py register \
+  --host codex \
+  --sync-mode junction \
+  --discovery-root ~/.agents/skills/aegis \
+  --reload-hint "restart Codex"
+python scripts/aegis-update.py update --host codex --json
 ```
 
+The update skill form is `aegis:update`. It uses the same host-scoped registry
+and updates only the current host unless the user explicitly asks for `--all`.
 Skills update instantly through the symlink. After updating, restart Codex if
-needed and run the doctor command from the installed method-pack root, not from
-the target project directory:
+needed. The updater runs the doctor command from the installed method-pack root,
+not from the target project directory:
 
 ```bash
 cd <aegis-method-pack-root>

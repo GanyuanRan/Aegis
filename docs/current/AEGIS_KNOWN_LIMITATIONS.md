@@ -215,9 +215,15 @@ It only records limitations supported by current fresh evidence and does not spe
   the updated hot path is active.
 
 **Observation Metric**
+- `cd <aegis-method-pack-root> && python scripts/aegis-update.py status --json`
+- `cd <aegis-method-pack-root> && python scripts/aegis-update.py update --host <host> --json`
 - `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
 - `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --discovery-root <host-skill-discovery-root>`
 - Host-specific restart/reload plus skill discovery smoke where available
+
+The update registry is host-scoped. Plain `aegis:update` should update the
+current host installation only; all-host updates require an explicit `--all`
+request.
 
 **Retirement Trigger**
 - When each supported host has a verified install/update path that proves both

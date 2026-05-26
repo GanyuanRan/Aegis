@@ -8,7 +8,7 @@
     {
       "name": "aegis",
       "description": "Core skills library for CodeBuddy: TDD, debugging, collaboration patterns, and proven techniques",
-      "version": "1.7.0",
+      "version": "1.8.0",
       "source": "./",
       "author": {
         "name": "Aegis Maintainers"

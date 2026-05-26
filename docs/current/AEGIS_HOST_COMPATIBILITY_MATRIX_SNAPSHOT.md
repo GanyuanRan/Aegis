@@ -114,6 +114,9 @@ The current snapshot only covers:
 - Project workspace support when the installed method-pack root remains
   available and can be verified by
   `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
+- Host-scoped explicit update registration through
+  `python scripts/aegis-update.py status --json` and
+  `python scripts/aegis-update.py update --host <host> --json`
 - Plugin loading / priority / distribution sync
 
 The current snapshot does not cover:

@@ -50,6 +50,8 @@ host_docs=(
 for file in "${root_docs[@]}"; do
     assert_contains "$file" "aegis-doctor\\.py --write-config --json" \
         "$file requires doctor write-config JSON verification"
+    assert_contains "$file" "aegis:update" \
+        "$file documents explicit host-scoped Aegis update trigger"
     assert_contains "$file" "cd <aegis-method-pack-root>" \
         "$file anchors doctor verification to the method-pack root"
     assert_contains "$file" "target project directory|目标项目目录" \
@@ -59,6 +61,11 @@ for file in "${root_docs[@]}"; do
     assert_contains "$file" '"configStatus": "configured"' \
         "$file names configStatus install success field"
 done
+
+assert_contains "docs/README.codex.md" "aegis-update\\.py register" \
+    "Codex guide registers host-scoped update metadata"
+assert_contains "docs/README.codex.md" "aegis-update\\.py update --host codex --json" \
+    "Codex guide uses explicit host-scoped update command"
 
 for file in "${host_docs[@]}"; do
     assert_contains "$file" "aegis-doctor\\.py --write-config --json" \
@@ -71,12 +78,16 @@ done
 
 assert_contains "docs/current/AEGIS_KNOWN_LIMITATIONS.md" "aegis-doctor\\.py --write-config --json" \
     "known limitations tracks hardened install verification command"
+assert_contains "docs/current/AEGIS_KNOWN_LIMITATIONS.md" "aegis-update\\.py update --host <host> --json" \
+    "known limitations tracks host-scoped update command"
 assert_contains "docs/current/AEGIS_KNOWN_LIMITATIONS.md" "cd <aegis-method-pack-root>" \
     "known limitations anchors hardened install verification command"
 assert_contains "docs/current/AEGIS_KNOWN_LIMITATIONS.md" '"configStatus": "configured"' \
     "known limitations tracks configured status readback"
 assert_contains "docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md" "aegis-doctor\\.py --write-config --json" \
     "compatibility snapshot requires hardened install verification"
+assert_contains "docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md" "aegis-update\\.py update --host <host> --json" \
+    "compatibility snapshot tracks host-scoped update registration"
 assert_contains "docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md" "cd <aegis-method-pack-root>" \
     "compatibility snapshot anchors complete-install verification command"
 
