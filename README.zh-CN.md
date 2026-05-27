@@ -41,17 +41,21 @@ skills 的优点，并进一步加入：
 当 agent 容易在目标、owner、架构边界或验证路径不清楚时就开始写代码，Aegis
 能把工作拉回更稳的工程节奏。
 
-## 极简安装 / 更新
+## 极简安装
 
-无论你是安装还是更新 Aegis，你只需要把下面这段话交给你的 AI 编程 Agent：
+把下面这段话交给你的 AI 编程 Agent：
 
 ```text
-请阅读 https://github.com/GanyuanRan/Aegis，识别我当前使用的 AI 编程宿主，并检查我是否已经安装 Aegis。如果尚未安装，请按对应宿主说明全局安装 Aegis；如果已经安装，请把已安装的 Aegis method-pack 更新到最新 main 分支，并重复当前宿主需要的同步步骤。如果需要重启或重新加载宿主，请明确告诉我；然后从已安装的 Aegis method-pack 根目录运行完整安装验证。不要在目标项目目录中运行 doctor 命令。先定位 `<aegis-method-pack-root>`，再运行 `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`。只有当 JSON 输出包含 `"ok": true`、`"workspaceSupport": "available"` 和 `"configStatus": "configured"` 时，才把安装或更新视为完成；如果宿主有单独的 skill discovery 目录，也要额外用 `--discovery-root <path>` 验证它指向当前版本。
+请阅读 https://github.com/GanyuanRan/Aegis，识别我当前使用的 AI 编程宿主，并按对应宿主说明全局安装 Aegis。如果需要重启或重新加载宿主，请明确告诉我；然后从已安装的 Aegis method-pack 根目录运行完整安装验证。不要在目标项目目录中运行 doctor 命令。先定位 `<aegis-method-pack-root>`，再运行 `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`。只有当 JSON 输出包含 `"ok": true`、`"workspaceSupport": "available"` 和 `"configStatus": "configured"` 时，才把安装视为完成；如果宿主有单独的 skill discovery 目录，也要额外用 `--discovery-root <path>` 验证它指向当前版本。
 ```
 
-完成安装并登记当前宿主之后，后续更新可以直接说 `aegis:update`。这条路径会读取
-本机 host-scoped registry，默认只更新当前宿主；只有用户明确要求 `--all` 时才更新
-所有已登记宿主。Aegis 默认不做后台自动更新。
+## 更新 Aegis
+
+完成安装并登记当前宿主之后，后续更新可以用自然语言直接让 agent `更新 Aegis`，
+也可以显式说 `aegis:update`。agent 可以把这两种方式路由到本地更新路径：先定位
+已安装的 method-pack 根目录，读取本机 host-scoped registry，再调用
+`scripts/aegis-update.py` 默认更新当前宿主。只有用户明确要求 `--all` 时才更新所有
+已登记宿主。Aegis 默认不做后台自动更新。
 
 ## 使用前必须知道
 
@@ -68,20 +72,7 @@ Aegis 当前发布形态是：
 - [轻量全局规则](GLOBAL_USER_RULES_LITE.zh-CN.md)
 - [高级全局规则模板](GLOBAL_USER_RULES_TEMPLATE.zh-CN.md)
 
-Aegis 默认自动模式。要切换手动模式，编辑：
-
-```text
-~/.config/aegis/config.toml
-```
-
-Windows：
-
-```text
-%USERPROFILE%\.config\aegis\config.toml
-```
-
-如果没有这个文件，需要手动创建。写入 `activation_mode = "explicit"`，
-或在已安装的 method-pack 根目录运行：
+Aegis 默认自动模式。要切换到显式模式，在已安装的 method-pack 根目录运行：
 
 ```bash
 cd <aegis-method-pack-root>

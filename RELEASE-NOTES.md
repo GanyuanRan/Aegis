@@ -1,5 +1,42 @@
 # Aegis Release Notes
 
+## v1.8.1 (2026-05-27)
+
+### README Install And Update Clarity
+
+- Split the root README quick-start flow into a pure install path and a
+  separate update path.
+- Simplified the copyable install prompt so it no longer mixes first-time
+  installation with method-pack updates.
+- Documented both natural-language update requests and the explicit
+  `aegis:update` skill request as routes into the local `scripts/aegis-update.py`
+  host-scoped update path.
+
+### Command-First Activation Mode
+
+- Simplified activation-mode guidance in the English and Chinese root READMEs:
+  users now run `python scripts/aegis-doctor.py activation-mode explicit`
+  from the installed method-pack root instead of manually creating
+  `config.toml`.
+- Kept detailed configuration paths and host caveats in the canonical
+  activation-mode current doc.
+- Updated the activation-mode e2e policy check so root READMEs are validated
+  for the command-first path.
+
+### Version
+
+- Bumped all declared plugin, marketplace, package, and extension manifests to
+  `1.8.1`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.8.1`
+- `bash scripts/bump-version.sh --check`
+- `bash tests/e2e/activation-mode-check.sh`
+- `bash tests/e2e/install-verification-policy-check.sh`
+- `git diff --check`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+
 ## v1.8.0 (2026-05-26)
 
 ### Host-Scoped Aegis Updates
