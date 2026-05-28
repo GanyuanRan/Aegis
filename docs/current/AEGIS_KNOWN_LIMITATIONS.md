@@ -371,6 +371,34 @@ request.
   proves both skill discovery and project workspace support without turning
   Aegis into an authoritative runtime core
 
+---
+
+### 2.18 Pi CLI Structural Support Is Not Yet Fresh Host Closeout
+
+**Retained Item**
+- Pi CLI is a structural host target, not release-level fresh smoke verdict
+
+**Retention Reason**
+- Pi documents Agent Skills discovery from `~/.pi/agent/skills/`,
+  `~/.agents/skills/`, `.pi/skills/`, package `skills/` directories or
+  `pi.skills` entries in `package.json`, and explicit CLI skill paths.
+- Pi package management supports git package installs such as
+  `pi install git:github.com/GanyuanRan/Aegis`. Aegis now exposes `./skills`
+  through the repository root `package.json`, but a current Pi runtime smoke is
+  still required before claiming host closeout.
+
+**Observation Metric**
+- `docs/README.pi.md`
+- `bash tests/e2e/pi-host-boundary-check.sh`
+- Future Pi install smoke that proves `pi install git:github.com/GanyuanRan/Aegis`,
+  skill discovery after restart or `/reload`, and
+  `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
+
+**Retirement Trigger**
+- When Pi CLI has a verified install/update path that proves both skill
+  discovery and project workspace support without turning Aegis into an
+  authoritative runtime core
+
 ## 3. Default Reading Rule
 
 If a limitation appears simultaneously in README, host docs, or test descriptions, use this document as the current reading entry point.

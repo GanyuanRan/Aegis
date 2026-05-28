@@ -8,7 +8,7 @@
     {
       "name": "aegis",
       "description": "Core skills library for Claude Code: TDD, debugging, collaboration patterns, and proven techniques",
-      "version": "1.8.1",
+      "version": "1.8.2",
       "source": "./",
       "author": {
         "name": "Aegis Maintainers"

@@ -136,7 +136,7 @@ The standard order is:
 
 This discipline applies to high-risk input surfaces in hosts such as Codex,
 Claude Code, OpenCode, Copilot, Antigravity CLI, Antigravity IDE,
-Antigravity App, OpenClaw, Hermes Agent, and transitional Gemini CLI,
+Antigravity App, Pi CLI, OpenClaw, Hermes Agent, and transitional Gemini CLI,
 including:
 
 - `.codex/log`, `.codex/sessions`, `history.jsonl`

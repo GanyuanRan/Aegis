@@ -1,5 +1,54 @@
 # Aegis Release Notes
 
+## v1.8.2 (2026-05-28)
+
+### Pi CLI Structural Support
+
+- Added Pi CLI as a structural Agent Skills host target for the Aegis Method
+  Pack.
+- Added `docs/README.pi.md` with Pi package installation, native skill
+  directory installation, complete-install doctor verification, update
+  registration, activation-mode caveats, and official Pi reference links.
+- Exposed Aegis skills through the root `package.json` with the `pi-package`
+  keyword and `pi.skills: ["./skills"]`, so Pi can load Aegis as a package
+  resource.
+- Updated the host compatibility matrix, known limitations, release checklist,
+  prompt-hygiene boundary, and English / Chinese README host tables to include
+  Pi CLI without claiming release-level live smoke evidence.
+
+### Host Boundary Guardrails
+
+- Added `tests/e2e/pi-host-boundary-check.sh` and wired it into the Layer 1
+  fast check.
+- Extended install-verification, goal-framing, and activation-mode policy
+  checks so future host docs keep Pi aligned with the existing method-pack
+  install and authority boundary.
+- Kept Pi support structural until a future Pi live smoke proves skill
+  discovery, reload behavior, and `aegis-doctor.py --write-config --json`
+  from the installed method-pack root.
+
+### Repository Hygiene
+
+- Added `Aegis_Codeflow/` to `.gitignore` so the incubator workspace stays out
+  of the public method-pack release payload.
+
+### Version
+
+- Bumped all declared plugin, marketplace, package, and extension manifests to
+  `1.8.2`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.8.2`
+- `bash scripts/bump-version.sh --check`
+- `bash tests/e2e/pi-host-boundary-check.sh`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `python -m json.tool package.json`
+- `git diff --check`
+
 ## v1.8.1 (2026-05-27)
 
 ### README Install And Update Clarity

@@ -1,5 +1,6 @@
 .worktrees/
 .private-journal/
+Aegis_Codeflow/
 docs/archive/
 .claude/
 .DS_Store

@@ -182,6 +182,10 @@ assert_contains "docs/README.trae.md" "AEGIS_ACTIVATION_MODE=explicit" \
     "Trae guide documents explicit activation caveat"
 assert_contains "docs/README.trae.md" "does not override Trae" \
     "Trae guide clarifies activation mode does not control native matcher"
+assert_contains "docs/README.pi.md" "AEGIS_ACTIVATION_MODE=explicit" \
+    "Pi guide documents explicit activation caveat"
+assert_contains "docs/README.pi.md" "does not override Pi" \
+    "Pi guide clarifies activation mode does not control native matcher"
 assert_contains "docs/README.openclaw.md" "AEGIS_ACTIVATION_MODE=explicit" \
     "OpenClaw guide documents explicit activation caveat"
 assert_contains "docs/README.openclaw.md" "does not override OpenClaw" \
