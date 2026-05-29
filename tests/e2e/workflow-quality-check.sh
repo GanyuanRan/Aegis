@@ -117,6 +117,7 @@ for dimension in \
     "Three-Stage Complexity Governance" \
     "Completion-Time Complexity Delta" \
     "TDD Route Mode" \
+    "Micro-Slice Artifact Budget" \
     "Strong-Opinion Review Lenses"; do
     assert_contains "$baseline" "$dimension" "baseline defines $dimension"
 done
@@ -164,6 +165,12 @@ assert_contains "$baseline" "Plan Pressure Test" \
     "workflow quality baseline includes plan pressure test"
 assert_contains "$baseline" "Architecture Integrity Lens" \
     "workflow quality baseline includes architecture integrity lens"
+assert_contains "$baseline" "Planless Slice Lane" \
+    "workflow quality baseline includes planless slice lane"
+assert_contains "$baseline" "Slice Card" \
+    "workflow quality baseline includes slice card"
+assert_contains "$baseline" "one parent spec.*one parent plan|one parent plan.*one parent spec" \
+    "workflow quality baseline defines artifact budget"
 assert_contains "$baseline" "Findings First" \
     "workflow quality baseline includes findings-first review lens"
 assert_contains "$baseline" "Readiness Summary" \
@@ -176,6 +183,8 @@ assert_contains "$process_doc" "Strong-Opinion Review Lenses" \
     "process baseline references strong-opinion review lenses"
 assert_contains "$process_doc" "Architecture Integrity Lens" \
     "process baseline references architecture integrity lens"
+assert_contains "$process_doc" "Micro-Slice Artifact Budget" \
+    "process baseline references micro-slice artifact budget"
 
 for skill in \
     "using-aegis" \
@@ -222,6 +231,14 @@ assert_contains "skills/writing-plans/SKILL.md" "owner / contract / retirement" 
     "writing-plans pressure-tests owner contract retirement risk"
 assert_contains "skills/writing-plans/SKILL.md" "Architecture Integrity Lens" \
     "writing-plans includes architecture integrity lens"
+assert_contains "skills/writing-plans/SKILL.md" "Planless Slice Lane" \
+    "writing-plans includes planless slice lane"
+assert_contains "skills/writing-plans/SKILL.md" "Slice Card" \
+    "writing-plans includes slice card"
+assert_contains "skills/writing-plans/SKILL.md" "do not save a new plan|Do not save a new plan" \
+    "writing-plans prevents micro-slice plan files"
+assert_contains "skills/writing-plans/SKILL.md" "new owner.*contract.*schema.*public API|public API.*schema.*contract.*owner" \
+    "writing-plans lists escalation triggers for durable plans"
 assert_contains "skills/first-principles-review/SKILL.md" "Architecture Integrity Lens" \
     "first-principles review owns architecture integrity lens"
 assert_contains "skills/first-principles-review/SKILL.md" "Higher-level simplification" \
@@ -248,6 +265,14 @@ assert_contains "skills/systematic-debugging/SKILL.md" "User Intervention Point"
     "systematic debugging exposes user intervention point"
 assert_contains "skills/systematic-debugging/SKILL.md" "Falsifier" \
     "systematic debugging exposes falsifier for layer stop"
+assert_contains "skills/long-task-continuation/SKILL.md" "Planless Slice Lane" \
+    "long-task continuation includes planless slice lane"
+assert_contains "skills/long-task-continuation/SKILL.md" "Slice Card" \
+    "long-task continuation includes slice card"
+assert_contains "skills/long-task-continuation/SKILL.md" "parent plan" \
+    "long-task continuation reuses parent plan for micro-slices"
+assert_contains "skills/long-task-continuation/SKILL.md" "do not create.*plan.*spec|Do not create.*plan.*spec" \
+    "long-task continuation prevents per-slice plan/spec files"
 assert_contains "skills/verification-before-completion/SKILL.md" "Evidence Card" \
     "verification skill defines evidence card"
 assert_contains "skills/verification-before-completion/SKILL.md" "Readiness Summary" \

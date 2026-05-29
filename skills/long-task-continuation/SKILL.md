@@ -55,6 +55,31 @@ Maintain artifacts under `docs/aegis/work/YYYY-MM-DD-<slug>/`:
 
 For medium+ complexity tasks only. Low-complexity tasks skip work/.
 
+Planless Slice Lane:
+
+- Use this lane when a parent plan or parent spec already owns the long-task
+  workstream and the current micro-slice only executes or refines one bounded
+  parent task.
+- Record a compact Slice Card instead of creating another durable plan/spec:
+
+  ```text
+  Slice Card:
+  - Goal:
+  - Parent plan/spec:
+  - Files:
+  - Boundary:
+  - Verification:
+  - Stop:
+  ```
+
+- Do not create new plan/spec files for micro-slices that stay inside the
+  parent plan, existing compatibility boundary, and known verification path.
+- Update the existing checkpoint, evidence, and drift records when persistent
+  state is needed.
+- Escalate out of this lane only when a new owner, contract, schema, public API,
+  architecture boundary, migration, persistence, security/permission,
+  distribution/release surface, or unclear verification boundary appears.
+
 When durable architecture decisions are in scope, these work records are the
 preferred ADR Auto Backfill source. Preserve ADR signals, source refs,
 alternatives, compatibility boundaries, drift checks, retirement notes, and
@@ -132,6 +157,9 @@ Before each work slice, restate:
 3. intended edits
 4. explicit non-edits
 5. verification command or manual check
+
+For micro-slices under an existing parent plan, use the Planless Slice Lane and
+state the Slice Card instead of opening a new planning/specification artifact.
 
 After each work slice, update:
 

@@ -35,6 +35,7 @@ Workflow hardening must optimize for:
 5. more stable draft / hint / projection artifacts
 6. clearer diagnostic stop points for debugging work
 7. TDD strictness that scales by task risk instead of burdening every edit
+8. bounded plan/spec artifacts for long tasks that execute many micro-slices
 
 The stable path is sample-driven hardening:
 
@@ -201,7 +202,28 @@ Pass criteria:
   `verification-before-completion`
 - explicit user/project TDD requests still apply in `off` mode
 
-### 3.12 Diagnostic Stop Transparency
+### 3.12 Micro-Slice Artifact Budget
+
+Long tasks should not create a durable plan or spec for every tiny execution
+slice.
+
+Pass criteria:
+
+- a feature or workstream defaults to one parent spec and one parent plan when
+  durable artifacts are needed
+- micro-slices that already fit the parent plan use the `Planless Slice Lane`
+- the `Planless Slice Lane` records a compact `Slice Card` instead of adding a
+  new `docs/aegis/plans/*` or `docs/aegis/specs/*` file
+- `Slice Card` records the goal, parent plan/spec, touched files, boundary,
+  verification, and stop condition for the current slice
+- micro-slices update checkpoint, evidence, and drift state under the existing
+  long-task record when persistent state is needed
+- durable plan/spec creation resumes only when the slice introduces a new
+  owner, contract, schema, public API, architecture boundary, persistence or
+  migration surface, security/permission risk, distribution/release surface, or
+  unclear verification boundary
+
+### 3.13 Diagnostic Stop Transparency
 
 Debugging workflows should make the diagnostic stop point visible when the
 root-cause layer affects the fix boundary, contract owner, or spec/product
@@ -219,7 +241,7 @@ Pass criteria:
 - the card remains advisory method-pack output, not a `GateDecision`,
   `PolicySnapshot`, or completion authority
 
-### 3.13 Strong-Opinion Review Lenses
+### 3.14 Strong-Opinion Review Lenses
 
 High-value workflows should be opinionated enough to catch bad direction early
 without turning Aegis into a roleplay system, approval board, or runtime gate.
@@ -345,6 +367,7 @@ Compact contract:
 
 ```text
 Plan Basis: approved requirement/spec refs
+Planless Slice Lane: use Slice Card when an existing parent plan/spec already owns the tiny slice
 Files: owners and edit boundaries
 Compatibility: invariants and non-goals
 Architecture Integrity Lens: invariant, owner/contract, overlap, higher-level path, retirement/falsifier, verdict
@@ -355,7 +378,8 @@ Risks: residual unknowns and rollback surface
 Retirement: old owner/fallback handling when applicable
 ```
 
-Do not redesign without cause.
+Do not redesign without cause. Do not create a new durable plan when a compact
+Slice Card inside the parent workstream is enough.
 
 ### 4.4 `systematic-debugging`
 
@@ -557,13 +581,16 @@ Compact contract:
 
 ```text
 TodoCheckpointDraft: current todo, completed todos, active slice, next step
+Slice Card: goal, parent plan/spec, files, boundary, verification, stop
 Evidence: command/file/log refs
 DriftCheckDraft: scope, compatibility, retirement, decision
 Risk / Unknown: blockers or missing evidence
 Next: next smallest safe action
 ```
 
-Low-complexity tasks skip `work/`.
+Low-complexity tasks skip `work/`. Micro-slices reuse the parent plan/spec and
+update the existing long-task checkpoint/evidence trail instead of creating
+per-slice plan or spec files.
 
 ### 4.8 `recording-architecture-decisions`
 

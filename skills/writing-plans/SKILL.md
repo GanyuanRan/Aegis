@@ -5,13 +5,18 @@ description: Use when you have a spec or requirements for a multi-step task, bef
 
 # Execute
 
-→ Have approved spec/requirements? → **Write implementation plan. Assume engineer has zero context.**
+→ Have an existing parent plan/spec and a tiny execution slice? → **Use Planless Slice Lane.**
+  1. Emit a compact Slice Card: goal, parent plan/spec, files, boundary, verification, stop
+  2. Update the parent workstream checkpoint/evidence/drift state if persistent state is needed
+  3. Do not save a new plan for the micro-slice
+→ Have approved spec/requirements for a new workstream or an escalation trigger? → **Write implementation plan. Assume engineer has zero context.**
   1. Scope check: fact/assumption/unknown, baseline, Ripple Signal Triage, compatibility boundary, dual-track needs
   2. File map: what files created/modified, clear boundaries, follow existing patterns
   3. Bite-sized tasks (2-5 min each): exact file paths, complete code, exact commands, expected output
   4. Self-review: spec coverage, placeholders, type consistency, compatibility, verification, dual-track
   5. Save → offer execution choice (subagent-driven or inline)
 → Plan must answer: problem, baseline, files, compat, verification, risks, retirement.
+→ Escalate from Planless Slice Lane to a durable plan when the slice adds a new owner, contract, schema, public API, architecture boundary, migration, persistence, security/permission, distribution/release surface, or unclear verification boundary.
 
 # Writing Plans
 
@@ -32,6 +37,21 @@ This skill is the canonical planning workflow for multi-step implementation work
 **Save plans to:** `docs/aegis/plans/YYYY-MM-DD-<feature-name>.md`
 Plan always goes to `plans/` — never to `work/`.
 (User preferences for plan location override this default.)
+
+Exception: if an existing parent plan/spec already owns the current tiny
+execution slice, use `Planless Slice Lane`. Do not save a new plan. Emit a
+compact `Slice Card` in the conversation or the active long-task checkpoint
+instead:
+
+```text
+Slice Card:
+- Goal:
+- Parent plan/spec:
+- Files:
+- Boundary:
+- Verification:
+- Stop:
+```
 
 If `docs/aegis/` does not exist and configured Aegis workspace support is
 available, initialize the target project first:
@@ -116,6 +136,20 @@ adapter, compat-only carrier, delete-first question, unverified assumption, or
 long-term stability claim that the spec did not already settle, use
 `first-principles-review` and its `Decision Hygiene Review` or `Architecture
 Integrity Lens` before task decomposition.
+
+Use `Planless Slice Lane` before writing or saving a plan when all of these are
+true:
+
+- a parent spec or parent plan already defines the workstream
+- the current request is executing or refining one bounded task from that
+  parent
+- no new owner, contract, schema, public API, architecture boundary, migration,
+  persistence, security/permission, distribution/release surface, or unclear
+  verification boundary appears
+- the slice can be described by a `Slice Card`
+
+The lane preserves long-task continuity without turning execution bookkeeping
+into durable planning artifacts.
 
 ## Aegis Project Workspace
 

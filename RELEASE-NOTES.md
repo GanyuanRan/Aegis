@@ -1,5 +1,52 @@
 # Aegis Release Notes
 
+## v1.8.5 (2026-05-29)
+
+### Micro-Slice Artifact Budget
+
+- Added the `Micro-Slice Artifact Budget` to the workflow quality baseline so
+  long-running workstreams do not create a durable plan or spec for every tiny
+  execution slice.
+- Defined the `Planless Slice Lane` for micro-slices that are already owned by
+  an existing parent spec or parent plan.
+- Added the compact `Slice Card` shape for micro-slices: goal, parent
+  plan/spec, files, boundary, verification, and stop condition.
+- Kept escalation back to durable plan/spec artifacts only for new owner,
+  contract, schema, public API, architecture boundary, migration, persistence,
+  security/permission, distribution/release, or unclear verification surfaces.
+
+### Workflow Integration
+
+- Updated `writing-plans` so tiny slices under an existing parent plan/spec do
+  not save a new plan and instead record a `Slice Card`.
+- Updated `long-task-continuation` so micro-slices reuse the parent plan and
+  update checkpoint, evidence, and drift state instead of creating per-slice
+  plan/spec files.
+- Updated the process baseline so the artifact budget becomes part of Aegis's
+  long-task governance discipline without expanding the hot path or adding
+  runtime authority.
+
+### Workflow Quality Coverage
+
+- Extended `tests/e2e/workflow-quality-check.sh` to lock the micro-slice
+  artifact budget into the workflow-quality baseline, process baseline,
+  planning skill, and long-task continuation skill.
+
+### Version
+
+- Bumped all declared plugin, marketplace, package, and extension manifests to
+  `1.8.5`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.8.5`
+- `bash scripts/bump-version.sh --check`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+- `git diff --check`
+
 ## v1.8.4 (2026-05-29)
 
 ### CC GUI Structural Host Support

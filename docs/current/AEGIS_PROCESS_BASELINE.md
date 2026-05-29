@@ -90,6 +90,9 @@ Root improvement rule:
 - Preserve fast-path cheapness for simple Q&A, status checks, and tiny edits.
 - Scale output depth by task complexity and risk.
 - Prefer compact output contracts over broad template expansion.
+- Apply the Micro-Slice Artifact Budget when long tasks split into many tiny
+  slices: reuse the parent spec/plan, use a compact Slice Card, and avoid
+  per-slice plan/spec files unless a new durable boundary appears.
 - Keep runtime-ready artifacts as drafts, hints, projections, and evidence
   bundles only.
 
@@ -225,6 +228,20 @@ Minimality Check:
 Local patches are acceptable only as bounded mitigations with a retention
 reason, retirement trigger, and residual risk. Do not call them sufficient
 repairs.
+
+### 3.0f Micro-Slice Artifact Budget
+
+Micro-Slice Artifact Budget keeps long-task continuity from becoming artifact
+noise. A feature or workstream should normally have one parent spec and one
+parent plan when durable planning artifacts are needed. Tiny execution slices
+that do not change the durable boundary should use the Planless Slice Lane:
+record a Slice Card, update checkpoint/evidence/drift state, and continue from
+the parent plan.
+
+Escalate back to a durable spec or plan only when the slice introduces a new
+owner, contract, schema, public API, architecture boundary, migration,
+persistence, security/permission concern, distribution/release surface, or an
+unclear verification boundary.
 
 ### 3.1 Ripple Signal Triage
 
