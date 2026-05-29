@@ -81,10 +81,11 @@ The following host documentation must be re-read before release:
 5. `docs/README.deepseek-tui.md`
 6. `docs/README.trae.md`
 7. `docs/README.antigravity.md`
-8. `docs/README.pi.md`
-9. `docs/README.openclaw.md`
-10. `docs/README.hermes-agent.md`
-11. `docs/testing.md`
+8. `docs/README.cc-gui.md`
+9. `docs/README.pi.md`
+10. `docs/README.openclaw.md`
+11. `docs/README.hermes-agent.md`
+12. `docs/testing.md`
 
 Confirm:
 
@@ -96,6 +97,10 @@ Confirm:
 - Trae is still described as manual `.trae/skills` / `~/.trae/skills` install, and the `.agents/skills/` optional capability is not written as the canonical chain
 - Antigravity CLI, Antigravity IDE, and Antigravity App are described as
   structural target surfaces, not current release-level fresh smoke closeout
+- CC GUI is described as a structural JetBrains IDEA plugin layer target,
+  direct `~/.agents/skills/<skill-name>/SKILL.md` skill-directory exposure is
+  preserved for its Codex-side scanner, and host adapter event normalization is
+  not claimed as Aegis-owned
 - Pi CLI is described as a structural Agent Skills / Pi package host surface,
   not current release-level fresh smoke closeout
 - OpenClaw is described as individual local `SKILL.md` skill-directory install,

@@ -399,6 +399,40 @@ request.
   discovery and project workspace support without turning Aegis into an
   authoritative runtime core
 
+---
+
+### 2.19 CC GUI Structural Support Is Not Yet Fresh Host Closeout
+
+**Retained Item**
+- CC GUI is a structural JetBrains IDEA host target, not release-level fresh
+  smoke verdict
+
+**Retention Reason**
+- CC GUI wraps Claude Code and OpenAI Codex behind an IDE plugin UI. Its
+  Codex-side skill scanner uses `.agents/skills/` style roots and expects each
+  direct child skill directory to contain `SKILL.md`.
+- Aegis is a multi-skill method pack. For CC GUI's Codex path, expose
+  individual skills as `~/.agents/skills/<skill-name>/SKILL.md` rather than
+  relying only on an umbrella `~/.agents/skills/aegis` directory.
+- User-visible entries such as `Tool: exec_command` are host adapter event
+  rendering / host adapter event normalization concerns. Aegis can reduce
+  unnecessary tool fan-out through workflow discipline, but it does not own CC
+  GUI's visual folding, grouping, suppression, or live IDE event model.
+
+**Observation Metric**
+- `docs/README.cc-gui.md`
+- `bash tests/e2e/cc-gui-host-boundary-check.sh`
+- Future CC GUI install smoke that proves direct skill discovery, restart or
+  reload behavior, Codex-side and Claude-side provider behavior where relevant,
+  and
+  `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
+
+**Retirement Trigger**
+- When CC GUI has a verified install/update path that proves both skill
+  discovery and project workspace support, and when any IDE rendering claims
+  are backed by direct CC GUI evidence rather than Aegis method-pack tests
+  alone
+
 ## 3. Default Reading Rule
 
 If a limitation appears simultaneously in README, host docs, or test descriptions, use this document as the current reading entry point.

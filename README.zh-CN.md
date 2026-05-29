@@ -100,6 +100,7 @@ Aegis 保留多宿主、plugin-installable 的分发目标。
 | --- | --- | --- |
 | `Codex`, `OpenCode` | 当前 method-pack 范围内已有 fresh evidence | [Codex](docs/README.codex.md), [OpenCode](docs/README.opencode.md) |
 | `Claude Code`, `CodeBuddy`, `DeepSeek-TUI`, `Trae` | 已有安装说明；release-level fresh host smoke 仍待补证 | [Claude Code](docs/README.claude-code.md), [CodeBuddy](docs/README.codebuddy.md), [DeepSeek-TUI](docs/README.deepseek-tui.md), [Trae](docs/README.trae.md) |
+| `CC GUI (JetBrains IDEA)` | Claude Code / Codex 的 IDE 插件层结构性支持；release-level fresh host smoke 仍待补证 | [CC GUI](docs/README.cc-gui.md) |
 | `Antigravity CLI`, `Antigravity IDE`, `Antigravity App` | 结构性目标；release-level fresh host smoke 仍待补证 | [Antigravity](docs/README.antigravity.md) |
 | `Pi CLI`, `OpenClaw`, `Hermes Agent` | 结构性 Agent Skills / `SKILL.md` skill-host 适配；release-level fresh host smoke 仍待补证 | [Pi CLI](docs/README.pi.md), [OpenClaw](docs/README.openclaw.md), [Hermes Agent](docs/README.hermes-agent.md) |
 | `Gemini CLI` | Antigravity 支持成熟前的过渡兼容面 | [兼容性矩阵](docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md) |

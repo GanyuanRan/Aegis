@@ -22,7 +22,7 @@ It does not answer:
 ## 2. Snapshot Date
 
 The current snapshot is based on fresh evidence and current docs landed as of
-`2026-05-25`.
+`2026-05-29`.
 
 ---
 
@@ -40,6 +40,7 @@ The current snapshot is based on fresh evidence and current docs landed as of
 | Host | Current Status | Why Not Yet |
 | --- | --- | --- |
 | `Claude Code` | Has install guide and plugin skeleton; no current release-level fresh smoke verdict | `docs/README.claude-code.md` established, but real host regression is still deferred |
+| `CC GUI (JetBrains IDEA)` | Structural IDE plugin layer target for Claude Code / OpenAI Codex; no current release-level fresh smoke verdict | `docs/README.cc-gui.md` established; CC GUI's Codex-side scanner expects direct `.agents/skills/<skill-name>/SKILL.md` skill directories, so Aegis must expose individual skills rather than only an umbrella `~/.agents/skills/aegis` directory; live IDE plugin smoke and host adapter event rendering remain deferred |
 | `CodeBuddy` | Has `.codebuddy-plugin/` skeleton and native `SKILL.md` manual install instructions; no current release-level fresh smoke verdict | `docs/README.codebuddy.md` established; evidence from CodeBuddy skills/plugin docs and this repo's `.codebuddy-plugin/`; real host regression still deferred |
 | `DeepSeek-TUI` | Native `SKILL.md` discovery supports manual installation; no current release-level fresh smoke verdict | `docs/README.deepseek-tui.md` established; evidence from DeepSeek-TUI README/source discovery contract; real host regression still deferred |
 | `Trae` | Native `SKILL.md` discovery supports manual installation; no current release-level fresh smoke verdict | `docs/README.trae.md` established; evidence from Trae skills docs; real host regression still deferred |
@@ -73,18 +74,19 @@ The current snapshot only states:
 
 1. `Codex` and `OpenCode` are the two mainlines with the most fresh evidence
 2. `Kimi Code CLI` reuses the Codex path (`.agents/skills/`); Aegis takes effect via a minimal install prompt
-3. `CodeBuddy` can install Aegis via `.codebuddy-plugin/` or native `SKILL.md` discovery, but local CLI live smoke has not yet formed valid evidence
-4. `DeepSeek-TUI` can manually install Aegis skills via native `SKILL.md` discovery, but `/skill install github:GanyuanRan/Aegis` is not the current canonical path
-5. `Trae` can manually install Aegis skills via native `SKILL.md` discovery; `.agents/skills/` is an optional Trae capability, not Aegis's canonical Trae path
-6. `Cursor` and `Windsurf` have structured install guides but have not yet entered release-level fresh smoke
-7. `Antigravity CLI`, `Antigravity IDE`, and `Antigravity App` are now structural target surfaces, but still lack release-level fresh smoke evidence
-8. `Gemini CLI` is retained as a transitional compatibility surface after Google's `2026-05-19` transition announcement while Antigravity support matures
-9. `Pi CLI` can expose Aegis through `pi install git:github.com/GanyuanRan/Aegis`, Pi package `skills/` / `pi.skills` discovery, `~/.pi/agent/skills/`, `~/.agents/skills/`, or `.pi/skills/`, but support remains structural until a fresh Pi install smoke proves it for the current release
-10. `OpenClaw` can expose Aegis through individual local skill-directory installs, but `git:owner/repo` should not be written as the canonical whole-repo Aegis installer because OpenClaw expects `SKILL.md` at the source root
-11. `Hermes Agent` can expose Aegis through `~/.hermes/skills/` or documented GitHub path installs, but support remains structural until a fresh Hermes install smoke proves it for the current release
-12. `Warp`, as a terminal host, does not itself need an independent adapter
-13. The current method-pack still retains the cross-host installation goal
-14. "Support all plugin hosts" remains a product goal, not equivalent to "all hosts have current fresh closeout"
+3. `CC GUI (JetBrains IDEA)` can expose Aegis to its OpenAI Codex path through direct `~/.agents/skills/<skill-name>/SKILL.md` directories, but live IDE plugin behavior, reload behavior, and `Tool: exec_command` rendering remain fresh-smoke pending
+4. `CodeBuddy` can install Aegis via `.codebuddy-plugin/` or native `SKILL.md` discovery, but local CLI live smoke has not yet formed valid evidence
+5. `DeepSeek-TUI` can manually install Aegis skills via native `SKILL.md` discovery, but `/skill install github:GanyuanRan/Aegis` is not the current canonical path
+6. `Trae` can manually install Aegis skills via native `SKILL.md` discovery; `.agents/skills/` is an optional Trae capability, not Aegis's canonical Trae path
+7. `Cursor` and `Windsurf` have structured install guides but have not yet entered release-level fresh smoke
+8. `Antigravity CLI`, `Antigravity IDE`, and `Antigravity App` are now structural target surfaces, but still lack release-level fresh smoke evidence
+9. `Gemini CLI` is retained as a transitional compatibility surface after Google's `2026-05-19` transition announcement while Antigravity support matures
+10. `Pi CLI` can expose Aegis through `pi install git:github.com/GanyuanRan/Aegis`, Pi package `skills/` / `pi.skills` discovery, `~/.pi/agent/skills/`, `~/.agents/skills/`, or `.pi/skills/`, but support remains structural until a fresh Pi install smoke proves it for the current release
+11. `OpenClaw` can expose Aegis through individual local skill-directory installs, but `git:owner/repo` should not be written as the canonical whole-repo Aegis installer because OpenClaw expects `SKILL.md` at the source root
+12. `Hermes Agent` can expose Aegis through `~/.hermes/skills/` or documented GitHub path installs, but support remains structural until a fresh Hermes install smoke proves it for the current release
+13. `Warp`, as a terminal host, does not itself need an independent adapter
+14. The current method-pack still retains the cross-host installation goal
+15. "Support all plugin hosts" remains a product goal, not equivalent to "all hosts have current fresh closeout"
 
 ---
 
@@ -95,16 +97,17 @@ When reading the current host verdict, follow this order:
 1. `docs/testing.md`
 2. `docs/README.claude-code.md`
 3. `docs/README.codex.md`
-4. `docs/README.opencode.md`
-5. `docs/README.codebuddy.md`
-6. `docs/README.deepseek-tui.md`
-7. `docs/README.trae.md`
-8. `docs/README.antigravity.md`
-9. `docs/README.pi.md`
-10. `docs/README.openclaw.md`
-11. `docs/README.hermes-agent.md`
-12. `.windsurf/INSTALL.md`
-13. `.cursor/INSTALL.md`
+4. `docs/README.cc-gui.md`
+5. `docs/README.opencode.md`
+6. `docs/README.codebuddy.md`
+7. `docs/README.deepseek-tui.md`
+8. `docs/README.trae.md`
+9. `docs/README.antigravity.md`
+10. `docs/README.pi.md`
+11. `docs/README.openclaw.md`
+12. `docs/README.hermes-agent.md`
+13. `.windsurf/INSTALL.md`
+14. `.cursor/INSTALL.md`
 
 ---
 

@@ -1,5 +1,56 @@
 # Aegis Release Notes
 
+## v1.8.4 (2026-05-29)
+
+### CC GUI Structural Host Support
+
+- Added `docs/README.cc-gui.md` for CC GUI, the JetBrains IDEA plugin layer
+  that wraps Claude Code and OpenAI Codex.
+- Documented the Codex-side CC GUI skill discovery shape:
+  `~/.agents/skills/<skill-name>/SKILL.md`, with Windows junction/copy and
+  macOS / Linux symlink installation examples.
+- Clarified that umbrella installs such as
+  `~/.agents/skills/aegis -> ~/.codex/aegis/skills` can keep native Codex
+  workflows working but are not the preferred CC GUI Codex-side exposure
+  because the umbrella directory does not itself contain `SKILL.md`.
+- Kept CC GUI support structural and explicitly fresh-smoke pending; this
+  release does not claim live JetBrains plugin smoke, reload behavior, or host
+  adapter event rendering closeout.
+
+### Host Compatibility Boundary
+
+- Added CC GUI to the host compatibility matrix, known limitations, release
+  checklist, prompt-hygiene boundary, current authority map, and English /
+  Chinese README host tables.
+- Added `tests/e2e/cc-gui-host-boundary-check.sh` and wired it into the Layer 1
+  fast check so future releases keep CC GUI out of release-level fresh smoke
+  claims until direct host evidence exists.
+- Extended install-verification, goal-framing, and activation-mode checks so
+  the CC GUI guide keeps complete-install doctor verification, portable
+  `Aegis goal:` entry, and explicit activation-mode caveats aligned with other
+  hosts.
+- Clarified that visible entries such as `Tool: exec_command` are host adapter
+  event rendering concerns. Aegis can reduce unnecessary tool fan-out through
+  workflow discipline, but it does not own CC GUI visual folding,
+  normalization, or live IDE event behavior.
+
+### Version
+
+- Bumped all declared plugin, marketplace, package, and extension manifests to
+  `1.8.4`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.8.4`
+- `bash scripts/bump-version.sh --check`
+- `bash tests/e2e/cc-gui-host-boundary-check.sh`
+- `bash tests/e2e/install-verification-policy-check.sh`
+- `bash tests/e2e/goal-framing-check.sh`
+- `bash tests/e2e/activation-mode-check.sh`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+- `git diff --check`
+
 ## v1.8.3 (2026-05-29)
 
 ### Architecture Integrity Lens

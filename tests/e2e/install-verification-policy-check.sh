@@ -39,6 +39,7 @@ host_docs=(
     "docs/README.codex.md"
     "docs/README.opencode.md"
     "docs/README.claude-code.md"
+    "docs/README.cc-gui.md"
     "docs/README.codebuddy.md"
     "docs/README.deepseek-tui.md"
     "docs/README.trae.md"

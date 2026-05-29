@@ -166,6 +166,10 @@ assert_contains "docs/README.claude-code.md" "PowerShell" \
     "Claude Code guide includes PowerShell usage"
 assert_contains "docs/README.claude-code.md" 'aegis-doctor\.py activation-mode explicit' \
     "Claude Code guide documents doctor activation command"
+assert_contains "docs/README.cc-gui.md" "AEGIS_ACTIVATION_MODE=explicit" \
+    "CC GUI guide documents explicit activation caveat"
+assert_contains "docs/README.cc-gui.md" "does not override CC GUI" \
+    "CC GUI guide clarifies activation mode does not control native matcher"
 assert_contains "docs/README.codex.md" "explicit" \
     "Codex guide documents explicit activation caveat"
 assert_contains "docs/README.codex.md" 'aegis-doctor\.py activation-mode explicit' \
