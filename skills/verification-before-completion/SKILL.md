@@ -177,8 +177,17 @@ Evidence Card:
    - Baseline checked:
    - Result: aligned | architecture drift | architecture defect
    - Evidence:
+   - Integrity Residual Risk:
    - Residual architecture risk:
    ```
+
+   Use `Integrity Residual Risk` when `ArchitectureReviewRequired: yes`, an
+   `Architecture Integrity Lens` shaped the plan or review, or the diff touches
+   canonical owner, source-of-truth, fallback, adapter, or duplicate-owner
+   surfaces. Name any unresolved responsibility overlap, missed higher-level
+   owner / contract fix, retained caller-side fallback, or stale path that still
+   needs retirement. If none remains, state `none` rather than expanding into a
+   new gate.
 
 13. **ADR Backfill Check**: for completed medium/high work that touched durable
    architecture surfaces, run the ADR Auto Backfill check before final

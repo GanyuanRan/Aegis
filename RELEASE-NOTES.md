@@ -1,5 +1,58 @@
 # Aegis Release Notes
 
+## v1.8.3 (2026-05-29)
+
+### Architecture Integrity Lens
+
+- Added the `Architecture Integrity Lens` to `first-principles-review` as a
+  compact advisory check for executable plans that may still encode the wrong
+  owner, abstraction, contract boundary, or retirement path.
+- The lens now asks for the invariant, canonical owner / contract,
+  responsibility overlap, higher-level simplification, retirement / falsifier,
+  and verdict before risky approach selection or task decomposition proceeds.
+- Kept the lens inside the Aegis Method Pack boundary: it produces guidance and
+  residual-risk signals, not an authoritative `GateDecision`, `PolicySnapshot`,
+  or completion authority.
+
+### Workflow Integration
+
+- Wired `Architecture Integrity Lens` into `brainstorming` and `writing-plans`
+  so architecture-coherence risks are checked before recommendation or
+  task decomposition.
+- Extended the code-review checklist to ask whether a change solves the problem
+  at the highest appropriate owner / contract layer and whether caller-side
+  fallbacks are masking source-of-truth or contract fixes.
+- Added `Integrity Residual Risk` to completion-time architecture alignment so
+  retained overlap, fallback, stale path, or missed higher-level fixes remain
+  visible before completion claims.
+
+### Workflow Quality Coverage
+
+- Added the `architecture-integrity-higher-level-path` representative sample to
+  `tests/e2e/fixtures/workflow-quality-matrix.json`.
+- Extended `tests/e2e/workflow-quality-check.sh` to lock the new lens into the
+  workflow-quality baseline, process baseline, planning skills, review
+  checklist, and completion check.
+
+### Version
+
+- Bumped all declared plugin, marketplace, package, and extension manifests to
+  `1.8.3`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.8.3`
+- `bash scripts/bump-version.sh --check`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `bash tests/e2e/first-principles-review-check.sh`
+- `bash tests/e2e/context-budget-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/trigger-health-check.sh`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `git diff --check`
+
 ## v1.8.2 (2026-05-28)
 
 ### Pi CLI Structural Support

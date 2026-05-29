@@ -65,9 +65,9 @@ success evidence, stop condition, non-goals, scope, risks),
 changes.
 
 **Compact output contract:** `TaskIntentDraft`, `BaselineReadSetHint`,
-`ImpactStatementDraft`, `Product Risk Lens`, `Plan-Time Complexity Check`,
-`Options`, and `Decision Needed`. Use this compact shape before expanding into
-a full design structure.
+`ImpactStatementDraft`, `Product Risk Lens`, `Architecture Integrity Lens`,
+`Plan-Time Complexity Check`, `Options`, and `Decision Needed`. Use this
+compact shape before expanding into a full design structure.
 
 **Product Risk Lens:** For ambiguous product, feature, UI, workflow, or
 architecture choices, add a compact review lens, not persona roleplay:
@@ -110,6 +110,14 @@ duplicate owner, fallback, adapter, compat-only carrier, delete-first question,
 unverified assumption, or "long-term stable" / `长期稳定` claim. Do not make it a
 universal design ceremony; return to this workflow once the decision surface is
 clean.
+
+Use the narrower `Architecture Integrity Lens` when the main risk is not broad
+strategy but architecture coherence: unclear canonical owner, responsibility
+overlap, caller-side fallback, stale path carrying real logic, or a possible
+higher-level owner / contract / source-of-truth simplification. The lens should
+answer invariant, canonical owner / contract, responsibility overlap,
+higher-level simplification, retirement / falsifier, and verdict before the
+approach is recommended.
 
 **Presenting the design:** Scale sections to complexity. Cover only the surfaces that matter: architecture, components, data flow, error handling, testing, compatibility boundary. Get approval for the design before implementation when behavior, contract, architecture, or user-facing flow is being decided.
 
@@ -176,8 +184,8 @@ After writing the spec document, look at it with fresh eyes:
 5. **Boundary check:** Did you clearly mark invariants, compatibility
    boundaries, owners, non-goals, and any ADR signals for later completion
    backfill? If the spec endorses a risky approach, confirm the
-   `first-principles-review` `Decision Hygiene Review` result is reflected or
-   explicitly marked unnecessary.
+   `first-principles-review` `Decision Hygiene Review` or `Architecture
+   Integrity Lens` result is reflected or explicitly marked unnecessary.
 
 Fix any issues inline. No need to re-review — just fix and move on.
 

@@ -230,6 +230,10 @@ Pass criteria:
   non-goals, trade-offs, and decision-needed clarity
 - `writing-plans` can use a compact `Plan Pressure Test` for owner / contract /
   retirement risk, verification scope, and task executability
+- `brainstorming` and `writing-plans` can use a compact `Architecture Integrity
+  Lens` when an executable direction may still encode responsibility overlap,
+  a wrong canonical owner, caller-side fallback, stale path, or missed
+  higher-level owner / contract / source-of-truth simplification
 - `brainstorming` and `writing-plans` can use a compact
   `Plan-Time Complexity Check` to identify target file pressure, add-in-place
   risk, and safer file boundaries before implementation
@@ -291,6 +295,7 @@ TaskIntentDraft: outcome, scope, risk hints
 BaselineReadSetHint: candidate docs, missing authority
 ImpactStatementDraft: affected layers, owners, invariants, non-goals
 Product Risk Lens: value, non-goals, trade-offs, decision-needed
+Architecture Integrity Lens: invariant, owner/contract, overlap, higher-level path, retirement/falsifier, verdict
 Plan-Time Complexity Check: target files, shape signals, owner fit, recommendation
 Options: 2-3 choices with trade-offs and recommendation
 Decision Needed: approve brief/design, revise, or defer
@@ -342,6 +347,7 @@ Compact contract:
 Plan Basis: approved requirement/spec refs
 Files: owners and edit boundaries
 Compatibility: invariants and non-goals
+Architecture Integrity Lens: invariant, owner/contract, overlap, higher-level path, retirement/falsifier, verdict
 Plan Pressure Test: owner / contract / retirement risk and verification scope
 Plan-Time Complexity Check: target files, add-in-place risk, better boundary, recommendation
 Tasks: bite-sized steps with verification

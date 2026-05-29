@@ -65,6 +65,8 @@ remaining test gaps or residual risk.
 - Sound design decisions?
 - Canonical owner clear?
 - Any duplicated owner, stale fallback, or compatibility layer still carrying real logic?
+- Does the change solve the problem at the highest appropriate owner/contract layer?
+- Is any caller-side fallback masking a missing source-of-truth or contract fix?
 - Scalability considerations?
 - Performance implications?
 - Security concerns?

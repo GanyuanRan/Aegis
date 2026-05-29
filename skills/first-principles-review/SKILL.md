@@ -101,18 +101,54 @@ Verdict:
 - Next evidence:
 ```
 
+## Architecture Integrity Lens
+
+Use this narrower lens when a proposal is executable but may still encode the
+wrong owner, abstraction, contract boundary, or retirement path. It is advisory
+method-pack output and may be embedded inside `Decision Hygiene Review` when
+that is enough.
+
+Trigger it when any of these appear before approach selection, task
+decomposition, review, or completion-risk reporting:
+
+- responsibilities may overlap or a canonical owner is unclear
+- the smallest diff adds a caller-side fallback, guard, adapter, or compat-only
+  carrier
+- an existing source-of-truth or contract could solve the class of problem at a
+  higher level
+- a stale owner, fallback, or old path may keep carrying real logic
+- the work makes a long-term stability, "cleaner architecture", or
+  higher-level simplification claim
+
+Use this compact shape:
+
+```text
+Architecture Integrity Lens:
+- Invariant: What must remain true for the system to be coherent?
+- Canonical owner / contract: Which owner, contract, or source-of-truth should carry the behavior?
+- Responsibility overlap: What duplicate owner, caller-side patch, fallback, or stale path might still carry real logic?
+- Higher-level simplification: Can the problem be solved at the owner / contract / source-of-truth layer instead of by another local branch?
+- Retirement / falsifier: What old path retires, or what evidence would disprove this architecture judgment?
+- Verdict: proceed | revise design | split owner | return to baseline | needs ADR/baseline sync
+```
+
+Do not run this lens for every low-risk task. If it does not change the
+decision surface, return to the active workflow immediately.
+
 ## Composition
 
 - With `brainstorming`: run before approach selection when the request is broad,
   ambiguous, likely to inherit a poor product shape, or involves owner /
-  retirement / fallback / adapter risk. Use `Decision Hygiene Review` before
-  recommending or selecting an approach when those signals appear.
+  retirement / fallback / adapter risk. Use `Decision Hygiene Review` or the
+  narrower `Architecture Integrity Lens` before recommending or selecting an
+  approach when those signals appear.
 - With `systematic-debugging`: run after evidence shows repeated fixes, fallback
   growth, duplicate owners, or consumer-side patching.
 - With `writing-plans`: run before task decomposition when the plan could encode
   the wrong owner, abstraction, compatibility boundary, fallback, adapter, or
   retirement schedule. If the approved spec did not already cover this, use
-  `Decision Hygiene Review` before writing tasks.
+  `Decision Hygiene Review` or the `Architecture Integrity Lens` before writing
+  tasks.
 - With `requesting-code-review`: run when review should check direction and
   owner integrity, not just code quality.
 - With `verification-before-completion`: use only to name residual directional

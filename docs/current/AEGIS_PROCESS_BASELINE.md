@@ -183,6 +183,10 @@ Canonical lenses:
   decision-needed, and whether the idea deserves implementation
 - `Plan Pressure Test` in `writing-plans`: owner / contract / retirement risk,
   verification scope, and task executability
+- `Architecture Integrity Lens` in `first-principles-review`, composed by
+  `brainstorming` and `writing-plans`: invariant, canonical owner / contract,
+  responsibility overlap, higher-level simplification, retirement / falsifier,
+  and verdict before a risky approach or plan decomposition is endorsed
 - `Plan-Time Complexity Check` in `brainstorming` and `writing-plans`: target
   file pressure, owner fit, and better boundary options before implementation
 - `Pre-Edit Complexity Check` in implementation workflows: actual edit-file
@@ -642,7 +646,10 @@ This process baseline should be projected into the following skills as a priorit
     ambiguous direction, repeated fixes, fallback growth, duplicate owners, or
     architecture/product direction risk; own the decision hygiene escalation for
     invariants, owner / retirement, and falsification checks before risky specs
-    or plans are endorsed; do not add it to the always-loaded hot path
+    or plans are endorsed; own the narrower `Architecture Integrity Lens` for
+    responsibility overlap, higher-level owner / contract simplification,
+    caller-side fallback, stale path, and retirement / falsifier checks; do not
+    add it to the always-loaded hot path
 - `using-aegis`
   - Add complexity routing, project workspace creation boundary, and prompt hygiene hot path
 - `systematic-debugging`

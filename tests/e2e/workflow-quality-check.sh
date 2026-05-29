@@ -162,6 +162,8 @@ assert_contains "$baseline" "Product Risk Lens" \
     "workflow quality baseline includes product risk lens"
 assert_contains "$baseline" "Plan Pressure Test" \
     "workflow quality baseline includes plan pressure test"
+assert_contains "$baseline" "Architecture Integrity Lens" \
+    "workflow quality baseline includes architecture integrity lens"
 assert_contains "$baseline" "Findings First" \
     "workflow quality baseline includes findings-first review lens"
 assert_contains "$baseline" "Readiness Summary" \
@@ -172,6 +174,8 @@ assert_contains "$baseline" "role persona.*review lens|review lens.*role persona
     "workflow quality baseline keeps role personas out of strong-opinion lenses"
 assert_contains "$process_doc" "Strong-Opinion Review Lenses" \
     "process baseline references strong-opinion review lenses"
+assert_contains "$process_doc" "Architecture Integrity Lens" \
+    "process baseline references architecture integrity lens"
 
 for skill in \
     "using-aegis" \
@@ -198,6 +202,8 @@ assert_contains "skills/brainstorming/SKILL.md" "Product Risk Lens" \
     "brainstorming includes product risk lens"
 assert_contains "skills/brainstorming/SKILL.md" "Plan-Time Complexity Check" \
     "brainstorming includes plan-time complexity check"
+assert_contains "skills/brainstorming/SKILL.md" "Architecture Integrity Lens" \
+    "brainstorming includes architecture integrity lens"
 assert_contains "skills/brainstorming/SKILL.md" "Better file boundary" \
     "brainstorming checks better file boundary"
 assert_contains "skills/brainstorming/SKILL.md" "review lens, not persona|not a persona" \
@@ -214,6 +220,12 @@ assert_contains "skills/writing-plans/SKILL.md" "Plan-Time Complexity Check" \
     "writing-plans includes plan-time complexity check"
 assert_contains "skills/writing-plans/SKILL.md" "owner / contract / retirement" \
     "writing-plans pressure-tests owner contract retirement risk"
+assert_contains "skills/writing-plans/SKILL.md" "Architecture Integrity Lens" \
+    "writing-plans includes architecture integrity lens"
+assert_contains "skills/first-principles-review/SKILL.md" "Architecture Integrity Lens" \
+    "first-principles review owns architecture integrity lens"
+assert_contains "skills/first-principles-review/SKILL.md" "Higher-level simplification" \
+    "first-principles review checks higher-level simplification"
 assert_contains "skills/test-driven-development/SKILL.md" "Pre-Edit Complexity Check" \
     "test-driven-development includes pre-edit complexity check"
 assert_contains "skills/test-driven-development/SKILL.md" "TDD Mode" \
@@ -248,6 +260,8 @@ assert_contains "skills/verification-before-completion/SKILL.md" "section labels
     "verification skill localizes user-facing completion cards"
 assert_contains "skills/verification-before-completion/SKILL.md" "Architecture Alignment" \
     "verification skill defines architecture alignment check"
+assert_contains "skills/verification-before-completion/SKILL.md" "Integrity Residual Risk" \
+    "verification skill reports architecture integrity residual risk when triggered"
 assert_contains "skills/verification-before-completion/SKILL.md" "ADR Backfill Check" \
     "verification skill defines ADR backfill check"
 assert_contains "skills/verification-before-completion/SKILL.md" "recording-architecture-decisions" \
@@ -306,6 +320,10 @@ assert_contains "skills/requesting-code-review/code-reviewer.md" "bugs first, ri
     "code reviewer template prioritizes bugs risks and tests"
 assert_contains "skills/requesting-code-review/code-reviewer.md" "ownership map, contract inventory, and dependency direction" \
     "code reviewer template checks baseline ownership contracts and dependencies"
+assert_contains "skills/requesting-code-review/code-reviewer.md" "highest appropriate owner/contract layer" \
+    "code reviewer checks highest appropriate owner or contract layer"
+assert_contains "skills/requesting-code-review/code-reviewer.md" "caller-side fallback" \
+    "code reviewer flags caller-side fallback masking contract fixes"
 assert_contains "skills/requesting-code-review/code-reviewer.md" "baseline defect, architecture drift, or intentional architecture change" \
     "code reviewer template distinguishes baseline defect and drift"
 assert_contains "agents/code-reviewer.md" "skills/requesting-code-review/code-reviewer.md" \
@@ -386,6 +404,7 @@ expected_ids = {
     "layer-stop-user-falsifier-correction",
     "strong-opinion-product-risk-lens",
     "strong-opinion-plan-pressure-test",
+    "architecture-integrity-higher-level-path",
     "strong-opinion-review-findings-first",
     "strong-opinion-release-readiness-summary",
     "strong-opinion-retro-memory-filter",
@@ -520,6 +539,10 @@ for contract, required in strong_lens_contracts.items():
         raise SystemExit(f"compact output contracts must include {contract}")
     if required not in contracts[contract]:
         raise SystemExit(f"{contract} compact contract must include {required}")
+
+for contract in ("brainstorming", "writing-plans"):
+    if "Architecture Integrity Lens" not in contracts[contract]:
+        raise SystemExit(f"{contract} compact contract must include Architecture Integrity Lens")
 
 by_id = {item["id"]: item for item in samples}
 adr_sample = by_id["architecture-completion-adr-backfill-check"]
@@ -703,6 +726,32 @@ for required in (
 for required_signal in ("plan-pressure-test", "owner-contract-retirement", "verification-scope"):
     if required_signal not in plan_pressure_sample.get("verificationSignal", ""):
         raise SystemExit(f"plan pressure test sample must require {required_signal}")
+
+architecture_integrity_sample = by_id["architecture-integrity-higher-level-path"]
+if architecture_integrity_sample.get("expectedPrimarySkill") != "writing-plans":
+    raise SystemExit("architecture integrity sample must use writing-plans")
+if "first-principles-review" not in architecture_integrity_sample.get("allowedSecondarySkills", []):
+    raise SystemExit("architecture integrity sample must allow first-principles-review")
+for required in (
+    "write-tasks-before-architecture-integrity-lens",
+    "add-caller-side-fallback-without-higher-owner-check",
+    "skip-retirement-or-falsifier",
+    "turn-integrity-lens-into-runtime-gate",
+):
+    if required not in architecture_integrity_sample.get("mustNotDo", []):
+        raise SystemExit(f"architecture integrity sample must forbid {required}")
+for required_signal in (
+    "architecture-integrity-lens",
+    "invariant",
+    "canonical-owner-contract",
+    "responsibility-overlap",
+    "higher-level-path",
+    "retirement",
+    "falsifier",
+    "verdict",
+):
+    if required_signal not in architecture_integrity_sample.get("verificationSignal", ""):
+        raise SystemExit(f"architecture integrity sample must require {required_signal}")
 
 review_lens_sample = by_id["strong-opinion-review-findings-first"]
 if review_lens_sample.get("expectedPrimarySkill") != "requesting-code-review":

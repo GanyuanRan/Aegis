@@ -58,15 +58,23 @@ what/why/acceptance and do not expand into a formal design unless new
 architecture, contract, migration, or cross-module uncertainty appears.
 
 Compact output contract before writing the plan: `Plan Basis`, `Files`,
-`Compatibility`, `Plan Pressure Test`, `Plan-Time Complexity Check`, `Tasks`,
-`Risks`, and `Retirement`. Expand only where the approved scope, risk, or
-verification surface requires it.
+`Compatibility`, `Architecture Integrity Lens`, `Plan Pressure Test`,
+`Plan-Time Complexity Check`, `Tasks`, `Risks`, and `Retirement`. Expand only
+where the approved scope, risk, or verification surface requires it.
+
+Use the `Architecture Integrity Lens` before task decomposition when an
+executable plan may still encode responsibility overlap, a wrong canonical
+owner, a caller-side fallback, a stale path carrying real logic, or a missed
+higher-level owner / contract / source-of-truth simplification. Keep it compact:
+invariant, canonical owner / contract, responsibility overlap, higher-level
+simplification, retirement / falsifier, and verdict.
 
 Use a compact `Plan Pressure Test` before task decomposition:
 
 ```text
 Plan Pressure Test:
 - Owner / contract / retirement:
+- Architecture integrity / higher-level path:
 - Verification scope:
 - Task executability:
 - Pressure result: proceed | revise plan | return to design
@@ -106,8 +114,8 @@ rediscovering the decision from scratch.
 If task decomposition would encode a new owner, duplicate owner, fallback,
 adapter, compat-only carrier, delete-first question, unverified assumption, or
 long-term stability claim that the spec did not already settle, use
-`first-principles-review` and its `Decision Hygiene Review` before task
-decomposition.
+`first-principles-review` and its `Decision Hygiene Review` or `Architecture
+Integrity Lens` before task decomposition.
 
 ## Aegis Project Workspace
 
@@ -125,9 +133,11 @@ Before you leave this workflow, the written plan must make these items answerabl
 2. **Which baseline docs, ADRs, or requirements shaped the plan**
 3. **What files own the change**
 4. **What compatibility boundary must hold**
-5. **What plan-time complexity pressure exists and which edit boundary is safer**
-6. **What verification proves each major slice**
-7. **What risks, rollback surface, old owner/fallback handling, ADR signal preservation, and baseline-sync signals remain**
+5. **Whether the architecture integrity check found a higher-level owner /
+   contract path before task decomposition**
+6. **What plan-time complexity pressure exists and which edit boundary is safer**
+7. **What verification proves each major slice**
+8. **What risks, rollback surface, old owner/fallback handling, ADR signal preservation, and baseline-sync signals remain**
 
 ## Bite-Sized Task Granularity
 
@@ -164,8 +174,10 @@ requirement? 2) Placeholder scan — any TBD/TODO/vague instructions? 3) Type
 consistency — do signatures match across tasks? 4) Compatibility — invariants,
 non-goals, stable interfaces marked? 5) Plan-time complexity and minimality —
 lowest-entropy owner/file boundary that fixes the bug class, not just the
-smallest textual diff? 6) Verification — exact commands? 7) Dual-track,
-decision hygiene, and ADR/baseline-sync signals preserved where needed?
+smallest textual diff? 6) Architecture integrity — any higher-level owner /
+contract / source-of-truth simplification skipped? 7) Verification — exact
+commands? 8) Dual-track, decision hygiene, and ADR/baseline-sync signals
+preserved where needed?
 
 Fix issues inline. Re-review is not needed — just fix and move on.
 
