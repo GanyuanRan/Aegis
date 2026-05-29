@@ -408,12 +408,14 @@ request.
   smoke verdict
 
 **Retention Reason**
-- CC GUI wraps Claude Code and OpenAI Codex behind an IDE plugin UI. Its
-  Codex-side skill scanner uses `.agents/skills/` style roots and expects each
-  direct child skill directory to contain `SKILL.md`.
-- Aegis is a multi-skill method pack. For CC GUI's Codex path, expose
-  individual skills as `~/.agents/skills/<skill-name>/SKILL.md` rather than
-  relying only on an umbrella `~/.agents/skills/aegis` directory.
+- CC GUI wraps Claude Code and an OpenAI/GPT provider path behind an IDE plugin
+  UI. Its OpenAI/Codex provider skill scanner uses `.agents/skills/` style
+  roots and expects each direct child skill directory to contain `SKILL.md`.
+- Aegis is a multi-skill method pack. For CC GUI's OpenAI/GPT provider path,
+  expose individual skills as `~/.agents/skills/<skill-name>/SKILL.md` rather
+  than relying only on an umbrella `~/.agents/skills/aegis` directory.
+- Selecting a specific GPT model profile inside CC GUI does not by itself
+  change this skill discovery shape.
 - User-visible entries such as `Tool: exec_command` are host adapter event
   rendering / host adapter event normalization concerns. Aegis can reduce
   unnecessary tool fan-out through workflow discipline, but it does not own CC
@@ -423,7 +425,7 @@ request.
 - `docs/README.cc-gui.md`
 - `bash tests/e2e/cc-gui-host-boundary-check.sh`
 - Future CC GUI install smoke that proves direct skill discovery, restart or
-  reload behavior, Codex-side and Claude-side provider behavior where relevant,
+  reload behavior, OpenAI/GPT and Claude Code provider behavior where relevant,
   and
   `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
 

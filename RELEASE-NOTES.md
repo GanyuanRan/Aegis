@@ -5,14 +5,16 @@
 ### CC GUI Structural Host Support
 
 - Added `docs/README.cc-gui.md` for CC GUI, the JetBrains IDEA plugin layer
-  that wraps Claude Code and OpenAI Codex.
-- Documented the Codex-side CC GUI skill discovery shape:
+  that wraps Claude Code and OpenAI/GPT provider paths.
+- Documented the CC GUI OpenAI/GPT provider skill discovery shape:
   `~/.agents/skills/<skill-name>/SKILL.md`, with Windows junction/copy and
   macOS / Linux symlink installation examples.
 - Clarified that umbrella installs such as
   `~/.agents/skills/aegis -> ~/.codex/aegis/skills` can keep native Codex
-  workflows working but are not the preferred CC GUI Codex-side exposure
-  because the umbrella directory does not itself contain `SKILL.md`.
+  workflows working but are not the preferred CC GUI OpenAI/GPT provider
+  exposure because the umbrella directory does not itself contain `SKILL.md`.
+- Clarified that selecting a specific GPT model profile in CC GUI does not by
+  itself change the skill discovery shape.
 - Kept CC GUI support structural and explicitly fresh-smoke pending; this
   release does not claim live JetBrains plugin smoke, reload behavior, or host
   adapter event rendering closeout.

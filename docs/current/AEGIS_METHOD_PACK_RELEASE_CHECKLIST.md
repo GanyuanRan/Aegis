@@ -99,8 +99,9 @@ Confirm:
   structural target surfaces, not current release-level fresh smoke closeout
 - CC GUI is described as a structural JetBrains IDEA plugin layer target,
   direct `~/.agents/skills/<skill-name>/SKILL.md` skill-directory exposure is
-  preserved for its Codex-side scanner, and host adapter event normalization is
-  not claimed as Aegis-owned
+  preserved for its OpenAI/GPT provider scanner regardless of selected GPT
+  model profile, and host adapter event normalization is not claimed as
+  Aegis-owned
 - Pi CLI is described as a structural Agent Skills / Pi package host surface,
   not current release-level fresh smoke closeout
 - OpenClaw is described as individual local `SKILL.md` skill-directory install,

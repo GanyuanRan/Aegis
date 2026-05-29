@@ -105,7 +105,7 @@ Aegis keeps a multi-host, plugin-installable distribution goal.
 | --- | --- | --- |
 | `Codex`, `OpenCode` | Fresh evidence exists for the current method-pack scope | [Codex](docs/README.codex.md), [OpenCode](docs/README.opencode.md) |
 | `Claude Code`, `CodeBuddy`, `DeepSeek-TUI`, `Trae` | Install guides exist; release-level fresh host smoke is still pending | [Claude Code](docs/README.claude-code.md), [CodeBuddy](docs/README.codebuddy.md), [DeepSeek-TUI](docs/README.deepseek-tui.md), [Trae](docs/README.trae.md) |
-| `CC GUI (JetBrains IDEA)` | Structural IDE plugin layer support for Claude Code / Codex; release-level fresh host smoke is still pending | [CC GUI](docs/README.cc-gui.md) |
+| `CC GUI (JetBrains IDEA)` | Structural IDE plugin layer support for Claude Code / OpenAI-GPT provider paths; release-level fresh host smoke is still pending | [CC GUI](docs/README.cc-gui.md) |
 | `Antigravity CLI`, `Antigravity IDE`, `Antigravity App` | Structural targets; release-level fresh host smoke is still pending | [Antigravity](docs/README.antigravity.md) |
 | `Pi CLI`, `OpenClaw`, `Hermes Agent` | Structural Agent Skills / `SKILL.md` skill-host adaptations; release-level fresh host smoke is still pending | [Pi CLI](docs/README.pi.md), [OpenClaw](docs/README.openclaw.md), [Hermes Agent](docs/README.hermes-agent.md) |
 | `Gemini CLI` | Transitional compatibility surface while Antigravity support matures | [Compatibility Matrix](docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md) |

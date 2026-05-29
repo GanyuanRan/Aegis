@@ -40,7 +40,7 @@ The current snapshot is based on fresh evidence and current docs landed as of
 | Host | Current Status | Why Not Yet |
 | --- | --- | --- |
 | `Claude Code` | Has install guide and plugin skeleton; no current release-level fresh smoke verdict | `docs/README.claude-code.md` established, but real host regression is still deferred |
-| `CC GUI (JetBrains IDEA)` | Structural IDE plugin layer target for Claude Code / OpenAI Codex; no current release-level fresh smoke verdict | `docs/README.cc-gui.md` established; CC GUI's Codex-side scanner expects direct `.agents/skills/<skill-name>/SKILL.md` skill directories, so Aegis must expose individual skills rather than only an umbrella `~/.agents/skills/aegis` directory; live IDE plugin smoke and host adapter event rendering remain deferred |
+| `CC GUI (JetBrains IDEA)` | Structural IDE plugin layer target for Claude Code / OpenAI-GPT provider paths; no current release-level fresh smoke verdict | `docs/README.cc-gui.md` established; CC GUI's OpenAI/Codex provider scanner expects direct `.agents/skills/<skill-name>/SKILL.md` skill directories regardless of the selected GPT model profile, so Aegis must expose individual skills rather than only an umbrella `~/.agents/skills/aegis` directory; live IDE plugin smoke and host adapter event rendering remain deferred |
 | `CodeBuddy` | Has `.codebuddy-plugin/` skeleton and native `SKILL.md` manual install instructions; no current release-level fresh smoke verdict | `docs/README.codebuddy.md` established; evidence from CodeBuddy skills/plugin docs and this repo's `.codebuddy-plugin/`; real host regression still deferred |
 | `DeepSeek-TUI` | Native `SKILL.md` discovery supports manual installation; no current release-level fresh smoke verdict | `docs/README.deepseek-tui.md` established; evidence from DeepSeek-TUI README/source discovery contract; real host regression still deferred |
 | `Trae` | Native `SKILL.md` discovery supports manual installation; no current release-level fresh smoke verdict | `docs/README.trae.md` established; evidence from Trae skills docs; real host regression still deferred |
@@ -74,7 +74,7 @@ The current snapshot only states:
 
 1. `Codex` and `OpenCode` are the two mainlines with the most fresh evidence
 2. `Kimi Code CLI` reuses the Codex path (`.agents/skills/`); Aegis takes effect via a minimal install prompt
-3. `CC GUI (JetBrains IDEA)` can expose Aegis to its OpenAI Codex path through direct `~/.agents/skills/<skill-name>/SKILL.md` directories, but live IDE plugin behavior, reload behavior, and `Tool: exec_command` rendering remain fresh-smoke pending
+3. `CC GUI (JetBrains IDEA)` can expose Aegis to its OpenAI/GPT provider path through direct `~/.agents/skills/<skill-name>/SKILL.md` directories, but the selected GPT model profile does not by itself change the skill discovery shape, and live IDE plugin behavior, reload behavior, and `Tool: exec_command` rendering remain fresh-smoke pending
 4. `CodeBuddy` can install Aegis via `.codebuddy-plugin/` or native `SKILL.md` discovery, but local CLI live smoke has not yet formed valid evidence
 5. `DeepSeek-TUI` can manually install Aegis skills via native `SKILL.md` discovery, but `/skill install github:GanyuanRan/Aegis` is not the current canonical path
 6. `Trae` can manually install Aegis skills via native `SKILL.md` discovery; `.agents/skills/` is an optional Trae capability, not Aegis's canonical Trae path

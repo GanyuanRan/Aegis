@@ -1,7 +1,7 @@
 # Aegis for CC GUI
 
 Guide for using Aegis with CC GUI, the JetBrains IDEA plugin layer for
-Claude Code and OpenAI Codex.
+Claude Code and OpenAI/GPT provider paths.
 
 This page only covers the CC GUI host install path. For the current
 `Aegis Method Pack` authority order, release gate, host compatibility status,
@@ -14,15 +14,19 @@ and known limitations, read:
 
 ## Current Verdict
 
-CC GUI is an independent JetBrains IDEA plugin that wraps Claude Code and
-OpenAI Codex through a visual IDE interface. Its public project describes an
-Agent system, Skills slash commands, MCP support, and permission management:
+CC GUI is an independent JetBrains IDEA plugin that wraps Claude Code and an
+OpenAI/GPT provider path through a visual IDE interface. Its public project
+uses the phrase "Claude Code and OpenAI Codex" for part of that OpenAI
+integration; this guide uses "OpenAI/GPT provider path" to avoid confusing the
+provider path with a specific GPT model selection. The project also describes
+an Agent system, Skills slash commands, MCP support, and permission management:
 
 - https://github.com/zhukunpenglinyutong/jetbrains-cc-gui
 - https://plugins.jetbrains.com/plugin/29342-cc-gui-claude-or-codex-
 
-For Aegis, the important compatibility boundary is the Codex-side skill
-directory shape. CC GUI's Codex skill scanner reads `.agents/skills/` style
+For Aegis, the important compatibility boundary is CC GUI's OpenAI/GPT provider
+skill directory shape, not the specific GPT model selected inside that
+provider. CC GUI's OpenAI/Codex skill scanner reads `.agents/skills/` style
 directories and expects each direct child skill directory to contain its own
 `SKILL.md` file:
 
@@ -36,9 +40,12 @@ That differs from an umbrella directory such as:
 ~/.agents/skills/aegis/ -> ~/.codex/aegis/skills/
 ```
 
-The umbrella shape can keep native Codex workflows working, but it is not the
-preferred CC GUI Codex-side exposure because `~/.agents/skills/aegis/` does not
-itself contain `SKILL.md`.
+The umbrella shape can keep native Codex-style workflows working, but it is not
+the preferred CC GUI OpenAI/GPT provider exposure because
+`~/.agents/skills/aegis/` does not itself contain `SKILL.md`.
+
+Selecting a specific GPT model profile in CC GUI does not by itself change this
+skill discovery shape.
 
 This guide records structural CC GUI support. It does **not** claim current release-level live smoke evidence for CC GUI; fresh smoke is pending.
 
@@ -47,7 +54,8 @@ This guide records structural CC GUI support. It does **not** claim current rele
 Keep the Aegis method-pack checkout separate, then expose each Aegis skill as a
 direct child under `~/.agents/skills/`. This preserves:
 
-- CC GUI / Codex skill discovery through direct `SKILL.md` directories
+- CC GUI OpenAI/GPT provider skill discovery through direct `SKILL.md`
+  directories
 - Aegis project workspace support through the method-pack root
 - update and doctor verification through Aegis scripts
 
@@ -95,9 +103,10 @@ Expected structural result:
 
 ## Claude-Side Use
 
-When CC GUI is used with Claude Code rather than OpenAI Codex, start from
-`docs/README.claude-code.md` and CC GUI's own skill management UI. Verify the
-same direct skill-directory invariant for any copied or linked skills:
+When CC GUI is used with Claude Code rather than the OpenAI/GPT provider path,
+start from `docs/README.claude-code.md` and CC GUI's own skill management UI.
+Verify the same direct skill-directory invariant for any copied or linked
+skills:
 
 ```text
 <claude-or-cc-gui-skill-root>/<skill-name>/SKILL.md
@@ -124,7 +133,7 @@ the installed Aegis method-pack root.
 Treat the install as complete only if the JSON reports `"ok": true`,
 `"workspaceSupport": "available"`, and `"configStatus": "configured"`.
 
-For Codex-side CC GUI skill discovery, also verify the discovery root:
+For CC GUI OpenAI/GPT provider skill discovery, also verify the discovery root:
 
 ```bash
 cd <aegis-method-pack-root>
@@ -140,7 +149,7 @@ python scripts\aegis-doctor.py --discovery-root "$env:USERPROFILE\.agents\skills
 
 Expected result:
 
-- CC GUI / Codex can see Aegis skills such as `using-aegis`,
+- CC GUI's OpenAI/GPT provider path can see Aegis skills such as `using-aegis`,
   `systematic-debugging`, and `brainstorming`.
 - CC GUI can load the relevant skill on demand.
 - The installed Aegis method-pack root remains available for workspace support.
@@ -189,13 +198,14 @@ and updates only the current host unless the user explicitly asks for `--all`.
 
 ## Activation Mode
 
-CC GUI uses its own IDE/plugin layer around Claude Code and OpenAI Codex. It
+CC GUI uses its own IDE/plugin layer around Claude Code and OpenAI/GPT provider
+paths. It
 does not currently use an Aegis bootstrap hook from this repository.
 
-That means `AEGIS_ACTIVATION_MODE=explicit` does not override CC GUI, Codex, or
-Claude Code native skill matching by itself. For explicit use, ask the host to
-load an Aegis skill directly, such as `using-aegis`, or name the skill in your
-request.
+That means `AEGIS_ACTIVATION_MODE=explicit` does not override CC GUI, its
+OpenAI/GPT provider path, or Claude Code native skill matching by itself. For
+explicit use, ask the host to load an Aegis skill directly, such as
+`using-aegis`, or name the skill in your request.
 
 You can still write the shared user-local Aegis config from the installed
 method-pack root:
@@ -234,7 +244,8 @@ workflow orchestration.
 1. Confirm that direct skill directories exist:
    `~/.agents/skills/<skill-name>/SKILL.md`.
 2. Avoid relying only on the umbrella directory
-   `~/.agents/skills/aegis/ -> ~/.codex/aegis/skills/` for CC GUI.
+   `~/.agents/skills/aegis/ -> ~/.codex/aegis/skills/` for CC GUI's
+   OpenAI/GPT provider path.
 3. Restart CC GUI or reload the IDE plugin window.
 4. Run `python scripts/aegis-doctor.py --discovery-root ~/.agents/skills` from
    the Aegis method-pack root.
