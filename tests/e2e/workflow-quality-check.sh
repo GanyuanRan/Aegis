@@ -120,7 +120,8 @@ for dimension in \
     "Micro-Slice Artifact Budget" \
     "Strong-Opinion Review Lenses" \
     "Baseline Role Alignment" \
-    "Aegis Invocation Visibility"; do
+    "Aegis Invocation Visibility" \
+    "Semantic Slots and Natural Surface"; do
     assert_contains "$baseline" "$dimension" "baseline defines $dimension"
 done
 
@@ -345,12 +346,22 @@ assert_contains "skills/long-task-continuation/SKILL.md" "parent plan" \
     "long-task continuation reuses parent plan for micro-slices"
 assert_contains "skills/long-task-continuation/SKILL.md" "do not create.*plan.*spec|Do not create.*plan.*spec" \
     "long-task continuation prevents per-slice plan/spec files"
-assert_contains "skills/verification-before-completion/SKILL.md" "Evidence Card" \
-    "verification skill defines evidence card"
+assert_contains "skills/verification-before-completion/SKILL.md" "Required evidence slots" \
+    "verification skill defines required evidence semantic slots"
+assert_not_contains "skills/verification-before-completion/SKILL.md" "Command / Check|Exit Status" \
+    "verification skill does not require legacy fixed English evidence fields"
 assert_contains "skills/verification-before-completion/SKILL.md" "Readiness Summary" \
     "verification skill defines readiness summary"
 assert_contains "skills/verification-before-completion/SKILL.md" "Natural Aegis closeout" \
     "verification skill summarizes natural Aegis closeout"
+assert_contains "skills/verification-before-completion/SKILL.md" "Semantic Slots" \
+    "verification skill preserves required semantic slots"
+assert_contains "skills/verification-before-completion/SKILL.md" "Natural Surface" \
+    "verification skill allows natural user-facing expression"
+assert_contains "skills/verification-before-completion/SKILL.md" "Governance Receipt" \
+    "verification skill defines governance receipt closeout"
+assert_contains "skills/verification-before-completion/SKILL.md" "natural.*semantic slots|semantic slots.*natural" \
+    "verification skill treats natural expression as valid when semantic slots are present"
 assert_contains "skills/verification-before-completion/SKILL.md" "one sentence" \
     "verification skill keeps Aegis closeout concise by default"
 assert_contains "skills/verification-before-completion/SKILL.md" "hold one boundary steady" \
@@ -501,7 +512,7 @@ assert_contains "skills/recording-architecture-decisions/SKILL.md" "existing bas
 assert_contains "skills/recording-architecture-decisions/SKILL.md" "not completion authority" \
     "recording architecture decisions skill preserves authority boundary"
 
-assert_not_contains "skills/using-aegis/SKILL.md" "Evidence Card" \
+assert_not_contains "skills/using-aegis/SKILL.md" "Required evidence slots|Governance Receipt" \
     "using-aegis does not absorb verification output contract"
 assert_not_contains "skills/using-aegis/SKILL.md" "Design Spec.*Design Spec.*Design Spec" \
     "using-aegis hot path avoids repeated design-spec ceremony"

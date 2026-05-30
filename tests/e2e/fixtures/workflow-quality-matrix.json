@@ -12,7 +12,8 @@
     "tdd-route-mode",
     "strong-opinion-review-lenses",
     "baseline-role-alignment",
-    "aegis-invocation-visibility"
+    "aegis-invocation-visibility",
+    "semantic-slots-natural-surface"
   ],
   "samples": [
     {
@@ -109,10 +110,21 @@
       "expectedPrimarySkill": "verification-before-completion",
       "allowedSecondarySkills": [],
       "mustNotDo": ["claim-complete-without-evidence", "hide-residual-risk"],
-      "expectedOutputShape": "evidence-card",
+      "expectedOutputShape": "evidence-slots",
       "workspacePolicy": "check-workspace-if-docs-aegis-was-touched",
       "expectedArtifacts": ["EvidenceBundleDraft"],
       "verificationSignal": "fresh-command-exit-status-and-covered-scope"
+    },
+    {
+      "id": "completion-governance-receipt-natural",
+      "prompt": "Before calling this done, give me a natural completion note that still exposes what was verified, what was not covered, the residual risk, and confidence.",
+      "expectedPrimarySkill": "verification-before-completion",
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["skip-governance-receipt", "drop-covered-scope", "drop-uncovered-scope", "drop-confidence", "replace-evidence-slots-with-skill-trace"],
+      "expectedOutputShape": "natural-evidence-slots-plus-governance-receipt",
+      "workspacePolicy": "check-workspace-if-docs-aegis-was-touched",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "governance-receipt-command-exit-status-covered-scope-uncovered-scope-residual-risk-confidence"
     },
     {
       "id": "architecture-completion-adr-backfill-check",
@@ -120,7 +132,7 @@
       "expectedPrimarySkill": "verification-before-completion",
       "allowedSecondarySkills": ["recording-architecture-decisions", "requesting-code-review"],
       "mustNotDo": ["skip-architecture-alignment", "skip-adr-backfill-check", "create-authoritative-gate-decision", "force-adr-creation-without-trigger"],
-      "expectedOutputShape": "evidence-card-plus-architecture-alignment-and-adr-backfill-check",
+      "expectedOutputShape": "evidence-slots-plus-architecture-alignment-and-adr-backfill-check",
       "workspacePolicy": "check-workspace-if-docs-aegis-was-touched",
       "expectedArtifacts": ["EvidenceBundleDraft"],
       "verificationSignal": "fresh-evidence-plus-architecture-alignment-trigger-action-baseline-sync-or-skip-reason"
@@ -197,7 +209,7 @@
       "expectedPrimarySkill": null,
       "allowedSecondarySkills": ["verification-before-completion"],
       "mustNotDo": ["auto-trigger-tdd", "treat-off-as-skip-verification", "skip-verification-before-completion", "delete-tests-because-tdd-is-off"],
-      "expectedOutputShape": "implementation-with-tdd-route-off-and-evidence-card",
+      "expectedOutputShape": "implementation-with-tdd-route-off-and-evidence-slots",
       "workspacePolicy": "no-workspace-unless-risk-escalates",
       "expectedArtifacts": [],
       "verificationSignal": "tdd-route-off-no-automatic-tdd-fresh-completion-evidence"
@@ -241,7 +253,7 @@
       "expectedPrimarySkill": "verification-before-completion",
       "allowedSecondarySkills": ["requesting-code-review"],
       "mustNotDo": ["skip-complexity-delta", "skip-complexity-governance-suggestion", "ignore-file-crossing-800-lines", "retain-old-logic-without-retirement-trigger", "claim-completion-with-entropy-increase-hidden"],
-      "expectedOutputShape": "evidence-card-plus-complexity-delta-governance-suggestion-and-retirement-closure",
+      "expectedOutputShape": "evidence-slots-plus-complexity-delta-governance-suggestion-and-retirement-closure",
       "workspacePolicy": "check-workspace-if-docs-aegis-was-touched",
       "expectedArtifacts": ["EvidenceBundleDraft"],
       "verificationSignal": "fresh-evidence-plus-complexity-delta-complexity-governance-suggestion-file-thresholds-net-entropy-retirement-closure"
@@ -263,7 +275,7 @@
       "expectedPrimarySkill": "verification-before-completion",
       "allowedSecondarySkills": [],
       "mustNotDo": ["force-adr-backfill-ceremony", "create-project-workspace-records", "treat-wording-edit-as-architecture-decision"],
-      "expectedOutputShape": "short-evidence-card-with-no-adr-ceremony",
+      "expectedOutputShape": "short-evidence-slots-with-no-adr-ceremony",
       "workspacePolicy": "no-workspace",
       "expectedArtifacts": [],
       "verificationSignal": "targeted-readback-or-git-diff-check-without-adr-backfill-expansion"
@@ -273,8 +285,8 @@
       "prompt": "A bug fix touched a host compatibility helper, but only restored the documented install/discovery contract. Verify completion and decide whether ADR backfill is needed.",
       "expectedPrimarySkill": "verification-before-completion",
       "allowedSecondarySkills": [],
-      "mustNotDo": ["force-adr-creation-for-baseline-restoration", "treat-implementation-detail-as-durable-decision", "skip-evidence-card"],
-      "expectedOutputShape": "evidence-card-plus-adr-backfill-check-with-trigger-no-or-skip",
+      "mustNotDo": ["force-adr-creation-for-baseline-restoration", "treat-implementation-detail-as-durable-decision", "skip-evidence-slots"],
+      "expectedOutputShape": "evidence-slots-plus-adr-backfill-check-with-trigger-no-or-skip",
       "workspacePolicy": "check-workspace-if-docs-aegis-was-touched",
       "expectedArtifacts": ["EvidenceBundleDraft"],
       "verificationSignal": "fresh-evidence-plus-skip-reason-that-existing-baseline-was-restored"
@@ -433,6 +445,17 @@
       "verificationSignal": "aegis-invocation-visibility-aegis-reason-note-why-aegis-is-shaping-task-natural-stage-transition-natural-boundary-closeout-structured-trace-reserved-advisory-not-authority"
     },
     {
+      "id": "aegis-semantic-slots-natural-surface",
+      "prompt": "I want to implement this with Aegis guidance, but say it naturally: first read the owner/baseline and current implementation, then add a failing generator main-path example, then make the minimal repair and verify.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": ["verification-before-completion"],
+      "mustNotDo": ["require-rigid-template", "hide-governance-slots", "default-to-skill-trace", "treat-natural-language-as-missing-governance"],
+      "expectedOutputShape": "natural-governance-transition-with-semantic-slots",
+      "workspacePolicy": "workspace-only-if-medium-risk-or-process-trail-needed",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "semantic-slots-natural-surface-owner-baseline-failure-example-minimal-repair-verification"
+    },
+    {
       "id": "strong-opinion-review-findings-first",
       "prompt": "Review this risky diff and be blunt: lead with bugs, risks, and missing tests before any summary.",
       "expectedPrimarySkill": "requesting-code-review",
@@ -449,7 +472,7 @@
       "expectedPrimarySkill": "verification-before-completion",
       "allowedSecondarySkills": ["recording-architecture-decisions"],
       "mustNotDo": ["auto-commit", "auto-tag", "auto-publish", "treat-readiness-as-completion-authority"],
-      "expectedOutputShape": "evidence-card-plus-readiness-summary",
+      "expectedOutputShape": "evidence-slots-plus-readiness-summary",
       "workspacePolicy": "check-workspace-if-docs-aegis-was-touched",
       "expectedArtifacts": ["EvidenceBundleDraft"],
       "verificationSignal": "readiness-summary-tests-docs-version-hosts-residual-risk"
@@ -508,7 +531,7 @@
     "test-driven-development": ["TDD Route", "Preflight Gate", "Pre-Edit Complexity Check", "RED", "GREEN", "REFACTOR", "Regression Scope"],
     "requesting-code-review": ["Findings First", "Evidence Review", "Baseline / Current Authority", "Baseline Role Alignment", "Compatibility / Retirement", "Review Readiness"],
     "recording-architecture-decisions": ["Decision Candidate", "ADR Gate", "Retro / Memory Filter", "ADR Action", "Owner Surface", "Baseline Sync", "Boundary"],
-    "verification-before-completion": ["Command / Check", "Exit Status", "Covered", "Not Covered", "Residual Risk", "Confidence", "Goal status", "Success evidence", "Stop state", "Readiness Summary", "Natural Aegis closeout", "Complexity Delta", "Complexity Governance Suggestion", "Baseline Alignment", "Architecture Alignment", "ADR Backfill Check", "Retirement Closure"],
+    "verification-before-completion": ["evidence-action", "verification-result", "covered-scope", "uncovered-scope", "residual-risk", "confidence-grade", "Goal status", "Success evidence", "Stop state", "Readiness Summary", "Natural Aegis closeout", "Semantic Slots", "Natural Surface", "Governance Receipt", "Complexity Delta", "Complexity Governance Suggestion", "Baseline Alignment", "Architecture Alignment", "ADR Backfill Check", "Retirement Closure"],
     "long-task-continuation": ["TodoCheckpointDraft", "Evidence", "DriftCheckDraft", "Risk / Unknown", "Next"],
     "executing-plans": ["Plan Review", "Todo", "Pre-Edit Complexity Check", "Verification", "Checkpoint"]
   }

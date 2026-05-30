@@ -1,5 +1,69 @@
 # Aegis Release Notes
 
+## v1.9.4 (2026-05-30)
+
+### Semantic Slots and Natural Surface
+
+- Added `Semantic Slots and Natural Surface` to the workflow quality baseline so
+  Aegis can preserve governance forcing functions without making every
+  user-facing response look like an internal process log.
+- Clarified that required governance checks may appear as localized headings,
+  natural prose, or compact cards when the required slots remain explicit and
+  auditable.
+- Kept fixed skill traces, used-skill lists, and stage handoff logs reserved
+  for audit, debug, release, long-task review, or explicit user request.
+
+### Verification Evidence Slots
+
+- Updated `verification-before-completion` from a rigid `Evidence Card` shape to
+  required evidence semantic slots: evidence action, result, covered scope,
+  uncovered scope, residual risk, and confidence grade.
+- Added `Governance Receipt` as the compact closeout form for non-trivial
+  Aegis-shaped work while preserving the boundary that method-pack evidence does
+  not grant completion authority.
+- Clarified that natural completion notes are valid only when they preserve the
+  required evidence, residual-risk, confidence, retirement, baseline, and
+  architecture fields.
+
+### Workflow Quality Matrix Coverage
+
+- Added representative matrix samples for natural governance transitions and
+  natural completion notes that still expose verification evidence, covered and
+  uncovered scope, residual risk, and confidence.
+- Updated verification-related expected output shapes from legacy
+  `evidence-card` wording to semantic evidence slot wording.
+- Extended the matrix validator to require the new semantic-slot samples,
+  contract fields, output shapes, and verification signals.
+
+### Contract Test Updates
+
+- Updated `workflow-quality-check.sh` to lock the new semantic-slot baseline,
+  verification skill contract, natural-surface allowance, and governance receipt
+  expectations.
+- Updated `governance-completion-contract-check.sh` to check residual-risk
+  semantics instead of only a fixed English field label.
+- Preserved owner separation: `using-aegis` remains the routing hot path and
+  does not absorb the verification output contract.
+
+### Version
+
+- Bumped all declared plugin, marketplace, package, and extension manifests to
+  `1.9.4`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.9.4`
+- `bash scripts/bump-version.sh --audit`
+- `python -m py_compile tests/helpers/validate_workflow_quality_matrix.py`
+- `python tests/helpers/validate_workflow_quality_matrix.py tests/e2e/fixtures/workflow-quality-matrix.json`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `bash tests/e2e/governance-completion-contract-check.sh`
+- `bash tests/e2e/boundary-compliance-check.sh`
+- `bash tests/e2e/artifact-schema-check.sh`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+- `git diff --check`
+
 ## v1.9.0 (2026-05-30)
 
 ### Baseline Role Alignment

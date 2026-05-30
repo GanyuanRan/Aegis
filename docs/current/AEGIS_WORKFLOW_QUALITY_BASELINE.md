@@ -86,7 +86,7 @@ Output depth must scale with task complexity.
 Pass criteria:
 
 - low-complexity tasks use concise output
-- medium tasks may use `Spec Brief`, compact plans, or evidence cards
+- medium tasks may use `Spec Brief`, compact plans, or evidence semantic slots
 - high-complexity architecture / contract / cross-module work uses fuller
   design, planning, and verification structures
 - no workflow emits a full ceremony merely because Aegis is installed
@@ -346,6 +346,39 @@ Aegis Invocation Trace:
 - Boundary: advisory method-pack trace only
 ```
 
+### 3.17 Semantic Slots and Natural Surface
+
+Aegis output must preserve governance forcing functions without making every
+answer look like an internal process log.
+
+Pass criteria:
+
+- required governance checks are treated as `Semantic Slots`, not rigid English
+  headings
+- a `Natural Surface` is valid when the user-facing prose still makes the
+  required slots auditable
+- natural transition sentences may satisfy Aegis visibility when they name the
+  owner / baseline read, failing example, minimum repair, and verification path
+- completion output may use a compact `Governance Receipt` that groups evidence,
+  covered scope, uncovered scope, residual risk, confidence, and triggered
+  governance closure
+- fixed skill traces, used-skill lists, and stage handoff logs stay reserved for
+  audit, debug, release, long-task review, or explicit user request
+- natural expression does not relax evidence freshness, dual-track governance,
+  baseline / architecture alignment, complexity delta, retirement closure, or
+  authority-boundary requirements
+
+Example natural transition:
+
+```text
+I will follow the Aegis order here: read the owner / baseline and current
+implementation first, add a failing example for the generator main path, then
+make the minimal repair and verify it.
+```
+
+The example is valid because it exposes the semantic slots that matter for the
+task. It is not a replacement for completion evidence after the work is done.
+
 ---
 
 ## 4. Compact Output Contracts
@@ -529,13 +562,20 @@ Purpose:
 Compact contract:
 
 ```text
-Evidence Card:
-- Command / Check:
-- Exit Status:
-- Covered:
-- Not Covered:
-- Residual Risk:
-- Confidence: A | B | C
+Required evidence semantic slots:
+- evidence action / check performed
+- result / exit status
+- covered scope
+- uncovered scope
+- residual risk
+- confidence grade: A | B | C
+Semantic Slots: required governance fields may appear as localized headings,
+natural prose, or compact cards when they remain explicit and auditable
+Natural Surface: natural user-facing wording is valid when it preserves the
+semantic slots
+Governance Receipt: compact closeout for Aegis-shaped non-trivial work, naming
+the boundary held, evidence, covered and uncovered scope, residual risk, and
+confidence
 Readiness Summary: tests, docs, version, host compatibility, residual risk
 Natural Aegis closeout: one sentence naming the boundary or quality risk Aegis held steady; structured trace only for audit/debug/release/long-task review or user request
 ```

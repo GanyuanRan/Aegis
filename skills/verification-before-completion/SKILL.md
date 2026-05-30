@@ -37,17 +37,31 @@ Before ANY success/completion claim, expression of satisfaction, commit, PR, tas
 
 ## QA Closure
 
-Use this compact evidence shape before any success claim:
+Before any success claim, include the required evidence semantic slots. Natural
+prose, localized headings, or compact cards are all valid when the slots remain
+explicit and auditable.
 
 ```text
-Evidence Card:
-- Command / Check:
-- Exit Status:
-- Covered:
-- Not Covered:
-- Residual Risk:
-- Confidence: A | B | C
+Required evidence slots, one allowed card rendering:
+- Evidence action / check performed:
+- Result / exit status:
+- Covered scope:
+- Uncovered scope:
+- Residual risk:
+- Confidence grade: A | B | C
 ```
+
+Semantic Slots:
+- Required governance fields may appear as localized headings, natural prose, or
+  compact cards when they remain explicit and auditable.
+- Natural Surface is valid when natural user-facing wording preserves the
+  semantic slots; natural expression is not a reason to drop evidence,
+  uncovered scope, residual risk, confidence, retirement, baseline, or
+  architecture fields.
+- In short: natural expression is valid only when it preserves semantic slots.
+- Governance Receipt is the compact closeout form for Aegis-shaped non-trivial
+  work. It names the boundary held, evidence, covered and uncovered scope,
+  residual risk, confidence, and any triggered governance closure.
 
 1. **Remove/Restore**: side effects? temp instrumentation restored?
 2. **Evidence Bundle**: exact command, scope, exit status, key output. State what's covered and what's not. Include target test and related regression evidence. When automation is blocked, provide reproducible manual verification steps.
@@ -81,7 +95,8 @@ Evidence Card:
    recognizable JSON artifact sidecars only; they do not judge evidence
    sufficiency and do not grant completion authority.
 9. **Readiness Summary**: for release, merge, handoff, or "ready?" requests,
-   organize the evidence into a compact readiness view after the Evidence Card:
+   organize the evidence into a compact readiness view after the evidence
+   slots:
 
    ```text
    Readiness Summary:
@@ -106,6 +121,13 @@ Evidence Card:
    ```text
    This judgment used Aegis to hold one boundary steady: <boundary / quality risk>.
    ```
+
+   Natural expression may satisfy the visibility requirement when the semantic
+   slots are still explicit. For example, "I will follow the Aegis order here:
+   read the owner / baseline and current implementation first, add a failing
+   example for the main path, then make the minimal repair and verify it" is a
+   valid natural transition before implementation. Completion still needs fresh
+   evidence and the applicable Governance Receipt fields.
 
    Use structured trace only for audit, debug, release, long-task review, or user request.
    The structured form may name skills, stage transitions, quality

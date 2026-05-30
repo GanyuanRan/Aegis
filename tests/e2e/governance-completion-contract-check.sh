@@ -42,8 +42,8 @@ assert_contains "$verification_skill" "Repair Track" \
 assert_contains "$verification_skill" "Retirement Track" \
     "verification gate requires Retirement Track for governance closure"
 
-assert_contains "$verification_skill" "Residual Risk" \
-    "verification gate requires Residual Risk for governance closure"
+assert_contains "$verification_skill" "Residual Risk|residual risk" \
+    "verification gate requires residual-risk semantics for governance closure"
 
 assert_contains "$verification_skill" "User-Language Output" \
     "verification gate requires user-language output for completion cards"
