@@ -88,7 +88,8 @@ of these surfaces:
 - runtime-ready artifact boundary or evidence model
 - repair plus retirement decision that keeps or removes a durable fallback,
   adapter, compatibility path, or duplicate owner
-- intentional architecture drift that is accepted and landed
+- intentional architecture-scoped Implementation Drift that is accepted and
+  landed
 - release or distribution strategy that future contributors would otherwise
   misread
 

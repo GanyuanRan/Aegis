@@ -1,3 +1,3 @@
 I finished a feature slice, I already have test output, and I want a real review before I merge.
 
-Please review the code changes against the plan, check whether the evidence is actually sufficient, call out any architecture drift or old fallback logic that should retire, and tell me what must be fixed before merge.
+Please review the code changes against the plan, check whether the evidence is actually sufficient, call out any architecture-scoped Implementation Drift or old fallback logic that should retire, and tell me what must be fixed before merge.

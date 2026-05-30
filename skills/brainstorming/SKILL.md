@@ -66,8 +66,9 @@ changes.
 
 **Compact output contract:** `TaskIntentDraft`, `BaselineReadSetHint`,
 `ImpactStatementDraft`, `Product Risk Lens`, `Architecture Integrity Lens`,
-`Plan-Time Complexity Check`, `Options`, and `Decision Needed`. Use this
-compact shape before expanding into a full design structure.
+`Baseline Role Alignment`, `Plan-Time Complexity Check`, `Options`, and
+`Decision Needed`. Use this compact shape before expanding into a full design
+structure.
 
 **Product Risk Lens:** For ambiguous product, feature, UI, workflow, or
 architecture choices, add a compact review lens, not persona roleplay:
@@ -107,7 +108,7 @@ belongs elsewhere.
 Before approach selection, use `first-principles-review` and its
 `Decision Hygiene Review` when the candidate direction introduces a new owner,
 duplicate owner, fallback, adapter, compat-only carrier, delete-first question,
-unverified assumption, or "long-term stable" / `长期稳定` claim. Do not make it a
+unverified assumption, or "long-term stable" claim. Do not make it a
 universal design ceremony; return to this workflow once the decision surface is
 clean.
 
@@ -118,6 +119,26 @@ higher-level owner / contract / source-of-truth simplification. The lens should
 answer invariant, canonical owner / contract, responsibility overlap,
 higher-level simplification, retirement / falsifier, and verdict before the
 approach is recommended.
+
+**Baseline Role Alignment:** When a question may involve both "what should be
+built" and "where it should live", keep requirement truth separate from
+architecture truth:
+
+```text
+Baseline Role Alignment:
+- Product / Requirement Baseline:
+- Architecture / Runtime Boundary Baseline:
+- Result: aligned | Design Defect | Implementation Drift | missing-authority | needs-clarification
+- scope: requirements | architecture | both
+- Next action:
+```
+
+Use `Design Defect` when the relevant requirement, design, or baseline is wrong.
+Use `Implementation Drift` when the work deviates from a correct unchanged
+baseline. `Architecture Defect` and `Architecture Drift` remain compatibility
+aliases for architecture-scoped `Design Defect` and architecture-scoped
+`Implementation Drift`. This is a review lens, not a runtime gate or completion
+authority.
 
 **Presenting the design:** Scale sections to complexity. Cover only the surfaces that matter: architecture, components, data flow, error handling, testing, compatibility boundary. Get approval for the design before implementation when behavior, contract, architecture, or user-facing flow is being decided.
 
@@ -217,25 +238,44 @@ When creating `docs/aegis/BASELINE-GOVERNANCE.md` for the first time, use this t
 ```markdown
 # Baseline Governance
 
-## 1. Architecture Defect
-A confirmed error, gap, or contradiction IN the baseline itself.
-- Fix baseline first, then align implementation to corrected baseline.
+## 1. Baseline Roles
+- Product / Requirement Baseline: problem, accepted behavior, success evidence,
+  non-goals, workflow constraints, and approved requirement/spec intent.
+- Architecture / Runtime Boundary Baseline: canonical owner, contract,
+  source-of-truth boundary, dependency direction, compatibility, runtime-ready
+  boundary, and retirement state.
+
+## 2. Design Defect
+A confirmed error, gap, contradiction, or wrong abstraction IN the relevant
+requirement, design, or baseline.
+- Fix the defective requirement/design/baseline first.
+- Then align implementation to the corrected baseline.
 - Do NOT patch implementation around a defective baseline.
 
-## 2. Architecture Drift
-Implementation has deviated from a confirmed, correct baseline.
-- Return to baseline via the simplest path.
+## 3. Implementation Drift
+Implementation, plan, review, or documentation has deviated from a confirmed,
+correct, unchanged requirement or architecture baseline.
+- Return to baseline via the simplest stable path.
 - Do NOT "update baseline to match drift" without explicit review.
 
-## 3. Baseline Check Protocol
-Before non-trivial changes:
-1. Read the latest baseline snapshot in `baseline/`
-2. Compare current code structure against ownership map
-3. Compare current contracts against contract inventory
-4. Check for new anti-patterns not recorded in known list
-5. Report: aligned / minor drift (self-correctable) / material drift (needs review)
+## 4. Compatibility Aliases
+- Architecture Defect = architecture-scoped Design Defect.
+- Architecture Drift = architecture-scoped Implementation Drift.
+- New findings should report Design Defect / Implementation Drift plus
+  `scope: requirements | architecture | both`.
 
-## 4. Architecture Review — 7 Dimensions
+## 5. Baseline Check Protocol
+Before non-trivial changes:
+1. Read the latest Product / Requirement Baseline candidate.
+2. Read the latest Architecture / Runtime Boundary Baseline candidate.
+3. Compare current work against requirement acceptance and architecture owner /
+   contract boundaries.
+4. Check for new anti-patterns not recorded in known list.
+5. Report: aligned / Design Defect / Implementation Drift /
+   missing-authority / needs-clarification, with
+   `scope: requirements | architecture | both`.
+
+## 6. Architecture Review — 7 Dimensions
 After each non-trivial change:
 1. **Ownership integrity** — every component has exactly one canonical owner
 2. **Module boundaries** — no unauthorized cross-module coupling
@@ -245,7 +285,7 @@ After each non-trivial change:
 6. **Retirement completeness** — old owners/fallbacks/paths removed or scheduled
 7. **Entropy flow** — net complexity decreased or stayed; no unjustified new entities
 
-## 5. Hard Boundaries
+## 7. Hard Boundaries
 - BASELINE-GOVERNANCE.md is the constitution for THIS project's Aegis workspace
 - Baseline snapshots in `baseline/` are evidence, not authority
 - ADRs in `adr/` record decisions; they do not replace baseline governance

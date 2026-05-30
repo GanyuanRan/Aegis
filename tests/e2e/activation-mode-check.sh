@@ -51,13 +51,13 @@ assert_contains "$activation_doc" "AEGIS_ACTIVATION_MODE" \
     "activation mode canonical doc names the environment variable"
 assert_contains "$activation_doc" "auto.*explicit|explicit.*auto" \
     "activation mode canonical doc defines auto and explicit"
-assert_contains "$activation_doc" "显式|explicit" \
+assert_contains "$activation_doc" "explicit" \
     "activation mode canonical doc preserves explicit invocation semantics"
-assert_contains "$activation_doc" "environment|环境变量" \
+assert_contains "$activation_doc" "environment" \
     "activation mode canonical doc says the mode is an environment variable"
 assert_contains "$activation_doc" "PowerShell" \
     "activation mode canonical doc includes PowerShell usage"
-assert_contains "$activation_doc" "zshrc|bashrc|PROFILE|system environment|系统.*环境变量" \
+assert_contains "$activation_doc" "zshrc|bashrc|PROFILE|system environment" \
     "activation mode canonical doc explains persistent setup"
 assert_contains "$activation_doc" "~/.config/aegis/config.toml" \
     "activation mode canonical doc defines user-local config path"
@@ -67,7 +67,7 @@ assert_contains "$activation_doc" 'aegis-doctor\.py activation-mode explicit' \
     "activation mode canonical doc documents doctor explicit command"
 assert_contains "$activation_doc" 'aegis-doctor\.py activation-mode auto' \
     "activation mode canonical doc documents doctor auto command"
-assert_contains "$activation_doc" 'restart|new host session|重新.*宿主|新会话' \
+assert_contains "$activation_doc" 'restart|new host session' \
     "activation mode canonical doc states command changes need restart or new session"
 
 assert_contains "$session_hook" "AEGIS_ACTIVATION_MODE" \
@@ -151,7 +151,7 @@ assert_contains "$tdd_mode_doc" 'tdd_mode = "off"' \
     "TDD mode canonical doc shows off config value"
 assert_contains "$tdd_mode_doc" 'aegis-doctor\.py tdd-mode off' \
     "TDD mode canonical doc documents doctor off command"
-assert_contains "$tdd_mode_doc" 'restart|new host session|重新.*宿主|新会话' \
+assert_contains "$tdd_mode_doc" 'restart|new host session' \
     "TDD mode canonical doc states command changes need restart or new session"
 
 assert_contains "docs/README.opencode.md" "AEGIS_ACTIVATION_MODE=explicit" \
@@ -202,7 +202,7 @@ assert_contains "README.md" 'aegis-doctor\.py activation-mode explicit' \
     "English README gives concise doctor activation command"
 assert_contains "README.zh-CN.md" 'aegis-doctor\.py activation-mode explicit' \
     "Chinese README gives concise doctor activation command"
-assert_contains "README.zh-CN.md" "长期设置方式和宿主注意事项|详细.*宿主" \
+assert_contains "README.zh-CN.md" 'docs/current/AEGIS_ACTIVATION_MODE\.md' \
     "Chinese README delegates detailed activation setup to canonical docs"
 assert_contains ".codex/INSTALL.md" 'aegis-doctor\.py activation-mode explicit' \
     "Codex install surface documents doctor activation command"

@@ -1,6 +1,6 @@
 {
   "name": "aegis",
-  "version": "1.8.5",
+  "version": "1.9.0",
   "type": "module",
   "main": ".opencode/plugins/aegis.js",
   "keywords": [

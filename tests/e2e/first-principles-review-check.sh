@@ -62,7 +62,7 @@ assert_contains "$skill" "^name: first-principles-review$" \
     "skill frontmatter name is stable"
 assert_contains "$skill" "description: Use when" \
     "skill description uses trigger-oriented wording"
-assert_contains "$skill" "explicitly asks for first principles|first-principles|第一性原理|Occam|奥卡姆" \
+assert_contains "$skill" "explicitly asks for first principles|first-principles|Occam" \
     "skill has explicit first-principles triggers"
 assert_contains "$skill" "complexity|ambiguous|competing constraints|repeated fixes|fallback|duplicate owner" \
     "skill has decision-point triggers"
@@ -78,7 +78,7 @@ assert_contains "$skill" "Decision Hygiene Review|first-principles invariants|Ow
     "skill owns the decision hygiene escalation template"
 assert_contains "$skill" "Adopt / revise / reject / needs evidence|needs evidence" \
     "skill gives advisory verdict options without runtime authority"
-assert_contains "$skill" "multiple plausible paths|new owner|fallback|adapter|compat-only|unverified assumption|long-term stable|长期稳定" \
+assert_contains "$skill" "multiple plausible paths|new owner|fallback|adapter|compat-only|unverified assumption|long-term stable" \
     "skill has explicit escalation risk signals"
 assert_contains "$skill" "advisory|does not grant completion authority|not grant completion authority" \
     "skill preserves method-pack authority boundary"
@@ -105,7 +105,7 @@ assert_contains "$process_doc" "first-principles-review" \
     "process baseline lists the projection target"
 assert_contains "$workflow_en" "decision hygiene review|falsification checks" \
     "English workflow guide documents decision hygiene review"
-assert_contains "$workflow_zh" "decision hygiene review|反证场景" \
+assert_contains "$workflow_zh" "decision hygiene review" \
     "Chinese workflow guide documents decision hygiene review"
 assert_contains "$readme_en" "first-principles-review" \
     "English README links the new skill"

@@ -76,7 +76,7 @@ Baseline sync is required when the decision changes or confirms any of:
 - runtime-ready artifact boundary or evidence model
 - retained fallback, adapter, compatibility path, duplicate owner, or retirement
   schedule
-- accepted architecture drift
+- accepted architecture-scoped Implementation Drift
 - release or distribution strategy that future contributors would otherwise
   misread
 

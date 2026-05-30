@@ -1,6 +1,6 @@
 ---
 name: first-principles-review
-description: Use when the user explicitly asks for first principles, first-principles review, Occam's razor, 第一性原理, 奥卡姆剃刀, or when a complex decision has ambiguous goals, competing constraints, repeated fixes, fallback growth, duplicate owners, or architecture/product direction risk.
+description: Use when the user explicitly asks for first principles, first-principles review, Occam's razor, or when a complex decision has ambiguous goals, competing constraints, repeated fixes, fallback growth, duplicate owners, or architecture/product direction risk.
 ---
 
 # First Principles Review
@@ -16,8 +16,8 @@ the decision surface those skills will act on.
 
 ## Use When
 
-- The user asks for first principles, first-principles thinking, 第一性原理,
-  Occam's razor, or 奥卡姆剃刀.
+- The user asks for first principles, first-principles thinking, or Occam's
+  razor.
 - A design, plan, or fix has multiple plausible paths and unclear selection
   criteria.
 - The task has ambiguous goals, competing constraints, or product/architecture
@@ -71,8 +71,8 @@ Escalate from the five-line review when any of these risk signals appear:
 - a new owner, duplicate owner, fallback, adapter, or compat-only carrier
 - an old path that may need delete-first handling or a retirement trigger
 - an unverified assumption that the proposal depends on
-- user language such as "more elegant", "long-term stable", "长期稳定",
-  "first principles", "Occam", or "奥卡姆"
+- user language such as "more elegant", "long-term stable", "first
+  principles", or "Occam"
 - a plan could encode the wrong owner, abstraction, compatibility boundary, or
   retirement schedule
 

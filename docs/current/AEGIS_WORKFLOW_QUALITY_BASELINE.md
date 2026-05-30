@@ -98,10 +98,11 @@ User-facing output should match the user's current language.
 Pass criteria:
 
 - section labels, field labels, and explanatory prose use the user's language
-- commands, file paths, code identifiers, stable enum values, and product terms
-  remain in English when precision requires it
-- important Aegis product terms may use first-use bilingual labels, then the
-  user's language in later references
+- commands, file paths, code identifiers, stable enum values, and exact product
+  names remain unchanged
+- important Aegis product terms may include the stable English identifier only
+  when it prevents ambiguity, usually beside a user-language explanation on
+  first use
 - compact contracts remain machine-readable without forcing English labels into
   every user-facing response
 
@@ -276,6 +277,75 @@ Pass criteria:
   method-pack guidance, not merge approval, publish authorization,
   authoritative `GateDecision`, or completion authority
 
+### 3.15 Baseline Role Alignment
+
+Baseline checks should separate requirement truth from architecture truth without
+creating heavy ceremony.
+
+Pass criteria:
+
+- `Product / Requirement Baseline` is the place to check the problem, accepted
+  behavior, success evidence, non-goals, and user/workflow constraints
+- `Architecture / Runtime Boundary Baseline` is the place to check canonical
+  owner, contract, source-of-truth, dependency direction, compatibility,
+  runtime-ready/method-pack boundary, and retirement state
+- task-scoped input can inform a check, but durable current truth still comes
+  from current authority docs, approved baseline snapshots, and ADR-backed
+  state
+- disagreements are reported as `Design Defect` or `Implementation Drift`
+  instead of product-vs-architecture ambiguity
+- every defect/drift report includes `scope: requirements | architecture | both`
+- `Architecture Defect` and `Architecture Drift` remain compatibility aliases
+  for architecture-scoped `Design Defect` and architecture-scoped
+  `Implementation Drift`
+- `Baseline Alignment` remains advisory method-pack output, not a runtime gate,
+  authoritative `GateDecision`, `PolicySnapshot`, evidence sufficiency decision,
+  or completion authority
+
+### 3.16 Aegis Invocation Visibility
+
+Aegis should be visible when it materially shapes task quality, but it must not
+turn routine work into ceremony.
+
+Pass criteria:
+
+- non-trivial skill use starts with an `Aegis Reason Note` that explains why
+  Aegis is shaping the task and what quality risk it reduces
+- stage changes use a natural transition sentence when the task moves from
+  diagnosis to repair, planning to implementation, implementation to
+  verification, review to follow-up, or resume to drift check
+- obvious tiny fast-path work can keep the trace implicit unless the user asks
+  why Aegis did or did not trigger
+- completion output uses a natural Aegis closeout sentence to name the boundary
+  or quality risk Aegis held steady, without turning it into a self-credit
+  heading
+- structured trace is reserved for audit, debug, release, long-task review, or user request
+- the trace stays advisory method-pack transparency, not runtime authority, not
+  a runtime gate, and not completion authority
+
+Default shape:
+
+```text
+Aegis Reason Note: <why Aegis is shaping the next step and what quality risk it reduces>
+```
+
+Completion shape:
+
+```text
+This judgment used Aegis to hold one boundary steady: <boundary / quality risk>.
+```
+
+Structured trace, only when audit/debug/release/long-task review or user request needs it:
+
+```text
+Aegis Invocation Trace:
+- Trigger:
+- Reason:
+- Stage transition:
+- Next quality gate:
+- Boundary: advisory method-pack trace only
+```
+
 ---
 
 ## 4. Compact Output Contracts
@@ -290,12 +360,14 @@ Compact contract:
 
 ```text
 Route: fast-path | <skill-name> | needs-baseline-readback
+Aegis Reason Note: why Aegis is shaping the next step; structured trace only for audit/debug/release/long-task review or user request
 ArchitectureReviewRequired: yes | no
 Why: <one short reason>
 Next: <smallest safe action>
 ```
 
-For obvious fast-path work, the route can stay implicit in the normal answer.
+For obvious fast-path work, the route and reason note can stay implicit in the
+normal answer unless the user asks about Aegis routing or traceability.
 Set `ArchitectureReviewRequired: yes` when a medium/high task or project rule
 touches architecture, contract, cross-module data flow, canonical owner,
 source-of-truth owner, context/answering/runtime flow, public user-visible
@@ -318,6 +390,7 @@ BaselineReadSetHint: candidate docs, missing authority
 ImpactStatementDraft: affected layers, owners, invariants, non-goals
 Product Risk Lens: value, non-goals, trade-offs, decision-needed
 Architecture Integrity Lens: invariant, owner/contract, overlap, higher-level path, retirement/falsifier, verdict
+Baseline Role Alignment: Product / Requirement Baseline, Architecture / Runtime Boundary Baseline, Design Defect / Implementation Drift, scope
 Plan-Time Complexity Check: target files, shape signals, owner fit, recommendation
 Options: 2-3 choices with trade-offs and recommendation
 Decision Needed: approve brief/design, revise, or defer
@@ -439,6 +512,7 @@ Compact contract:
 Findings First: Critical, Important, Minor findings before summary
 Evidence Review: supplied evidence, unsupported claims, missing proof
 Baseline / Current Authority: refs checked, drift or defect distinction
+Baseline Role Alignment: requirements/product alignment, architecture/current-authority alignment, Design Defect / Implementation Drift, scope
 Compatibility / Retirement: preserved behavior, old path disposition
 Review Readiness: ready | with fixes | not ready, advisory only
 ```
@@ -463,30 +537,57 @@ Evidence Card:
 - Residual Risk:
 - Confidence: A | B | C
 Readiness Summary: tests, docs, version, host compatibility, residual risk
+Natural Aegis closeout: one sentence naming the boundary or quality risk Aegis held steady; structured trace only for audit/debug/release/long-task review or user request
 ```
 
 Localize completion card labels and explanatory prose to the user's language.
-Keep commands, paths, code identifiers, stable enum values, and product terms in
-English when needed for precision. For important product terms, first-use
-bilingual labels such as `架构对齐（Architecture Alignment）` are preferred.
+Keep commands, paths, code identifiers, stable enum values, and exact product
+names unchanged. For important Aegis product terms, include the stable English
+identifier only when it prevents ambiguity, usually beside a user-language
+explanation on first use.
 
-When project instructions require architecture reporting or completed
-medium/high work touched durable architecture surfaces, include an advisory
-`Architecture Alignment` result before the final completion claim:
+When project instructions require baseline reporting, or completed medium/high
+work touched requirement, product, or architecture surfaces, include an advisory
+`Baseline Alignment` result before the final completion claim:
+
+```text
+Baseline Alignment:
+- Trigger: yes | no
+- Product / Requirement Baseline:
+- Architecture / Runtime Boundary Baseline:
+- Requirement / acceptance alignment:
+- Architecture / owner / contract alignment:
+- Result: aligned | Design Defect | Implementation Drift | missing-authority | needs-clarification
+- scope: requirements | architecture | both
+- Evidence:
+- Residual risk:
+```
+
+`Baseline Alignment` states whether the completed work matches the current
+requirement and architecture baselines, or should be reported as Design Defect /
+Implementation Drift. It is separate from ADR Backfill and does not grant
+completion authority.
+
+When project instructions specifically require architecture reporting or
+completed medium/high work touched durable architecture surfaces, the
+architecture-scoped subset may also be reported as `Architecture Alignment`:
 
 ```text
 Architecture Alignment:
 - Trigger: yes | no
 - Scope:
 - Baseline checked:
-- Result: aligned | architecture drift | architecture defect
+- Result: aligned | Design Defect | Implementation Drift | missing-authority | needs-clarification
 - Evidence:
 - Residual architecture risk:
 ```
 
 Architecture Alignment states whether the completed work matches the current
-baseline or should be reported as drift/defect. It is separate from ADR
-Backfill and does not grant completion authority.
+baseline or should be reported as architecture-scoped Design Defect /
+Implementation Drift. It is a compatibility alias for architecture-scoped
+Baseline Alignment; older phrases such as architecture defect/drift map back to
+the shared vocabulary. It remains separate from ADR Backfill and does not grant
+completion authority.
 
 For completed medium/high work that touched durable architecture surfaces,
 include an advisory `ADR Backfill Check` before the final completion claim:

@@ -93,7 +93,7 @@ if [[ -f "$prompt_hygiene_doc" ]]; then
         "prompt hygiene symbolises repeated policy warning text"
     assert_contains "$prompt_hygiene_doc" "Serena|semantic retrieval|MCP" \
         "prompt hygiene covers MCP and semantic retrieval output"
-    assert_contains "$prompt_hygiene_doc" "不是污染源|not.*pollution source|not.*contamination source" \
+    assert_contains "$prompt_hygiene_doc" "not.*pollution source|not.*contamination source" \
         "prompt hygiene distinguishes tools from prompt payload contamination"
     assert_contains "$prompt_hygiene_doc" "complete error text.*repeatedly|full error text.*reflow|full error text.*repeated" \
         "prompt hygiene prevents repeated full policy warning text from re-entering context"
@@ -101,7 +101,7 @@ if [[ -f "$prompt_hygiene_doc" ]]; then
         "prompt hygiene defines host context intake discipline"
     assert_contains "$prompt_hygiene_doc" "bounded evidence intake" \
         "prompt hygiene names bounded evidence intake as the stable owner"
-    assert_contains "$prompt_hygiene_doc" "index.*window.*excerpt|索引.*窗口.*摘录" \
+    assert_contains "$prompt_hygiene_doc" "index.*window.*excerpt" \
         "prompt hygiene uses index-window-excerpt flow for large inputs"
 else
     fail "prompt hygiene canonical doc exists"

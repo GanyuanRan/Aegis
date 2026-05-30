@@ -27,8 +27,11 @@ When reviewing completed work, you will:
 
 2. **Baseline / Current Authority Alignment**:
    - Check whether baseline or current authority refs were supplied for non-trivial work
+   - Check requirements/product alignment against accepted problem, acceptance evidence, and non-goals
    - Compare the diff against baseline ownership map, contract inventory, and dependency direction when those refs exist
-   - If implementation and baseline disagree, distinguish baseline defect, architecture drift, and intentional architecture change
+   - Check architecture/current-authority alignment for canonical owner, contract, source-of-truth, compatibility, and retirement boundaries
+   - Classify disagreement as Design Defect / Implementation Drift with `scope: requirements | architecture | both`
+   - Map legacy phrasing such as baseline defect, architecture defect, and architecture drift back to Design Defect / Implementation Drift
    - If intentional architecture change landed, flag whether ADR Auto Backfill or baseline sync is needed
 
 3. **Code Quality Assessment**:

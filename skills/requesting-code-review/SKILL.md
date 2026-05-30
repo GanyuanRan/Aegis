@@ -38,12 +38,13 @@ Before you leave this workflow, you must be able to state:
 
 1. **What exact scope is being reviewed**
 2. **What plan, requirement, or contract defines success**
-3. **What baseline / current authority refs define the expected architecture state**
-4. **What fresh evidence already exists**
-5. **What compatibility boundary must still hold**
-6. **What old owner / fallback / patch stays, shrinks, or retires**
-7. **What the reviewer must specifically validate**
-8. **Whether the reviewer is providing advisory review only, or also any higher-level merge recommendation**
+3. **What Product / Requirement Baseline defines accepted behavior and non-goals**
+4. **What Architecture / Runtime Boundary Baseline defines the expected architecture state**
+5. **What fresh evidence already exists**
+6. **What compatibility boundary must still hold**
+7. **What old owner / fallback / patch stays, shrinks, or retires**
+8. **What the reviewer must specifically validate**
+9. **Whether the reviewer is providing advisory review only, or also any higher-level merge recommendation**
 
 Review in this method pack is advisory and evidence-oriented. It is not authoritative completion by itself.
 
@@ -53,7 +54,8 @@ Review in this method pack is advisory and evidence-oriented. It is not authorit
 
 - What was implemented
 - What requirement / plan / spec / ADR it should match
-- What baseline / current authority docs the diff must align with
+- What baseline / current authority docs the diff must align with, including
+  requirements/product alignment and architecture/current-authority alignment
 - What evidence already exists (tests, commands, logs, screenshots, diff summary)
 - What compatibility boundary or risk deserves reviewer attention
 - Whether there is any old path, fallback, duplicate owner, or temporary patch that should retire
@@ -90,7 +92,9 @@ Use Task tool with aegis:code-reviewer type, fill template at `code-reviewer.md`
 - Note Minor issues for later
 - Push back if reviewer is wrong (with reasoning)
 - If feedback reveals evidence gaps, run the missing verification instead of arguing from confidence
-- If feedback reveals architecture drift or stale logic, decide explicitly whether to repair now or record retirement conditions
+- If feedback reveals Design Defect / Implementation Drift, stale logic, or a
+  legacy alias such as architecture drift, decide explicitly whether to repair
+  now, correct the baseline, or record retirement conditions
 
 ## Example
 
@@ -145,8 +149,16 @@ The review request must prompt the reviewer to inspect at least:
 - Findings First: bugs first, risk first, tests first
 - evidence sufficiency
 - baseline / current authority alignment
-- baseline defect vs architecture drift distinction
-- architecture drift or owner duplication
+- requirements/product alignment against accepted problem, success evidence, and
+  non-goals
+- architecture/current-authority alignment against owner, contract,
+  source-of-truth, compatibility, and retirement boundaries
+- Design Defect / Implementation Drift classification with
+  `scope: requirements | architecture | both`
+- legacy phrase mapping: baseline defect, architecture defect, and architecture
+  drift must map back to Design Defect / Implementation Drift rather than
+  becoming parallel result vocabularies
+- duplicate owner risk
 - compatibility boundary
 - missing ADR Auto Backfill or baseline sync findings for durable architecture
   decisions

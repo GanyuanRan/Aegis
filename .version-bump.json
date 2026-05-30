@@ -12,6 +12,7 @@
   "audit": {
     "exclude": [
       "RELEASE-NOTES.md",
+      "Aegis_Codeflow",
       "node_modules",
       ".git",
       ".tmp",

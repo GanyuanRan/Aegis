@@ -88,6 +88,8 @@ Root improvement rule:
 
 - Use workflow-quality fixtures before changing high-frequency skill behavior.
 - Preserve fast-path cheapness for simple Q&A, status checks, and tiny edits.
+- Use `Aegis Reason Note` for non-trivial skill use and stage changes so users
+  can see why Aegis is shaping the next step. Keep structured trace for audit, debug, release, long-task review, or user request.
 - Scale output depth by task complexity and risk.
 - Prefer compact output contracts over broad template expansion.
 - Apply the Micro-Slice Artifact Budget when long tasks split into many tiny
@@ -209,7 +211,49 @@ These lenses are review structures, not persona commands. They do not grant
 merge approval, publish authorization, authoritative `GateDecision`, or
 completion authority.
 
-### 3.0e Minimal Sufficient Stable Repair
+### 3.0e Baseline Role Alignment
+
+Aegis baseline checks must keep two roles separate:
+
+- `Product / Requirement Baseline`: what problem is being solved, who it is for,
+  acceptance evidence, non-goals, workflow constraints, and approved requirement
+  or spec intent.
+- `Architecture / Runtime Boundary Baseline`: canonical owners, contracts,
+  source-of-truth boundaries, runtime-ready/method-pack boundary, dependency
+  direction, compatibility surfaces, and retirement expectations.
+
+Task-scoped input can inform a baseline check, but it is not automatically
+durable authority. Snapshots are evidence of current state. ADRs record why a
+durable decision changed. Current authority docs and approved baselines record
+what is true now.
+
+Use one shared defect/drift vocabulary across both roles:
+
+```text
+Baseline Role Alignment:
+- Product / Requirement Baseline:
+- Architecture / Runtime Boundary Baseline:
+- Result: aligned | Design Defect | Implementation Drift | missing-authority | needs-clarification
+- scope: requirements | architecture | both
+- Evidence:
+- Next action:
+```
+
+- `Design Defect`: a confirmed error, gap, contradiction, or wrong abstraction in
+  the relevant requirement/design/baseline itself.
+- `Implementation Drift`: implementation, plan, review, or documentation has
+  deviated from a confirmed, correct, and unchanged requirement or architecture
+  baseline.
+- `Architecture Defect` remains a compatibility alias for an
+  architecture-scoped `Design Defect`.
+- `Architecture Drift` remains a compatibility alias for an
+  architecture-scoped `Implementation Drift`.
+
+This alignment is advisory method-pack discipline. It does not create a runtime
+gate, authoritative `GateDecision`, authoritative `PolicySnapshot`, evidence
+sufficiency decision, or completion authority.
+
+### 3.0f Minimal Sufficient Stable Repair
 
 Minimum is measured by long-term system entropy, not changed line count. When a
 candidate repair adds a caller-side guard, fallback, adapter, compatibility
@@ -676,8 +720,9 @@ This process baseline should be projected into the following skills as a priorit
 - `test-driven-development`
   - Position TDD as the implementation discipline for approved atomic tasks, preventing medium/high-complexity tasks from bypassing planning
 - `requesting-code-review`
-  - Add evidence sufficiency, architecture drift checks, and missing ADR /
-    baseline sync findings for durable architecture decisions
+  - Add evidence sufficiency, requirements/product alignment, Design Defect /
+    Implementation Drift checks, and missing ADR / baseline sync findings for
+    durable architecture decisions
 - `verification-before-completion`
   - Align with reflection, QA, final output contract, and ADR Auto Backfill for
     completed medium/high work that touched architecture surfaces
@@ -718,8 +763,8 @@ The 7-dimension check results MUST be entered into the Reflection Risk/Unknown f
 
 A new `baseline/YYYY-MM-DD-<scope>-baseline.md` MUST be created when any of the following conditions are met:
 
-1. **Architecture review found material drift and it has been resolved** — implementation has returned to baseline or baseline has been updated via ADR; a new snapshot is needed to record the corrected state.
-2. **Architecture review found a defect and it has been corrected** — baseline document has been fixed; a new snapshot is needed to solidify the correction.
+1. **Architecture review found material Implementation Drift and it has been resolved** — implementation has returned to baseline or baseline has been updated via ADR; a new snapshot is needed to record the corrected state.
+2. **Architecture review found an architecture-scoped Design Defect and it has been corrected** — baseline document has been fixed; a new snapshot is needed to solidify the correction.
 3. **Reflection Evolve decision is "revise baseline"** — regardless of trigger source, if Reflection determines the baseline needs revision, a new snapshot must be written.
 4. **Ownership map, contract inventory, or dependency direction convention has changed** — even if all 7 dimensions pass, if any of these three items changes, a new snapshot is required.
 5. **ADR Auto Backfill created, amended, or superseded a decision that changes current architecture state** — the baseline must either be updated or explicitly state why the existing baseline remains valid.
@@ -730,48 +775,96 @@ Low-complexity tasks (no `work/`, no 7-dimension review) do not trigger snapshot
 
 ---
 
-## 16. Architecture Defect and Architecture Drift
+## 16. Design Defect and Implementation Drift
 
-### 16.1 Architecture Defect
+### 16.1 Baseline Roles
 
-Definition: a confirmed error, gap, or internal contradiction IN the baseline itself.
+Before classifying a baseline disagreement, identify which baseline role owns the
+truth:
+
+- `Product / Requirement Baseline`: user problem, acceptance evidence, non-goals,
+  workflow constraints, approved requirement/spec intent.
+- `Architecture / Runtime Boundary Baseline`: canonical owner, contract
+  inventory, dependency direction, source-of-truth owner, compatibility boundary,
+  runtime-ready/method-pack boundary, and retirement state.
+
+Then classify the finding with:
+
+```text
+scope: requirements | architecture | both
+```
+
+### 16.2 Design Defect
+
+Definition: a confirmed error, gap, contradiction, or wrong abstraction IN the
+relevant requirement/design/baseline itself.
 
 Criteria:
-- The ownership map recorded in the baseline contradicts the actual code structure
-- A contract declared in the baseline is inconsistent with the implementation (and the implementation is correct)
-- The dependency direction convention recorded in the baseline is violated by the baseline itself
-- An unresolved contradiction exists between two baseline documents
+- The `Product / Requirement Baseline` contradicts the user's accepted problem,
+  success evidence, non-goal, or workflow constraint.
+- The `Architecture / Runtime Boundary Baseline` records an owner, contract,
+  dependency direction, or source-of-truth boundary that contradicts the actual
+  correct system shape.
+- Two baseline/current-authority documents contradict each other.
+- The baseline forces implementation to solve the right problem in the wrong
+  owner, contract layer, or abstraction.
 
 Process:
-1. Confirm the baseline is the wrong party (not implementation drift)
-2. Fix the baseline document
-3. If the implementation deviated due to the defective baseline → align implementation to the corrected baseline
-4. NEVER patch the implementation side to accommodate a defective baseline
+1. Confirm the baseline/design is the wrong party (not Implementation Drift).
+2. Fix the relevant requirement, design, baseline, or ADR-backed current
+   authority first.
+3. If implementation deviated because the baseline/design was defective, align
+   implementation to the corrected baseline.
+4. NEVER patch implementation around a defective baseline/design.
 
-### 16.2 Architecture Drift
+### 16.3 Implementation Drift
 
-Definition: implementation has deviated from a confirmed, correct, and unchanged baseline.
+Definition: implementation, plan, review output, or documentation has deviated
+from a confirmed, correct, and unchanged product/requirement or architecture
+baseline.
 
 Criteria:
-- New code introduced a new owner not recorded in the baseline
-- New code modified a contract recorded in the baseline without updating the contract document
-- New code violated the dependency direction convention recorded in the baseline
-- New code duplicated the responsibility of an existing canonical owner in the baseline
+- Work implements behavior outside the accepted requirement, success evidence,
+  or non-goals.
+- New code introduced a new owner not recorded in the architecture baseline.
+- New code modified a contract recorded in the baseline without updating the
+  contract document.
+- New code violated the dependency direction convention recorded in the baseline.
+- New code duplicated the responsibility of an existing canonical owner.
 
 Process:
-1. Confirm the baseline is correct (not a baseline defect)
-2. Return the implementation to the baseline via the simplest path
-3. If the drift is intentional → update the baseline first (via ADR process), then align the implementation
-4. NEVER "update the baseline to match the drift" without explicit review
+1. Confirm the baseline is correct (not a Design Defect).
+2. Return the implementation, plan, review, or documentation to the baseline via
+   the simplest stable path.
+3. If the drift is intentional, update the baseline first through the relevant
+   requirement/spec/ADR process, then align the implementation.
+4. NEVER "update the baseline to match the drift" without explicit review.
 
-### 16.3 Baseline Check Protocol
+### 16.4 Compatibility Aliases
+
+Older Aegis wording remains valid as an architecture-scoped subset:
+
+- `Architecture Defect` = architecture-scoped `Design Defect`
+- `Architecture Drift` = architecture-scoped `Implementation Drift`
+
+Reviewers may use the old terms when reading historical docs, but new baseline
+work should report `Design Defect` / `Implementation Drift` plus
+`scope: requirements | architecture | both`.
+
+### 16.5 Baseline Check Protocol
 
 Before every non-trivial change:
-1. Read the latest snapshot in `baseline/`
-2. Compare current code structure against the ownership map
-3. Compare current contracts against the contract inventory
-4. Check whether known anti-patterns have new instances
-5. Report: aligned / minor drift (self-correctable) / material drift (needs review)
+1. Read the latest Product / Requirement Baseline candidate: user goal,
+   accepted requirements/spec, product/current docs, or task intent.
+2. Read the latest Architecture / Runtime Boundary Baseline candidate:
+   baseline snapshot, ADR, current authority doc, owner map, contract inventory,
+   or runtime boundary doc.
+3. Compare current implementation and plan against requirement acceptance and
+   architecture owner/contract boundaries.
+4. Check whether known anti-patterns have new instances.
+5. Report: aligned / Design Defect / Implementation Drift /
+   missing-authority / needs-clarification, with
+   `scope: requirements | architecture | both`.
 
 ---
 

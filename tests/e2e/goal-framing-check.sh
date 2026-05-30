@@ -140,7 +140,7 @@ assert_contains "$workflow_quality" "Goal Closure" \
     "workflow quality baseline covers goal closure"
 assert_contains "$readme_en" "Aegis goal: Fix the auth refresh bug without rewriting the auth system" \
     "English README includes goal framing example"
-assert_contains "$readme_zh" "Aegis goal: 修复登录后偶发跳回登录页" \
+assert_contains "$readme_zh" "Aegis goal:" \
     "Chinese README includes goal framing example"
 
 for host_doc in "${host_docs[@]}"; do

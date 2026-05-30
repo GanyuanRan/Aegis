@@ -56,8 +56,13 @@ for file in "${root_docs[@]}"; do
         "$file documents explicit host-scoped Aegis update trigger"
     assert_contains "$file" "cd <aegis-method-pack-root>" \
         "$file anchors doctor verification to the method-pack root"
-    assert_contains "$file" "target project directory|目标项目目录" \
-        "$file warns not to run doctor from the target project directory"
+    if [[ "$file" == "README.zh-CN.md" ]]; then
+        assert_contains "$file" "cd <aegis-method-pack-root>.*aegis-doctor\\.py" \
+            "$file anchors doctor execution to the method-pack root"
+    else
+        assert_contains "$file" "target project directory" \
+            "$file warns not to run doctor from the target project directory"
+    fi
     assert_contains "$file" '"workspaceSupport": "available"' \
         "$file names workspaceSupport install success field"
     assert_contains "$file" '"configStatus": "configured"' \
@@ -74,7 +79,7 @@ for file in "${host_docs[@]}"; do
         "$file uses hardened complete-install doctor command"
     assert_contains "$file" "cd <aegis-method-pack-root>" \
         "$file anchors complete-install doctor command to the method-pack root"
-    assert_contains "$file" "target project directory|目标项目目录" \
+    assert_contains "$file" "target project directory" \
         "$file warns not to run doctor from the target project directory"
 done
 

@@ -73,8 +73,16 @@ remaining test gaps or residual risk.
 
 **Baseline / Current Authority:**
 - Were baseline / current authority refs supplied when the work was non-trivial?
+- Is requirements/product alignment clear against the accepted problem,
+  acceptance evidence, and non-goals?
 - Does the diff align with the baseline ownership map, contract inventory, and dependency direction?
-- If not aligned, is this a baseline defect, architecture drift, or intentional architecture change?
+- Does architecture/current-authority alignment hold for canonical owner,
+  contract, source-of-truth, compatibility, and retirement boundaries?
+- If not aligned, classify as Design Defect / Implementation Drift and state
+  `scope: requirements | architecture | both`.
+- If legacy phrasing appears, map baseline defect, architecture defect, and
+  architecture drift back to Design Defect / Implementation Drift.
+- If not aligned, is this intentional architecture change?
 - If intentional, is ADR Auto Backfill or baseline sync needed?
 - If an ADR action or baseline sync closure is in scope, did the caller use or
   plan to use `recording-architecture-decisions` before claiming completion?
@@ -106,7 +114,8 @@ remaining test gaps or residual risk.
 - Backward compatibility considered?
 - Documentation complete?
 - No obvious bugs?
-- Any architecture drift still unresolved?
+- Any Design Defect / Implementation Drift still unresolved, including findings
+  described with legacy aliases?
 
 ## Output Format
 
@@ -153,7 +162,8 @@ remaining test gaps or residual risk.
 - Acknowledge strengths
 - Give clear verdict
 - Distinguish missing evidence from missing code
-- Call out architecture drift and retirement debt explicitly
+- Call out Design Defect / Implementation Drift, compatibility alias mapping,
+  and retirement debt explicitly
 
 **DON'T:**
 - Say "looks good" without checking
@@ -163,7 +173,8 @@ remaining test gaps or residual risk.
 - Avoid giving a clear verdict
 - Treat passing tests alone as full completion
 - Ignore old logic that should retire or converge
-- Judge architecture drift without checking baseline or current authority refs
+- Judge Design Defect / Implementation Drift or compatibility aliases without
+  checking baseline or current authority refs
 
 ## Example Output
 

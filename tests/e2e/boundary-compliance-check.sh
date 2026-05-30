@@ -39,17 +39,13 @@ if command -v rg >/dev/null 2>&1; then
         -e 'not authoritative'
         -e 'only, NOT'
         -e 'draft inputs'
-        -e '不得'
-        -e '不可以'
-        -e '不能'
-        -e '禁止'
     )
 else
     search_cmd=(grep -R -n -I -i -E
         'completion grants?|completion granted|grant(ed|s)? completion authority|has completion authority|authoritative gate decision|authoritative impact statement|final governance decision|final gate decision'
     )
     filter_cmd=(grep -E -i -v
-        'never|do not|does not|must not|cannot|can not|not final authority|not authoritative|only, NOT|draft inputs|不得|不可以|不能|禁止'
+        'never|do not|does not|must not|cannot|can not|not final authority|not authoritative|only, NOT|draft inputs'
     )
 fi
 

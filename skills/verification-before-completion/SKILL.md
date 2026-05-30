@@ -96,15 +96,30 @@ Evidence Card:
    A readiness summary is advisory evidence organization only. It is not
    authorization to commit, tag, publish, merge, or release. It cannot provide
    completion authority.
-10. **User-Language Output**: final response cards must localize user-facing
-   section labels, field labels, and explanatory prose to the user's language.
-   Keep commands, file paths, code identifiers, stable enum values, and product
-   terms in English when that preserves precision. For important Aegis product
-   terms, prefer first-use bilingual labels such as
-   `架构对齐（Architecture Alignment）`; later references may use the user's
-   language alone.
+10. **Natural Aegis closeout**: when Aegis skills materially shaped a
+   non-trivial task, use one sentence before the final claim to name the
+   boundary or quality risk Aegis held steady. Do not default to a visible `Aegis Contribution Note:` heading.
+   Keep it advisory method-pack discipline, not completion authority. Keep it
+   implicit for obvious fast-path replies unless the user asked about Aegis
+   routing.
 
-11. **Complexity Delta**: for non-trivial code changes, inspect the actual
+   ```text
+   This judgment used Aegis to hold one boundary steady: <boundary / quality risk>.
+   ```
+
+   Use structured trace only for audit, debug, release, long-task review, or user request.
+   The structured form may name skills, stage transitions, quality
+   effect, and boundary, but it should not replace the normal user-facing
+   completion note.
+
+11. **User-Language Output**: final response cards must localize user-facing
+   section labels, field labels, and explanatory prose to the user's language.
+   Keep commands, file paths, code identifiers, stable enum values, and exact
+   product names unchanged. For important Aegis product terms, include the
+   stable English identifier only when it prevents ambiguity, usually beside a
+   user-language explanation on first use.
+
+12. **Complexity Delta**: for non-trivial code changes, inspect the actual
    diff before claiming completion. This is a completion-time entropy check,
    not a universal failure gate. Skip or keep it one-line for tiny wording
    edits, tests-only additions, generated files, vendored files, fixtures,
@@ -155,27 +170,57 @@ Evidence Card:
    - If entropy increased and no stronger owner/compatibility reason exists,
      downgrade the completion claim or state the residual risk.
 
-12. **Architecture Alignment Check**: before final response, if project
-   instructions require architecture reporting or the task touched durable
-   architecture surfaces, include an explicit architecture alignment result.
-   This is separate from ADR Backfill: alignment states whether the completed
-   work matches current baselines; ADR Backfill states whether durable
-   architecture memory needs to be created, amended, superseded, or skipped.
-   This is a method-pack signal, not a runtime gate, not an authoritative
-   `GateDecision`, and not completion authority.
+13. **Baseline Alignment Check**: before final response, if project
+   instructions require baseline reporting or the task touched requirement,
+   product, or durable architecture surfaces, include an explicit baseline
+   alignment result. This is separate from ADR Backfill: alignment states
+   whether the completed work matches current requirements and architecture
+   baselines; ADR Backfill states whether durable architecture memory needs to
+   be created, amended, superseded, or skipped. This is a method-pack signal,
+   not a runtime gate, not an authoritative `GateDecision`, and not completion
+   authority.
+
+   `Product / Requirement Baseline` covers the accepted problem, success
+   evidence, non-goals, workflow constraints, and approved requirement/spec
+   intent. `Architecture / Runtime Boundary Baseline` covers canonical owner,
+   contract, source-of-truth, dependency direction, compatibility,
+   runtime-ready/method-pack boundary, and retirement state.
 
    Triggering surfaces include architecture, contracts, source-of-truth owner,
    canonical owner, context/answering/runtime flow, cross-module data flow,
    producer-to-carrier-to-consumer chains, public user-visible identity,
-   evidence model, retained fallback, adapter, compatibility path, and
-   project-specific baseline rules.
+   evidence model, retained fallback, adapter, compatibility path, requirement
+   acceptance, product non-goals, and project-specific baseline rules.
+
+   ```text
+   Baseline Alignment:
+   - Trigger: yes | no
+   - Product / Requirement Baseline:
+   - Architecture / Runtime Boundary Baseline:
+   - Requirement / acceptance alignment:
+   - Architecture / owner / contract alignment:
+   - Result: aligned | Design Defect | Implementation Drift | missing-authority | needs-clarification
+   - scope: requirements | architecture | both
+   - Evidence:
+   - Residual risk:
+   ```
+
+   Use `Design Defect` when the relevant requirement, design, or baseline is
+   wrong. Use `Implementation Drift` when the work deviates from a correct
+   unchanged baseline. `Architecture Defect` and `Architecture Drift` remain
+   compatibility aliases for architecture-scoped `Design Defect` and
+   architecture-scoped `Implementation Drift`.
+
+   When project instructions specifically require architecture reporting or the
+   completed work touched durable architecture surfaces, the architecture-scoped
+   subset may also be reported as `Architecture Alignment`:
 
    ```text
    Architecture Alignment:
    - Trigger: yes | no
    - Scope:
    - Baseline checked:
-   - Result: aligned | architecture drift | architecture defect
+   - Result: aligned | Design Defect | Implementation Drift | missing-authority | needs-clarification
    - Evidence:
    - Integrity Residual Risk:
    - Residual architecture risk:
@@ -189,7 +234,7 @@ Evidence Card:
    needs retirement. If none remains, state `none` rather than expanding into a
    new gate.
 
-13. **ADR Backfill Check**: for completed medium/high work that touched durable
+14. **ADR Backfill Check**: for completed medium/high work that touched durable
    architecture surfaces, run the ADR Auto Backfill check before final
    completion claims. Use `Trigger: no` or skip the expanded block for simple
    wording edits, ordinary README cleanup, routine release-note edits, low-risk
@@ -203,8 +248,9 @@ Evidence Card:
    owner, host compatibility strategy, install/discovery contract,
    method-pack/runtime-core boundary, runtime-ready artifact boundary, evidence
    model, retained fallback, adapter, compatibility path, duplicate owner,
-   retirement schedule, accepted architecture drift, and release/distribution
-   strategy that future contributors would otherwise misread.
+   retirement schedule, accepted architecture-scoped Implementation Drift, and
+   release/distribution strategy that future contributors would otherwise
+   misread.
 
    ```text
    ADR Backfill Check:
@@ -222,7 +268,7 @@ Evidence Card:
    claim. This keeps `verification-before-completion` as the completion owner
    while delegating the ADR/baseline writeback decision to the dedicated skill.
 
-14. **Governance Closure**: for governance/cleanup/migration/compatibility/retirement work → final response must include. Do not skip this structure just because the implementation was small. Localize section labels and prose to the user's language; keep internal concepts in English only when they are product terms or file/path identifiers.
+15. **Governance Closure**: for governance/cleanup/migration/compatibility/retirement work → final response must include. Do not skip this structure just because the implementation was small. Localize section labels and prose to the user's language; keep internal concepts in English only when they are product terms or file/path identifiers.
 
    ```
    Repair Track: repaired object | action | impact | verification

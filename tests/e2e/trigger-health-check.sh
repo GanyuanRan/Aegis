@@ -118,7 +118,7 @@ assert_contains "$readme_en" "trigger-chain diagnosis" \
     "English README documents trigger-chain diagnosis"
 assert_contains "$readme_en" "AEGIS_TRIGGER_HEALTH_BASELINE.md" \
     "English README links trigger health baseline"
-assert_contains "$readme_zh" "触发链路诊断" \
+assert_contains "$readme_zh" "skill discovery" \
     "Chinese README documents trigger-chain diagnosis"
 assert_contains "$readme_zh" "AEGIS_TRIGGER_HEALTH_BASELINE.md" \
     "Chinese README links trigger health baseline"

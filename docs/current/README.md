@@ -79,7 +79,8 @@ The public current set is:
 : Product boundary, owned surfaces, and non-goals.
 
 `AEGIS_PROCESS_BASELINE.md`
-: Method-layer workflow baseline and evidence discipline.
+: Method-layer workflow baseline, evidence discipline, and shared method
+  terminology such as `Design Defect` / `Implementation Drift`.
 
 `AEGIS_WORKFLOW_GUIDE.md`
 : English workflow guide for users and contributors. It explains the current

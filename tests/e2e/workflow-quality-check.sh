@@ -102,7 +102,7 @@ assert_contains "$trigger_doc" "workflow-quality" \
     "trigger health references workflow-quality samples"
 assert_contains "$readme_en" "Workflow Quality" \
     "English README mentions workflow quality"
-assert_contains "$readme_zh" "工作流质量" \
+assert_contains "$readme_zh" "Workflow Quality" \
     "Chinese README mentions workflow quality"
 
 for dimension in \
@@ -118,7 +118,9 @@ for dimension in \
     "Completion-Time Complexity Delta" \
     "TDD Route Mode" \
     "Micro-Slice Artifact Budget" \
-    "Strong-Opinion Review Lenses"; do
+    "Strong-Opinion Review Lenses" \
+    "Baseline Role Alignment" \
+    "Aegis Invocation Visibility"; do
     assert_contains "$baseline" "$dimension" "baseline defines $dimension"
 done
 
@@ -179,12 +181,60 @@ assert_contains "$baseline" "Retro / Memory Filter" \
     "workflow quality baseline includes retro memory filter"
 assert_contains "$baseline" "role persona.*review lens|review lens.*role persona" \
     "workflow quality baseline keeps role personas out of strong-opinion lenses"
+assert_contains "$baseline" "Baseline Role Alignment" \
+    "workflow quality baseline includes baseline role alignment"
+assert_contains "$baseline" "Baseline Alignment" \
+    "workflow quality baseline includes baseline alignment compact output"
+assert_contains "$baseline" "Product / Requirement Baseline" \
+    "workflow quality baseline names product requirement baseline role"
+assert_contains "$baseline" "Architecture / Runtime Boundary Baseline" \
+    "workflow quality baseline names architecture runtime boundary baseline role"
+assert_contains "$baseline" "Design Defect" \
+    "workflow quality baseline includes design defect term"
+assert_contains "$baseline" "Implementation Drift" \
+    "workflow quality baseline includes implementation drift term"
+assert_contains "$baseline" "scope: requirements | architecture | both" \
+    "workflow quality baseline includes defect drift scope taxonomy"
+assert_contains "$baseline" "Aegis Invocation Visibility" \
+    "workflow quality baseline includes Aegis invocation visibility"
+assert_contains "$baseline" "Aegis Reason Note" \
+    "workflow quality baseline defines natural Aegis reason note"
+assert_contains "$baseline" "why Aegis is shaping" \
+    "workflow quality baseline explains why Aegis is shaping the task"
+assert_contains "$baseline" "structured trace.*audit.*debug.*release.*long-task review.*user request|audit.*debug.*release.*long-task review.*user request.*structured trace" \
+    "workflow quality baseline reserves structured trace for audit or requested cases"
+assert_not_contains "$baseline" "Invocation: <skill-name> \| fast-path \| none" \
+    "workflow quality baseline avoids invocation tuple as default user-facing shape"
+assert_not_contains "$baseline" "Aegis Usage Trace: used skills, stage handoffs" \
+    "workflow quality baseline avoids stiff default usage trace"
+assert_contains "$baseline" "not runtime authority|not.*runtime gate" \
+    "workflow quality baseline keeps invocation visibility advisory"
 assert_contains "$process_doc" "Strong-Opinion Review Lenses" \
     "process baseline references strong-opinion review lenses"
 assert_contains "$process_doc" "Architecture Integrity Lens" \
     "process baseline references architecture integrity lens"
 assert_contains "$process_doc" "Micro-Slice Artifact Budget" \
     "process baseline references micro-slice artifact budget"
+assert_contains "$process_doc" "Baseline Role Alignment" \
+    "process baseline defines baseline role alignment"
+assert_contains "$process_doc" "Product / Requirement Baseline" \
+    "process baseline names product requirement baseline role"
+assert_contains "$process_doc" "Architecture / Runtime Boundary Baseline" \
+    "process baseline names architecture runtime boundary baseline role"
+assert_contains "$process_doc" "Design Defect" \
+    "process baseline defines design defect"
+assert_contains "$process_doc" "Implementation Drift" \
+    "process baseline defines implementation drift"
+assert_contains "$process_doc" "scope: requirements | architecture | both" \
+    "process baseline defines defect drift scope taxonomy"
+assert_contains "$process_doc" "Architecture Defect.*architecture-scoped.*Design Defect|architecture-scoped.*Design Defect.*Architecture Defect" \
+    "process baseline keeps architecture defect compatibility alias"
+assert_contains "$process_doc" "Architecture Drift.*architecture-scoped.*Implementation Drift|architecture-scoped.*Implementation Drift.*Architecture Drift" \
+    "process baseline keeps architecture drift compatibility alias"
+assert_contains "$process_doc" "Aegis Reason Note" \
+    "process baseline references natural Aegis reason note"
+assert_contains "$process_doc" "structured trace.*audit.*debug.*release.*long-task review.*user request|audit.*debug.*release.*long-task review.*user request.*structured trace" \
+    "process baseline reserves structured trace for audit or requested cases"
 
 for skill in \
     "using-aegis" \
@@ -201,6 +251,16 @@ done
 
 assert_contains "skills/using-aegis/SKILL.md" "Route: fast-path" \
     "using-aegis exposes compact route contract"
+assert_contains "skills/using-aegis/SKILL.md" "Aegis Reason Note" \
+    "using-aegis exposes natural Aegis reason note"
+assert_contains "skills/using-aegis/SKILL.md" "why Aegis is shaping" \
+    "using-aegis explains why Aegis is shaping the next step"
+assert_contains "skills/using-aegis/SKILL.md" "structured trace.*audit.*debug.*release.*long-task review.*asked|audit.*debug.*release.*long-task review.*asked.*structured trace" \
+    "using-aegis reserves structured trace for audit or requested cases"
+assert_not_contains "skills/using-aegis/SKILL.md" "Invocation: <skill-name> \| fast-path \| none" \
+    "using-aegis avoids invocation tuple as default user-facing shape"
+assert_not_contains "skills/using-aegis/SKILL.md" "Stage handoff" \
+    "using-aegis avoids stiff stage handoff wording"
 assert_contains "skills/using-aegis/SKILL.md" "ArchitectureReviewRequired" \
     "using-aegis marks architecture review required signal"
 assert_contains "skills/goal-framing/SKILL.md" "TaskIntentDraft" \
@@ -213,6 +273,18 @@ assert_contains "skills/brainstorming/SKILL.md" "Plan-Time Complexity Check" \
     "brainstorming includes plan-time complexity check"
 assert_contains "skills/brainstorming/SKILL.md" "Architecture Integrity Lens" \
     "brainstorming includes architecture integrity lens"
+assert_contains "skills/brainstorming/SKILL.md" "Baseline Role Alignment" \
+    "brainstorming includes baseline role alignment"
+assert_contains "skills/brainstorming/SKILL.md" "Product / Requirement Baseline" \
+    "brainstorming template names product requirement baseline role"
+assert_contains "skills/brainstorming/SKILL.md" "Architecture / Runtime Boundary Baseline" \
+    "brainstorming template names architecture runtime boundary baseline role"
+assert_contains "skills/brainstorming/SKILL.md" "Design Defect" \
+    "brainstorming template includes design defect"
+assert_contains "skills/brainstorming/SKILL.md" "Implementation Drift" \
+    "brainstorming template includes implementation drift"
+assert_contains "skills/brainstorming/SKILL.md" "scope: requirements | architecture | both" \
+    "brainstorming template includes defect drift scope taxonomy"
 assert_contains "skills/brainstorming/SKILL.md" "Better file boundary" \
     "brainstorming checks better file boundary"
 assert_contains "skills/brainstorming/SKILL.md" "review lens, not persona|not a persona" \
@@ -277,6 +349,22 @@ assert_contains "skills/verification-before-completion/SKILL.md" "Evidence Card"
     "verification skill defines evidence card"
 assert_contains "skills/verification-before-completion/SKILL.md" "Readiness Summary" \
     "verification skill defines readiness summary"
+assert_contains "skills/verification-before-completion/SKILL.md" "Natural Aegis closeout" \
+    "verification skill summarizes natural Aegis closeout"
+assert_contains "skills/verification-before-completion/SKILL.md" "one sentence" \
+    "verification skill keeps Aegis closeout concise by default"
+assert_contains "skills/verification-before-completion/SKILL.md" "hold one boundary steady" \
+    "verification skill frames Aegis visibility as boundary discipline"
+assert_contains "skills/verification-before-completion/SKILL.md" "Do not default to a visible.*Aegis Contribution Note" \
+    "verification skill avoids self-credit heading by default"
+assert_contains "skills/verification-before-completion/SKILL.md" "structured trace.*audit.*debug.*release.*long-task review.*user request|audit.*debug.*release.*long-task review.*user request.*structured trace" \
+    "verification skill reserves structured trace for audit or requested cases"
+assert_not_contains "skills/verification-before-completion/SKILL.md" "Used skills" \
+    "verification skill avoids stiff used-skills card by default"
+assert_not_contains "skills/verification-before-completion/SKILL.md" "Stage handoffs" \
+    "verification skill avoids stiff stage-handoffs card by default"
+assert_contains "skills/verification-before-completion/SKILL.md" "not completion authority" \
+    "verification skill keeps Aegis contribution advisory"
 assert_contains "skills/verification-before-completion/SKILL.md" "commit, tag, publish, merge, or release" \
     "verification readiness does not authorize publishing actions"
 assert_contains "skills/verification-before-completion/SKILL.md" "User-Language Output" \
@@ -285,6 +373,22 @@ assert_contains "skills/verification-before-completion/SKILL.md" "section labels
     "verification skill localizes user-facing completion cards"
 assert_contains "skills/verification-before-completion/SKILL.md" "Architecture Alignment" \
     "verification skill defines architecture alignment check"
+assert_contains "skills/verification-before-completion/SKILL.md" "Baseline Alignment" \
+    "verification skill defines baseline alignment check"
+assert_contains "skills/verification-before-completion/SKILL.md" "Requirement / acceptance alignment" \
+    "verification skill checks requirement acceptance alignment"
+assert_contains "skills/verification-before-completion/SKILL.md" "Architecture / owner / contract alignment" \
+    "verification skill checks architecture owner contract alignment"
+assert_contains "skills/verification-before-completion/SKILL.md" "Product / Requirement Baseline" \
+    "verification skill names product requirement baseline role"
+assert_contains "skills/verification-before-completion/SKILL.md" "Architecture / Runtime Boundary Baseline" \
+    "verification skill names architecture runtime boundary baseline role"
+assert_contains "skills/verification-before-completion/SKILL.md" "Design Defect" \
+    "verification skill includes design defect result"
+assert_contains "skills/verification-before-completion/SKILL.md" "Implementation Drift" \
+    "verification skill includes implementation drift result"
+assert_contains "skills/verification-before-completion/SKILL.md" "scope: requirements | architecture | both" \
+    "verification skill includes defect drift scope taxonomy"
 assert_contains "skills/verification-before-completion/SKILL.md" "Integrity Residual Risk" \
     "verification skill reports architecture integrity residual risk when triggered"
 assert_contains "skills/verification-before-completion/SKILL.md" "ADR Backfill Check" \
@@ -335,8 +439,12 @@ assert_contains "skills/requesting-code-review/SKILL.md" "[Rr]eview readiness is
     "requesting code review preserves merge authority boundary"
 assert_contains "skills/requesting-code-review/SKILL.md" "baseline / current authority" \
     "requesting code review checks baseline and current authority refs"
-assert_contains "skills/requesting-code-review/SKILL.md" "baseline defect vs architecture drift" \
-    "requesting code review distinguishes baseline defect from architecture drift"
+assert_contains "skills/requesting-code-review/SKILL.md" "legacy phrase mapping" \
+    "requesting code review maps legacy defect drift phrases to shared vocabulary"
+assert_contains "skills/requesting-code-review/SKILL.md" "requirements/product alignment" \
+    "requesting code review checks requirements product alignment"
+assert_contains "skills/requesting-code-review/SKILL.md" "Design Defect / Implementation Drift" \
+    "requesting code review uses aligned defect drift terminology"
 assert_contains "skills/requesting-code-review/code-reviewer.md" "Baseline / Current Authority" \
     "code reviewer template includes baseline/current authority section"
 assert_contains "skills/requesting-code-review/code-reviewer.md" "Findings First|Findings-first" \
@@ -349,16 +457,24 @@ assert_contains "skills/requesting-code-review/code-reviewer.md" "highest approp
     "code reviewer checks highest appropriate owner or contract layer"
 assert_contains "skills/requesting-code-review/code-reviewer.md" "caller-side fallback" \
     "code reviewer flags caller-side fallback masking contract fixes"
-assert_contains "skills/requesting-code-review/code-reviewer.md" "baseline defect, architecture drift, or intentional architecture change" \
-    "code reviewer template distinguishes baseline defect and drift"
+assert_contains "skills/requesting-code-review/code-reviewer.md" "legacy phrasing appears" \
+    "code reviewer template maps legacy defect drift phrasing"
+assert_contains "skills/requesting-code-review/code-reviewer.md" "requirements/product alignment" \
+    "code reviewer template checks requirements product alignment"
+assert_contains "skills/requesting-code-review/code-reviewer.md" "Design Defect / Implementation Drift" \
+    "code reviewer template uses aligned defect drift terminology"
 assert_contains "agents/code-reviewer.md" "skills/requesting-code-review/code-reviewer.md" \
     "named code reviewer points to canonical skill template path"
 assert_contains "agents/code-reviewer.md" "canonical Aegis code" \
     "named code reviewer identifies canonical Aegis review checklist"
 assert_contains "agents/code-reviewer.md" "host compatibility projection" \
     "named code reviewer is marked as compatibility projection"
-assert_contains "agents/code-reviewer.md" "baseline defect, architecture drift, and intentional architecture change" \
-    "named code reviewer mirrors baseline defect and drift distinction"
+assert_contains "agents/code-reviewer.md" "Map legacy phrasing" \
+    "named code reviewer mirrors legacy defect drift alias handling"
+assert_contains "agents/code-reviewer.md" "requirements/product alignment" \
+    "named code reviewer mirrors requirements product alignment"
+assert_contains "agents/code-reviewer.md" "Design Defect / Implementation Drift" \
+    "named code reviewer mirrors aligned defect drift terminology"
 assert_contains "agents/code-reviewer.md" "ADR Auto Backfill or baseline sync" \
     "named code reviewer mirrors ADR and baseline sync checks"
 
@@ -390,556 +506,7 @@ assert_not_contains "skills/using-aegis/SKILL.md" "Evidence Card" \
 assert_not_contains "skills/using-aegis/SKILL.md" "Design Spec.*Design Spec.*Design Spec" \
     "using-aegis hot path avoids repeated design-spec ceremony"
 
-"${PYTHON_CMD[@]}" - "$matrix" <<'PY'
-import json
-import sys
-from pathlib import Path
-
-path = Path(sys.argv[1])
-data = json.loads(path.read_text(encoding="utf-8"))
-samples = data.get("samples", [])
-
-expected_ids = {
-    "simple-factual-qa",
-    "tiny-wording-edit",
-    "git-status-version-question",
-    "quick-single-owner-bug",
-    "failing-test-diagnosis",
-    "ambiguous-feature",
-    "explicit-aegis-goal",
-    "approved-spec-to-plan",
-    "completion-claim",
-    "architecture-completion-adr-backfill-check",
-    "plan-time-complexity-check-before-design",
-    "plan-time-complexity-check-before-plan",
-    "pre-edit-complexity-check-before-code",
-    "pre-edit-complexity-check-debugging-fix",
-    "tdd-auto-small-task-light-verification",
-    "tdd-auto-risky-code-strict",
-    "tdd-off-no-automatic-tdd",
-    "minimal-sufficient-repair-not-local-patch",
-    "core-file-complexity-delta-before-completion",
-    "high-risk-merge-independent-review",
-    "simple-completion-no-adr-ceremony",
-    "architecture-area-bugfix-restores-baseline-no-adr",
-    "layer-stop-local-root-cause",
-    "layer-stop-cross-system-contract",
-    "layer-stop-spec-gap",
-    "fast-path-no-layer-stop-card",
-    "layer-stop-user-falsifier-correction",
-    "strong-opinion-product-risk-lens",
-    "strong-opinion-plan-pressure-test",
-    "architecture-integrity-higher-level-path",
-    "strong-opinion-review-findings-first",
-    "strong-opinion-release-readiness-summary",
-    "strong-opinion-retro-memory-filter",
-    "strong-opinion-fast-path-no-persona",
-    "interrupted-long-task-resume",
-    "governance-compat-cleanup",
-}
-ids = {item.get("id") for item in samples}
-missing = sorted(expected_ids - ids)
-if missing:
-    raise SystemExit(f"missing workflow-quality samples: {', '.join(missing)}")
-
-if len(samples) < 10:
-    raise SystemExit("workflow quality matrix must contain at least 10 samples")
-
-required_fields = {
-    "id",
-    "prompt",
-    "expectedPrimarySkill",
-    "allowedSecondarySkills",
-    "mustNotDo",
-    "expectedOutputShape",
-    "workspacePolicy",
-    "expectedArtifacts",
-    "verificationSignal",
-}
-
-for item in samples:
-    missing_fields = sorted(required_fields - item.keys())
-    if missing_fields:
-        raise SystemExit(f"{item.get('id', '<unknown>')} missing fields: {', '.join(missing_fields)}")
-    if not item["mustNotDo"]:
-        raise SystemExit(f"{item['id']} must define mustNotDo")
-    if not item["workspacePolicy"]:
-        raise SystemExit(f"{item['id']} must define workspacePolicy")
-    if not item["expectedOutputShape"]:
-        raise SystemExit(f"{item['id']} must define expectedOutputShape")
-    if not item["verificationSignal"]:
-        raise SystemExit(f"{item['id']} must define verificationSignal")
-
-negative = [s for s in samples if s.get("expectedPrimarySkill") is None]
-positive = [s for s in samples if s.get("expectedPrimarySkill")]
-if len(negative) < 3:
-    raise SystemExit("workflow quality matrix must include at least 3 fast-path / negative samples")
-if len(positive) < 6:
-    raise SystemExit("workflow quality matrix must include at least 6 positive samples")
-
-skills = {s.get("expectedPrimarySkill") for s in positive}
-required_skills = {
-    "goal-framing",
-    "brainstorming",
-    "writing-plans",
-    "systematic-debugging",
-    "test-driven-development",
-    "verification-before-completion",
-    "long-task-continuation",
-    "requesting-code-review",
-    "recording-architecture-decisions",
-}
-missing_skills = sorted(required_skills - skills)
-if missing_skills:
-    raise SystemExit(f"missing expected primary skills: {', '.join(missing_skills)}")
-
-for item in negative:
-    if item.get("expectedArtifacts"):
-        raise SystemExit(f"{item['id']} is fast-path but expects artifacts")
-    if "no-workspace" not in item.get("workspacePolicy", ""):
-        raise SystemExit(f"{item['id']} fast-path sample must use no-workspace policy")
-
-contracts = data.get("compactOutputContracts", {})
-required_contracts = {
-    "using-aegis",
-    "goal-framing",
-    "brainstorming",
-    "writing-plans",
-    "systematic-debugging",
-    "test-driven-development",
-    "executing-plans",
-    "verification-before-completion",
-    "long-task-continuation",
-}
-missing_contracts = sorted(required_contracts - contracts.keys())
-if missing_contracts:
-    raise SystemExit(f"missing compact output contracts: {', '.join(missing_contracts)}")
-
-if "Confidence" not in contracts["verification-before-completion"]:
-    raise SystemExit("verification compact contract must include Confidence")
-if "Complexity Delta" not in contracts["verification-before-completion"]:
-    raise SystemExit("verification compact contract must include Complexity Delta")
-if "Complexity Governance Suggestion" not in contracts["verification-before-completion"]:
-    raise SystemExit("verification compact contract must include Complexity Governance Suggestion")
-if "Architecture Alignment" not in contracts["verification-before-completion"]:
-    raise SystemExit("verification compact contract must include Architecture Alignment")
-if "ADR Backfill Check" not in contracts["verification-before-completion"]:
-    raise SystemExit("verification compact contract must include ADR Backfill Check")
-if "Retirement Closure" not in contracts["verification-before-completion"]:
-    raise SystemExit("verification compact contract must include Retirement Closure")
-if "recording-architecture-decisions" not in contracts:
-    raise SystemExit("compact output contracts must include recording-architecture-decisions")
-if "Layer Stop Card" not in contracts["systematic-debugging"]:
-    raise SystemExit("systematic-debugging compact contract must include Layer Stop Card")
-if "Pre-Edit Complexity Check" not in contracts["systematic-debugging"]:
-    raise SystemExit("systematic-debugging compact contract must include Pre-Edit Complexity Check")
-if "Pre-Edit Complexity Check" not in contracts["test-driven-development"]:
-    raise SystemExit("test-driven-development compact contract must include Pre-Edit Complexity Check")
-if "TDD Route" not in contracts["test-driven-development"]:
-    raise SystemExit("test-driven-development compact contract must include TDD Route")
-if "Pre-Edit Complexity Check" not in contracts["executing-plans"]:
-    raise SystemExit("executing-plans compact contract must include Pre-Edit Complexity Check")
-for contract in ("brainstorming", "writing-plans"):
-    if "Plan-Time Complexity Check" not in contracts[contract]:
-        raise SystemExit(f"{contract} compact contract must include Plan-Time Complexity Check")
-for required in ("Decision Candidate", "ADR Gate", "ADR Action", "Owner Surface", "Baseline Sync", "Boundary"):
-    if required not in contracts["recording-architecture-decisions"]:
-        raise SystemExit(f"recording-architecture-decisions compact contract must include {required}")
-if "ArchitectureReviewRequired" not in contracts["using-aegis"]:
-    raise SystemExit("using-aegis compact contract must include ArchitectureReviewRequired")
-if "Stop condition" not in contracts["goal-framing"]:
-    raise SystemExit("goal-framing compact contract must include Stop condition")
-if "DriftCheckDraft" not in contracts["long-task-continuation"]:
-    raise SystemExit("long-task compact contract must include DriftCheckDraft")
-
-strong_lens_contracts = {
-    "brainstorming": "Product Risk Lens",
-    "writing-plans": "Plan Pressure Test",
-    "requesting-code-review": "Findings First",
-    "verification-before-completion": "Readiness Summary",
-    "recording-architecture-decisions": "Retro / Memory Filter",
-}
-for contract, required in strong_lens_contracts.items():
-    if contract not in contracts:
-        raise SystemExit(f"compact output contracts must include {contract}")
-    if required not in contracts[contract]:
-        raise SystemExit(f"{contract} compact contract must include {required}")
-
-for contract in ("brainstorming", "writing-plans"):
-    if "Architecture Integrity Lens" not in contracts[contract]:
-        raise SystemExit(f"{contract} compact contract must include Architecture Integrity Lens")
-
-by_id = {item["id"]: item for item in samples}
-adr_sample = by_id["architecture-completion-adr-backfill-check"]
-if adr_sample.get("expectedPrimarySkill") != "verification-before-completion":
-    raise SystemExit("ADR backfill completion sample must use verification-before-completion")
-if "skip-architecture-alignment" not in adr_sample.get("mustNotDo", []):
-    raise SystemExit("ADR backfill completion sample must forbid skipping architecture alignment")
-if "skip-adr-backfill-check" not in adr_sample.get("mustNotDo", []):
-    raise SystemExit("ADR backfill completion sample must forbid skipping the check")
-if "architecture-alignment" not in adr_sample.get("verificationSignal", ""):
-    raise SystemExit("ADR backfill completion sample must require architecture alignment judgment")
-if "baseline-sync" not in adr_sample.get("verificationSignal", ""):
-    raise SystemExit("ADR backfill completion sample must require baseline-sync judgment")
-if "authoritative" not in " ".join(adr_sample.get("mustNotDo", [])):
-    raise SystemExit("ADR backfill completion sample must protect the authority boundary")
-if "recording-architecture-decisions" not in adr_sample.get("allowedSecondarySkills", []):
-    raise SystemExit("ADR backfill completion sample must allow recording-architecture-decisions for lifecycle closure")
-
-direct_adr_sample = by_id["direct-adr-lifecycle-request"]
-if direct_adr_sample.get("expectedPrimarySkill") != "recording-architecture-decisions":
-    raise SystemExit("direct ADR lifecycle request must use recording-architecture-decisions")
-for required in (
-    "treat-adr-as-completion-authority",
-    "write-adr-without-gate-check",
-    "skip-baseline-sync-closure",
-):
-    if required not in direct_adr_sample.get("mustNotDo", []):
-        raise SystemExit(f"direct ADR lifecycle request must forbid {required}")
-for required_signal in (
-    "adr-gate",
-    "owner-surface",
-    "baseline-sync",
-    "unchanged-reason",
-):
-    if required_signal not in direct_adr_sample.get("verificationSignal", ""):
-        raise SystemExit(f"direct ADR lifecycle request must require {required_signal}")
-
-direct_adr_skip_sample = by_id["direct-adr-skip-request"]
-if direct_adr_skip_sample.get("expectedPrimarySkill") != "recording-architecture-decisions":
-    raise SystemExit("direct ADR skip request must use recording-architecture-decisions")
-if direct_adr_skip_sample.get("expectedArtifacts"):
-    raise SystemExit("direct ADR skip request must not expect artifacts")
-for required in (
-    "force-adr-creation",
-    "force-baseline-writeback",
-    "treat-implementation-detail-as-durable-decision",
-):
-    if required not in direct_adr_skip_sample.get("mustNotDo", []):
-        raise SystemExit(f"direct ADR skip request must forbid {required}")
-
-completion_sample = by_id["completion-claim"]
-if "requesting-code-review" in completion_sample.get("allowedSecondarySkills", []):
-    raise SystemExit("generic completion sample must not route to requesting-code-review by default")
-
-complexity_sample = by_id["core-file-complexity-delta-before-completion"]
-if complexity_sample.get("expectedPrimarySkill") != "verification-before-completion":
-    raise SystemExit("core file complexity sample must use verification-before-completion")
-for required in (
-    "skip-complexity-delta",
-    "skip-complexity-governance-suggestion",
-    "ignore-file-crossing-800-lines",
-    "retain-old-logic-without-retirement-trigger",
-    "claim-completion-with-entropy-increase-hidden",
-):
-    if required not in complexity_sample.get("mustNotDo", []):
-        raise SystemExit(f"core file complexity sample must forbid {required}")
-for required_signal in (
-    "complexity-delta",
-    "complexity-governance-suggestion",
-    "file-thresholds",
-    "net-entropy",
-    "retirement-closure",
-):
-    if required_signal not in complexity_sample.get("verificationSignal", ""):
-        raise SystemExit(f"core file complexity sample must require {required_signal}")
-for required_shape in ("complexity-delta", "governance-suggestion"):
-    if required_shape not in complexity_sample.get("expectedOutputShape", ""):
-        raise SystemExit(f"core file complexity sample must include {required_shape} in output shape")
-
-complexity_stage_samples = {
-    "plan-time-complexity-check-before-design": ("brainstorming", "plan-time-complexity-check"),
-    "plan-time-complexity-check-before-plan": ("writing-plans", "plan-time-complexity-check"),
-    "pre-edit-complexity-check-before-code": ("test-driven-development", "pre-edit-complexity-check"),
-    "pre-edit-complexity-check-debugging-fix": ("systematic-debugging", "pre-edit-complexity-check"),
-}
-for sample_id, (skill, signal) in complexity_stage_samples.items():
-    sample = by_id[sample_id]
-    if sample.get("expectedPrimarySkill") != skill:
-        raise SystemExit(f"{sample_id} must use {skill}")
-    if signal not in sample.get("expectedOutputShape", ""):
-        raise SystemExit(f"{sample_id} output shape must include {signal}")
-    if signal not in sample.get("verificationSignal", ""):
-        raise SystemExit(f"{sample_id} verification signal must include {signal}")
-    if "complexity-check" not in " ".join(sample.get("mustNotDo", [])):
-        raise SystemExit(f"{sample_id} must forbid skipping {signal}")
-
-tdd_auto_small = by_id["tdd-auto-small-task-light-verification"]
-if tdd_auto_small.get("expectedPrimarySkill") is not None:
-    raise SystemExit("AUTO small-task TDD sample must stay fast path")
-for required in (
-    "force-red-green-refactor",
-    "load-test-driven-development-for-tiny-edit",
-    "skip-verification-before-completion",
-):
-    if required not in tdd_auto_small.get("mustNotDo", []):
-        raise SystemExit(f"AUTO small-task TDD sample must forbid {required}")
-if "tdd-route-auto-light-or-skipped" not in tdd_auto_small.get("verificationSignal", ""):
-    raise SystemExit("AUTO small-task TDD sample must require light or skipped route signal")
-
-tdd_auto_risky = by_id["tdd-auto-risky-code-strict"]
-if tdd_auto_risky.get("expectedPrimarySkill") != "test-driven-development":
-    raise SystemExit("AUTO risky-code TDD sample must use test-driven-development")
-for required in (
-    "skip-strict-tdd-route",
-    "write-production-code-before-failing-test",
-    "skip-producer-consumer-regression",
-):
-    if required not in tdd_auto_risky.get("mustNotDo", []):
-        raise SystemExit(f"AUTO risky-code TDD sample must forbid {required}")
-if "tdd-route-auto-strict" not in tdd_auto_risky.get("verificationSignal", ""):
-    raise SystemExit("AUTO risky-code TDD sample must require strict route signal")
-
-tdd_off = by_id["tdd-off-no-automatic-tdd"]
-if tdd_off.get("expectedPrimarySkill") is not None:
-    raise SystemExit("OFF TDD sample must not auto-trigger a primary TDD skill")
-for required in (
-    "auto-trigger-tdd",
-    "treat-off-as-skip-verification",
-    "skip-verification-before-completion",
-):
-    if required not in tdd_off.get("mustNotDo", []):
-        raise SystemExit(f"OFF TDD sample must forbid {required}")
-if "fresh-completion-evidence" not in tdd_off.get("verificationSignal", ""):
-    raise SystemExit("OFF TDD sample must still require completion evidence")
-
-minimal_repair_sample = by_id["minimal-sufficient-repair-not-local-patch"]
-if minimal_repair_sample.get("expectedPrimarySkill") != "systematic-debugging":
-    raise SystemExit("minimal sufficient repair sample must use systematic-debugging")
-for required in (
-    "equate-minimal-change-with-smallest-diff",
-    "add-fallback-without-owner-check",
-    "skip-minimality-check",
-    "skip-retirement-trigger",
-):
-    if required not in minimal_repair_sample.get("mustNotDo", []):
-        raise SystemExit(f"minimal sufficient repair sample must forbid {required}")
-for required_signal in (
-    "minimality-check",
-    "correct-owner",
-    "bug-class-fixed",
-    "retirement",
-    "verdict",
-):
-    if required_signal not in minimal_repair_sample.get("verificationSignal", ""):
-        raise SystemExit(f"minimal sufficient repair sample must require {required_signal}")
-
-product_lens_sample = by_id["strong-opinion-product-risk-lens"]
-if product_lens_sample.get("expectedPrimarySkill") != "brainstorming":
-    raise SystemExit("product risk lens sample must use brainstorming")
-for required in (
-    "role-persona-theater",
-    "override-baseline-evidence",
-    "start-implementation-immediately",
-):
-    if required not in product_lens_sample.get("mustNotDo", []):
-        raise SystemExit(f"product risk lens sample must forbid {required}")
-for required_signal in ("product-risk-lens", "non-goals", "tradeoff", "decision-needed"):
-    if required_signal not in product_lens_sample.get("verificationSignal", ""):
-        raise SystemExit(f"product risk lens sample must require {required_signal}")
-
-plan_pressure_sample = by_id["strong-opinion-plan-pressure-test"]
-if plan_pressure_sample.get("expectedPrimarySkill") != "writing-plans":
-    raise SystemExit("plan pressure test sample must use writing-plans")
-for required in (
-    "write-tasks-without-owner-contract-retirement-check",
-    "turn-pressure-test-into-approval-gate",
-    "redesign-approved-spec-without-cause",
-):
-    if required not in plan_pressure_sample.get("mustNotDo", []):
-        raise SystemExit(f"plan pressure test sample must forbid {required}")
-for required_signal in ("plan-pressure-test", "owner-contract-retirement", "verification-scope"):
-    if required_signal not in plan_pressure_sample.get("verificationSignal", ""):
-        raise SystemExit(f"plan pressure test sample must require {required_signal}")
-
-architecture_integrity_sample = by_id["architecture-integrity-higher-level-path"]
-if architecture_integrity_sample.get("expectedPrimarySkill") != "writing-plans":
-    raise SystemExit("architecture integrity sample must use writing-plans")
-if "first-principles-review" not in architecture_integrity_sample.get("allowedSecondarySkills", []):
-    raise SystemExit("architecture integrity sample must allow first-principles-review")
-for required in (
-    "write-tasks-before-architecture-integrity-lens",
-    "add-caller-side-fallback-without-higher-owner-check",
-    "skip-retirement-or-falsifier",
-    "turn-integrity-lens-into-runtime-gate",
-):
-    if required not in architecture_integrity_sample.get("mustNotDo", []):
-        raise SystemExit(f"architecture integrity sample must forbid {required}")
-for required_signal in (
-    "architecture-integrity-lens",
-    "invariant",
-    "canonical-owner-contract",
-    "responsibility-overlap",
-    "higher-level-path",
-    "retirement",
-    "falsifier",
-    "verdict",
-):
-    if required_signal not in architecture_integrity_sample.get("verificationSignal", ""):
-        raise SystemExit(f"architecture integrity sample must require {required_signal}")
-
-review_lens_sample = by_id["strong-opinion-review-findings-first"]
-if review_lens_sample.get("expectedPrimarySkill") != "requesting-code-review":
-    raise SystemExit("findings-first review sample must use requesting-code-review")
-for required in (
-    "lead-with-summary-before-findings",
-    "treat-review-as-merge-approval",
-    "skip-tests-risk-check",
-):
-    if required not in review_lens_sample.get("mustNotDo", []):
-        raise SystemExit(f"findings-first review sample must forbid {required}")
-for required_signal in ("findings-first", "bugs-risk-tests", "advisory-review"):
-    if required_signal not in review_lens_sample.get("verificationSignal", ""):
-        raise SystemExit(f"findings-first review sample must require {required_signal}")
-
-readiness_sample = by_id["strong-opinion-release-readiness-summary"]
-if readiness_sample.get("expectedPrimarySkill") != "verification-before-completion":
-    raise SystemExit("release readiness sample must use verification-before-completion")
-for required in (
-    "auto-commit",
-    "auto-tag",
-    "auto-publish",
-    "treat-readiness-as-completion-authority",
-):
-    if required not in readiness_sample.get("mustNotDo", []):
-        raise SystemExit(f"release readiness sample must forbid {required}")
-for required_signal in ("readiness-summary", "tests-docs-version-hosts", "residual-risk"):
-    if required_signal not in readiness_sample.get("verificationSignal", ""):
-        raise SystemExit(f"release readiness sample must require {required_signal}")
-
-retro_sample = by_id["strong-opinion-retro-memory-filter"]
-if retro_sample.get("expectedPrimarySkill") != "recording-architecture-decisions":
-    raise SystemExit("retro memory filter sample must use recording-architecture-decisions")
-for required in (
-    "record-unexecuted-ideas-as-accepted-memory",
-    "force-adr-for-every-retro",
-    "skip-baseline-sync-question",
-):
-    if required not in retro_sample.get("mustNotDo", []):
-        raise SystemExit(f"retro memory filter sample must forbid {required}")
-for required_signal in ("retro-memory-filter", "executed-durable-decision", "skip-or-record"):
-    if required_signal not in retro_sample.get("verificationSignal", ""):
-        raise SystemExit(f"retro memory filter sample must require {required_signal}")
-
-fast_path_persona_sample = by_id["strong-opinion-fast-path-no-persona"]
-if fast_path_persona_sample.get("expectedPrimarySkill") is not None:
-    raise SystemExit("fast-path strong-opinion no-persona sample must stay fast path")
-if fast_path_persona_sample.get("expectedArtifacts"):
-    raise SystemExit("fast-path strong-opinion no-persona sample must not expect artifacts")
-if fast_path_persona_sample.get("workspacePolicy") != "no-workspace":
-    raise SystemExit("fast-path strong-opinion no-persona sample must use no-workspace policy")
-for required in (
-    "emit-ceo-persona",
-    "force-strong-opinion-lens",
-    "create-project-workspace-records",
-):
-    if required not in fast_path_persona_sample.get("mustNotDo", []):
-        raise SystemExit(f"fast-path strong-opinion no-persona sample must forbid {required}")
-
-review_sample = by_id["high-risk-merge-independent-review"]
-if review_sample.get("expectedPrimarySkill") != "requesting-code-review":
-    raise SystemExit("high-risk merge review sample must use requesting-code-review")
-for required in (
-    "replace-verification-before-completion",
-    "skip-baseline-alignment",
-    "treat-review-as-completion-authority",
-):
-    if required not in review_sample.get("mustNotDo", []):
-        raise SystemExit(f"high-risk review sample must forbid {required}")
-for required_signal in (
-    "baseline-alignment",
-    "architecture-drift",
-    "retirement",
-    "adr-baseline-sync",
-):
-    if required_signal not in review_sample.get("verificationSignal", ""):
-        raise SystemExit(f"high-risk review sample must require {required_signal}")
-
-no_adr_sample = by_id["simple-completion-no-adr-ceremony"]
-if no_adr_sample.get("expectedArtifacts"):
-    raise SystemExit("simple completion no-ADR sample must not expect artifacts")
-if no_adr_sample.get("workspacePolicy") != "no-workspace":
-    raise SystemExit("simple completion no-ADR sample must keep no-workspace policy")
-if "force-adr-backfill-ceremony" not in no_adr_sample.get("mustNotDo", []):
-    raise SystemExit("simple completion no-ADR sample must forbid ADR ceremony")
-
-baseline_restore_sample = by_id["architecture-area-bugfix-restores-baseline-no-adr"]
-if baseline_restore_sample.get("expectedPrimarySkill") != "verification-before-completion":
-    raise SystemExit("baseline restoration sample must use verification-before-completion")
-if "force-adr-creation-for-baseline-restoration" not in baseline_restore_sample.get("mustNotDo", []):
-    raise SystemExit("baseline restoration sample must forbid forced ADR creation")
-if "skip-reason" not in baseline_restore_sample.get("verificationSignal", ""):
-    raise SystemExit("baseline restoration sample must require a skip reason")
-if "existing-baseline-was-restored" not in baseline_restore_sample.get("verificationSignal", ""):
-    raise SystemExit("baseline restoration sample must cite existing baseline restoration")
-
-layer_required = {
-    "layer-stop-local-root-cause": "L3 System",
-    "layer-stop-cross-system-contract": "L5 Cross-system Contract",
-    "layer-stop-spec-gap": "L7 Spec Gap",
-    "layer-stop-user-falsifier-correction": "L5 Cross-system Contract",
-}
-required_layer_fields = {
-    "required",
-    "stopLayer",
-    "checkedPath",
-    "evidenceForStop",
-    "excludedLayers",
-    "falsifier",
-    "userInterventionPoint",
-    "nextAction",
-}
-for sample_id, stop_layer in layer_required.items():
-    sample = by_id[sample_id]
-    if sample.get("expectedPrimarySkill") != "systematic-debugging":
-        raise SystemExit(f"{sample_id} must route to systematic-debugging")
-    card = sample.get("layerStopCard")
-    if not isinstance(card, dict):
-        raise SystemExit(f"{sample_id} must define layerStopCard")
-    missing_card_fields = sorted(required_layer_fields - card.keys())
-    if missing_card_fields:
-        raise SystemExit(f"{sample_id} layerStopCard missing fields: {', '.join(missing_card_fields)}")
-    if card.get("required") is not True:
-        raise SystemExit(f"{sample_id} layerStopCard must be required")
-    if card.get("stopLayer") != stop_layer:
-        raise SystemExit(f"{sample_id} must stop at {stop_layer}")
-    for field in ("checkedPath", "evidenceForStop", "excludedLayers", "falsifier", "userInterventionPoint", "nextAction"):
-        if not card.get(field):
-            raise SystemExit(f"{sample_id} layerStopCard {field} must not be empty")
-    if "layer-stop-card" not in sample.get("expectedOutputShape", ""):
-        raise SystemExit(f"{sample_id} output shape must require layer-stop-card")
-    if "layer-stop-card" not in sample.get("verificationSignal", ""):
-        raise SystemExit(f"{sample_id} verification signal must require layer-stop-card")
-    if "skip-layer-stop-card" not in sample.get("mustNotDo", []):
-        raise SystemExit(f"{sample_id} must forbid skipping layer stop card")
-
-correction_sample = by_id["layer-stop-user-falsifier-correction"]
-for required in (
-    "ignore-user-falsifier",
-    "cling-to-initial-l7-diagnosis",
-    "skip-correction-readback",
-):
-    if required not in correction_sample.get("mustNotDo", []):
-        raise SystemExit(f"user falsifier correction sample must forbid {required}")
-for required_signal in ("user-falsifier", "correction-to-l5", "user-intervention-point"):
-    if required_signal not in correction_sample.get("verificationSignal", ""):
-        raise SystemExit(f"user falsifier correction sample must require {required_signal}")
-
-no_card_sample = by_id["fast-path-no-layer-stop-card"]
-if no_card_sample.get("expectedPrimarySkill") is not None:
-    raise SystemExit("fast-path no-card sample must stay on fast path")
-if no_card_sample.get("layerStopCard", {}).get("required") is not False:
-    raise SystemExit("fast-path no-card sample must mark layerStopCard required false")
-if "emit-layer-stop-card" not in no_card_sample.get("mustNotDo", []):
-    raise SystemExit("fast-path no-card sample must forbid emitting layer stop card")
-if no_card_sample.get("expectedArtifacts"):
-    raise SystemExit("fast-path no-card sample must not expect artifacts")
-if no_card_sample.get("workspacePolicy") != "no-workspace":
-    raise SystemExit("fast-path no-card sample must use no-workspace policy")
-
-print("  [PASS] workflow quality matrix has representative samples and compact contracts")
-PY
-
+"${PYTHON_CMD[@]}" tests/helpers/validate_workflow_quality_matrix.py "$matrix"
 if (( failures > 0 )); then
     echo ""
     echo "Workflow quality check failed with $failures issue(s)."

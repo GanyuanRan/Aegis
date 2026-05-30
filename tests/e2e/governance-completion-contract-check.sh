@@ -54,8 +54,8 @@ assert_contains "$verification_skill" "section labels, field labels, and explana
 assert_contains "$verification_skill" "Architecture Alignment" \
     "verification gate requires Architecture Alignment for durable architecture closure"
 
-assert_contains "$verification_skill" "aligned | architecture drift | architecture defect" \
-    "architecture alignment requires explicit aligned drift defect result"
+assert_contains "$verification_skill" "aligned | Design Defect | Implementation Drift" \
+    "architecture alignment uses shared defect drift result vocabulary"
 
 assert_contains "$verification_skill" "Localize section labels and prose to the user's language" \
     "verification gate requires user-language localized output"
