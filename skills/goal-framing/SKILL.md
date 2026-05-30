@@ -43,7 +43,8 @@ Aegis goal: Fix the auth refresh bug without rewriting the auth system.
 
 ## Output
 
-Produce the smallest useful frame:
+Produce the smallest useful frame, then continue into the routed workflow in
+the same turn.
 
 ```text
 TaskIntentDraft:
@@ -59,6 +60,23 @@ TaskIntentDraft:
 - Next:
 ```
 
+Default behavior:
+
+- Do not stop after `TaskIntentDraft`.
+- Treat the frame as the start protocol for execution, not as the final answer.
+- After the compact frame, immediately take the `Next` action for the selected
+  route when the user asked to do the work.
+- Keep the visible frame natural and short when the goal is clear; do not emit a
+  large internal-looking card unless the user asked for a formal frame.
+
+Frame-only behavior:
+
+- Stop at the frame only when the user explicitly asks to only define the goal,
+  only define the stop condition, not execute, not implement, not write a plan,
+  or wait for confirmation before continuing.
+- If required information is missing, state the missing input and stop with
+  `blocked` rather than pretending to continue.
+
 Stop condition must distinguish:
 
 State set: `done`, `blocked`, `needs-verification`, `scope-exceeded`.
@@ -72,7 +90,7 @@ State set: `done`, `blocked`, `needs-verification`, `scope-exceeded`.
 
 After framing:
 
-- Low-risk single-owner work may continue through the normal fast path or TDD
+- Low-risk single-owner work continues through the normal fast path or TDD
 - Ambiguous product / architecture / contract work routes to `brainstorming`
 - Approved requirements route to `writing-plans`
 - Multi-step, compaction-prone, handoff, or subagent work routes to

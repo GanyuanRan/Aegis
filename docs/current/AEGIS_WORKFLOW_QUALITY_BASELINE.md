@@ -445,11 +445,15 @@ Compact contract:
 TaskIntentDraft: requested outcome, goal, success evidence, stop condition, non-goals
 Route: fast-path | <skill-name> | needs-baseline-readback
 Next: next smallest safe action
+Continuation: continue into the routed workflow by default
 ```
 
 Goal framing is opt-in. It does not create project workspace records unless the
 routed workflow needs persistent evidence, and it does not grant completion
-authority.
+authority. It is a start protocol, not a stop point: do not stop after
+`TaskIntentDraft` unless the user explicitly asks for frame-only behavior such
+as only defining the goal / stop condition, not executing, not implementing, not
+writing a plan, or waiting for confirmation.
 
 Route matrix:
 

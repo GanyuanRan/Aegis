@@ -101,6 +101,10 @@ assert_contains "$skill" "Route Matrix" \
     "goal-framing includes a route matrix"
 assert_contains "$skill" "Goal framing alone does not create project files" \
     "goal-framing keeps workspace lazy"
+assert_contains "$skill" "Do not stop after.*TaskIntentDraft|continue.*routed workflow" \
+    "goal-framing continues into the routed workflow by default"
+assert_contains "$skill" "frame-only|only define.*goal|do not execute" \
+    "goal-framing stops at the frame only when explicitly requested"
 assert_contains "$skill" "does not replace evidence" \
     "goal-framing prevents summary-only subagent facts"
 assert_contains "$skill" "completion authority" \
@@ -198,11 +202,17 @@ if "create-project-workspace-records" not in sample.get("mustNotDo", []):
     raise SystemExit("goal-framing sample must forbid workspace creation by default")
 if "TaskIntentDraft" not in sample.get("expectedArtifacts", []):
     raise SystemExit("goal-framing sample must expect TaskIntentDraft")
+if "stop-after-task-intent-draft" not in sample.get("mustNotDo", []):
+    raise SystemExit("goal-framing sample must forbid stopping after TaskIntentDraft")
+if "continue" not in sample.get("expectedOutputShape", ""):
+    raise SystemExit("goal-framing sample must expect continuation into the routed workflow")
+if "continue" not in sample.get("verificationSignal", ""):
+    raise SystemExit("goal-framing sample must verify continuation beyond the frame")
 
 contracts = matrix.get("compactOutputContracts", {})
 if "goal-framing" not in contracts:
     raise SystemExit("workflow quality contracts missing goal-framing")
-for field in ("Goal", "Success evidence", "Stop condition", "Non-goals", "Route", "Next"):
+for field in ("Goal", "Success evidence", "Stop condition", "Non-goals", "Route", "Next", "Continuation"):
     if field not in contracts["goal-framing"]:
         raise SystemExit(f"goal-framing compact contract missing {field}")
 for field in ("Goal status", "Success evidence", "Stop state"):

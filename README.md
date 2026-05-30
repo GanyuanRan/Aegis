@@ -120,7 +120,8 @@ Read the current host verdict before making support claims:
 After installation and host restart, use normal development requests. Aegis
 skills should be selected when the task matches the method.
 
-Use a portable goal frame before risky work:
+Use a portable goal frame before risky work. It frames the goal, then continues
+into the routed workflow by default:
 
 ```text
 Aegis goal: Fix the auth refresh bug without rewriting the auth system.

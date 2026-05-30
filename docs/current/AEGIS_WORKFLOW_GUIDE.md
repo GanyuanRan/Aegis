@@ -82,9 +82,11 @@ If the user explicitly invokes a skill, such as `aegis:systematic-debugging` or
 
 If the user starts with `/aegis-goal <task>` or `Aegis goal: <task>`, load
 `goal-framing` first. It creates a thin `TaskIntentDraft` frame with goal,
-success evidence, stop condition, and non-goals, then routes onward. Goal
-framing does not create project files by default and does not grant completion
-authority.
+success evidence, stop condition, and non-goals, then continues into the routed
+workflow by default. Goal framing does not create project files by default and
+does not grant completion authority. Stop at the frame only when the user
+explicitly asks to only define the goal / stop condition, not execute, not
+implement, not write a plan, or wait for confirmation.
 
 Example:
 

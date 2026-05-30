@@ -81,8 +81,9 @@ standard path。
 
 如果用户以 `/aegis-goal <任务>` 或 `Aegis goal: <任务>` 开始，则先加载
 `goal-framing`。它只生成轻量 `TaskIntentDraft` 边界：目标、成功证据、停止条件
-和非目标，然后再继续路由。Goal framing 默认不创建项目文件，也不授予
-completion authority。
+和非目标，然后默认继续进入已选 route。Goal framing 默认不创建项目文件，也
+不授予 completion authority。只有当用户明确说“只定义目标 / 停止条件”、
+“不要执行”、“不要实现”、“不要写计划”或“等我确认”时，才停在 frame。
 
 示例：
 

@@ -131,7 +131,7 @@ CONTRACT_REQUIREMENTS = {
         "Retro / Memory Filter",
     ],
     "using-aegis": ["ArchitectureReviewRequired", "Aegis Reason Note"],
-    "goal-framing": ["Stop condition"],
+    "goal-framing": ["Stop condition", "Continuation"],
     "long-task-continuation": ["DriftCheckDraft"],
     "requesting-code-review": ["Findings First", "Baseline Role Alignment"],
 }

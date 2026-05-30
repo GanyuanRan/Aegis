@@ -1,5 +1,47 @@
 # Aegis Release Notes
 
+## v1.9.5 (2026-05-30)
+
+### Goal Framing Continues by Default
+
+- Clarified across the workflow guides, README surfaces, and the
+  `goal-framing` skill that `Aegis goal:` is a start protocol, not a stop
+  point.
+- Documented the default behavior: after producing the compact
+  `TaskIntentDraft`, Aegis should continue into the routed workflow in the same
+  turn when the user asked to do the work.
+- Locked the explicit stop boundary: frame-only behavior applies only when the
+  user clearly asks to only define the goal or stop condition, to not execute,
+  to not implement, to not write a plan, or to wait for confirmation.
+
+### Workflow Quality Contract Coverage
+
+- Extended the workflow quality baseline and fixture matrix so `goal-framing`
+  now requires a visible `Continuation` contract field.
+- Added matrix and harness checks that forbid stopping after
+  `TaskIntentDraft` in the default path and require continuation evidence in
+  the routed workflow.
+- Updated the workflow quality matrix validator so the `goal-framing` contract
+  explicitly checks both `Stop condition` and `Continuation`.
+
+### Version
+
+- Bumped all declared plugin, marketplace, package, and extension manifests to
+  `1.9.5`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.9.5`
+- `bash scripts/bump-version.sh --audit`
+- `python -m py_compile tests/helpers/validate_workflow_quality_matrix.py`
+- `python tests/helpers/validate_workflow_quality_matrix.py tests/e2e/fixtures/workflow-quality-matrix.json`
+- `bash tests/e2e/goal-framing-check.sh`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/layer1-fast-check.sh --host-profile none`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+- `git diff --check`
+
 ## v1.9.4 (2026-05-30)
 
 ### Semantic Slots and Natural Surface

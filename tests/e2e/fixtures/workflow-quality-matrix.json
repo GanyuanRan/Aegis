@@ -87,11 +87,11 @@
       "prompt": "/aegis-goal Fix the auth refresh bug without rewriting the auth system.",
       "expectedPrimarySkill": "goal-framing",
       "allowedSecondarySkills": ["using-aegis", "systematic-debugging", "long-task-continuation"],
-      "mustNotDo": ["create-project-workspace-records", "grant-completion-authority", "force-design-spec"],
-      "expectedOutputShape": "goal-success-evidence-stop-condition-non-goals-route-next",
+      "mustNotDo": ["create-project-workspace-records", "grant-completion-authority", "force-design-spec", "stop-after-task-intent-draft"],
+      "expectedOutputShape": "goal-success-evidence-stop-condition-non-goals-route-next-continue",
       "workspacePolicy": "no-workspace-unless-routed-workflow-needs-persistent-evidence",
       "expectedArtifacts": ["TaskIntentDraft"],
-      "verificationSignal": "goal-frame-states-done-blocked-needs-verification-scope-exceeded"
+      "verificationSignal": "goal-frame-states-done-blocked-needs-verification-scope-exceeded-and-continues-into-routed-workflow"
     },
     {
       "id": "approved-spec-to-plan",
@@ -524,7 +524,7 @@
   ],
   "compactOutputContracts": {
     "using-aegis": ["Route", "Aegis Reason Note", "ArchitectureReviewRequired", "Why", "Next"],
-    "goal-framing": ["Goal", "Success evidence", "Stop condition", "Non-goals", "Route", "Next"],
+    "goal-framing": ["Goal", "Success evidence", "Stop condition", "Non-goals", "Route", "Next", "Continuation"],
     "brainstorming": ["TaskIntentDraft", "BaselineReadSetHint", "ImpactStatementDraft", "Product Risk Lens", "Architecture Integrity Lens", "Baseline Role Alignment", "Plan-Time Complexity Check", "Options", "Decision Needed"],
     "writing-plans": ["Plan Basis", "Files", "Compatibility", "Architecture Integrity Lens", "Plan Pressure Test", "Plan-Time Complexity Check", "Tasks", "Risks", "Retirement"],
     "systematic-debugging": ["Symptom", "Reproduction", "Root Cause", "Layer Stop Card", "Fix Boundary", "Pre-Edit Complexity Check", "Verification"],
