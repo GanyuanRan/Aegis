@@ -63,6 +63,14 @@ Semantic Slots:
   work. It names the boundary held, evidence, covered and uncovered scope,
   residual risk, confidence, and any triggered governance closure.
 
+TDD Completion Boundary:
+- A passing GREEN cycle proves local behavior only.
+- Final completion must compare any available `Slice Card`, `TaskIntentDraft`,
+  and parent plan/spec acceptance against the claim being made.
+- If only the slice goal is satisfied, do not claim whole-task `done`; state
+  covered and uncovered scope and downgrade to `needs-verification` unless the
+  parent acceptance is also satisfied.
+
 1. **Remove/Restore**: side effects? temp instrumentation restored?
 2. **Evidence Bundle**: exact command, scope, exit status, key output. State what's covered and what's not. Include target test and related regression evidence. When automation is blocked, provide reproducible manual verification steps.
 3. **Prompt Hygiene**: when external output shaped judgment → state whether summaries or raw excerpts were used. Name large payloads not loaded. If summary insufficient → read back excerpt or lower claim. Include Evidence Used / Not Loaded / Next Evidence boundary when relevant.
@@ -70,6 +78,11 @@ Semantic Slots:
 5. **Authority**: verified evidence ≠ authoritative completion. Keep distinct.
 6. **Goal Closure**: when `goal-framing` or optional `TaskIntentDraft` goal
    fields shaped the work, explicitly check the goal before claiming completion:
+
+   Evidence precedence for completion judgment:
+   1. `Slice Card` Goal / Verification / Stop for the current slice, when present
+   2. `TaskIntentDraft` Goal / Success evidence / Non-goals, when present
+   3. Parent plan/spec acceptance, when present
 
    ```text
    Goal Closure:

@@ -54,7 +54,11 @@ pure explanation, comment-only edits, generated or vendored files, throwaway
 spikes, or environment-bound checks where automated tests cannot be written in
 the current slice.
 
-When in doubt for code behavior, choose `strict`.
+When implementation risk is clear and behavior needs regression protection,
+choose `strict`.
+
+When business behavior, acceptance, success evidence, or user-visible
+completion is unclear, route to `brainstorming` or `writing-plans` before TDD.
 
 ## 4. Configuration
 

@@ -215,6 +215,17 @@
       "verificationSignal": "tdd-route-off-no-automatic-tdd-fresh-completion-evidence"
     },
     {
+      "id": "tdd-green-local-not-final-completion",
+      "prompt": "We reached GREEN on a strict TDD slice, but the parent acceptance is not fully covered yet. Verify whether this is only slice-local completion or true task completion.",
+      "expectedPrimarySkill": "verification-before-completion",
+      "allowedSecondarySkills": ["test-driven-development", "long-task-continuation"],
+      "mustNotDo": ["treat-green-as-final-completion", "skip-goal-closure", "ignore-slice-card-goal", "hide-uncovered-scope"],
+      "expectedOutputShape": "goal-closure-plus-slice-card-local-vs-final-completion",
+      "workspacePolicy": "workspace-if-medium-risk-or-plan-update-needed",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "green-local-proof-slice-card-goal-parent-acceptance-success-evidence-uncovered-scope"
+    },
+    {
       "id": "minimal-sufficient-repair-not-local-patch",
       "prompt": "The smallest diff would add a caller-side fallback, but I want the smallest long-term stable fix. Decide whether this is a sufficient repair or a local patch before editing.",
       "expectedPrimarySkill": "systematic-debugging",
@@ -504,11 +515,11 @@
       "prompt": "We are resuming a multi-step task after compaction. Re-read the checkpoint and continue safely.",
       "expectedPrimarySkill": "long-task-continuation",
       "allowedSecondarySkills": ["using-aegis", "verification-before-completion"],
-      "mustNotDo": ["resume-from-memory-alone", "continue-without-drift-check"],
-      "expectedOutputShape": "checkpoint-evidence-drift-risk-next",
+      "mustNotDo": ["resume-from-memory-alone", "continue-without-drift-check", "skip-slice-card"],
+      "expectedOutputShape": "checkpoint-slice-card-evidence-drift-risk-next",
       "workspacePolicy": "work-record-required-for-medium-plus-long-task",
       "expectedArtifacts": ["TodoCheckpointDraft", "ResumeStateHint", "DriftCheckDraft", "EvidenceBundleDraft"],
-      "verificationSignal": "latest-checkpoint-and-worktree-readback"
+      "verificationSignal": "latest-checkpoint-and-worktree-slice-card-readback"
     },
     {
       "id": "governance-compat-cleanup",
@@ -532,7 +543,7 @@
     "requesting-code-review": ["Findings First", "Evidence Review", "Baseline / Current Authority", "Baseline Role Alignment", "Compatibility / Retirement", "Review Readiness"],
     "recording-architecture-decisions": ["Decision Candidate", "ADR Gate", "Retro / Memory Filter", "ADR Action", "Owner Surface", "Baseline Sync", "Boundary"],
     "verification-before-completion": ["evidence-action", "verification-result", "covered-scope", "uncovered-scope", "residual-risk", "confidence-grade", "Goal status", "Success evidence", "Stop state", "Readiness Summary", "Natural Aegis closeout", "Semantic Slots", "Natural Surface", "Governance Receipt", "Complexity Delta", "Complexity Governance Suggestion", "Baseline Alignment", "Architecture Alignment", "ADR Backfill Check", "Retirement Closure"],
-    "long-task-continuation": ["TodoCheckpointDraft", "Evidence", "DriftCheckDraft", "Risk / Unknown", "Next"],
+    "long-task-continuation": ["TodoCheckpointDraft", "Slice Card", "Evidence", "DriftCheckDraft", "Risk / Unknown", "Next"],
     "executing-plans": ["Plan Review", "Todo", "Pre-Edit Complexity Check", "Verification", "Checkpoint"]
   }
 }

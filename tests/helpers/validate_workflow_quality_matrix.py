@@ -27,6 +27,7 @@ EXPECTED_IDS = {
     "tdd-auto-small-task-light-verification",
     "tdd-auto-risky-code-strict",
     "tdd-off-no-automatic-tdd",
+    "tdd-green-local-not-final-completion",
     "minimal-sufficient-repair-not-local-patch",
     "core-file-complexity-delta-before-completion",
     "high-risk-merge-independent-review",
@@ -96,6 +97,9 @@ CONTRACT_REQUIREMENTS = {
         "uncovered-scope",
         "residual-risk",
         "confidence-grade",
+        "Goal status",
+        "Success evidence",
+        "Stop state",
         "Complexity Delta",
         "Complexity Governance Suggestion",
         "Architecture Alignment",
@@ -132,7 +136,7 @@ CONTRACT_REQUIREMENTS = {
     ],
     "using-aegis": ["ArchitectureReviewRequired", "Aegis Reason Note"],
     "goal-framing": ["Stop condition", "Continuation"],
-    "long-task-continuation": ["DriftCheckDraft"],
+    "long-task-continuation": ["DriftCheckDraft", "Slice Card"],
     "requesting-code-review": ["Findings First", "Baseline Role Alignment"],
 }
 
@@ -212,6 +216,24 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
             "skip-verification-before-completion",
         ],
         "signals": ["fresh-completion-evidence"],
+    },
+    "tdd-green-local-not-final-completion": {
+        "primary": "verification-before-completion",
+        "allowed": ["test-driven-development", "long-task-continuation"],
+        "must_not": [
+            "treat-green-as-final-completion",
+            "skip-goal-closure",
+            "ignore-slice-card-goal",
+            "hide-uncovered-scope",
+        ],
+        "signals": [
+            "green-local-proof",
+            "slice-card-goal",
+            "parent-acceptance",
+            "success-evidence",
+            "uncovered-scope",
+        ],
+        "shapes": ["goal-closure", "slice-card-local-vs-final-completion"],
     },
     "minimal-sufficient-repair-not-local-patch": {
         "primary": "systematic-debugging",
@@ -396,6 +418,17 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
         "no_artifacts": True,
         "workspace": "no-workspace",
         "must_not": ["force-adr-backfill-ceremony"],
+    },
+    "interrupted-long-task-resume": {
+        "primary": "long-task-continuation",
+        "allowed": ["verification-before-completion"],
+        "must_not": [
+            "resume-from-memory-alone",
+            "continue-without-drift-check",
+            "skip-slice-card",
+        ],
+        "signals": ["latest-checkpoint", "worktree", "slice-card-readback"],
+        "shapes": ["slice-card"],
     },
     "architecture-area-bugfix-restores-baseline-no-adr": {
         "primary": "verification-before-completion",

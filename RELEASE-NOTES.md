@@ -1,5 +1,51 @@
 # Aegis Release Notes
 
+## v1.9.6 (2026-06-01)
+
+### TDD Completion Boundary
+
+- Clarified that a passing GREEN cycle proves only the currently expressed
+  behavior slice.
+- Prevented GREEN from being treated as parent-task acceptance or whole-task
+  completion by itself.
+- Routed unclear business behavior, success evidence, or acceptance back to
+  `brainstorming` or `writing-plans` before strict TDD.
+
+### Slice-Level vs Final Completion
+
+- Clarified that a `Slice Card` goal anchors slice-level completeness only.
+- Added explicit completion precedence across `Slice Card`,
+  `TaskIntentDraft`, and parent plan/spec acceptance during
+  `verification-before-completion`.
+- Required covered and uncovered scope to stay visible when only the slice goal
+  is satisfied.
+
+### Workflow Quality Coverage
+
+- Added the `tdd-green-local-not-final-completion` representative sample to
+  the workflow quality matrix.
+- Extended `long-task-continuation` contract coverage to require `Slice Card`
+  visibility.
+- Updated the matrix validator so `verification-before-completion` now
+  requires `Goal status`, `Success evidence`, and `Stop state`.
+
+### Version
+
+- Bumped all declared plugin, marketplace, package, and extension manifests to
+  `1.9.6`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.9.6`
+- `bash scripts/bump-version.sh --audit`
+- `python -m py_compile tests/helpers/validate_workflow_quality_matrix.py`
+- `python tests/helpers/validate_workflow_quality_matrix.py tests/e2e/fixtures/workflow-quality-matrix.json`
+- `bash tests/e2e/governance-completion-contract-check.sh`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `python tests/helpers/test_parse_codex_skills.py`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+- `git diff --check`
+
 ## v1.9.5 (2026-05-30)
 
 ### Goal Framing Continues by Default

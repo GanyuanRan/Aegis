@@ -199,6 +199,10 @@ Pass criteria:
 - `light` or `skipped` may be used for tiny low-risk edits, read-only tasks,
   docs-only changes, generated files, throwaway spikes, or environment-bound
   work where TDD does not fit
+- a passing GREEN cycle proves local behavior only and does not by itself prove
+  parent-task acceptance or final completion
+- when business behavior, success evidence, or acceptance is unclear, the
+  workflow routes to `brainstorming` or `writing-plans` before strict TDD
 - `off` disables automatic TDD routing, but does not disable
   `verification-before-completion`
 - explicit user/project TDD requests still apply in `off` mode
@@ -217,6 +221,9 @@ Pass criteria:
   new `docs/aegis/plans/*` or `docs/aegis/specs/*` file
 - `Slice Card` records the goal, parent plan/spec, touched files, boundary,
   verification, and stop condition for the current slice
+- `Slice Card` anchors slice-level completeness only; whole-task completion
+  still requires `verification-before-completion` to reconcile slice progress
+  with parent acceptance and goal closure
 - micro-slices update checkpoint, evidence, and drift state under the existing
   long-task record when persistent state is needed
 - durable plan/spec creation resumes only when the slice introduces a new
