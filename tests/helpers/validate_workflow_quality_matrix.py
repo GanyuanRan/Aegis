@@ -100,6 +100,7 @@ CONTRACT_REQUIREMENTS = {
         "Goal status",
         "Success evidence",
         "Stop state",
+        "Non-goals respected",
         "Complexity Delta",
         "Complexity Governance Suggestion",
         "Architecture Alignment",

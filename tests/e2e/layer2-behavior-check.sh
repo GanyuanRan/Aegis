@@ -158,6 +158,25 @@ run_comparison \
     "$TMP_DIR/scenario-B-with-aegis.json" \
     "$TMP_DIR/scenario-B-without-aegis.json"
 
+run_analysis \
+    "scenario E local GREEN not final completion" \
+    "$SCRIPT_DIR/fixtures/transcripts/with-aegis/scenario-E-tdd-local-green.jsonl" \
+    "$SCRIPT_DIR/scenarios/scenario-E-tdd-local-green/expected-behavior.json" \
+    "$SCRIPT_DIR/scenarios/scenario-E-tdd-local-green/expected-artifacts.json" \
+    "$TMP_DIR/scenario-E-with-aegis.json"
+
+capture_analysis \
+    "scenario E without Aegis baseline" \
+    "$SCRIPT_DIR/baselines/without-aegis/scenario-E-tdd-local-green.jsonl" \
+    "$SCRIPT_DIR/scenarios/scenario-E-tdd-local-green/expected-behavior.json" \
+    "$SCRIPT_DIR/scenarios/scenario-E-tdd-local-green/expected-artifacts.json" \
+    "$TMP_DIR/scenario-E-without-aegis.json"
+
+run_comparison \
+    "scenario E with/without comparison" \
+    "$TMP_DIR/scenario-E-with-aegis.json" \
+    "$TMP_DIR/scenario-E-without-aegis.json"
+
 echo "Passed: $passed"
 echo "Failed: $failed"
 

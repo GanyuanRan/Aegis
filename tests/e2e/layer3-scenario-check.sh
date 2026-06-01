@@ -110,6 +110,13 @@ run_scenario \
     "$TMP_DIR/scenario-B.json"
 
 run_scenario \
+    "scenario E local GREEN not final completion" \
+    "$SCRIPT_DIR/fixtures/transcripts/with-aegis/scenario-E-tdd-local-green.jsonl" \
+    "$SCRIPT_DIR/scenarios/scenario-E-tdd-local-green/expected-behavior.json" \
+    "$SCRIPT_DIR/scenarios/scenario-E-tdd-local-green/expected-artifacts.json" \
+    "$TMP_DIR/scenario-E.json"
+
+run_scenario \
     "scenario C cross-host codex fixture" \
     "$SCRIPT_DIR/fixtures/transcripts/with-aegis/scenario-C-cross-host-codex.jsonl" \
     "$SCRIPT_DIR/scenarios/scenario-C-cross-host/expected-behavior.json" \

@@ -1,0 +1,27 @@
+{
+  "skillSequence": [
+    "long-task-continuation",
+    "verification-before-completion"
+  ],
+  "mustContain": [
+    "green",
+    "slice",
+    "parent acceptance",
+    "needs-verification",
+    "uncovered scope"
+  ],
+  "assistantMustContain": [
+    "slice card",
+    "goal status: needs-verification",
+    "stop state: needs-verification",
+    "non-goals respected: yes",
+    "covered scope",
+    "uncovered scope"
+  ],
+  "mustNotContain": [
+    "goal status: satisfied",
+    "stop state: done",
+    "completion granted",
+    "authoritative completion"
+  ]
+}

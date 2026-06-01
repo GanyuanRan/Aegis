@@ -215,7 +215,7 @@ if "goal-framing" not in contracts:
 for field in ("Goal", "Success evidence", "Stop condition", "Non-goals", "Route", "Next", "Continuation"):
     if field not in contracts["goal-framing"]:
         raise SystemExit(f"goal-framing compact contract missing {field}")
-for field in ("Goal status", "Success evidence", "Stop state"):
+for field in ("Goal status", "Success evidence", "Stop state", "Non-goals respected"):
     if field not in contracts["verification-before-completion"]:
         raise SystemExit(f"verification compact contract missing goal closure field: {field}")
 

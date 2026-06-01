@@ -1,0 +1,4 @@
+We reached GREEN on one strict TDD slice for an export/readback regression, but
+the parent acceptance still includes the dashboard refresh path and an
+end-to-end cache invalidation path. Verify whether this is only slice-local
+completion or true task completion, and keep any unfinished scope explicit.

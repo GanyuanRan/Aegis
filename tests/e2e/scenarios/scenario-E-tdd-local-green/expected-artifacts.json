@@ -1,0 +1,6 @@
+{
+  "requiredArtifacts": [
+    "TodoCheckpointDraft",
+    "EvidenceBundleDraft"
+  ]
+}

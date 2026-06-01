@@ -542,7 +542,7 @@
     "test-driven-development": ["TDD Route", "Preflight Gate", "Pre-Edit Complexity Check", "RED", "GREEN", "REFACTOR", "Regression Scope"],
     "requesting-code-review": ["Findings First", "Evidence Review", "Baseline / Current Authority", "Baseline Role Alignment", "Compatibility / Retirement", "Review Readiness"],
     "recording-architecture-decisions": ["Decision Candidate", "ADR Gate", "Retro / Memory Filter", "ADR Action", "Owner Surface", "Baseline Sync", "Boundary"],
-    "verification-before-completion": ["evidence-action", "verification-result", "covered-scope", "uncovered-scope", "residual-risk", "confidence-grade", "Goal status", "Success evidence", "Stop state", "Readiness Summary", "Natural Aegis closeout", "Semantic Slots", "Natural Surface", "Governance Receipt", "Complexity Delta", "Complexity Governance Suggestion", "Baseline Alignment", "Architecture Alignment", "ADR Backfill Check", "Retirement Closure"],
+    "verification-before-completion": ["evidence-action", "verification-result", "covered-scope", "uncovered-scope", "residual-risk", "confidence-grade", "Goal status", "Success evidence", "Stop state", "Non-goals respected", "Readiness Summary", "Natural Aegis closeout", "Semantic Slots", "Natural Surface", "Governance Receipt", "Complexity Delta", "Complexity Governance Suggestion", "Baseline Alignment", "Architecture Alignment", "ADR Backfill Check", "Retirement Closure"],
     "long-task-continuation": ["TodoCheckpointDraft", "Slice Card", "Evidence", "DriftCheckDraft", "Risk / Unknown", "Next"],
     "executing-plans": ["Plan Review", "Todo", "Pre-Edit Complexity Check", "Verification", "Checkpoint"]
   }

@@ -1,5 +1,42 @@
 # Aegis Release Notes
 
+## v1.9.7 (2026-06-01)
+
+### Goal Closure Contract Coverage
+
+- Added `Non-goals respected` to the `verification-before-completion` compact
+  contract so goal closure checks cannot silently ignore scope drift.
+- Extended the workflow quality matrix validator and `goal-framing` policy check
+  to require the same field wherever completion is judged against a goal frame.
+
+### TDD Local GREEN Dynamic Regression
+
+- Added fixture-backed `scenario-E-tdd-local-green` coverage for the case where
+  a strict TDD slice reaches GREEN while parent acceptance remains open.
+- Locked the expected downgrade path: local GREEN must remain slice-local and
+  report `needs-verification`, covered scope, and uncovered scope instead of
+  claiming whole-task completion.
+- Added with/without-Aegis transcript contrast fixtures so the regression check
+  explicitly catches the premature-closeout behavior Aegis is meant to prevent.
+
+### Version
+
+- Bumped all declared plugin, marketplace, package, and extension manifests to
+  `1.9.7`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.9.7`
+- `bash scripts/bump-version.sh --audit`
+- `python -m py_compile tests/helpers/validate_workflow_quality_matrix.py`
+- `python tests/helpers/validate_workflow_quality_matrix.py tests/e2e/fixtures/workflow-quality-matrix.json`
+- `bash tests/e2e/goal-framing-check.sh`
+- `bash tests/e2e/tdd-policy-check.sh`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `bash tests/e2e/layer2-behavior-check.sh`
+- `bash tests/e2e/layer3-scenario-check.sh`
+- `git diff --check`
+
 ## v1.9.6 (2026-06-01)
 
 ### TDD Completion Boundary
