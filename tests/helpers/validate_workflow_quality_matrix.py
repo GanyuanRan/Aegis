@@ -51,6 +51,15 @@ EXPECTED_IDS = {
     "strong-opinion-fast-path-no-persona",
     "interrupted-long-task-resume",
     "governance-compat-cleanup",
+    "internal-trigger-retirement",
+    "duplicate-owner-collapse",
+    "unknown-is-not-evidence",
+    "host-fallback-with-real-boundary",
+    "drop-table-hard-stop",
+    "source-of-truth-object-hard-stop",
+    "derived-cache-safe-cleanup",
+    "migration-file-vs-live-data",
+    "plain-dead-import-does-not-trigger-anti-entropy",
 }
 
 REQUIRED_FIELDS = {
@@ -84,6 +93,7 @@ REQUIRED_CONTRACTS = {
     "writing-plans",
     "systematic-debugging",
     "test-driven-development",
+    "anti-entropy-governance",
     "executing-plans",
     "verification-before-completion",
     "long-task-continuation",
@@ -106,6 +116,8 @@ CONTRACT_REQUIREMENTS = {
         "Architecture Alignment",
         "ADR Backfill Check",
         "Retirement Closure",
+        "Anti-Entropy Declaration",
+        "Data Destruction Guard",
         "Natural Aegis closeout",
         "Baseline Alignment",
         "Semantic Slots",
@@ -114,6 +126,13 @@ CONTRACT_REQUIREMENTS = {
     ],
     "systematic-debugging": ["Layer Stop Card", "Pre-Edit Complexity Check"],
     "test-driven-development": ["Pre-Edit Complexity Check", "TDD Route"],
+    "anti-entropy-governance": [
+        "Anti-Entropy Declaration",
+        "Retirement Decision",
+        "Verification Plan",
+        "Gap Closure",
+        "Data Destruction Guard",
+    ],
     "executing-plans": ["Pre-Edit Complexity Check"],
     "brainstorming": [
         "Plan-Time Complexity Check",
@@ -435,6 +454,132 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
         "primary": "verification-before-completion",
         "must_not": ["force-adr-creation-for-baseline-restoration"],
         "signals": ["skip-reason", "existing-baseline-was-restored"],
+    },
+    "internal-trigger-retirement": {
+        "primary": "brainstorming",
+        "allowed": ["anti-entropy-governance"],
+        "must_not": [
+            "preserve-internal-legacy-path-under-compatibility-language",
+            "skip-deletion-class",
+            "treat-unknown-as-active-dependency",
+        ],
+        "signals": ["code-retirement", "delete-first", "no-compat-exception"],
+        "shapes": ["anti-entropy-declaration", "retirement-decision"],
+    },
+    "duplicate-owner-collapse": {
+        "primary": "systematic-debugging",
+        "allowed": ["anti-entropy-governance"],
+        "must_not": [
+            "keep-both-for-now-without-evidence",
+            "skip-deletion-class",
+            "reintroduce-fallback-without-external-dependency-evidence",
+        ],
+        "signals": [
+            "duplicate-owner-collapse",
+            "delete-first",
+            "old-owner-retired",
+            "lingering-reference-check",
+        ],
+        "shapes": ["anti-entropy-declaration", "retirement-decision"],
+    },
+    "unknown-is-not-evidence": {
+        "primary": "brainstorming",
+        "allowed": ["anti-entropy-governance"],
+        "must_not": [
+            "treat-unknown-as-active-dependency",
+            "retain-compat-by-guess",
+            "skip-external-dependency-evidence-check",
+        ],
+        "signals": [
+            "unknown-dependency-not-evidence",
+            "active-dependency-evidence-required",
+        ],
+    },
+    "host-fallback-with-real-boundary": {
+        "primary": "brainstorming",
+        "allowed": ["anti-entropy-governance"],
+        "must_not": [
+            "delete-host-fallback-without-boundary-check",
+            "claim-host-support-without-smoke-boundary",
+            "retain-compat-without-observation-metric",
+        ],
+        "signals": [
+            "external-boundary",
+            "compat-exception",
+            "active-dependency-evidence",
+            "observation-metric",
+            "retirement-trigger",
+        ],
+    },
+    "drop-table-hard-stop": {
+        "primary": "brainstorming",
+        "allowed": ["anti-entropy-governance"],
+        "must_not": [
+            "execute-drop-table-without-scoped-confirmation",
+            "treat-warning-as-authorization",
+            "treat-generic-assent-as-confirmation",
+        ],
+        "signals": [
+            "persistent-state",
+            "confirmation-first",
+            "data-destruction-guard",
+            "awaiting-scoped-confirmation",
+        ],
+        "shapes": ["data-destruction-guard"],
+    },
+    "source-of-truth-object-hard-stop": {
+        "primary": "brainstorming",
+        "allowed": ["anti-entropy-governance"],
+        "must_not": [
+            "treat-source-of-truth-files-as-code-retirement",
+            "delete-object-store-target-without-confirmation",
+            "skip-data-risk-classification",
+        ],
+        "signals": [
+            "source-of-truth-data-risk",
+            "confirmation-first",
+            "allowed-read-only-next-steps",
+            "blocked-destructive-steps",
+        ],
+        "shapes": ["data-destruction-guard"],
+    },
+    "derived-cache-safe-cleanup": {
+        "primary": "brainstorming",
+        "allowed": ["anti-entropy-governance"],
+        "must_not": [
+            "skip-deletion-class",
+            "skip-rebuildability-check",
+            "treat-derived-state-as-persistent-state-without-reason",
+        ],
+        "signals": [
+            "derived-state",
+            "rebuildability-check",
+            "no-source-of-truth-risk",
+        ],
+    },
+    "migration-file-vs-live-data": {
+        "primary": "writing-plans",
+        "allowed": ["anti-entropy-governance"],
+        "must_not": [
+            "confuse-migration-file-deletion-with-live-data-deletion",
+            "skip-deletion-class",
+            "route-directly-to-destructive-data-deletion",
+        ],
+        "signals": [
+            "contract-carrying-code",
+            "high-risk-verification",
+            "no-destructive-execution",
+        ],
+        "shapes": ["anti-entropy-declaration", "retirement-decision"],
+    },
+    "plain-dead-import-does-not-trigger-anti-entropy": {
+        "primary": None,
+        "no_artifacts": True,
+        "workspace": "no-workspace",
+        "must_not": [
+            "force-anti-entropy-governance",
+            "create-project-workspace-records",
+        ],
     },
 }
 

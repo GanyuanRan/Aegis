@@ -435,6 +435,60 @@ request.
   are backed by direct CC GUI evidence rather than Aegis method-pack tests
   alone
 
+---
+
+### 2.20 GitHub Copilot Structural Support Is Not Yet Fresh Host Closeout
+
+**Retained Item**
+- GitHub Copilot is a structural host target, not a release-level fresh smoke
+  verdict
+
+**Retention Reason**
+- GitHub Copilot documents repository-scoped agent skills under
+  `.github/skills/`, repository custom instructions under
+  `.github/copilot-instructions.md`, and project guidance through `AGENTS.md`.
+- Those surfaces are enough for Aegis method-pack exposure, but current
+  release-level live host smoke is still required before claiming host
+  closeout.
+
+**Observation Metric**
+- `docs/README.copilot.md`
+- `bash tests/e2e/copilot-qoder-host-boundary-check.sh`
+- Future GitHub Copilot install smoke that proves skill discovery, repository
+  instruction visibility, and
+  `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
+
+**Retirement Trigger**
+- When GitHub Copilot has a verified install/update path that proves both skill
+  discovery and project workspace support without turning Aegis into an
+  authoritative runtime core
+
+---
+
+### 2.21 Qoder Structural Support Is Not Yet Fresh Host Closeout
+
+**Retained Item**
+- Qoder is a structural host target, not a release-level fresh smoke verdict
+
+**Retention Reason**
+- Qoder documents native skills under `~/.qoder/skills/` and `.qoder/skills/`,
+  project rules under `.qoder/rules/`, and repository guidance through
+  `AGENTS.md`.
+- Those surfaces are enough for Aegis method-pack exposure, but current
+  release-level live host smoke is still required before claiming host
+  closeout.
+
+**Observation Metric**
+- `docs/README.qoder.md`
+- `bash tests/e2e/copilot-qoder-host-boundary-check.sh`
+- Future Qoder install smoke that proves skill discovery, rules visibility, and
+  `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
+
+**Retirement Trigger**
+- When Qoder has a verified install/update path that proves both skill
+  discovery and project workspace support without turning Aegis into an
+  authoritative runtime core
+
 ## 3. Default Reading Rule
 
 If a limitation appears simultaneously in README, host docs, or test descriptions, use this document as the current reading entry point.

@@ -75,7 +75,21 @@ fi
 echo ""
 
 if [ "$TEST_CLI" = "codex" ]; then
-    echo ">>> Test 4: use-writing-plans"
+    echo ">>> Test 4: use-anti-entropy-governance"
+else
+    echo ">>> Test 5: use-anti-entropy-governance"
+fi
+if "$SCRIPT_DIR/run-test.sh" "anti-entropy-governance" "$PROMPTS_DIR/use-anti-entropy-governance.txt"; then
+    PASSED=$((PASSED + 1))
+    RESULTS="$RESULTS\nPASS: use-anti-entropy-governance"
+else
+    FAILED=$((FAILED + 1))
+    RESULTS="$RESULTS\nFAIL: use-anti-entropy-governance"
+fi
+echo ""
+
+if [ "$TEST_CLI" = "codex" ]; then
+    echo ">>> Test 5: use-writing-plans"
     if "$SCRIPT_DIR/run-test.sh" "writing-plans" "$PROMPTS_DIR/use-writing-plans.txt"; then
         PASSED=$((PASSED + 1))
         RESULTS="$RESULTS\nPASS: use-writing-plans"
@@ -87,7 +101,7 @@ if [ "$TEST_CLI" = "codex" ]; then
 fi
 
 if [ "$TEST_CLI" = "codex" ]; then
-    echo ">>> Test 5: use-requesting-code-review"
+    echo ">>> Test 6: use-requesting-code-review"
     if "$SCRIPT_DIR/run-test.sh" "requesting-code-review" "$PROMPTS_DIR/use-requesting-code-review.txt"; then
         PASSED=$((PASSED + 1))
         RESULTS="$RESULTS\nPASS: use-requesting-code-review"
@@ -99,9 +113,9 @@ if [ "$TEST_CLI" = "codex" ]; then
 fi
 
 if [ "$TEST_CLI" = "codex" ]; then
-    echo ">>> Test 6: use-recording-architecture-decisions"
+    echo ">>> Test 7: use-recording-architecture-decisions"
 else
-    echo ">>> Test 6: use-recording-architecture-decisions"
+    echo ">>> Test 7: use-recording-architecture-decisions"
 fi
 if "$SCRIPT_DIR/run-test.sh" "recording-architecture-decisions" "$PROMPTS_DIR/use-recording-architecture-decisions.txt"; then
     PASSED=$((PASSED + 1))
@@ -114,7 +128,7 @@ echo ""
 
 if [ "$TEST_CLI" != "codex" ]; then
     # Test: mid-conversation execute plan
-    echo ">>> Test 7: mid-conversation-execute-plan"
+    echo ">>> Test 8: mid-conversation-execute-plan"
     if "$SCRIPT_DIR/run-test.sh" "subagent-driven-development" "$PROMPTS_DIR/mid-conversation-execute-plan.txt"; then
         PASSED=$((PASSED + 1))
         RESULTS="$RESULTS\nPASS: mid-conversation-execute-plan"
@@ -127,9 +141,9 @@ fi
 
 # Test: use-communicating-concisely
 if [ "$TEST_CLI" = "codex" ]; then
-    echo ">>> Test 7: use-communicating-concisely"
-else
     echo ">>> Test 8: use-communicating-concisely"
+else
+    echo ">>> Test 9: use-communicating-concisely"
 fi
 if "$SCRIPT_DIR/run-test.sh" "communicating-concisely" "$PROMPTS_DIR/use-communicating-concisely.txt"; then
     PASSED=$((PASSED + 1))
@@ -142,9 +156,9 @@ echo ""
 
 # Test: use-establishing-project-context
 if [ "$TEST_CLI" = "codex" ]; then
-    echo ">>> Test 8: use-establishing-project-context"
-else
     echo ">>> Test 9: use-establishing-project-context"
+else
+    echo ">>> Test 10: use-establishing-project-context"
 fi
 if "$SCRIPT_DIR/run-test.sh" "establishing-project-context" "$PROMPTS_DIR/use-establishing-project-context.txt"; then
     PASSED=$((PASSED + 1))

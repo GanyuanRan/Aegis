@@ -284,6 +284,17 @@ Decision:
 
 默认原则是：新增修复时同时处理旧逻辑。不能只加新分支，而不交代旧分支。
 
+Anti-Entropy 默认原则：
+
+- 内部代码退役优先走 `delete-first`
+- 外部兼容保留必须有当前依赖证据
+- `persistent-state` 或其它不可逆 source-of-truth 删除必须走
+  `confirmation-first`
+
+提到 destructive guardrail 不等于获得 destructive authorization。没有用户
+显式、定域确认前，不执行不可逆删除，不把可运行 destructive command 当作下一步，
+也不把泛化同意语气当作确认。
+
 ---
 
 ## 10. TDD 与测试铁律

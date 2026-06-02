@@ -16,6 +16,9 @@
       "node_modules",
       ".git",
       ".tmp",
+      ".opencode",
+      ".opencode/package.json",
+      ".opencode/package-lock.json",
       "test-subagent-driven-development-integration.sh",
       ".version-bump.json",
       "scripts/bump-version.sh"

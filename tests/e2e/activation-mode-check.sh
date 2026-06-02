@@ -186,6 +186,14 @@ assert_contains "docs/README.trae.md" "AEGIS_ACTIVATION_MODE=explicit" \
     "Trae guide documents explicit activation caveat"
 assert_contains "docs/README.trae.md" "does not override Trae" \
     "Trae guide clarifies activation mode does not control native matcher"
+assert_contains "docs/README.copilot.md" "AEGIS_ACTIVATION_MODE=explicit" \
+    "GitHub Copilot guide documents explicit activation caveat"
+assert_contains "docs/README.copilot.md" "does not override GitHub Copilot" \
+    "GitHub Copilot guide clarifies activation mode does not control native matcher"
+assert_contains "docs/README.qoder.md" "AEGIS_ACTIVATION_MODE=explicit" \
+    "Qoder guide documents explicit activation caveat"
+assert_contains "docs/README.qoder.md" "does not override Qoder" \
+    "Qoder guide clarifies activation mode does not control native matcher"
 assert_contains "docs/README.pi.md" "AEGIS_ACTIVATION_MODE=explicit" \
     "Pi guide documents explicit activation caveat"
 assert_contains "docs/README.pi.md" "does not override Pi" \

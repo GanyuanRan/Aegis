@@ -340,6 +340,33 @@ TDD Completion Boundary:
    - Lingering references checked:
    ```
 
+   If the work retires old logic, chooses between delete-first and compat
+   retention, or touches source-of-truth deletion boundaries, also include:
+
+   ```text
+   Anti-Entropy Declaration:
+   - Deletion Class:
+   - Source-of-Truth Data Risk:
+   - User Confirmation Required:
+   ```
+
+   If `User Confirmation Required: yes`, completion cannot be claimed until the
+   workflow stops at a guard shaped like:
+
+   ```text
+   Data Destruction Guard:
+   - Exact Target(s):
+   - Blocked Destructive Steps:
+   - Confirmation Required: yes
+   - Status: awaiting scoped confirmation
+   ```
+
+   Mentioning a warning or destructive rule never authorizes execution. Broad
+   assent such as "OK" or "continue" is not scoped confirmation. If
+   `persistent-state` deletion or another irreversible source-of-truth action
+   happened without explicit scoped confirmation, report the task as not
+   complete.
+
 ## Red Flags - QA Drift
 
 - Reporting "done" when only one layer was checked
@@ -353,3 +380,5 @@ TDD Completion Boundary:
   Complexity Delta, Complexity Governance Suggestion, or residual-risk note
 - Retaining old logic without a Retention reason, Retirement trigger, and
   lingering-reference check
+- Treating a destructive warning or guard card as permission to execute
+- Treating generic assent as confirmation for irreversible deletion

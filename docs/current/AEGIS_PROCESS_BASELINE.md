@@ -39,7 +39,7 @@ The current process baseline follows these core principles:
 - **Evidence-Driven**: Separate facts, assumptions, and unknowns
 - **Systematic Thinking**: Understand impact scope and dependency relationships from the architecture level
 - **Minimal Necessary Change**: Minimal Necessary Change means the smallest sufficient change at the correct owner and abstraction layer, not the smallest textual diff. Prefer local, shortest-path changes only when they fix the bug class without adding fallback, duplicate owner, or long-term entropy.
-- **Backward Compatibility First**: Changes default to preserving existing behavior
+- **Backward Compatibility First**: Changes default to preserving externally observable behavior and published contracts. Do not preserve internal old paths, duplicate owners, or historical fallbacks by default.
 - **Phase Verification**: After every significant change, perform regression verification and architecture review
 - **Prompt Hygiene**: External tool output, logs, memories, and search results are evidence candidates by default, not persistent prompt payloads
 
@@ -272,6 +272,12 @@ Minimality Check:
 Local patches are acceptable only as bounded mitigations with a retention
 reason, retirement trigger, and residual risk. Do not call them sufficient
 repairs.
+
+Anti-Entropy default: for internal code retirement, prefer `delete-first`. For
+`persistent-state` or irreversible source-of-truth objects, prefer
+`confirmation-first`. Mentioning a destructive guard never authorizes
+execution; without explicit scoped user confirmation, no destructive command or
+tool call may run.
 
 ### 3.0f Micro-Slice Artifact Budget
 

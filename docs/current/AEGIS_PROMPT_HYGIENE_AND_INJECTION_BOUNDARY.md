@@ -135,7 +135,7 @@ The standard order is:
 4. `expand`: Expand range with justification when the window is insufficient; downgrade to `unknown` or `needs-verification` if still insufficient after expansion.
 
 This discipline applies to high-risk input surfaces in hosts such as Codex,
-Claude Code, OpenCode, Copilot, Antigravity CLI, Antigravity IDE,
+Claude Code, OpenCode, Copilot, Qoder, Antigravity CLI, Antigravity IDE,
 Antigravity App, CC GUI, Pi CLI, OpenClaw, Hermes Agent, and transitional
 Gemini CLI, including:
 

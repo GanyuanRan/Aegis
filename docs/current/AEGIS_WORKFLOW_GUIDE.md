@@ -295,6 +295,18 @@ Answer:
 Default rule: when adding the repair, account for the old logic in the same
 slice. Do not add new branches without explaining the old branches.
 
+Anti-Entropy default:
+
+- internal code retirement should prefer `delete-first`
+- external compatibility retention requires active dependency evidence
+- `persistent-state` or irreversible source-of-truth deletion requires
+  `confirmation-first`
+
+Mentioning destructive guardrails does not authorize destructive execution.
+Without explicit scoped user confirmation, do not execute irreversible
+deletion, do not emit a runnable destructive command as the next action, and do
+not treat generic assent as confirmation.
+
 ---
 
 ## 10. TDD And Test Iron Law

@@ -44,6 +44,8 @@ The current snapshot is based on fresh evidence and current docs landed as of
 | `CodeBuddy` | Has `.codebuddy-plugin/` skeleton and native `SKILL.md` manual install instructions; no current release-level fresh smoke verdict | `docs/README.codebuddy.md` established; evidence from CodeBuddy skills/plugin docs and this repo's `.codebuddy-plugin/`; real host regression still deferred |
 | `DeepSeek-TUI` | Native `SKILL.md` discovery supports manual installation; no current release-level fresh smoke verdict | `docs/README.deepseek-tui.md` established; evidence from DeepSeek-TUI README/source discovery contract; real host regression still deferred |
 | `Trae` | Native `SKILL.md` discovery supports manual installation; no current release-level fresh smoke verdict | `docs/README.trae.md` established; evidence from Trae skills docs; real host regression still deferred |
+| `GitHub Copilot` | Supports repository skills and custom instructions; no current release-level fresh smoke verdict | `docs/README.copilot.md` established; evidence from GitHub Copilot agent skills and repository instructions docs, but real host regression is still deferred |
+| `Qoder` | Native `SKILL.md` discovery and rules surfaces support structural install; no current release-level fresh smoke verdict | `docs/README.qoder.md` established; evidence from Qoder skills and rules docs, but real host regression is still deferred |
 | `Cursor` | Has `.cursor/INSTALL.md` install guide; no current release-level fresh smoke verdict | Structural goal established; not yet entered the current host regression slice |
 | `Windsurf` | Has `.windsurf/INSTALL.md` install guide; no current release-level fresh smoke verdict | Structural goal established; not yet entered the current host regression slice |
 | `Antigravity CLI` | Structural target added; no current release-level fresh smoke verdict | Google positions Antigravity CLI as the successor terminal surface with skills, hooks, subagents, MCP, plugins, and slash-command configuration; the public CLI `1.0.1` changelog adds plugin discovery for skills and agents from installed plugin directories, but the Aegis install / discovery contract still needs fresh verification |
@@ -78,15 +80,17 @@ The current snapshot only states:
 4. `CodeBuddy` can install Aegis via `.codebuddy-plugin/` or native `SKILL.md` discovery, but local CLI live smoke has not yet formed valid evidence
 5. `DeepSeek-TUI` can manually install Aegis skills via native `SKILL.md` discovery, but `/skill install github:GanyuanRan/Aegis` is not the current canonical path
 6. `Trae` can manually install Aegis skills via native `SKILL.md` discovery; `.agents/skills/` is an optional Trae capability, not Aegis's canonical Trae path
-7. `Cursor` and `Windsurf` have structured install guides but have not yet entered release-level fresh smoke
-8. `Antigravity CLI`, `Antigravity IDE`, and `Antigravity App` are now structural target surfaces, but still lack release-level fresh smoke evidence
-9. `Gemini CLI` is retained as a transitional compatibility surface after Google's `2026-05-19` transition announcement while Antigravity support matures
-10. `Pi CLI` can expose Aegis through `pi install git:github.com/GanyuanRan/Aegis`, Pi package `skills/` / `pi.skills` discovery, `~/.pi/agent/skills/`, `~/.agents/skills/`, or `.pi/skills/`, but support remains structural until a fresh Pi install smoke proves it for the current release
-11. `OpenClaw` can expose Aegis through individual local skill-directory installs, but `git:owner/repo` should not be written as the canonical whole-repo Aegis installer because OpenClaw expects `SKILL.md` at the source root
-12. `Hermes Agent` can expose Aegis through `~/.hermes/skills/` or documented GitHub path installs, but support remains structural until a fresh Hermes install smoke proves it for the current release
-13. `Warp`, as a terminal host, does not itself need an independent adapter
-14. The current method-pack still retains the cross-host installation goal
-15. "Support all plugin hosts" remains a product goal, not equivalent to "all hosts have current fresh closeout"
+7. `GitHub Copilot` can expose Aegis through `.github/skills/`, `.github/copilot-instructions.md`, and `AGENTS.md`, but support remains structural until a fresh Copilot install and agent smoke proves it for the current release
+8. `Qoder` can expose Aegis through `~/.qoder/skills/`, `.qoder/skills/`, `.qoder/rules/`, and `AGENTS.md`, but support remains structural until a fresh Qoder install smoke proves it for the current release
+9. `Cursor` and `Windsurf` have structured install guides but have not yet entered release-level fresh smoke
+10. `Antigravity CLI`, `Antigravity IDE`, and `Antigravity App` are now structural target surfaces, but still lack release-level fresh smoke evidence
+11. `Gemini CLI` is retained as a transitional compatibility surface after Google's `2026-05-19` transition announcement while Antigravity support matures
+12. `Pi CLI` can expose Aegis through `pi install git:github.com/GanyuanRan/Aegis`, Pi package `skills/` / `pi.skills` discovery, `~/.pi/agent/skills/`, `~/.agents/skills/`, or `.pi/skills/`, but support remains structural until a fresh Pi install smoke proves it for the current release
+13. `OpenClaw` can expose Aegis through individual local skill-directory installs, but `git:owner/repo` should not be written as the canonical whole-repo Aegis installer because OpenClaw expects `SKILL.md` at the source root
+14. `Hermes Agent` can expose Aegis through `~/.hermes/skills/` or documented GitHub path installs, but support remains structural until a fresh Hermes install smoke proves it for the current release
+15. `Warp`, as a terminal host, does not itself need an independent adapter
+16. The current method-pack still retains the cross-host installation goal
+17. "Support all plugin hosts" remains a product goal, not equivalent to "all hosts have current fresh closeout"
 
 ---
 
@@ -102,12 +106,14 @@ When reading the current host verdict, follow this order:
 6. `docs/README.codebuddy.md`
 7. `docs/README.deepseek-tui.md`
 8. `docs/README.trae.md`
-9. `docs/README.antigravity.md`
-10. `docs/README.pi.md`
-11. `docs/README.openclaw.md`
-12. `docs/README.hermes-agent.md`
-13. `.windsurf/INSTALL.md`
-14. `.cursor/INSTALL.md`
+9. `docs/README.copilot.md`
+10. `docs/README.qoder.md`
+11. `docs/README.antigravity.md`
+12. `docs/README.pi.md`
+13. `docs/README.openclaw.md`
+14. `docs/README.hermes-agent.md`
+15. `.windsurf/INSTALL.md`
+16. `.cursor/INSTALL.md`
 
 ---
 

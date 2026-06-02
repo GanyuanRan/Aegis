@@ -736,6 +736,51 @@ Retirement Closure:
 - Lingering references checked:
 ```
 
+If the work retires old logic, chooses between delete-first and compat
+retention, or touches source-of-truth deletion boundaries, include
+`Anti-Entropy Declaration`:
+
+```text
+Anti-Entropy Declaration:
+- Deletion Class:
+- Source-of-Truth Data Risk:
+- User Confirmation Required:
+```
+
+If `User Confirmation Required: yes`, the workflow must stop at a
+`Data Destruction Guard`. Mentioning a destructive rule or warning never
+authorizes execution:
+
+```text
+Data Destruction Guard:
+- Exact Target(s):
+- Blocked Destructive Steps:
+- Confirmation Required: yes
+- Status: awaiting scoped confirmation
+```
+
+### 4.6a `anti-entropy-governance` (composed)
+
+Purpose:
+
+- classify retirement and deletion targets without granting destructive
+  authority
+
+Compact contract:
+
+```text
+Anti-Entropy Declaration: deletion class, preserved vs retired behavior, source-of-truth risk, confirmation need
+Retirement Decision: delete-first | compat-exception | confirmation-first, why, non-edits
+Verification Plan: main-path, lingering-reference, negative, boundary checks
+Gap Closure: gap type, repair action, compat reintroduction, retirement trigger
+Data Destruction Guard: exact targets, blocked destructive steps, confirmation status when persistent-state is touched
+```
+
+This skill is composed by owning workflows such as `brainstorming`,
+`writing-plans`, `systematic-debugging`, and
+`verification-before-completion`. It should not become a new global hot-path
+entry, and it never grants destructive execution authority.
+
 ### 4.7 `long-task-continuation`
 
 Purpose:

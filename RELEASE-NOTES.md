@@ -1,5 +1,58 @@
 # Aegis Release Notes
 
+## v2.0.1 (2026-06-02)
+
+### GitHub Copilot And Qoder Structural Host Support
+
+- Added dedicated host guides for GitHub Copilot and Qoder:
+  `docs/README.copilot.md` and `docs/README.qoder.md`.
+- Added repository guidance for GitHub Copilot through
+  `.github/copilot-instructions.md`.
+- Extended the public compatibility snapshot, release checklist, current-doc
+  authority map, and known limitations so both hosts are visible as structural
+  support surfaces without overstating them as fresh live-smoke closeout.
+
+### Anti-Entropy Governance For Retirement And Deletion Safety
+
+- Added the new `anti-entropy-governance` skill to classify retirement work as
+  `delete-first`, `compat-exception`, or `confirmation-first`.
+- Extended workflow and process baselines so internal old-path retirement,
+  compatibility retention, and persistent-state deletion boundaries are more
+  explicit and auditable.
+- Added `Anti-Entropy Declaration` and `Data Destruction Guard` expectations to
+  completion-time governance so destructive warnings cannot be mistaken for
+  authorization.
+
+### Workflow Quality And Verification Coverage Expansion
+
+- Expanded the workflow quality baseline and representative matrix to cover
+  duplicate-owner collapse, host fallback retention, internal trigger
+  retirement, rebuildable derived-state cleanup, and persistent-state hard-stop
+  cases.
+- Added dedicated Copilot/Qoder host boundary checks and updated activation,
+  goal-framing, install-verification, skill-triggering, and explicit-skill
+  suites to include the new host surfaces and anti-entropy path.
+- Kept the fast path explicit by adding coverage that plain tiny cleanup does
+  not unnecessarily trigger anti-entropy governance.
+- Excluded ignored `.opencode` dependency lockfiles from version-audit drift
+  noise so release verification reports only Aegis-owned version surfaces.
+
+### Version
+
+- Bumped all declared plugin, marketplace, package, and extension manifests to
+  `2.0.1`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 2.0.1`
+- `bash scripts/bump-version.sh --audit`
+- `python -m py_compile tests/helpers/validate_workflow_quality_matrix.py`
+- `python tests/helpers/validate_workflow_quality_matrix.py tests/e2e/fixtures/workflow-quality-matrix.json`
+- `bash tests/e2e/copilot-qoder-host-boundary-check.sh`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+- `git diff --check`
+
 ## v1.9.8 (2026-06-02)
 
 ### More Perceptible Aegis Closeout

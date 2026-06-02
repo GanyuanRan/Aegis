@@ -80,12 +80,14 @@ The following host documentation must be re-read before release:
 4. `docs/README.codebuddy.md`
 5. `docs/README.deepseek-tui.md`
 6. `docs/README.trae.md`
-7. `docs/README.antigravity.md`
-8. `docs/README.cc-gui.md`
-9. `docs/README.pi.md`
-10. `docs/README.openclaw.md`
-11. `docs/README.hermes-agent.md`
-12. `docs/testing.md`
+7. `docs/README.copilot.md`
+8. `docs/README.qoder.md`
+9. `docs/README.antigravity.md`
+10. `docs/README.cc-gui.md`
+11. `docs/README.pi.md`
+12. `docs/README.openclaw.md`
+13. `docs/README.hermes-agent.md`
+14. `docs/testing.md`
 
 Confirm:
 
@@ -95,6 +97,11 @@ Confirm:
 - CodeBuddy still distinguishes between `.codebuddy-plugin/` skeleton, manual `SKILL.md` install, and incomplete live smoke
 - DeepSeek-TUI is still described as manual `SKILL.md` copy install, not a one-click GitHub installer for multi-skill repos
 - Trae is still described as manual `.trae/skills` / `~/.trae/skills` install, and the `.agents/skills/` optional capability is not written as the canonical chain
+- GitHub Copilot is still described through `.github/skills/`,
+  `.github/copilot-instructions.md`, and `AGENTS.md`, not as a repository-local
+  runtime authority or a host adapter owned by Aegis
+- Qoder is still described through native `~/.qoder/skills/`, `.qoder/skills/`,
+  `.qoder/rules/`, and `AGENTS.md` surfaces, not as a fresh live smoke closeout
 - Antigravity CLI, Antigravity IDE, and Antigravity App are described as
   structural target surfaces, not current release-level fresh smoke closeout
 - CC GUI is described as a structural JetBrains IDEA plugin layer target,

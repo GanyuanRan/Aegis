@@ -1,0 +1,5 @@
+The new canonical owner already carries the behavior, and I do not want another internal fallback added just because deleting the old path feels risky.
+
+Please decide whether the old internal branch should be deleted now, what evidence would justify any compatibility exception, and how to verify the old path is truly retired.
+
+Do not execute destructive data changes.

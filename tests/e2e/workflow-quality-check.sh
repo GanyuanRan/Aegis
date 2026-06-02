@@ -158,6 +158,10 @@ assert_contains "$baseline" "Largest touched function/block" \
     "workflow quality baseline includes block-level complexity signal"
 assert_contains "$baseline" "Retirement Closure" \
     "workflow quality baseline includes retirement closure"
+assert_contains "$baseline" "Anti-Entropy Declaration" \
+    "workflow quality baseline includes anti-entropy declaration"
+assert_contains "$baseline" "Data Destruction Guard" \
+    "workflow quality baseline includes data destruction guard"
 assert_contains "$baseline" "Layer Stop Card" \
     "workflow quality baseline includes layer stop card"
 assert_contains "$baseline" "User Intervention Point" \
@@ -218,6 +222,15 @@ assert_contains "$process_doc" "Micro-Slice Artifact Budget" \
     "process baseline references micro-slice artifact budget"
 assert_contains "$process_doc" "Baseline Role Alignment" \
     "process baseline defines baseline role alignment"
+assert_contains "$process_doc" "preserving externally observable behavior and published contracts" \
+    "process baseline narrows backward compatibility to external behavior"
+assert_contains "$process_doc" "persistent-state" \
+    "process baseline defines persistent-state confirmation-first boundary"
+if [[ -f "skills/anti-entropy-governance/SKILL.md" ]]; then
+    pass "anti-entropy governance skill exists"
+else
+    fail "anti-entropy governance skill exists"
+fi
 assert_contains "$process_doc" "Product / Requirement Baseline" \
     "process baseline names product requirement baseline role"
 assert_contains "$process_doc" "Architecture / Runtime Boundary Baseline" \
@@ -416,10 +429,26 @@ assert_contains "skills/verification-before-completion/SKILL.md" "Largest touche
     "verification skill checks block-level complexity"
 assert_contains "skills/verification-before-completion/SKILL.md" "Retirement Closure" \
     "verification skill defines retirement closure"
+assert_contains "skills/verification-before-completion/SKILL.md" "Anti-Entropy Declaration" \
+    "verification skill defines anti-entropy declaration"
+assert_contains "skills/verification-before-completion/SKILL.md" "Data Destruction Guard" \
+    "verification skill defines data destruction guard"
+assert_contains "skills/verification-before-completion/SKILL.md" "assent such as" \
+    "verification skill rejects broad assent as destructive confirmation"
+assert_contains "skills/verification-before-completion/SKILL.md" "report the task as not" \
+    "verification skill blocks completion after unconfirmed persistent-state deletion"
 assert_contains "skills/verification-before-completion/SKILL.md" "Retention reason" \
     "verification skill requires retention reason"
 assert_contains "skills/verification-before-completion/SKILL.md" "Retirement trigger" \
     "verification skill requires retirement trigger"
+assert_contains "skills/anti-entropy-governance/SKILL.md" "confirmation-first" \
+    "anti-entropy skill defines confirmation-first path"
+assert_contains "skills/anti-entropy-governance/SKILL.md" "Data Destruction Guard" \
+    "anti-entropy skill defines data destruction guard"
+assert_contains "skills/anti-entropy-governance/SKILL.md" "generic agreement" \
+    "anti-entropy skill rejects generic agreement as confirmation"
+assert_contains "skills/anti-entropy-governance/SKILL.md" "Do not load this directly from .*using-aegis.*unless explicitly requested" \
+    "anti-entropy skill stays out of the global hot path"
 assert_contains "skills/long-task-continuation/SKILL.md" "Minimal Reporting Shape" \
     "long-task continuation keeps minimal reporting shape"
 assert_contains "skills/executing-plans/SKILL.md" "Pre-Edit Complexity Check" \

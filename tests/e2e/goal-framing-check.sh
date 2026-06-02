@@ -70,6 +70,8 @@ host_docs=(
     "docs/README.codebuddy.md"
     "docs/README.deepseek-tui.md"
     "docs/README.trae.md"
+    "docs/README.copilot.md"
+    "docs/README.qoder.md"
     "docs/README.pi.md"
     "docs/README.openclaw.md"
     "docs/README.hermes-agent.md"

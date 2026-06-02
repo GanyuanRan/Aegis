@@ -42,7 +42,8 @@ When public docs conflict, use this order:
    `docs/README.opencode.md`, `docs/README.claude-code.md`,
    `docs/README.cc-gui.md`, `docs/README.codebuddy.md`,
    `docs/README.deepseek-tui.md`,
-   `docs/README.trae.md`, `docs/README.pi.md`,
+   `docs/README.trae.md`, `docs/README.copilot.md`,
+   `docs/README.qoder.md`, `docs/README.pi.md`,
    `docs/README.openclaw.md`, and `docs/README.hermes-agent.md`
 6. tests and fixtures
 
