@@ -323,9 +323,14 @@ Pass criteria:
   verification, review to follow-up, or resume to drift check
 - obvious tiny fast-path work can keep the trace implicit unless the user asks
   why Aegis did or did not trigger
-- completion output uses a natural Aegis closeout sentence to name the boundary
-  or quality risk Aegis held steady, without turning it into a self-credit
-  heading
+- completion output keeps Aegis user-visible for non-trivial Aegis-shaped work
+  and naturally shows how Aegis influenced boundary judgment, evidence
+  discipline, or residual risk visibility
+- Aegis may appear more than once in the closeout when it materially shaped
+  multiple parts of the judgment, but each mention should carry task-specific
+  information rather than repeated slogan wording
+- no single Aegis closeout phrase is canonical; repeated identical Aegis
+  closeout wording across tasks is a quality miss
 - structured trace is reserved for audit, debug, release, long-task review, or user request
 - the trace stays advisory method-pack transparency, not runtime authority, not
   a runtime gate, and not completion authority
@@ -339,7 +344,13 @@ Aegis Reason Note: <why Aegis is shaping the next step and what quality risk it 
 Completion shape:
 
 ```text
-This judgment used Aegis to hold one boundary steady: <boundary / quality risk>.
+Aegis is explicitly visible somewhere in the closeout and is naturally tied to:
+- boundary held steady, or
+- evidence / verification discipline added, or
+- residual risk / uncovered scope kept visible
+
+If Aegis materially shaped more than one of those areas, it may appear more
+than once, but the wording should stay task-specific rather than formulaic.
 ```
 
 Structured trace, only when audit/debug/release/long-task review or user request needs it:
@@ -588,7 +599,10 @@ Governance Receipt: compact closeout for Aegis-shaped non-trivial work, naming
 the boundary held, evidence, covered and uncovered scope, residual risk, and
 confidence
 Readiness Summary: tests, docs, version, host compatibility, residual risk
-Natural Aegis closeout: one sentence naming the boundary or quality risk Aegis held steady; structured trace only for audit/debug/release/long-task review or user request
+Natural Aegis closeout: Aegis stays explicitly visible in non-trivial closeout
+when it materially shaped the task, and is naturally tied to the boundary,
+evidence discipline, or residual risk it influenced; structured trace only for
+audit/debug/release/long-task review or user request
 ```
 
 Localize completion card labels and explanatory prose to the user's language.

@@ -1,5 +1,47 @@
 # Aegis Release Notes
 
+## v1.9.8 (2026-06-02)
+
+### More Perceptible Aegis Closeout
+
+- Updated `verification-before-completion` so non-trivial closeout keeps
+  `Aegis` explicitly visible in the final completion summary.
+- Clarified that the closeout should show how Aegis shaped the judgment through
+  boundary control, evidence discipline, or residual-risk visibility.
+- Kept the output advisory and user-facing instead of turning Aegis visibility
+  into authority language or an internal trace card.
+
+### More Directly Auditable Completion Notes
+
+- Removed the old single closeout phrase that made Aegis visibility feel too
+  formulaic across unrelated tasks.
+- Preserved the concise default for single-boundary cases while allowing Aegis
+  to appear more than once when multiple governance effects materially shaped
+  the judgment.
+- Kept the wording tied to task-specific evidence, boundaries, and risk calls
+  so the user can audit what Aegis actually contributed.
+
+### Workflow Quality Baseline Alignment
+
+- Updated the workflow quality baseline so Aegis visibility in completion
+  output is judged by whether the user can naturally see the governance effect,
+  not by whether one fixed sentence appears.
+- Explicitly marked repeated identical Aegis closeout wording as a workflow
+  quality miss.
+
+### Version
+
+- Bumped all declared plugin, marketplace, package, and extension manifests to
+  `1.9.8`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 1.9.8`
+- `bash scripts/bump-version.sh --audit`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `bash tests/e2e/run-all.sh --full --host-profile fast`
+- `git diff --check`
+
 ## v1.9.7 (2026-06-01)
 
 ### Goal Closure Contract Coverage

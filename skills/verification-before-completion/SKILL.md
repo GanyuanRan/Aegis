@@ -125,15 +125,31 @@ TDD Completion Boundary:
    authorization to commit, tag, publish, merge, or release. It cannot provide
    completion authority.
 10. **Natural Aegis closeout**: when Aegis skills materially shaped a
-   non-trivial task, use one sentence before the final claim to name the
-   boundary or quality risk Aegis held steady. Do not default to a visible `Aegis Contribution Note:` heading.
-   Keep it advisory method-pack discipline, not completion authority. Keep it
-   implicit for obvious fast-path replies unless the user asked about Aegis
-   routing.
+   non-trivial task, keep Aegis explicitly visible in the final completion
+   closeout.
 
-   ```text
-   This judgment used Aegis to hold one boundary steady: <boundary / quality risk>.
-   ```
+   The closeout should naturally show how Aegis influenced the result. Make at
+   least one of the following user-visible:
+   - what boundary Aegis helped hold steady
+   - what evidence or verification discipline Aegis required before the claim
+   - what residual risk, uncovered scope, or restraint Aegis kept visible
+
+   Use one sentence when Aegis mainly helped hold one boundary steady,
+   but more than one mention is valid when boundary, evidence, and
+   residual-risk visibility each materially shaped the judgment.
+
+   Keep this integrated into the normal completion summary rather than a fixed
+   slogan. Do not default to a visible `Aegis Contribution Note:` heading. Do
+   not default to one canonical closeout phrase, and do not repeat the same
+   Aegis closeout wording across unrelated tasks.
+
+   When Aegis materially shaped multiple parts of the judgment, it may appear
+   more than once across the closeout, as long as each mention is tied to a
+   concrete boundary, evidence decision, or risk callout.
+
+   Keep it advisory method-pack discipline, not completion authority. Keep it
+   implicit only for obvious fast-path replies unless the user asked about
+   Aegis routing.
 
    Natural expression may satisfy the visibility requirement when the semantic
    slots are still explicit. For example, "I will follow the Aegis order here:
