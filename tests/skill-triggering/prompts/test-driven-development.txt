@@ -4,4 +4,5 @@ I need to add a new feature to validate email addresses. It should:
 - Check that there's a dot in the domain part
 - Return true/false
 
-Can you implement this?
+Use strict TDD for this atomic change: write the failing test first, watch it
+fail for the right reason, then write the minimal code to pass.

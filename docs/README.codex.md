@@ -124,6 +124,12 @@ that tells Codex to start every conversation with Aegis. You can still invoke
 Aegis directly by naming a skill, such as `aegis:using-aegis` or
 `aegis:brainstorming`.
 
+`AEGIS_TDD_MODE=off` has the same boundary in Codex: it changes Aegis-side TDD
+route semantics, but it does not directly control Codex's native matcher. Keep
+the `test-driven-development` trigger narrow and rely on explicit invocation or
+`using-aegis`-selected strict-route work instead of expecting the environment
+variable alone to suppress every automatic TDD load.
+
 For hook-based hosts, the recommended user-local config is:
 
 ```text

@@ -28,6 +28,18 @@ assert_contains() {
     fi
 }
 
+assert_not_contains() {
+    local file="$1"
+    local pattern="$2"
+    local label="$3"
+
+    if grep -qE "$pattern" "$file"; then
+        fail "$label"
+    else
+        pass "$label"
+    fi
+}
+
 echo "=== TDD Policy Check ==="
 
 tdd_skill="skills/test-driven-development/SKILL.md"
@@ -40,6 +52,8 @@ process_baseline="docs/current/AEGIS_PROCESS_BASELINE.md"
 tdd_mode_doc="docs/current/AEGIS_TDD_MODE.md"
 systematic_debugging_skill="skills/systematic-debugging/SKILL.md"
 scenario_b_behavior="tests/e2e/scenarios/scenario-B-bug-fix/expected-behavior.json"
+codex_guide="docs/README.codex.md"
+codex_install=".codex/INSTALL.md"
 
 assert_contains "$using_aegis" "contract|cross-module|shared module|core logic" \
     "using-aegis routes contract and cross-module changes into TDD"
@@ -66,10 +80,18 @@ assert_contains "$tdd_mode_doc" 'tdd_mode = "auto"' \
     "TDD mode doc defines auto mode"
 assert_contains "$tdd_mode_doc" 'tdd_mode = "off"' \
     "TDD mode doc defines off mode"
-assert_contains "$tdd_mode_doc" "strict.*light.*skipped|strict.*skipped.*light|strict.*\`light\`.*skipped" \
+assert_contains "$tdd_mode_doc" 'strict.*light.*skipped|strict.*skipped.*light|strict.*`light`.*skipped' \
     "TDD mode doc defines strict, light, and skipped routing"
 assert_contains "$tdd_mode_doc" "verification-before-completion" \
     "TDD mode doc states verification-before-completion still applies"
+assert_contains "$tdd_mode_doc" "native skill discovery|semantic matcher" \
+    "TDD mode doc records native skill discovery boundary"
+assert_contains "$codex_guide" "AEGIS_TDD_MODE=off" \
+    "Codex guide documents TDD mode caveat"
+assert_contains "$codex_guide" "does not directly control Codex's native matcher|does not override Codex's own semantic matcher" \
+    "Codex guide explains TDD mode does not control native matcher"
+assert_contains "$codex_install" "AEGIS_TDD_MODE=off" \
+    "Codex install surface documents TDD mode caveat"
 
 assert_contains "$tdd_skill" "contract|cross-module|shared module|core logic" \
     "TDD applies to contracts, cross-module changes, and core logic"
@@ -77,6 +99,10 @@ assert_contains "$tdd_skill" "TDD Mode" \
     "TDD skill defines TDD Mode"
 assert_contains "$tdd_skill" "TDD Route" \
     "TDD skill defines TDD Route"
+assert_contains "$tdd_skill" "description: Use when strict TDD is explicitly requested, or when an approved atomic implementation task has already chosen TDD Route strict\\." \
+    "TDD skill keeps a narrow native trigger boundary"
+assert_not_contains "$tdd_skill" "description: Use when implementing any feature or bugfix, before writing implementation code" \
+    "TDD skill no longer broad-matches every implementation request"
 assert_contains "$tdd_skill" "auto.*strict.*light.*skipped|strict.*light.*skipped" \
     "TDD skill defines AUTO route decisions"
 assert_contains "$tdd_skill" "off.*automatic TDD|automatic TDD.*off" \

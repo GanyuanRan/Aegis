@@ -39,6 +39,12 @@ tdd_mode = "off"
 `off` disables automatic TDD routing. It does not delete tests, prevent explicit
 user or project TDD requests, or weaken `verification-before-completion`.
 
+On hosts that rely on native skill discovery rather than an Aegis bootstrap
+router, `off` does not by itself override the host's own semantic matcher.
+Those hosts need narrow automatic trigger wording for
+`test-driven-development`, or a host profile that hides automatic TDD entry
+points.
+
 ## 3. Route Heuristics
 
 Use `strict` in `auto` mode when the change touches behavior, a bug fix, shared

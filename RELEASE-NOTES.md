@@ -1,5 +1,53 @@
 # Aegis Release Notes
 
+## v2.0.2 (2026-06-03)
+
+### TDD Trigger Boundary Hardening For Native Skill Hosts
+
+- Narrowed the `test-driven-development` skill trigger so native skill-discovery
+  hosts no longer treat every feature or bugfix request as an automatic TDD
+  entrypoint.
+- Kept strict TDD auto-loading for explicit strict-TDD requests and already
+  approved atomic tasks whose `TDD Route` is `strict`.
+- Updated the skill-authoring guidance example so future skills do not regress
+  to broad workflow-summary trigger wording.
+
+### Codex TDD Mode Boundary Clarification
+
+- Clarified in the canonical TDD-mode doc and Codex install guides that
+  `AEGIS_TDD_MODE=off` disables Aegis-side automatic TDD routing, but does not
+  directly override a host's native semantic skill matcher.
+- Documented the retained limitation for native skill-discovery hosts: narrow
+  trigger wording or host-profile visibility control is still required when the
+  host can auto-match skills without the Aegis bootstrap router.
+
+### TDD Policy Regression Coverage
+
+- Expanded `tests/e2e/tdd-policy-check.sh` so release verification now locks the
+  narrow `test-driven-development` trigger boundary and the Codex-specific TDD
+  mode caveat.
+- Updated the Codex-native trigger prompt fixture so TDD smoke coverage asks
+  for explicit strict TDD rather than relying on a generic implementation
+  request.
+
+### Version
+
+- Bumped all declared plugin, marketplace, package, and extension manifests to
+  `2.0.2`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 2.0.2`
+- `bash scripts/bump-version.sh --audit`
+- `python -m py_compile tests/helpers/validate_workflow_quality_matrix.py`
+- `python tests/helpers/validate_workflow_quality_matrix.py tests/e2e/fixtures/workflow-quality-matrix.json`
+- `bash tests/e2e/tdd-policy-check.sh`
+- `bash tests/e2e/activation-mode-check.sh`
+- `bash tests/e2e/run-all.sh --full --host-profile fast` attempted; non-Codex
+  release suites passed, but the current machine's Codex representative smoke
+  was blocked by `401 Unauthorized` from the Responses websocket
+- `git diff --check`
+
 ## v2.0.1 (2026-06-02)
 
 ### GitHub Copilot And Qoder Structural Host Support

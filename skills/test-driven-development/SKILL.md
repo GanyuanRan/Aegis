@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: Use when implementing any feature or bugfix, before writing implementation code
+description: Use when strict TDD is explicitly requested, or when an approved atomic implementation task has already chosen TDD Route strict.
 ---
 
 # Execute
