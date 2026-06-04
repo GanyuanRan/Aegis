@@ -208,6 +208,26 @@ The matrix checks both false negatives and false positives.
 
 ---
 
+## 4a. Host Trigger Families
+
+For trigger diagnosis and install-strategy reasoning, hosts may be grouped into
+small trigger families:
+
+- `hook-bootstrap`: auto-entry depends mainly on startup bootstrap injection
+- `native-direct-skill`: auto-entry depends mainly on host-native skill
+  discovery and matcher behavior
+- `provider-hybrid`: a host may wrap another agent family but expose a
+  different discovery surface
+
+These families are a diagnostic aid, not a new authority layer. They do **not**
+replace host-specific install guides as the canonical source for a concrete
+host's install root, reload behavior, or discovery roots.
+
+When family reasoning and a host-specific guide differ, follow the host-specific
+guide and update the family wording later if needed.
+
+---
+
 ## 5. Root Improvements For Automatic Invocation
 
 The stable path is not to make every entry point louder. It is to keep each
@@ -224,6 +244,9 @@ owner narrow:
 8. Keep simple tasks cheap so users do not disable Aegis due to over-triggering.
 9. Under context pressure or after compaction/resume, run a compact re-entry
    check instead of assuming the initial route still holds.
+10. When a host needs a compatibility exposure shape, keep the canonical
+    source of truth in the method-pack `skills/` tree and treat any additional
+    exposure as a generated view, not a second editable skill owner.
 
 ---
 

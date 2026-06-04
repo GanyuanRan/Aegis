@@ -221,6 +221,22 @@ It only records limitations supported by current fresh evidence and does not spe
 - `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --discovery-root <host-skill-discovery-root>`
 - Host-specific restart/reload plus skill discovery smoke where available
 
+For copy-based compatibility exposures, the current updater can refresh the
+direct-child skill directories from the canonical `skills/` tree, prune stale
+copied Aegis skill directories, and run the same discovery-root structural
+readback through `aegis-doctor.py`. This remains method-pack-side structural
+verification only; host restart/reload may still be required before the running
+host loads the refreshed content.
+
+When a host-scoped updater registration needs both transport and visibility
+semantics, keep them separate:
+
+- `syncMode` describes how Aegis reaches the host surface
+- `discoveryShape` describes what the host should see there, such as
+  `umbrella-root` or `direct-child`
+
+Do not overload `syncMode` alone to carry both meanings.
+
 The update registry is host-scoped. Plain `aegis:update` should update the
 current host installation only; all-host updates require an explicit `--all`
 request.
@@ -414,6 +430,10 @@ request.
 - Aegis is a multi-skill method pack. For CC GUI's OpenAI/GPT provider path,
   expose individual skills as `~/.agents/skills/<skill-name>/SKILL.md` rather
   than relying only on an umbrella `~/.agents/skills/aegis` directory.
+- When this direct-child exposure is needed, the method-pack `skills/` tree
+  remains the canonical source of truth. Any additional exposure under
+  `~/.agents/skills/` is a generated compatibility view, not a second editable
+  skill owner.
 - Selecting a specific GPT model profile inside CC GUI does not by itself
   change this skill discovery shape.
 - User-visible entries such as `Tool: exec_command` are host adapter event

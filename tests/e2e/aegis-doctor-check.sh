@@ -93,6 +93,39 @@ assert_contains "$JSON_OUT" '"name": "using-aegis-hot-path-current"' "doctor JSO
 
 "${PYTHON_CMD[@]}" "$DOCTOR" --config "$CONFIG_PATH" --discovery-root "$REPO_ROOT/skills" >"$TMP_ROOT/discovery.txt"
 assert_contains "$TMP_ROOT/discovery.txt" "discovery-root-current: ok" "doctor verifies host discovery root points at current skills"
+assert_contains "$TMP_ROOT/discovery.txt" "Expected discovery shape: method-pack-skills-root" \
+    "doctor text mode reports canonical discovery shape"
+assert_contains "$TMP_ROOT/discovery.txt" "Discovery shape status: current" \
+    "doctor text mode reports current discovery shape"
+assert_contains "$TMP_ROOT/discovery.txt" "Compatibility exposure status: canonical-source" \
+    "doctor text mode reports canonical discovery exposure"
+
+"${PYTHON_CMD[@]}" "$DOCTOR" --config "$CONFIG_PATH" --json --discovery-root "$REPO_ROOT/skills" >"$TMP_ROOT/discovery-canonical.json"
+assert_contains "$TMP_ROOT/discovery-canonical.json" '"expectedDiscoveryShape": "method-pack-skills-root"' \
+    "doctor JSON mode reports canonical discovery shape"
+assert_contains "$TMP_ROOT/discovery-canonical.json" '"compatibilityExposureStatus": "canonical-source"' \
+    "doctor JSON mode reports canonical discovery exposure"
+
+COMPAT_ROOT="$TMP_ROOT/compat-skills"
+mkdir -p "$COMPAT_ROOT"
+cp -R "$REPO_ROOT/skills/." "$COMPAT_ROOT/"
+
+"${PYTHON_CMD[@]}" "$DOCTOR" --config "$CONFIG_PATH" --json --discovery-root "$COMPAT_ROOT" >"$TMP_ROOT/discovery-compat.json"
+assert_contains "$TMP_ROOT/discovery-compat.json" '"expectedDiscoveryShape": "direct-child-skill-directories"' \
+    "doctor JSON mode reports direct-child discovery shape"
+assert_contains "$TMP_ROOT/discovery-compat.json" '"discoveryShapeStatus": "current"' \
+    "doctor JSON mode reports current compatibility discovery shape"
+assert_contains "$TMP_ROOT/discovery-compat.json" '"compatibilityExposureStatus": "generated-copy-view-current"' \
+    "doctor JSON mode reports copy-based compatibility exposure"
+
+printf '\n# stale-compatibility-copy\n' >>"$COMPAT_ROOT/using-aegis/SKILL.md"
+if "${PYTHON_CMD[@]}" "$DOCTOR" --config "$CONFIG_PATH" --discovery-root "$COMPAT_ROOT" >"$TMP_ROOT/discovery-stale.txt" 2>&1; then
+    fail "doctor rejects stale compatibility exposure"
+else
+    pass "doctor rejects stale compatibility exposure"
+fi
+assert_contains "$TMP_ROOT/discovery-stale.txt" "stale compatibility exposure" \
+    "doctor stale compatibility failure reports exposure drift"
 
 "${PYTHON_CMD[@]}" "$DOCTOR" activation-mode explicit --config "$CONFIG_PATH" >"$ACTIVATION_TEXT_OUT"
 assert_contains "$ACTIVATION_TEXT_OUT" "Aegis activation mode set to explicit" \

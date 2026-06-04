@@ -21,6 +21,7 @@ from typing import Any
 SCHEMA_VERSION = 1
 VALID_SYNC_MODES = {"junction", "symlink", "copy-skills", "plugin-managed", "repo-only"}
 VALID_UPDATE_MODES = {"manual", "auto", "disabled"}
+VALID_DISCOVERY_SHAPES = {"umbrella-root", "direct-child", "host-managed", "none"}
 COPY_DISCOVERY_KEY_SKILLS = ("using-aegis", "update-aegis", "verification-before-completion")
 
 
@@ -71,6 +72,23 @@ def default_reload_hint(host: str) -> str:
     return f"restart or reload {host}"
 
 
+def default_discovery_shape(sync_mode: str) -> str:
+    if sync_mode == "copy-skills":
+        return "direct-child"
+    if sync_mode in {"plugin-managed", "repo-only"}:
+        return "host-managed"
+    return "umbrella-root"
+
+
+def normalized_discovery_shape(value: str | None, sync_mode: str) -> str:
+    shape = value or default_discovery_shape(sync_mode)
+    if shape not in VALID_DISCOVERY_SHAPES:
+        raise UpdateError(
+            f"discovery_shape must be one of: {', '.join(sorted(VALID_DISCOVERY_SHAPES))}"
+        )
+    return shape
+
+
 def register_installation(
     registry_path: Path,
     *,
@@ -78,6 +96,7 @@ def register_installation(
     method_pack_root: Path,
     discovery_root: Path | None = None,
     sync_mode: str = "repo-only",
+    discovery_shape: str | None = None,
     tracked_ref: str = "main",
     update_mode: str = "manual",
     reload_hint: str | None = None,
@@ -88,6 +107,7 @@ def register_installation(
         raise UpdateError(f"sync_mode must be one of: {', '.join(sorted(VALID_SYNC_MODES))}")
     if update_mode not in VALID_UPDATE_MODES:
         raise UpdateError(f"update_mode must be one of: {', '.join(sorted(VALID_UPDATE_MODES))}")
+    shape = normalized_discovery_shape(discovery_shape, sync_mode)
 
     normalized_host = host.strip().lower()
     if not normalized_host:
@@ -106,6 +126,7 @@ def register_installation(
         "methodPackRoot": root.as_posix(),
         "workspaceHelper": helper.as_posix(),
         "syncMode": sync_mode,
+        "discoveryShape": shape,
         "trackedRef": tracked_ref,
         "updateMode": update_mode,
         "reloadHint": reload_hint or default_reload_hint(normalized_host),
@@ -219,6 +240,14 @@ def sync_skills(entry: dict[str, Any]) -> str:
     if not source.is_dir():
         raise UpdateError(f"Source skills directory is missing: {source}")
     target.mkdir(parents=True, exist_ok=True)
+    expected_skill_names = {
+        child.name
+        for child in source.iterdir()
+        if child.is_dir() and (child / "SKILL.md").is_file()
+    }
+    for child in target.iterdir():
+        if child.is_dir() and child.name not in expected_skill_names and (child / "SKILL.md").is_file():
+            shutil.rmtree(child)
     for child in source.iterdir():
         destination = target / child.name
         if child.is_dir():
@@ -233,7 +262,11 @@ def doctor_discovery_root(entry: dict[str, Any]) -> str | None:
     discovery_root = entry.get("discoveryRoot")
     if not discovery_root:
         return None
-    if entry.get("syncMode", "repo-only") in {"junction", "symlink", "repo-only"}:
+    shape = normalized_discovery_shape(
+        entry.get("discoveryShape"),
+        entry.get("syncMode", "repo-only"),
+    )
+    if shape in {"umbrella-root", "direct-child"}:
         return discovery_root
     return None
 
@@ -439,6 +472,7 @@ def build_parser() -> argparse.ArgumentParser:
     register.add_argument("--discovery-root")
     register.add_argument("--workspace-helper")
     register.add_argument("--sync-mode", choices=sorted(VALID_SYNC_MODES), default="repo-only")
+    register.add_argument("--discovery-shape", choices=sorted(VALID_DISCOVERY_SHAPES))
     register.add_argument("--tracked-ref", default="main")
     register.add_argument("--update-mode", choices=sorted(VALID_UPDATE_MODES), default="manual")
     register.add_argument("--reload-hint")
@@ -467,6 +501,7 @@ def command_register(args: argparse.Namespace) -> Any:
         discovery_root=Path(args.discovery_root) if args.discovery_root else None,
         workspace_helper=Path(args.workspace_helper) if args.workspace_helper else None,
         sync_mode=args.sync_mode,
+        discovery_shape=args.discovery_shape,
         tracked_ref=args.tracked_ref,
         update_mode=args.update_mode,
         reload_hint=args.reload_hint,

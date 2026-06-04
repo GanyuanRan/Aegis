@@ -189,6 +189,19 @@ cp -R ~/.pi/agent/aegis/skills/* ~/.pi/agent/skills/
 python scripts/aegis-doctor.py --write-config --json
 ```
 
+Or register the copy-based compatibility exposure explicitly:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-update.py register \
+  --host pi-copy \
+  --sync-mode copy-skills \
+  --discovery-shape direct-child \
+  --discovery-root ~/.pi/agent/skills \
+  --reload-hint "restart Pi or run /reload"
+python scripts/aegis-update.py update --host pi-copy --json
+```
+
 Restart Pi or run `/reload` after updating so the host reloads skill metadata.
 
 ## Activation Mode

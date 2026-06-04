@@ -54,6 +54,13 @@ class DoctorError(Exception):
     pass
 
 
+def file_content_matches(current: Path, expected: Path) -> bool:
+    try:
+        return current.read_text(encoding="utf-8") == expected.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise DoctorError(f"cannot compare discovery content: {exc}") from exc
+
+
 def default_config_path() -> Path:
     return Path.home() / ".config" / "aegis" / "config.toml"
 
@@ -296,6 +303,55 @@ def check_discovery_root(discovery_root: Path, skills: Path) -> None:
         raise DoctorError(f"cannot resolve discovery root: {exc}") from exc
 
 
+def classify_discovery_root(discovery_root: Path, skills: Path) -> dict[str, str]:
+    if not discovery_root.is_dir():
+        raise DoctorError(f"discovery root is not a directory: {discovery_root}")
+
+    try:
+        if discovery_root.resolve() == skills.resolve():
+            return {
+                "expectedDiscoveryShape": "method-pack-skills-root",
+                "discoveryShapeStatus": "current",
+                "compatibilityExposureStatus": "canonical-source",
+            }
+    except OSError as exc:
+        raise DoctorError(f"cannot resolve discovery root: {exc}") from exc
+
+    missing: list[str] = []
+    stale: list[str] = []
+    for skill_dir in sorted(skills.iterdir()):
+        if not skill_dir.is_dir():
+            continue
+        expected_skill = skill_dir / "SKILL.md"
+        if not expected_skill.is_file():
+            continue
+        candidate_skill = discovery_root / skill_dir.name / "SKILL.md"
+        if not candidate_skill.is_file():
+            missing.append(skill_dir.name)
+            continue
+        if not file_content_matches(candidate_skill, expected_skill):
+            stale.append(skill_dir.name)
+
+    if missing:
+        joined = ", ".join(missing)
+        raise DoctorError(
+            "discovery root does not expose the expected direct-child skill directories: "
+            + joined
+        )
+    if stale:
+        joined = ", ".join(stale)
+        raise DoctorError(
+            "stale compatibility exposure detected; direct-child skill copies differ from the canonical skills tree: "
+            + joined
+        )
+
+    return {
+        "expectedDiscoveryShape": "direct-child-skill-directories",
+        "discoveryShapeStatus": "current",
+        "compatibilityExposureStatus": "generated-copy-view-current",
+    }
+
+
 def perform_check(args: argparse.Namespace) -> dict[str, object]:
     root = method_pack_root()
     skills = root / "skills"
@@ -328,12 +384,22 @@ def perform_check(args: argparse.Namespace) -> dict[str, object]:
     )
     if args.discovery_root:
         discovery_root = Path(args.discovery_root).expanduser()
-        check_discovery_root(discovery_root, skills)
+        discovery_result = classify_discovery_root(discovery_root, skills)
         checks.append(
             {
                 "name": "discovery-root-current",
                 "ok": True,
                 "detail": str(discovery_root),
+            }
+        )
+        checks.append(
+            {
+                "name": "discovery-shape-status",
+                "ok": True,
+                "detail": (
+                    f"{discovery_result['expectedDiscoveryShape']} / "
+                    f"{discovery_result['compatibilityExposureStatus']}"
+                ),
             }
         )
     record(
@@ -355,7 +421,7 @@ def perform_check(args: argparse.Namespace) -> dict[str, object]:
         write_config(config_path, root, helper)
     status = config_status(config_path, root, helper)
 
-    return {
+    result = {
         "ok": True,
         "command": "check",
         "methodPackRoot": root.as_posix(),
@@ -370,6 +436,9 @@ def perform_check(args: argparse.Namespace) -> dict[str, object]:
         },
         "checks": checks,
     }
+    if args.discovery_root:
+        result.update(discovery_result)
+    return result
 
 
 def print_text(result: dict[str, object]) -> None:
@@ -400,6 +469,10 @@ def print_text(result: dict[str, object]) -> None:
     print(f"Project workspace support: {result['workspaceSupport']}")
     print(f"Config status: {result['configStatus']} ({result['configPath']})")
     print(f"TDD mode: {result['tddMode']}")
+    if "expectedDiscoveryShape" in result:
+        print(f"Expected discovery shape: {result['expectedDiscoveryShape']}")
+        print(f"Discovery shape status: {result['discoveryShapeStatus']}")
+        print(f"Compatibility exposure status: {result['compatibilityExposureStatus']}")
     trigger_health = result.get("triggerHealth", {})
     if isinstance(trigger_health, dict):
         print(f"Trigger health baseline: {trigger_health.get('baseline')}")

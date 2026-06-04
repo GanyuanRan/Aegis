@@ -99,6 +99,8 @@ assert_contains "docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md" "aegi
     "compatibility snapshot tracks host-scoped update registration"
 assert_contains "docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md" "cd <aegis-method-pack-root>" \
     "compatibility snapshot anchors complete-install verification command"
+assert_contains "docs/current/AEGIS_KNOWN_LIMITATIONS.md" "discovery shape|discovery-root structural readback" \
+    "known limitations records updater discovery-shape structural verification"
 
 if (( failures > 0 )); then
     echo ""

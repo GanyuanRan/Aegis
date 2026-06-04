@@ -49,6 +49,12 @@ skill discovery shape.
 
 This guide records structural CC GUI support. It does **not** claim current release-level live smoke evidence for CC GUI; fresh smoke is pending.
 
+In current compatibility terminology, this path is treated as a
+`provider-hybrid` host surface: CC GUI may wrap Claude Code or an OpenAI/GPT
+provider path, but its provider-side skill discovery shape is its own boundary.
+This label is only a diagnostic aid; this guide remains the canonical install
+authority for CC GUI.
+
 ## Recommended Codex-Side Installation
 
 Keep the Aegis method-pack checkout separate, then expose each Aegis skill as a
@@ -81,6 +87,10 @@ New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.agents\skills"
 Copy-Item -Recurse -Force "$env:USERPROFILE\.codex\aegis\skills\*" "$env:USERPROFILE\.agents\skills\"
 ```
 
+Copy-based exposure is a compatibility fallback. When used, freshness depends
+on re-copy or equivalent sync after updates. Do not treat the copied tree as a
+second source of truth.
+
 ### macOS / Linux
 
 ```bash
@@ -100,6 +110,10 @@ Expected structural result:
 ~/.agents/skills/systematic-debugging/SKILL.md
 ~/.agents/skills/brainstorming/SKILL.md
 ```
+
+The canonical source of truth remains the method-pack root `skills/` tree.
+These direct-child directories are a compatibility exposure for CC GUI's
+provider-side scanner, not a second editable skill tree.
 
 ## Claude-Side Use
 
@@ -188,6 +202,7 @@ cd <aegis-method-pack-root>
 python scripts/aegis-update.py register \
   --host cc-gui \
   --sync-mode junction \
+  --discovery-shape direct-child \
   --discovery-root ~/.agents/skills \
   --reload-hint "restart CC GUI or reload the IDE plugin"
 python scripts/aegis-update.py update --host cc-gui --json
@@ -246,8 +261,10 @@ workflow orchestration.
 2. Avoid relying only on the umbrella directory
    `~/.agents/skills/aegis/ -> ~/.codex/aegis/skills/` for CC GUI's
    OpenAI/GPT provider path.
-3. Restart CC GUI or reload the IDE plugin window.
-4. Run `python scripts/aegis-doctor.py --discovery-root ~/.agents/skills` from
+3. Treat direct-child exposure under `~/.agents/skills/` as a compatibility
+   view generated from the method-pack root, not as a separate skill owner.
+4. Restart CC GUI or reload the IDE plugin window.
+5. Run `python scripts/aegis-doctor.py --discovery-root ~/.agents/skills` from
    the Aegis method-pack root.
 
 ### Project workspace support is not verified

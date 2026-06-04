@@ -1,5 +1,81 @@
 # Aegis Release Notes
 
+## v2.0.4 (2026-06-04)
+
+### Discovery-Shape Readback For Compatibility Exposures
+
+- Extended `scripts/aegis-doctor.py` so discovery-root checks now classify the
+  expected discovery shape instead of only proving that a path exists.
+- Added explicit readback for canonical method-pack discovery roots versus
+  direct-child compatibility exposures, including clear text and JSON fields
+  for `expectedDiscoveryShape`, `discoveryShapeStatus`, and
+  `compatibilityExposureStatus`.
+- Hardened stale-copy detection so compatibility exposures that drift from the
+  canonical `skills/` tree now fail structural verification instead of being
+  silently treated as current.
+
+### Host Update Registry Separation Of Transport And Visibility
+
+- Extended `scripts/aegis-update.py` so host registrations can store a
+  dedicated `discoveryShape` alongside `syncMode`.
+- Kept transport semantics and host-visibility semantics separate: `syncMode`
+  now describes how Aegis reaches the host surface, while `discoveryShape`
+  describes what the host must see there.
+- Added copy-mode pruning so stale copied Aegis skill directories are removed
+  when refreshing direct-child compatibility exposures from the canonical
+  method-pack tree.
+
+### Trigger And Host Baseline Clarifications
+
+- Updated trigger-health and host-compatibility current docs with a compact
+  trigger-family vocabulary for diagnostic use without creating a new owner
+  layer.
+- Clarified in known limitations and host docs that direct-child compatibility
+  exposures are generated views from the canonical `skills/` tree, not a second
+  editable source of truth.
+- Recorded the CC GUI direct-child discovery requirement more explicitly in the
+  release-facing host guidance and verification policy.
+
+### Completion Boundary Wording Tightening
+
+- Compressed the `verification-before-completion` TDD completion boundary into
+  a shorter, more conservative form.
+- Clarified that completion judgment should match the claim to the highest
+  available explicit boundary while keeping any higher open boundary visible.
+- Kept the change at the wording and contract level without changing Aegis
+  completion authority boundaries.
+
+### Verification Coverage Expansion
+
+- Expanded `tests/e2e/aegis-doctor-check.sh` to cover canonical discovery
+  roots, direct-child compatibility exposures, and stale-copy rejection.
+- Added helper coverage for updater discovery-shape registration, copy-mode
+  doctor invocation, stale-skill pruning, and discovery-shape defaults.
+- Extended install and CC GUI host boundary checks so the new structural
+  discovery semantics stay release-visible.
+
+### Version
+
+- Bumped all declared plugin, marketplace, package, and extension manifests to
+  `2.0.4`.
+
+### Verification
+
+- `bash scripts/bump-version.sh 2.0.4`
+- `bash scripts/bump-version.sh --audit`
+- `bash tests/e2e/governance-completion-contract-check.sh`
+- `bash tests/e2e/workflow-quality-check.sh`
+- `bash tests/e2e/aegis-doctor-check.sh`
+- `bash tests/e2e/cc-gui-host-boundary-check.sh`
+- `bash tests/e2e/install-verification-policy-check.sh`
+- `python tests/helpers/test_aegis_update.py`
+- `python tests/helpers/test_workspace_text_write_compat.py`
+- `bash tests/e2e/run-all.sh --full --host-profile fast` attempted; all non-Codex
+  release suites passed, but the current machine's Codex representative smoke
+  was blocked by `401 Unauthorized` from the Responses websocket before any
+  assistant reply was produced
+- `git diff --check`
+
 ## v2.0.2 (2026-06-03)
 
 ### TDD Trigger Boundary Hardening For Native Skill Hosts

@@ -1,7 +1,9 @@
 import importlib.util
+import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -60,6 +62,24 @@ class AegisUpdateRegistryTests(unittest.TestCase):
                 codex_root.as_posix(),
             )
 
+    def test_register_installation_records_discovery_shape(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-shape-") as tmp:
+            registry = Path(tmp) / "installations.json"
+            root = Path(tmp) / "aegis"
+
+            entry = update.register_installation(
+                registry,
+                host="cc-gui",
+                method_pack_root=root,
+                discovery_root=Path(tmp) / "skills",
+                sync_mode="junction",
+                discovery_shape="direct-child",
+            )
+
+            self.assertEqual(entry["discoveryShape"], "direct-child")
+            data = update.load_registry(registry)
+            self.assertEqual(data["installations"][0]["discoveryShape"], "direct-child")
+
     def test_update_without_host_refuses_ambiguous_multi_host_registry(self):
         data = {
             "schemaVersion": 1,
@@ -98,22 +118,106 @@ class AegisUpdateRegistryTests(unittest.TestCase):
         self.assertTrue(update_args.json)
         self.assertEqual(update_args.registry, "registry.json")
 
-    def test_copy_skill_discovery_is_not_passed_to_doctor_symlink_check(self):
+    def test_doctor_discovery_root_uses_registered_discovery_shape(self):
         copy_entry = {
             "id": "codebuddy:default",
             "host": "codebuddy",
             "syncMode": "copy-skills",
             "discoveryRoot": "/tmp/codebuddy-skills",
+            "discoveryShape": "direct-child",
         }
         junction_entry = {
             "id": "codex:default",
             "host": "codex",
             "syncMode": "junction",
             "discoveryRoot": "/tmp/codex-skills",
+            "discoveryShape": "umbrella-root",
         }
 
-        self.assertIsNone(update.doctor_discovery_root(copy_entry))
+        self.assertEqual(update.doctor_discovery_root(copy_entry), "/tmp/codebuddy-skills")
         self.assertEqual(update.doctor_discovery_root(junction_entry), "/tmp/codex-skills")
+
+    def test_run_doctor_verifies_copy_skills_discovery_root(self):
+        entry = {
+            "id": "codebuddy:default",
+            "host": "codebuddy",
+            "methodPackRoot": REPO_ROOT.as_posix(),
+            "syncMode": "copy-skills",
+            "discoveryRoot": "/tmp/codebuddy-skills",
+            "discoveryShape": "direct-child",
+        }
+
+        with patch.object(update, "run_command") as run_command:
+            run_command.return_value.stdout = json.dumps(
+                {
+                    "ok": True,
+                    "workspaceSupport": "available",
+                    "configStatus": "configured",
+                    "expectedDiscoveryShape": "direct-child-skill-directories",
+                    "discoveryShapeStatus": "current",
+                    "compatibilityExposureStatus": "generated-copy-view-current",
+                }
+            )
+            update.run_doctor(entry, config_path=None)
+
+        command = run_command.call_args.args[0]
+        self.assertIn("--discovery-root", command)
+        self.assertIn("/tmp/codebuddy-skills", command)
+
+    def test_sync_skills_prunes_stale_aegis_skill_directories_for_copy_mode(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-copy-") as tmp:
+            method_pack_root = Path(tmp) / "method-pack"
+            source_skills = method_pack_root / "skills"
+            source_skills.mkdir(parents=True)
+            for skill in update.COPY_DISCOVERY_KEY_SKILLS:
+                skill_dir = source_skills / skill
+                skill_dir.mkdir()
+                (skill_dir / "SKILL.md").write_text(f"# {skill}\n", encoding="utf-8")
+
+            discovery_root = Path(tmp) / "discovery"
+            discovery_root.mkdir()
+            stale_skill = discovery_root / "retired-skill"
+            stale_skill.mkdir()
+            (stale_skill / "SKILL.md").write_text("# stale\n", encoding="utf-8")
+
+            entry = {
+                "id": "codebuddy:default",
+                "host": "codebuddy",
+                "methodPackRoot": method_pack_root.as_posix(),
+                "syncMode": "copy-skills",
+                "discoveryRoot": discovery_root.as_posix(),
+                "discoveryShape": "direct-child",
+            }
+
+            update.sync_skills(entry)
+
+            self.assertFalse(stale_skill.exists())
+            for skill in update.COPY_DISCOVERY_KEY_SKILLS:
+                self.assertTrue((discovery_root / skill / "SKILL.md").is_file())
+
+    def test_register_installation_defaults_discovery_shape_from_sync_mode(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-default-shape-") as tmp:
+            registry = Path(tmp) / "installations.json"
+            root = Path(tmp) / "aegis"
+
+            copy_entry = update.register_installation(
+                registry,
+                host="deepseek-tui",
+                method_pack_root=root,
+                discovery_root=Path(tmp) / "deepseek-skills",
+                sync_mode="copy-skills",
+            )
+            junction_entry = update.register_installation(
+                registry,
+                host="codex",
+                install_id="codex:alt",
+                method_pack_root=root,
+                discovery_root=Path(tmp) / "codex-skills",
+                sync_mode="junction",
+            )
+
+            self.assertEqual(copy_entry["discoveryShape"], "direct-child")
+            self.assertEqual(junction_entry["discoveryShape"], "umbrella-root")
 
 
 if __name__ == "__main__":

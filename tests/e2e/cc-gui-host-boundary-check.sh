@@ -110,6 +110,8 @@ assert_contains "$cc_gui_guide" "aegis-doctor\\.py --write-config --json" \
     "CC GUI guide includes complete-install doctor"
 assert_contains "$cc_gui_guide" "--discovery-root" \
     "CC GUI guide includes skill discovery verification"
+assert_contains "$cc_gui_guide" "--discovery-shape direct-child" \
+    "CC GUI guide records direct-child updater discovery shape"
 assert_contains "$cc_gui_guide" "Tool: exec_command" \
     "CC GUI guide documents tool-event rendering boundary"
 assert_contains "$cc_gui_guide" "AEGIS_ACTIVATION_MODE=explicit" \

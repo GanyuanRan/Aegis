@@ -81,6 +81,37 @@ class WorkspaceTextWriteCompatibilityTests(unittest.TestCase):
             self.assertIn("method_pack_root =", text)
             self.assertIn("workspace_helper =", text)
 
+    def test_doctor_classifies_canonical_and_compatibility_discovery_shapes(self):
+        canonical = doctor.classify_discovery_root(REPO_ROOT / "skills", REPO_ROOT / "skills")
+        self.assertEqual(canonical["expectedDiscoveryShape"], "method-pack-skills-root")
+        self.assertEqual(canonical["compatibilityExposureStatus"], "canonical-source")
+
+        with tempfile.TemporaryDirectory(prefix="aegis-discovery-view-") as tmp:
+            discovery_root = Path(tmp)
+            for skill_dir in (REPO_ROOT / "skills").iterdir():
+                if not skill_dir.is_dir():
+                    continue
+                target = discovery_root / skill_dir.name
+                target.mkdir(parents=True, exist_ok=True)
+                (target / "SKILL.md").write_text(
+                    (skill_dir / "SKILL.md").read_text(encoding="utf-8"),
+                    encoding="utf-8",
+                )
+
+            compat = doctor.classify_discovery_root(discovery_root, REPO_ROOT / "skills")
+            self.assertEqual(
+                compat["expectedDiscoveryShape"], "direct-child-skill-directories"
+            )
+            self.assertEqual(
+                compat["compatibilityExposureStatus"], "generated-copy-view-current"
+            )
+
+            with (discovery_root / "using-aegis" / "SKILL.md").open("a", encoding="utf-8") as handle:
+                handle.write("\n# stale-copy\n")
+
+            with self.assertRaises(doctor.DoctorError):
+                doctor.classify_discovery_root(discovery_root, REPO_ROOT / "skills")
+
 
 if __name__ == "__main__":
     unittest.main()

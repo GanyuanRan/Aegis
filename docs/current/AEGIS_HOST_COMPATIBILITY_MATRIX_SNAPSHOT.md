@@ -68,6 +68,19 @@ The current snapshot is based on fresh evidence and current docs landed as of
 | `Kimi Code CLI` | Minimal install prompt suffices; no independent adapter needed | Kimi Code CLI natively auto-discovers `.agents/skills/` (same path as Codex); Aegis Codex installation is Kimi installation |
 | `Warp` | No independent adapter needed | As a terminal host, Warp runs third-party CLI agents (Claude Code / Codex / OpenCode) and does not provide its own skills system |
 
+### 3.4 Trigger-Family Vocabulary
+
+The current docs may refer to these trigger families as a compact compatibility
+aid:
+
+- `hook-bootstrap`
+- `native-direct-skill`
+- `provider-hybrid`
+
+This vocabulary is advisory and diagnostic only. It does **not** replace
+host-specific docs as the canonical owner for install roots, reload behavior,
+or supported discovery shapes.
+
 ---
 
 ## 4. What This Snapshot Means
@@ -91,6 +104,11 @@ The current snapshot only states:
 15. `Warp`, as a terminal host, does not itself need an independent adapter
 16. The current method-pack still retains the cross-host installation goal
 17. "Support all plugin hosts" remains a product goal, not equivalent to "all hosts have current fresh closeout"
+18. Some hosts may require a compatibility exposure shape that differs from a
+    mainline host's canonical install shape; when that happens, the method-pack
+    `skills/` tree remains the canonical source and the extra exposure should be
+    treated as a generated compatibility view rather than a second editable
+    owner
 
 ---
 

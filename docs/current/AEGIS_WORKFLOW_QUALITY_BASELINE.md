@@ -685,8 +685,9 @@ fresh verification evidence.
 
 Goal Closure:
 
-When a task used `goal-framing`, `verification-before-completion` must compare
-the final claim against the latest goal frame:
+When a task used `goal-framing`, `verification-before-completion` must match
+the completion claim to the highest available explicit boundary and keep any
+higher open boundary visible:
 
 ```text
 Goal status: satisfied | blocked | needs-verification | scope-exceeded

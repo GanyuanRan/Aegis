@@ -26,6 +26,11 @@ This means Claude Code is a supported product target. It does **not** mean
 Claude Code has current release-level fresh smoke evidence yet. The current
 compatibility matrix still records Claude Code as pending broader host rollout.
 
+In current compatibility terminology, Claude Code is treated as a
+`hook-bootstrap` host: automatic Aegis entry depends mainly on the plugin's
+startup hook and reload behavior. This label is a diagnostic aid only; the
+Claude Code guide remains the canonical install authority for this host.
+
 ## Repository Access Prerequisite
 
 Claude Code installation requires GitHub read access to the repository. Public
@@ -191,6 +196,11 @@ Expected result:
   remains available.
 - Claude Code does not present Aegis as a full runtime platform or final
   completion authority.
+
+For this host, the plugin-managed install path is the canonical path. If other
+compatibility exposure shapes are added for different hosts, they should be
+treated as generated compatibility views from the canonical method-pack root,
+not as a second editable skill source for Claude Code.
 
 ## Updating
 
