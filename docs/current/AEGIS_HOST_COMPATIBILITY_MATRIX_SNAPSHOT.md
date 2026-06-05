@@ -33,7 +33,7 @@ The current snapshot is based on fresh evidence and current docs landed as of
 | Host | Current Verdict | Evidence Owner |
 | --- | --- | --- |
 | `Codex` | Representative smoke mainline available; naive smoke under Git Bash still requires observation | `docs/testing.md`, `tests/skill-triggering/*`, `tests/explicit-skill-requests/*`, `docs/current/AEGIS_KNOWN_LIMITATIONS.md` |
-| `OpenCode` | Base suite and integration closeout passed | `docs/testing.md`, `tests/opencode/*`, `docs/README.opencode.md` |
+| `OpenCode` | Base suite and integration closeout passed | `docs/testing.md`, `tests/opencode/*`, `docs/README.opencode.md`; current mainline prefers the configured `method_pack_root` as the canonical Aegis body and treats the OpenCode-visible skills tree as a generated host view |
 
 ### 3.2 Hosts Without a Current Fresh Release Verdict
 
@@ -88,6 +88,7 @@ or supported discovery shapes.
 The current snapshot only states:
 
 1. `Codex` and `OpenCode` are the two mainlines with the most fresh evidence
+   - `OpenCode` now prefers the configured `method_pack_root` as its canonical Aegis source when available, then generates the host-visible skills view from that source instead of treating the host cache as a second editable owner
 2. `Kimi Code CLI` reuses the Codex path (`.agents/skills/`); Aegis takes effect via a minimal install prompt
 3. `CC GUI (JetBrains IDEA)` can expose Aegis to its OpenAI/GPT provider path through direct `~/.agents/skills/<skill-name>/SKILL.md` directories, but the selected GPT model profile does not by itself change the skill discovery shape, and live IDE plugin behavior, reload behavior, and `Tool: exec_command` rendering remain fresh-smoke pending
 4. `CodeBuddy` can install Aegis via `.codebuddy-plugin/` or native `SKILL.md` discovery, but local CLI live smoke has not yet formed valid evidence
@@ -109,6 +110,10 @@ The current snapshot only states:
     `skills/` tree remains the canonical source and the extra exposure should be
     treated as a generated compatibility view rather than a second editable
     owner
+19. The shared local `~/.config/aegis/config.toml` may declare one canonical
+    `method_pack_root`; when it does, new host registrations should prefer that
+    root and treat host-specific discovery roots, plugin caches, or copied skill
+    trees as generated or host-managed views into the same Aegis body
 
 ---
 

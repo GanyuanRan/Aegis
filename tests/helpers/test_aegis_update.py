@@ -219,6 +219,82 @@ class AegisUpdateRegistryTests(unittest.TestCase):
             self.assertEqual(copy_entry["discoveryShape"], "direct-child")
             self.assertEqual(junction_entry["discoveryShape"], "umbrella-root")
 
+    def test_default_method_pack_root_prefers_user_local_config(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-config-root-") as tmp:
+            configured_root = Path(tmp) / "configured-aegis"
+            configured_root.mkdir()
+            config_path = Path(tmp) / "config.toml"
+            config_path.write_text(
+                f'method_pack_root = "{configured_root.as_posix()}"\n',
+                encoding="utf-8",
+            )
+
+            self.assertEqual(
+                update.configured_method_pack_root(config_path),
+                configured_root.resolve(),
+            )
+
+    def test_update_registered_installations_reuses_shared_method_pack_root_once(self):
+        shared_root = (Path(tempfile.gettempdir()) / "shared-aegis-root").resolve()
+        selected = [
+            {
+                "id": "codex:default",
+                "host": "codex",
+                "methodPackRoot": shared_root.as_posix(),
+                "trackedRef": "main",
+                "syncMode": "junction",
+                "reloadHint": "restart Codex",
+            },
+            {
+                "id": "kimi:default",
+                "host": "kimi",
+                "methodPackRoot": shared_root.as_posix(),
+                "trackedRef": "main",
+                "syncMode": "junction",
+                "reloadHint": "restart Kimi",
+            },
+        ]
+        registry = {
+            "schemaVersion": 1,
+            "installations": [dict(selected[0]), dict(selected[1])],
+        }
+
+        with tempfile.TemporaryDirectory(prefix="aegis-update-shared-root-") as tmp:
+            registry_path = Path(tmp) / "installations.json"
+            registry_path.write_text(json.dumps(registry), encoding="utf-8")
+
+            with patch.object(update, "update_method_pack_checkout") as update_root, patch.object(
+                update, "sync_skills"
+            ) as sync_skills, patch.object(update, "run_doctor") as run_doctor:
+                update_root.return_value = {
+                    "status": "updated",
+                    "beforeCommit": "abc",
+                    "afterCommit": "def",
+                    "methodPackRoot": shared_root.as_posix(),
+                }
+                sync_skills.side_effect = lambda entry: f"synced {entry['host']}"
+                run_doctor.return_value = {
+                    "ok": True,
+                    "workspaceSupport": "available",
+                    "configStatus": "configured",
+                }
+
+                results = update.update_registered_installations(
+                    registry_path,
+                    selected,
+                    config_path=None,
+                    dry_run=False,
+                    stash=False,
+                    force=False,
+                    verify=True,
+                )
+
+            self.assertEqual(update_root.call_count, 1)
+            self.assertEqual(sync_skills.call_count, 2)
+            self.assertEqual(run_doctor.call_count, 2)
+            self.assertFalse(results[0].get("sharedMethodPackRootReused", False))
+            self.assertTrue(results[1]["sharedMethodPackRootReused"])
+
 
 if __name__ == "__main__":
     unittest.main()

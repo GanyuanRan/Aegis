@@ -80,5 +80,40 @@ else
     exit 1
 fi
 
+# Test 7: Verify configured canonical method-pack root is preferred
+echo "Test 7: Checking canonical method-pack root preference..."
+canonical_root="$TEST_HOME/canonical-aegis"
+mkdir -p "$canonical_root"
+cp -r "$REPO_ROOT/skills" "$canonical_root/"
+mkdir -p "$TEST_HOME/.config/aegis"
+cat > "$TEST_HOME/.config/aegis/config.toml" <<EOF
+activation_mode = "auto"
+tdd_mode = "auto"
+method_pack_root = "$canonical_root"
+workspace_helper = "$canonical_root/scripts/aegis-workspace.py"
+EOF
+
+mkdir -p "$canonical_root/skills/using-aegis"
+printf '\nCANONICAL_ROOT_MARKER_24680\n' >> "$canonical_root/skills/using-aegis/SKILL.md"
+
+mirror_dir="$OPENCODE_CONFIG_DIR/skills"
+rm -rf "$mirror_dir"
+
+node --input-type=module <<'EOF'
+import path from 'path';
+import { pathToFileURL } from 'url';
+
+const pluginPath = process.env.AEGIS_PLUGIN_FILE;
+const module = await import(pathToFileURL(pluginPath).href);
+await module.AegisPlugin({ client: {}, directory: path.dirname(pluginPath) });
+EOF
+
+if grep -q 'CANONICAL_ROOT_MARKER_24680' "$mirror_dir/using-aegis/SKILL.md"; then
+    echo "  [PASS] Plugin mirrors from configured canonical method-pack root"
+else
+    echo "  [FAIL] Plugin did not prefer configured canonical method-pack root"
+    exit 1
+fi
+
 echo ""
 echo "=== All plugin loading tests passed ==="

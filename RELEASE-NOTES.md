@@ -1,5 +1,56 @@
 # Aegis Release Notes
 
+## v2.0.5 (2026-06-05)
+
+### One Canonical Aegis Body Across Hosts
+
+- Clarified and strengthened the cross-host rule that Aegis should keep one
+  canonical `method_pack_root`, while host-facing discovery directories,
+  plugin caches, copied skills trees, and compatibility exposures are treated
+  as generated or host-managed views into that same body.
+- Extended the shared updater and host docs so new host registrations prefer
+  the configured `~/.config/aegis/config.toml` `method_pack_root` instead of
+  silently creating another editable checkout per host.
+
+### Shared-Root Updater Reuse Across Host Registrations
+
+- Extended `scripts/aegis-update.py` to read the shared local Aegis config and
+  use `method_pack_root` as the default registration target when available.
+- Added shared-root update reuse so multiple registered hosts that point at the
+  same method-pack checkout update that checkout once, then refresh each
+  host-specific discovery or verification surface separately.
+- Preserved host-level differences such as `discoveryRoot`, `discoveryShape`,
+  `reloadHint`, and adapter ownership without turning them into a second source
+  of truth.
+
+### OpenCode Canonical-Root Preference And Mirror Hygiene
+
+- Updated the OpenCode plugin so it prefers the configured canonical
+  `method_pack_root` when generating the OpenCode-visible skills tree.
+- Added mirror-manifest tracking so stale mirrored skill targets can be
+  refreshed or pruned instead of being silently treated as current.
+- Kept the OpenCode-visible `~/.config/opencode/skills/` tree as a generated
+  compatibility view while retaining `config.skills.paths` only as a fallback
+  exposure layer.
+
+### Cross-Host Installation Guidance Expansion
+
+- Updated Codex, OpenCode, Claude Code, Pi, and Antigravity docs so they all
+  describe the same stable model: one canonical Aegis body, different
+  host-appropriate exposure shapes.
+- Updated the host compatibility snapshot and known limitations docs so the
+  canonical-root / generated-view model is release-visible and does not stay
+  hidden in session-only reasoning.
+- Updated the `update-aegis` skill guidance so host maintenance keeps the
+  canonical root and host view boundaries explicit.
+
+### Regression Coverage For Shared-Root Behavior
+
+- Added updater tests for config-driven default root selection and shared-root
+  reuse across multiple host registrations.
+- Extended the OpenCode plugin-loading coverage so the configured canonical
+  method-pack root must win over the bundled plugin checkout when both exist.
+
 ## v2.0.4 (2026-06-04)
 
 ### Discovery-Shape Readback For Compatibility Exposures

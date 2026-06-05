@@ -23,6 +23,9 @@ Add aegis to the `plugin` array in your `opencode.json` (global or project-level
 
 Restart OpenCode. The plugin auto-installs via Bun, mirrors aegis skills into
 OpenCode's global `~/.config/opencode/skills/` discovery path, and injects the bootstrap context automatically.
+If `~/.config/aegis/config.toml` already points at a `method_pack_root`, that
+configured checkout becomes the canonical Aegis source and OpenCode receives a
+generated host view from it instead of maintaining a second editable copy.
 
 Verify by asking: "Tell me about your aegis"
 

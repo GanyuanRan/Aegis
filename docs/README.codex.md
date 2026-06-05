@@ -69,6 +69,10 @@ This recommended install keeps the Aegis method-pack root at
 symlink alone proves skill discovery; the full install proves both skill
 discovery and project workspace support.
 
+Across hosts, this method-pack root is the canonical Aegis body. Discovery
+paths such as `~/.agents/skills/aegis` are generated host views into that same
+body rather than second editable copies.
+
 ## Usage
 
 Skills are discovered automatically. Codex activates them when:

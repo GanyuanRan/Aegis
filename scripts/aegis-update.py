@@ -33,12 +33,63 @@ def method_pack_root() -> Path:
     return Path(__file__).resolve().parent.parent
 
 
+def default_config_path() -> Path:
+    return Path.home() / ".config" / "aegis" / "config.toml"
+
+
 def default_registry_path() -> Path:
     return Path.home() / ".config" / "aegis" / "installations.json"
 
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+def read_local_config(path: Path) -> dict[str, str]:
+    if not path.is_file():
+        return {}
+
+    config: dict[str, str] = {}
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip()
+        if value.startswith('"') and value.endswith('"'):
+            try:
+                config[key] = json.loads(value)
+            except json.JSONDecodeError:
+                config[key] = value.strip('"')
+        else:
+            config[key] = value
+    return config
+
+
+def configured_method_pack_root(config_path: Path | None = None) -> Path | None:
+    configured_env = os.environ.get("AEGIS_METHOD_PACK_ROOT")
+    if configured_env:
+        candidate = Path(configured_env).expanduser().resolve()
+        if candidate.is_dir():
+            return candidate
+
+    config = read_local_config(config_path or default_config_path())
+    configured = config.get("method_pack_root")
+    if not configured:
+        return None
+
+    candidate = Path(configured).expanduser().resolve()
+    if candidate.is_dir():
+        return candidate
+    return None
+
+
+def default_method_pack_root() -> Path:
+    configured = configured_method_pack_root()
+    if configured:
+        return configured
+    return method_pack_root()
 
 
 def load_registry(path: Path) -> dict[str, Any]:
@@ -227,7 +278,7 @@ def sync_skills(entry: dict[str, Any]) -> str:
     if sync_mode in {"junction", "symlink", "repo-only"}:
         return f"{sync_mode}: no copy step required"
     if sync_mode == "plugin-managed":
-        return "plugin-managed: update is owned by the host plugin manager"
+        return "plugin-managed: host adapter refresh remains owned by the host plugin manager"
     if sync_mode != "copy-skills":
         raise UpdateError(f"Unsupported syncMode: {sync_mode}")
 
@@ -312,47 +363,40 @@ def run_doctor(entry: dict[str, Any], *, config_path: Path | None) -> dict[str, 
     return data
 
 
-def update_installation(
+def update_method_pack_checkout(
     entry: dict[str, Any],
     *,
-    config_path: Path | None = None,
     dry_run: bool = False,
     stash: bool = False,
     force: bool = False,
-    verify: bool = True,
 ) -> dict[str, Any]:
     if entry.get("updateMode") == "disabled" and not force:
         return {
-            "id": entry.get("id"),
-            "host": entry.get("host"),
             "status": "skipped",
             "reason": "updateMode is disabled",
-        }
-
-    if entry.get("syncMode") == "plugin-managed":
-        return {
-            "id": entry.get("id"),
-            "host": entry.get("host"),
-            "status": "skipped",
-            "reason": "host plugin manager owns this update path",
-            "reloadHint": entry.get("reloadHint"),
         }
 
     root = Path(entry["methodPackRoot"])
     tracked_ref, remote_ref = branch_remote_ref(entry.get("trackedRef", "main"))
     if dry_run:
         return {
-            "id": entry.get("id"),
-            "host": entry.get("host"),
             "status": "dry-run",
             "methodPackRoot": root.as_posix(),
             "wouldFetch": f"origin {tracked_ref}",
             "wouldMerge": remote_ref,
-            "wouldVerify": verify,
-            "reloadHint": entry.get("reloadHint"),
         }
 
-    ensure_git_checkout(root)
+    try:
+        ensure_git_checkout(root)
+    except UpdateError:
+        if entry.get("syncMode") == "plugin-managed":
+            return {
+                "status": "skipped",
+                "reason": "host plugin manager owns this update path and the registered method-pack root is not a direct git checkout",
+                "methodPackRoot": root.as_posix(),
+            }
+        raise
+
     before = current_commit(root)
     if has_dirty_worktree(root):
         if not stash:
@@ -384,20 +428,82 @@ def update_installation(
         ]
     )
     run_command(["git", "-C", root.as_posix(), "merge", "--ff-only", remote_ref])
-    sync_result = sync_skills(entry)
-    doctor_result = run_doctor(entry, config_path=config_path) if verify else None
     after = current_commit(root)
 
     return {
-        "id": entry.get("id"),
-        "host": entry.get("host"),
         "status": "updated" if before != after else "already-current",
         "beforeCommit": before,
         "afterCommit": after,
-        "sync": sync_result,
-        "verified": doctor_result is not None,
-        "reloadHint": entry.get("reloadHint"),
+        "methodPackRoot": root.as_posix(),
     }
+
+
+def finalize_host_update(
+    entry: dict[str, Any],
+    *,
+    root_result: dict[str, Any],
+    config_path: Path | None,
+    dry_run: bool,
+    verify: bool,
+    shared_root_reused: bool = False,
+) -> dict[str, Any]:
+    result: dict[str, Any] = {
+        "id": entry.get("id"),
+        "host": entry.get("host"),
+        "status": root_result.get("status", "updated"),
+        "methodPackRoot": entry.get("methodPackRoot"),
+        "reloadHint": entry.get("reloadHint"),
+        "sharedMethodPackRootReused": shared_root_reused,
+    }
+
+    if root_result.get("reason"):
+        result["reason"] = root_result["reason"]
+    if root_result.get("beforeCommit"):
+        result["beforeCommit"] = root_result["beforeCommit"]
+    if root_result.get("afterCommit"):
+        result["afterCommit"] = root_result["afterCommit"]
+    if root_result.get("wouldFetch"):
+        result["wouldFetch"] = root_result["wouldFetch"]
+    if root_result.get("wouldMerge"):
+        result["wouldMerge"] = root_result["wouldMerge"]
+    if dry_run:
+        result["wouldVerify"] = verify
+        return result
+
+    if root_result.get("status") == "skipped":
+        return result
+
+    sync_result = sync_skills(entry)
+    doctor_result = run_doctor(entry, config_path=config_path) if verify else None
+    result["sync"] = sync_result
+    result["verified"] = doctor_result is not None
+    if entry.get("syncMode") == "plugin-managed":
+        result["adapterManagedByHost"] = True
+    return result
+
+
+def update_installation(
+    entry: dict[str, Any],
+    *,
+    config_path: Path | None = None,
+    dry_run: bool = False,
+    stash: bool = False,
+    force: bool = False,
+    verify: bool = True,
+) -> dict[str, Any]:
+    root_result = update_method_pack_checkout(
+        entry,
+        dry_run=dry_run,
+        stash=stash,
+        force=force,
+    )
+    return finalize_host_update(
+        entry,
+        root_result=root_result,
+        config_path=config_path,
+        dry_run=dry_run,
+        verify=verify,
+    )
 
 
 def update_registered_installations(
@@ -413,15 +519,48 @@ def update_registered_installations(
     data = load_registry(registry_path)
     results = []
     by_id = {item.get("id"): item for item in data["installations"]}
+    shared_root_updates: dict[str, dict[str, Any]] = {}
+    shared_root_refs: dict[str, str] = {}
     for entry in selected:
-        result = update_installation(
-            entry,
-            config_path=config_path,
-            dry_run=dry_run,
-            stash=stash,
-            force=force,
-            verify=verify,
+        root_key = entry.get("methodPackRoot")
+        tracked_ref = entry.get("trackedRef", "main")
+        reuse_shared_root = (
+            not dry_run
+            and root_key is not None
+            and entry.get("syncMode") != "plugin-managed"
         )
+        if reuse_shared_root and root_key in shared_root_updates:
+            if shared_root_refs[root_key] != tracked_ref:
+                raise UpdateError(
+                    "Multiple registered hosts share the same method-pack root but "
+                    "declare different trackedRef values. Align the trackedRef before "
+                    "running a shared update."
+                )
+            result = finalize_host_update(
+                entry,
+                root_result=shared_root_updates[root_key],
+                config_path=config_path,
+                dry_run=dry_run,
+                verify=verify,
+                shared_root_reused=True,
+            )
+        else:
+            result = update_installation(
+                entry,
+                config_path=config_path,
+                dry_run=dry_run,
+                stash=stash,
+                force=force,
+                verify=verify,
+            )
+            if reuse_shared_root and root_key is not None and result.get("status") != "skipped":
+                shared_root_updates[root_key] = {
+                    "status": result.get("status"),
+                    "beforeCommit": result.get("beforeCommit"),
+                    "afterCommit": result.get("afterCommit"),
+                    "methodPackRoot": result.get("methodPackRoot"),
+                }
+                shared_root_refs[root_key] = tracked_ref
         results.append(result)
         if not dry_run and result.get("afterCommit") and entry.get("id") in by_id:
             by_id[entry["id"]]["lastVerifiedCommit"] = result["afterCommit"]
@@ -468,7 +607,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     register.add_argument("--host", required=True)
     register.add_argument("--id", dest="install_id")
-    register.add_argument("--method-pack-root", default=method_pack_root().as_posix())
+    register.add_argument("--method-pack-root", default=default_method_pack_root().as_posix())
     register.add_argument("--discovery-root")
     register.add_argument("--workspace-helper")
     register.add_argument("--sync-mode", choices=sorted(VALID_SYNC_MODES), default="repo-only")

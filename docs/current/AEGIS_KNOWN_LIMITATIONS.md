@@ -52,6 +52,11 @@ It only records limitations supported by current fresh evidence and does not spe
 
 **Retention Reason**
 - The current canonical chain has already switched to the host's officially supported global skills path, but cross-version evidence that the fallback has zero compatibility value is still lacking
+- When `~/.config/aegis/config.toml` declares `method_pack_root`, the OpenCode
+  plugin now treats that configured checkout as the canonical Aegis source and
+  generates the OpenCode-visible skills tree from it; the host-visible skills
+  directory is still a compatibility view rather than a second editable owner,
+  and `config.skills.paths` remains only a fallback exposure layer
 
 **Observation Metric**
 - `bash tests/opencode/run-tests.sh --integration`
@@ -227,6 +232,12 @@ copied Aegis skill directories, and run the same discovery-root structural
 readback through `aegis-doctor.py`. This remains method-pack-side structural
 verification only; host restart/reload may still be required before the running
 host loads the refreshed content.
+
+When `~/.config/aegis/config.toml` declares `method_pack_root`, the shared
+updater now prefers that canonical root for new host registration defaults.
+Multiple registered hosts may therefore share one method-pack checkout while
+keeping different discovery roots, discovery shapes, reload hints, and
+host-managed adapter behaviors.
 
 When a host-scoped updater registration needs both transport and visibility
 semantics, keep them separate:

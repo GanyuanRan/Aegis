@@ -72,6 +72,11 @@ the installed Aegis method-pack root.
 Treat the install as complete only if the JSON reports `"ok": true`,
 `"workspaceSupport": "available"`, and `"configStatus": "configured"`.
 
+Across hosts, that local checkout should be treated as the canonical Aegis
+body. Any Antigravity-visible skill directories or plugin payloads should be
+treated as generated or host-managed views into the same `method_pack_root`,
+not as second editable copies.
+
 If Antigravity exposes a separate skill discovery directory in the current
 release you are using, also verify that directory:
 
@@ -176,6 +181,23 @@ python scripts/aegis-doctor.py --write-config --json
 
 Then refresh the Antigravity skill / plugin exposure using the host's current
 configuration UI or slash commands and restart / reload the surface.
+
+If you register Antigravity with the shared Aegis updater, prefer the same
+canonical method-pack root already recorded in `~/.config/aegis/config.toml` so
+Antigravity, Codex, OpenCode, and other hosts can share one Aegis body:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-update.py register \
+  --host antigravity-cli \
+  --sync-mode repo-only \
+  --reload-hint "restart or reload Antigravity CLI"
+python scripts/aegis-update.py update --host antigravity-cli --json
+```
+
+If the verified Antigravity release you use exposes a separate skill discovery
+directory, register that host-specific exposure shape instead of editing a
+second checkout.
 
 ## Official Antigravity References
 

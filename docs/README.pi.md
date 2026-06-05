@@ -60,6 +60,11 @@ If your Pi release uses a different package cache path, run `pi list` or check
 `~/.pi/agent/settings.json`, then use the resolved package checkout as
 `<aegis-method-pack-root>`.
 
+Across hosts, that resolved `<aegis-method-pack-root>` should be treated as the
+canonical Aegis body. Any copied skill directories under `~/.pi/agent/skills/`,
+`.pi/skills/`, or `~/.agents/skills/` are compatibility views, not second
+editable owners.
+
 For complete-install verification, run this from the installed Aegis method
 pack root:
 
@@ -179,6 +184,11 @@ python scripts/aegis-update.py update --host pi --json
 
 The equivalent one-line registration begins with
 `python scripts/aegis-update.py register --host pi`.
+
+When `~/.config/aegis/config.toml` already declares `method_pack_root`, the
+shared Aegis updater now prefers that canonical root for host registration by
+default. Align Pi package/cache installs with that root when you want Pi and
+other hosts to share one Aegis body.
 
 For copy-based installs, update the checkout and copy skills again:
 

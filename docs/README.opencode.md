@@ -24,6 +24,12 @@ OpenCode's global `~/.config/opencode/skills/` discovery path, and injects the b
 The plugin-backed path is the recommended complete install because it keeps the
 Aegis method-pack root available for project workspace support verification.
 
+When `~/.config/aegis/config.toml` already declares a `method_pack_root`, the
+OpenCode plugin treats that configured method-pack checkout as the canonical
+Aegis body and generates the OpenCode skills view from it. The OpenCode-facing
+`~/.config/opencode/skills/` tree is therefore a host compatibility view, not a
+second editable owner.
+
 Verify by asking: "Tell me about your aegis"
 
 Then run complete-install verification from the method-pack root:
@@ -190,6 +196,10 @@ Create project-specific skills in `.opencode/skills/` within your project.
 
 Aegis updates automatically when you restart OpenCode. The plugin is re-installed from the git repository on each launch.
 
+If the user-local Aegis config already points to a canonical `method_pack_root`,
+restart OpenCode after updating that checkout so the plugin can refresh the
+generated OpenCode skills view from the same source.
+
 To pin a specific version, use a branch or tag:
 
 ```json
@@ -204,6 +214,12 @@ The plugin does two things:
 
 1. **Injects compact bootstrap context** via the `experimental.chat.messages.transform` hook, adding aegis awareness to the first user message without repeating a system message every turn.
 2. **Mirrors aegis skills into OpenCode's native global skills path** (`~/.config/opencode/skills/`) so the host discovers them using its documented skill search rules.
+
+When `method_pack_root` is configured in `~/.config/aegis/config.toml`, that
+configured checkout becomes the canonical source for the mirrored skills view.
+Otherwise the plugin falls back to the bundled plugin checkout. In both cases,
+the OpenCode skills directory is a generated compatibility view rather than a
+second editable Aegis body.
 
 The plugin still appends that mirrored path to `config.skills.paths` as a compatibility fallback, but the canonical discovery chain is now the host's documented skills directory rather than an undocumented config-only contract.
 Fallback retention and retirement are tracked in `docs/current/AEGIS_KNOWN_LIMITATIONS.md`, not in this host guide.

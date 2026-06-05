@@ -202,6 +202,10 @@ compatibility exposure shapes are added for different hosts, they should be
 treated as generated compatibility views from the canonical method-pack root,
 not as a second editable skill source for Claude Code.
 
+Across hosts, prefer one canonical `method_pack_root` in the shared
+`~/.config/aegis/config.toml` and treat any Claude Code plugin cache or
+compatibility exposure as host-managed views into that same Aegis body.
+
 ## Updating
 
 Marketplace-installed plugins are copied into Claude Code's plugin cache.
