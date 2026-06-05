@@ -32,7 +32,6 @@ echo "=== Install Verification Policy Check ==="
 
 root_docs=(
     "README.md"
-    "README.zh-CN.md"
 )
 
 host_docs=(
@@ -58,13 +57,8 @@ for file in "${root_docs[@]}"; do
         "$file documents explicit host-scoped Aegis update trigger"
     assert_contains "$file" "cd <aegis-method-pack-root>" \
         "$file anchors doctor verification to the method-pack root"
-    if [[ "$file" == "README.zh-CN.md" ]]; then
-        assert_contains "$file" "cd <aegis-method-pack-root>.*aegis-doctor\\.py" \
-            "$file anchors doctor execution to the method-pack root"
-    else
-        assert_contains "$file" "target project directory" \
-            "$file warns not to run doctor from the target project directory"
-    fi
+    assert_contains "$file" "target project directory|目标项目目录" \
+        "$file warns not to run doctor from the target project directory"
     assert_contains "$file" '"workspaceSupport": "available"' \
         "$file names workspaceSupport install success field"
     assert_contains "$file" '"configStatus": "configured"' \

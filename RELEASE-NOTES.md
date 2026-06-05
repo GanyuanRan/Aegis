@@ -2389,4 +2389,4 @@ copied into this file so current Aegis releases are not mixed with legacy
 upstream implementation names, paths, commands, or install instructions.
 
 For lineage and attribution, see the relationship notes in `README.md` and
-`README.zh-CN.md`.
+`README.en.md`.
