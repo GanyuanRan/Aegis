@@ -7,7 +7,7 @@
     <a href="https://github.com/GanyuanRan/Aegis/actions/workflows/ci.yml" alt="CI">
         <img src="https://img.shields.io/github/actions/workflow/status/GanyuanRan/Aegis/ci.yml?branch=main&label=CI" /></a>
     <a href="https://github.com/GanyuanRan/Aegis/releases/latest" alt="Latest Release">
-        <img src="https://img.shields.io/github/v/release/GanyuanRan/Aegis?display_name=release&label=Latest%20Release" /></a>
+        <img src="https://badgen.net/github/release/GanyuanRan/Aegis?label=Latest%20Release" /></a>
 </p>
 
 <p align="center">
