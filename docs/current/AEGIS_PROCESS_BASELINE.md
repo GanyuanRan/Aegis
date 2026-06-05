@@ -775,7 +775,13 @@ A new `baseline/YYYY-MM-DD-<scope>-baseline.md` MUST be created when any of the 
 4. **Ownership map, contract inventory, or dependency direction convention has changed** — even if all 7 dimensions pass, if any of these three items changes, a new snapshot is required.
 5. **ADR Auto Backfill created, amended, or superseded a decision that changes current architecture state** — the baseline must either be updated or explicitly state why the existing baseline remains valid.
 
-Name the new snapshot by change date and use the 10-field template (see `brainstorming/SKILL.md` Initial Baseline Snapshot Template). Snapshots are evidence, not authority — BASELINE-GOVERNANCE.md remains the constitution.
+For the first baseline in an uninitialized project, use the dual-baseline
+bootstrap template from `brainstorming/SKILL.md` so the project starts with an
+explicit `Product / Requirement Baseline` and an explicit `Architecture /
+Runtime Boundary Baseline`, each with its own non-negotiables and non-goals.
+For later change-date snapshots, preserve that role separation and record the
+owner / contract / dependency truths that changed. Do not regress to a flat repo-inventory checklist. Snapshots are evidence, not authority -
+`BASELINE-GOVERNANCE.md` remains the constitution.
 
 Low-complexity tasks (no `work/`, no 7-dimension review) do not trigger snapshot updates.
 

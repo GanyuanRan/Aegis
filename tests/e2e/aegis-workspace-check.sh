@@ -49,6 +49,20 @@ pass "repository has no precreated docs/aegis workspace"
 "${PYTHON_CMD[@]}" "$HELPER" check --root "$TARGET_ROOT" >/dev/null
 pass "init creates a valid target-project workspace"
 
+if ! grep -q "## 1. Baseline Roles" "$TARGET_ROOT/docs/aegis/BASELINE-GOVERNANCE.md"; then
+    fail "init must write the dual-baseline governance template"
+fi
+if ! grep -q "Product / Requirement Baseline" "$TARGET_ROOT/docs/aegis/BASELINE-GOVERNANCE.md"; then
+    fail "governance template must name the product requirement baseline role"
+fi
+if ! grep -q "Architecture / Runtime Boundary Baseline" "$TARGET_ROOT/docs/aegis/BASELINE-GOVERNANCE.md"; then
+    fail "governance template must name the architecture runtime boundary baseline role"
+fi
+if ! grep -q "scope: requirements | architecture | both" "$TARGET_ROOT/docs/aegis/BASELINE-GOVERNANCE.md"; then
+    fail "governance template must include dual-baseline scope taxonomy"
+fi
+pass "init writes the dual-baseline governance template"
+
 SPEC_PATH="$TARGET_ROOT/docs/aegis/specs/2026-05-07-helper-design.md"
 mkdir -p "$(dirname "$SPEC_PATH")"
 printf '# Helper Design\n' > "$SPEC_PATH"

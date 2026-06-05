@@ -40,25 +40,44 @@ existing authority docs.
 
 BASELINE_GOVERNANCE_TEXT = """# Baseline Governance
 
-## 1. Architecture Defect
-A confirmed error, gap, or contradiction IN the baseline itself.
-- Fix baseline first, then align implementation to corrected baseline.
+## 1. Baseline Roles
+- Product / Requirement Baseline: problem, accepted behavior, success evidence,
+  non-goals, workflow constraints, and approved requirement/spec intent.
+- Architecture / Runtime Boundary Baseline: canonical owner, contract,
+  source-of-truth boundary, dependency direction, compatibility, runtime-ready
+  boundary, and retirement state.
+
+## 2. Design Defect
+A confirmed error, gap, contradiction, or wrong abstraction IN the relevant
+requirement, design, or baseline.
+- Fix the defective requirement/design/baseline first.
+- Then align implementation to the corrected baseline.
 - Do NOT patch implementation around a defective baseline.
 
-## 2. Architecture Drift
-Implementation has deviated from a confirmed, correct baseline.
-- Return to baseline via the simplest path.
+## 3. Implementation Drift
+Implementation, plan, review, or documentation has deviated from a confirmed,
+correct, unchanged requirement or architecture baseline.
+- Return to baseline via the simplest stable path.
 - Do NOT "update baseline to match drift" without explicit review.
 
-## 3. Baseline Check Protocol
-Before non-trivial changes:
-1. Read the latest baseline snapshot in `baseline/`
-2. Compare current code structure against ownership map
-3. Compare current contracts against contract inventory
-4. Check for new anti-patterns not recorded in known list
-5. Report: aligned / minor drift (self-correctable) / material drift (needs review)
+## 4. Compatibility Aliases
+- Architecture Defect = architecture-scoped Design Defect.
+- Architecture Drift = architecture-scoped Implementation Drift.
+- New findings should report Design Defect / Implementation Drift plus
+  `scope: requirements | architecture | both`.
 
-## 4. Architecture Review - 7 Dimensions
+## 5. Baseline Check Protocol
+Before non-trivial changes:
+1. Read the latest Product / Requirement Baseline candidate.
+2. Read the latest Architecture / Runtime Boundary Baseline candidate.
+3. Compare current work against requirement acceptance and architecture owner /
+   contract boundaries.
+4. Check for new anti-patterns not recorded in known list.
+5. Report: aligned / Design Defect / Implementation Drift /
+   missing-authority / needs-clarification, with
+   `scope: requirements | architecture | both`.
+
+## 6. Architecture Review - 7 Dimensions
 After each non-trivial change:
 1. **Ownership integrity** - every component has exactly one canonical owner
 2. **Module boundaries** - no unauthorized cross-module coupling
@@ -68,7 +87,7 @@ After each non-trivial change:
 6. **Retirement completeness** - old owners/fallbacks/paths removed or scheduled
 7. **Entropy flow** - net complexity decreased or stayed; no unjustified new entities
 
-## 5. Hard Boundaries
+## 7. Hard Boundaries
 - BASELINE-GOVERNANCE.md is the constitution for THIS project's Aegis workspace
 - Baseline snapshots in `baseline/` are evidence, not authority
 - ADRs in `adr/` record decisions; they do not replace baseline governance
@@ -77,14 +96,36 @@ After each non-trivial change:
 
 WORKSPACE_DIRS = ("adr", "baseline", "specs", "plans", "work")
 CORE_FILES = ("README.md", "INDEX.md", "BASELINE-GOVERNANCE.md")
-GOVERNANCE_REQUIRED_PHRASES = (
-    "## 1. Architecture Defect",
-    "## 2. Architecture Drift",
-    "## 3. Baseline Check Protocol",
-    "## 4. Architecture Review",
-    "## 5. Hard Boundaries",
-    "evidence, not authority",
-    "NEVER auto-updated",
+GOVERNANCE_TEMPLATE_PROFILES = (
+    (
+        "current-dual-baseline",
+        (
+            "## 1. Baseline Roles",
+            "Product / Requirement Baseline",
+            "Architecture / Runtime Boundary Baseline",
+            "## 2. Design Defect",
+            "## 3. Implementation Drift",
+            "## 4. Compatibility Aliases",
+            "scope: requirements | architecture | both",
+            "## 5. Baseline Check Protocol",
+            "## 6. Architecture Review",
+            "## 7. Hard Boundaries",
+            "evidence, not authority",
+            "NEVER auto-updated",
+        ),
+    ),
+    (
+        "legacy-architecture-only",
+        (
+            "## 1. Architecture Defect",
+            "## 2. Architecture Drift",
+            "## 3. Baseline Check Protocol",
+            "## 4. Architecture Review",
+            "## 5. Hard Boundaries",
+            "evidence, not authority",
+            "NEVER auto-updated",
+        ),
+    ),
 )
 ARTIFACT_SCHEMAS = {
     "TaskIntentDraft": (
@@ -794,9 +835,16 @@ def command_check(args: argparse.Namespace) -> int:
     governance_path = ws / "BASELINE-GOVERNANCE.md"
     if governance_path.exists():
         governance = governance_path.read_text(encoding="utf-8")
-        for phrase in GOVERNANCE_REQUIRED_PHRASES:
-            if phrase not in governance:
-                failures.append(f"BASELINE-GOVERNANCE.md missing phrase: {phrase}")
+        governance_matches = [
+            profile_name
+            for profile_name, phrases in GOVERNANCE_TEMPLATE_PROFILES
+            if all(phrase in governance for phrase in phrases)
+        ]
+        if not governance_matches:
+            current_phrases = GOVERNANCE_TEMPLATE_PROFILES[0][1]
+            for phrase in current_phrases:
+                if phrase not in governance:
+                    failures.append(f"BASELINE-GOVERNANCE.md missing phrase: {phrase}")
 
     index_path = ws / "INDEX.md"
     if index_path.exists() and ws.exists():

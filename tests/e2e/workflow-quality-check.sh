@@ -245,6 +245,8 @@ assert_contains "$process_doc" "Architecture Defect.*architecture-scoped.*Design
     "process baseline keeps architecture defect compatibility alias"
 assert_contains "$process_doc" "Architecture Drift.*architecture-scoped.*Implementation Drift|architecture-scoped.*Implementation Drift.*Architecture Drift" \
     "process baseline keeps architecture drift compatibility alias"
+assert_contains "$process_doc" "dual-baseline.*bootstrap template|Do not regress to a flat repo-inventory checklist" \
+    "process baseline distinguishes bootstrap baselines from flat repo inventory"
 assert_contains "$process_doc" "Aegis Reason Note" \
     "process baseline references natural Aegis reason note"
 assert_contains "$process_doc" "structured trace.*audit.*debug.*release.*long-task review.*user request|audit.*debug.*release.*long-task review.*user request.*structured trace" \
@@ -293,6 +295,14 @@ assert_contains "skills/brainstorming/SKILL.md" "Product / Requirement Baseline"
     "brainstorming template names product requirement baseline role"
 assert_contains "skills/brainstorming/SKILL.md" "Architecture / Runtime Boundary Baseline" \
     "brainstorming template names architecture runtime boundary baseline role"
+assert_contains "skills/brainstorming/SKILL.md" "initial dual-baseline snapshot|dual baselines" \
+    "brainstorming template frames the first baseline as dual-baseline bootstrap"
+assert_contains "skills/brainstorming/SKILL.md" "Non-negotiables" \
+    "brainstorming template requires non-negotiables in the initial baseline"
+assert_contains "skills/brainstorming/SKILL.md" "Product Non-goals" \
+    "brainstorming template requires product non-goals in the initial baseline"
+assert_contains "skills/brainstorming/SKILL.md" "Architecture Non-negotiables" \
+    "brainstorming template requires architecture non-negotiables in the initial baseline"
 assert_contains "skills/brainstorming/SKILL.md" "Design Defect" \
     "brainstorming template includes design defect"
 assert_contains "skills/brainstorming/SKILL.md" "Implementation Drift" \

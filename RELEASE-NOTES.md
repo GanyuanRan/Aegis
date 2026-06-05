@@ -1,5 +1,44 @@
 # Aegis Release Notes
 
+## v2.0.6 (2026-06-05)
+
+### Dual-Baseline Bootstrap For New Project Workspaces
+
+- Reframed the first `docs/aegis/baseline/YYYY-MM-DD-initial-baseline.md`
+  expectation from a flat repo inventory into a dual-baseline bootstrap that
+  explicitly separates `Product / Requirement Baseline` from
+  `Architecture / Runtime Boundary Baseline`.
+- Added an initial-baseline shape that requires current truth, non-negotiables,
+  non-goals, alignment use, and compatibility boundaries instead of leaving
+  early project baselines as generic structure snapshots.
+
+### Workspace Helper Governance Template Alignment
+
+- Updated `scripts/aegis-workspace.py init` so newly created
+  `BASELINE-GOVERNANCE.md` files start with dual-baseline roles,
+  `Design Defect` / `Implementation Drift`, and the shared
+  `scope: requirements | architecture | both` vocabulary.
+- Kept workspace `check` backward-compatible with existing legacy
+  architecture-only governance files so older target-project workspaces are not
+  broken by the template upgrade.
+
+### Current Baseline And Skill Template Synchronization
+
+- Updated the brainstorming skill's initial baseline template to make the first
+  project baseline a true dual-baseline bootstrap artifact rather than a
+  ten-field inventory checklist.
+- Updated `AEGIS_PROCESS_BASELINE.md` so it now distinguishes the first
+  bootstrap baseline from later change-date snapshots and explicitly forbids
+  regressing to a flat repo-inventory checklist.
+
+### Regression Coverage For Baseline Bootstrap Semantics
+
+- Extended workspace helper verification so `init` must now emit the
+  dual-baseline governance headings and scope taxonomy.
+- Extended workflow-quality checks so the initial-baseline template and process
+  baseline both keep the dual-baseline bootstrap language, non-negotiables, and
+  non-goal structure release-visible.
+
 ## v2.0.5 (2026-06-05)
 
 ### One Canonical Aegis Body Across Hosts
