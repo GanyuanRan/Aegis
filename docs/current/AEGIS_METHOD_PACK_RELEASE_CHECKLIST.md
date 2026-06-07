@@ -98,8 +98,9 @@ Confirm:
 - DeepSeek-TUI is still described as manual `SKILL.md` copy install, not a one-click GitHub installer for multi-skill repos
 - Trae is still described as manual `.trae/skills` / `~/.trae/skills` install, and the `.agents/skills/` optional capability is not written as the canonical chain
 - GitHub Copilot is still described through `.github/skills/`,
-  `.github/copilot-instructions.md`, and `AGENTS.md`, not as a repository-local
-  runtime authority or a host adapter owned by Aegis
+  `.github/copilot-instructions.md`, optional `.github/hooks/*.json`, and
+  `AGENTS.md`, not as a repository-local runtime authority or a host adapter
+  owned by Aegis
 - Qoder is still described through native `~/.qoder/skills/`, `.qoder/skills/`,
   `.qoder/rules/`, and `AGENTS.md` surfaces, not as a fresh live smoke closeout
 - Antigravity CLI, Antigravity IDE, and Antigravity App are described as

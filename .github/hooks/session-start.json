@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": "AEGIS_HOOK_JSON_STYLE=compact COPILOT_CLI=1 ./hooks/session-start",
+        "powershell": "$env:AEGIS_HOOK_JSON_STYLE='compact'; $env:COPILOT_CLI='1'; ./hooks/copilot-session-start.ps1",
+        "cwd": ".",
+        "timeoutSec": 30
+      }
+    ]
+  }
+}

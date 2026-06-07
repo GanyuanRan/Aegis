@@ -35,8 +35,8 @@ known_limits="docs/current/AEGIS_KNOWN_LIMITATIONS.md"
 prompt_hygiene="docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md"
 release_checklist="docs/current/AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md"
 current_readme="docs/current/README.md"
-root_readme="README.md"
-zh_readme="README.zh-CN.md"
+root_readme="README.en.md"
+zh_readme="README.md"
 copilot_guide="docs/README.copilot.md"
 qoder_guide="docs/README.qoder.md"
 install_check="tests/e2e/install-verification-policy-check.sh"
@@ -51,7 +51,7 @@ assert_contains "$matrix" "GitHub Copilot.*no current release-level fresh smoke 
     "compatibility matrix keeps GitHub Copilot out of fresh closeout"
 assert_contains "$matrix" "Qoder.*no current release-level fresh smoke verdict|Qoder.*no current fresh release verdict" \
     "compatibility matrix keeps Qoder out of fresh closeout"
-assert_contains "$matrix" "\\.github/skills|copilot-instructions\\.md|AGENTS\\.md" \
+assert_contains "$matrix" "\\.github/skills|copilot-instructions\\.md|\\.github/hooks|AGENTS\\.md" \
     "compatibility matrix records Copilot repository surfaces"
 assert_contains "$matrix" "~/.qoder/skills/|\\.qoder/skills/|\\.qoder/rules/|AGENTS\\.md" \
     "compatibility matrix records Qoder native surfaces"
@@ -105,10 +105,16 @@ fi
 
 assert_contains "$copilot_guide" "https://docs.github.com/.*/create-skills" \
     "Copilot guide cites official agent skills docs"
+assert_contains "$copilot_guide" "https://docs.github.com/.*/use-hooks" \
+    "Copilot guide cites official hooks docs"
+assert_contains "$copilot_guide" "https://docs.github.com/.*/hooks-reference" \
+    "Copilot guide cites hooks reference docs"
 assert_contains "$copilot_guide" "copilot-instructions\\.md" \
     "Copilot guide records repository instructions surface"
 assert_contains "$copilot_guide" "\\.github/skills/" \
     "Copilot guide documents repository skills path"
+assert_contains "$copilot_guide" "\\.github/hooks/\\*\\.json|\\.github/hooks/session-start\\.json" \
+    "Copilot guide documents repository hooks path"
 assert_contains "$copilot_guide" "AGENTS\\.md" \
     "Copilot guide records AGENTS guidance surface"
 assert_contains "$copilot_guide" "aegis-doctor\\.py --write-config --json" \
@@ -117,12 +123,24 @@ assert_contains "$copilot_guide" "Aegis goal:" \
     "Copilot guide documents portable goal entry"
 assert_contains "$copilot_guide" "AEGIS_ACTIVATION_MODE=explicit" \
     "Copilot guide documents explicit activation caveat"
-assert_contains "$copilot_guide" "does not override GitHub Copilot" \
+assert_contains "$copilot_guide" "does not override GitHub Copilot|controls only the optional Aegis bootstrap hook output" \
     "Copilot guide clarifies activation mode does not control native matcher"
 assert_contains "$copilot_guide" "GateDecision|completion authority" \
     "Copilot guide preserves authority boundary"
 assert_contains "$copilot_guide" "does \\*\\*not\\*\\* claim current release-level live smoke evidence|does not claim current release-level live smoke evidence" \
     "Copilot guide avoids live smoke claim"
+
+if [[ -f ".github/hooks/session-start.json" ]]; then
+    pass "Copilot repository hook config exists"
+else
+    fail "Copilot repository hook config exists"
+fi
+
+if [[ -f "hooks/copilot-session-start.ps1" ]]; then
+    pass "Copilot PowerShell hook wrapper exists"
+else
+    fail "Copilot PowerShell hook wrapper exists"
+fi
 
 assert_contains "$qoder_guide" "https://docs.qoder.com/extensions/subagent" \
     "Qoder guide cites official skills docs"

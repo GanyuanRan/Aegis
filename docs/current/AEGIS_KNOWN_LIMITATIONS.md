@@ -477,7 +477,8 @@ request.
 **Retention Reason**
 - GitHub Copilot documents repository-scoped agent skills under
   `.github/skills/`, repository custom instructions under
-  `.github/copilot-instructions.md`, and project guidance through `AGENTS.md`.
+  `.github/copilot-instructions.md`, repository hooks under
+  `.github/hooks/*.json`, and project guidance through `AGENTS.md`.
 - Those surfaces are enough for Aegis method-pack exposure, but current
   release-level live host smoke is still required before claiming host
   closeout.

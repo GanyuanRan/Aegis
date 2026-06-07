@@ -1,7 +1,8 @@
 # Aegis for GitHub Copilot
 
 Guide for using Aegis with GitHub Copilot through Copilot coding agent skills,
-repository instructions, and AGENTS-style project guidance.
+repository instructions, optional repository hooks, and AGENTS-style project
+guidance.
 
 This page only covers the GitHub Copilot host install path. For the current
 `Aegis Method Pack` authority order, release gate, host compatibility status,
@@ -19,6 +20,7 @@ Copilot guidance supports:
 
 - repository-scoped agent skills under `.github/skills/`
 - repository custom instructions under `.github/copilot-instructions.md`
+- repository hooks under `.github/hooks/*.json`
 - project guidance through `AGENTS.md`
 
 Aegis can reuse those surfaces without changing its method-pack boundary.
@@ -71,12 +73,46 @@ This exposes each Aegis skill directly at:
 Because the checkout remains at `~/.copilot/aegis`, project workspace support
 can be verified from that method-pack root.
 
+## Optional Repository Hook Bootstrap
+
+GitHub Copilot can also read repository hook files from:
+
+```text
+.github/hooks/*.json
+```
+
+This repository now ships a Copilot-native `sessionStart` hook config at:
+
+```text
+.github/hooks/session-start.json
+```
+
+It uses:
+
+- `bash` on macOS and Linux
+- `powershell` on Windows
+
+The hook reuses [hooks/session-start](/E:/Aegis/hooks/session-start:1) as the
+canonical bootstrap owner and forces compact single-line JSON output for
+Copilot's command-hook contract.
+
+If you want the same bootstrap in another repository, copy:
+
+- `.github/hooks/session-start.json`
+- `hooks/session-start`
+- `hooks/copilot-session-start.ps1`
+
+Keep the local Aegis checkout when you also need complete workspace support
+verification. The hook bootstrap is optional convenience, not the complete
+install boundary by itself.
+
 ## Repository Guidance Surfaces
 
 GitHub Copilot can also read:
 
 - `AGENTS.md`
 - `.github/copilot-instructions.md`
+- `.github/hooks/session-start.json`
 
 For Aegis, these files should reinforce routing and boundary discipline, not
 replace the skill bodies. Keep detailed workflow logic in `skills/`, and keep
@@ -94,6 +130,7 @@ Expected result:
 
 - Copilot can see Aegis skills under `.github/skills/`
 - Copilot can load the relevant skill on demand
+- Copilot can inject the compact Aegis bootstrap when `.github/hooks/session-start.json` is active
 - repository instructions can point back to `AGENTS.md` and Aegis guidance
 - Aegis remains method-pack discipline, not a full runtime platform or final
   completion authority
@@ -145,12 +182,13 @@ metadata.
 
 ## Activation Mode
 
-GitHub Copilot uses native repository skills and instructions. This repository
-does not currently ship a Copilot-specific bootstrap hook.
+GitHub Copilot uses native repository skills, instructions, and optional hooks.
 
-That means `AEGIS_ACTIVATION_MODE=explicit` does not override GitHub Copilot's
-own matcher by itself. For explicit use, ask Copilot to load an Aegis skill
-directly, or mention the relevant skill name in your request.
+If the repository hook bootstrap is enabled, `AEGIS_ACTIVATION_MODE=explicit`
+still disables the injected Aegis bootstrap by making the hook emit `{}`.
+Copilot's native skill matcher remains separate. For explicit use, ask Copilot
+to load an Aegis skill directly, or mention the relevant skill name in your
+request.
 
 You can still write the shared user-local Aegis config from the installed
 method-pack root:
@@ -168,7 +206,8 @@ python scripts/aegis-doctor.py activation-mode auto
 ```
 
 Restart the Copilot session after changing local Aegis config. For this host,
-the command does not override GitHub Copilot's native matcher.
+the command controls only the optional Aegis bootstrap hook output; it does not
+override GitHub Copilot's native matcher.
 
 ## Uninstalling
 
@@ -192,6 +231,20 @@ repository links are gone.
 4. Keep detailed workflow logic in the skill body instead of only in
    `.github/copilot-instructions.md`.
 
+### Session-start hook fails on Windows
+
+If a Copilot repository hook reports a PowerShell parse error around:
+
+```text
+"...run-hook.cmd" session-start
+```
+
+do not point Copilot at `hooks/run-hook.cmd`. That wrapper belongs to the
+Claude Code plugin hook contract, not Copilot's repository hook contract.
+
+Use `.github/hooks/session-start.json` instead. On Windows, Copilot expects a
+`powershell` hook entry or a PowerShell-safe command string.
+
 ### Project workspace support not verified
 
 If only the `.github/skills/` surface remains and the local checkout was
@@ -211,3 +264,5 @@ The JSON should include `"workspaceSupport": "available"` and
 
 - https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/create-skills
 - https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/add-custom-instructions/add-repository-instructions
+- https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/use-hooks
+- https://docs.github.com/en/copilot/reference/hooks-reference

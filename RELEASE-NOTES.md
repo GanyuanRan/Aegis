@@ -1,5 +1,38 @@
 # Aegis Release Notes
 
+## v2.0.7 (2026-06-07)
+
+### Copilot Native Session-Start Hook Compatibility
+
+- Added a repository-level GitHub Copilot `sessionStart` hook configuration at
+  `.github/hooks/session-start.json` instead of reusing the Claude Code plugin
+  `run-hook.cmd` command string in Copilot's Windows PowerShell execution path.
+- Added a Windows PowerShell wrapper at `hooks/copilot-session-start.ps1` so
+  Copilot can execute the Aegis bootstrap through the host's native
+  `powershell` hook contract while still reusing the canonical `hooks/session-start`
+  bootstrap owner.
+
+### Compact Hook JSON Output For Copilot
+
+- Extended `hooks/session-start` with a compact JSON output mode gated by
+  `AEGIS_HOOK_JSON_STYLE=compact`.
+- Kept existing Claude Code and Cursor hook output shapes intact while giving
+  Copilot's command-hook contract the single-line JSON it expects.
+
+### Copilot Host Docs And Boundary Baseline Alignment
+
+- Updated the GitHub Copilot host guide to document optional repository hooks,
+  the Windows PowerShell parse-error failure mode, and the correct
+  `.github/hooks/session-start.json` usage path.
+- Updated the current host compatibility snapshot, known limitations, and
+  release checklist so Copilot's structural support now explicitly includes
+  repository hooks without overstating fresh host closeout.
+
+### Regression Coverage For Copilot Hook Surfaces
+
+- Added targeted hook tests for compact JSON output and preserved Claude Code
+  nested output shape behavior.
+
 ## v2.0.6 (2026-06-05)
 
 ### Dual-Baseline Bootstrap For New Project Workspaces
