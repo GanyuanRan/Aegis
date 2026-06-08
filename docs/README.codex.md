@@ -56,6 +56,10 @@ cmd /c mklink /J "$env:USERPROFILE\.agents\skills\aegis" "$env:USERPROFILE\.code
 
 ## How It Works
 
+Do not assume the current repository checkout is the active runtime skill
+source. Codex normally loads Aegis through the installed method-pack root and
+its host-visible skill view.
+
 Codex has native skill discovery — it scans `~/.agents/skills/` at startup, parses SKILL.md frontmatter, and loads skills on demand. Aegis skills are made visible through a single symlink:
 
 ```

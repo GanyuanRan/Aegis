@@ -53,15 +53,19 @@ CMDBLOCK
 
 ```
 hooks/
-├── hooks.json           # Points to the .cmd wrapper
+.claude-plugin/
+└── plugin.json          # Declares the Claude hook contract
+hooks/
 ├── session-start.cmd    # Polyglot wrapper (cross-platform entry point)
 └── session-start.sh     # Actual hook logic (bash script)
 ```
 
-### hooks.json
+### `.claude-plugin/plugin.json`
 
 ```json
 {
+  "name": "my-plugin",
+  "description": "Plugin with a Windows-safe startup hook",
   "hooks": {
     "SessionStart": [
       {
@@ -79,6 +83,9 @@ hooks/
 ```
 
 Note: The path must be quoted because `${CLAUDE_PLUGIN_ROOT}` may contain spaces on Windows (e.g., `C:\Program Files\...`).
+Inlining the hook contract in `.claude-plugin/plugin.json` also keeps Claude-specific
+hook metadata out of the generic root `hooks/` surface, which helps other hosts avoid
+accidentally ingesting Claude-only hook commands.
 
 ## Requirements
 
@@ -154,9 +161,10 @@ shift
 "${SCRIPT_DIR}/${SCRIPT_NAME}" "$@"
 ```
 
-### hooks.json using the reusable wrapper
+### `.claude-plugin/plugin.json` using the reusable wrapper
 ```json
 {
+  "name": "my-plugin",
   "hooks": {
     "SessionStart": [
       {
@@ -196,7 +204,7 @@ Bash isn't running as a login shell. Ensure `-l` flag is used.
 `${CLAUDE_PLUGIN_ROOT}` expanded to a Windows path ending with backslash, then `/hooks/...` was appended. Use `cygpath` to convert the entire path.
 
 ### Script opens in text editor instead of running
-The hooks.json is pointing directly to the `.sh` file. Point to the `.cmd` wrapper instead.
+The hook contract is pointing directly to the `.sh` file. Point to the `.cmd` wrapper instead.
 
 ### Works in terminal but not as hook
 Claude Code may run hooks differently. Test by simulating the hook environment:

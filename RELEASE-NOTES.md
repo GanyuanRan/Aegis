@@ -1,5 +1,36 @@
 # Aegis Release Notes
 
+## v2.0.8 (2026-06-08)
+
+### Claude Code Hook Contract Ownership Alignment
+
+- Moved the Claude Code `SessionStart` hook contract into
+  `.claude-plugin/plugin.json` so the Claude-specific hook owner now lives with
+  the Claude plugin manifest instead of a generic root `hooks/` file.
+- Removed the obsolete `hooks/hooks.json` compatibility surface and kept
+  `hooks/run-hook.cmd` as the command wrapper Claude Code still invokes.
+
+### Windows Hook Documentation And Verification Sync
+
+- Updated `docs/windows/polyglot-hooks.md` so the Windows-safe hook guidance now
+  points to `.claude-plugin/plugin.json`, explains why the Claude hook contract
+  should stay out of the generic root `hooks/` surface, and preserves the
+  reusable `.cmd` wrapper pattern.
+- Updated `tests/e2e/claude-hook-permissions-check.sh` and the historical
+  release-note readback so Claude hook verification now inspects the current
+  manifest owner.
+
+### README Surface And Skill-Path Boundary Clarifications
+
+- Updated multiple release-facing end-to-end checks to match the current README
+  surface layout where `README.md` is the Chinese default surface and
+  `README.en.md` is the English companion.
+- Clarified in `CLAUDE.md`, `GEMINI.md`, `docs/README.codex.md`, and
+  `skills/writing-skills/SKILL.md` that repository `skills/` paths are the
+  canonical source layout while hosts may load installed or generated views at
+  runtime, and that bare supporting-file references inside a skill resolve
+  relative to that skill directory unless stated otherwise.
+
 ## v2.0.7 (2026-06-07)
 
 ### Copilot Native Session-Start Hook Compatibility
@@ -1847,7 +1878,7 @@ authoritative `GateDecision`, `PolicySnapshot`, or `completion authority`.
 - Added `tests/e2e/claude-hook-permissions-check.sh` to verify that
   `hooks/run-hook.cmd` and `hooks/session-start` are tracked as `100755`.
 - Added the Claude hook permission check to Layer 1 fast verification.
-- The check also parses `hooks/hooks.json` to confirm Claude Code SessionStart
+- The check also parses `.claude-plugin/plugin.json` to confirm Claude Code SessionStart
   still routes through `hooks/run-hook.cmd`.
 
 ### Verification

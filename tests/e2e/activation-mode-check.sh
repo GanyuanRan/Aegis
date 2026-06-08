@@ -206,11 +206,11 @@ assert_contains "docs/README.hermes-agent.md" "AEGIS_ACTIVATION_MODE=explicit" \
     "Hermes Agent guide documents explicit activation caveat"
 assert_contains "docs/README.hermes-agent.md" "does not override Hermes Agent" \
     "Hermes Agent guide clarifies activation mode does not control native matcher"
-assert_contains "README.md" 'aegis-doctor\.py activation-mode explicit' \
+assert_contains "README.en.md" 'aegis-doctor\.py activation-mode explicit' \
     "English README gives concise doctor activation command"
-assert_contains "README.zh-CN.md" 'aegis-doctor\.py activation-mode explicit' \
+assert_contains "README.md" 'aegis-doctor\.py activation-mode explicit' \
     "Chinese README gives concise doctor activation command"
-assert_contains "README.zh-CN.md" 'docs/current/AEGIS_ACTIVATION_MODE\.md' \
+assert_contains "README.md" 'docs/current/AEGIS_ACTIVATION_MODE\.md' \
     "Chinese README delegates detailed activation setup to canonical docs"
 assert_contains ".codex/INSTALL.md" 'aegis-doctor\.py activation-mode explicit' \
     "Codex install surface documents doctor activation command"

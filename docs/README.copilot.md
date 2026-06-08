@@ -208,6 +208,8 @@ python scripts/aegis-doctor.py activation-mode auto
 Restart the Copilot session after changing local Aegis config. For this host,
 the command controls only the optional Aegis bootstrap hook output; it does not
 override GitHub Copilot's native matcher.
+It does not override GitHub Copilot itself or turn Copilot's native repository
+matcher into an Aegis-owned routing decision.
 
 ## Uninstalling
 

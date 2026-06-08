@@ -55,8 +55,8 @@ current_index="docs/current/README.md"
 process_doc="docs/current/AEGIS_PROCESS_BASELINE.md"
 trigger_doc="docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md"
 tdd_mode_doc="docs/current/AEGIS_TDD_MODE.md"
-readme_en="README.md"
-readme_zh="README.zh-CN.md"
+readme_en="README.en.md"
+readme_zh="README.md"
 matrix="tests/e2e/fixtures/workflow-quality-matrix.json"
 
 if [[ -f "$baseline" ]]; then

@@ -90,6 +90,10 @@ For Claude Code installation and plugin behavior, also read:
 
 Each skill lives in `skills/<name>/SKILL.md` with YAML frontmatter:
 
+In this repository, `skills/<name>/SKILL.md` is the canonical source layout.
+At runtime, hosts may load installed or generated views rather than the current
+checkout.
+
 ```yaml
 ---
 name: skill-name-with-hyphens
