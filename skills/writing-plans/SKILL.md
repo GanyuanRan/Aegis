@@ -108,7 +108,18 @@ Use a compact `Plan-Time Complexity Check` before writing task steps when the
 plan changes maintained source files, core owners, handlers, routers, managers,
 shared utilities, adapters, or fallback paths:
 
+Use `using-aegis/references/complexity-governance.md` for the shared artifact
+classes, pressure signals, and over-budget handling rules.
+
 ```text
+Complexity Budget:
+- Artifact class:
+- Target files / artifacts:
+- Current pressure:
+- Projected post-change pressure:
+- Budget result: within-budget | at-risk | over-budget
+- Planned governance:
+
 Plan-Time Complexity Check:
 - Target files:
 - Existing size / shape signals:
@@ -118,10 +129,10 @@ Plan-Time Complexity Check:
 - Recommendation: edit-in-place | extract helper | add owner file | split task | defer refactor
 ```
 
-Signals: 800+ line files, 80+ line blocks, deep nesting, mixed reasons to
-change, owner mismatch, or new branches/fallbacks/adapters. Advisory only. If
-the best answer is a new file, define its owner and contract; do not merely move
-complexity sideways.
+If the projected budget result is `over-budget`, do not write an atomic task
+that silently assumes add-in-place growth. Revise the task boundary, add
+governance work, or explicitly mark the slice as requiring follow-up before
+implementation begins.
 
 If the spec covers multiple independent subsystems, suggest breaking into
 separate plans. Before writing tasks, check: fact/assumption/unknown, baseline

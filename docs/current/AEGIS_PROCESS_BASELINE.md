@@ -103,62 +103,31 @@ Root improvement rule:
 Aegis uses advisory three-stage complexity governance to catch entropy growth
 before planning, before editing, and before completion.
 
-This is workflow discipline, not a universal failure gate and not completion
-authority. Do not force it onto tiny low-risk wording edits, tests-only changes,
-generated files, vendored files, lockfiles, or purely mechanical formatting.
+`docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md` is the canonical current
+owner for artifact classes, pressure signals, budget/closure shapes, and the
+rule that unresolved complexity overrun blocks an Aegis completion claim.
+
+This process baseline keeps the workflow-stage responsibilities:
 
 1. **Plan-Time Complexity Check**: `brainstorming` and `writing-plans` inspect
-   likely owner files and choose edit-in-place, extract helper, add owner file,
-   split task, or defer refactor.
+   likely owner files and artifacts, estimate post-change pressure, and choose
+   edit-in-place, extract helper, add owner file, split task, defer refactor,
+   or revise the plan before code is written.
 2. **Pre-Edit Complexity Check**: `test-driven-development`,
    `systematic-debugging`, and `executing-plans` re-check the actual edit file
-   and pause for a plan update if the safest boundary differs from the plan.
-3. **Complexity Delta + Complexity Governance Suggestion**:
-   `verification-before-completion` compares the final diff and reports any
-   suggested follow-up.
+   or artifact and pause for a plan update if the safest boundary differs from
+   the plan.
+3. **Complexity Delta + Complexity Governance Suggestion +
+   Complexity Closure**: `verification-before-completion` compares the final
+   diff against the planned budget, reports actual entropy movement, and states
+   whether the slice is `within-budget`, `exceeded-and-governed`, or
+   `exceeded-unresolved`.
 
 Complexity Delta remains the post-change guardrail for detecting entropy growth
-before a task is claimed complete. It complements plan-time complexity budgeting:
-plans may predict the intended file and responsibility shape, but
-completion-time review must compare the actual diff against the final code
-shape.
-
-For non-trivial code changes, `verification-before-completion` should report a
-compact Complexity Delta before the final completion claim:
-
-```text
-Complexity Delta:
-- Files over 800 lines:
-- Files newly crossing 800 lines:
-- Largest touched file delta:
-- Largest touched function/block:
-- New branches/fallbacks/adapters:
-- Retired branches/fallbacks/adapters:
-- Net entropy: decreased | stable | increased-with-justification
-- Required follow-up:
-```
-
-The 800-line threshold is a review signal, not a universal failure gate.
-Generated files, vendored files, fixtures, lockfiles, and framework-owned
-artifacts may be exempt when the reason is explicit. For normal source files,
-new work that pushes a file past 800 lines or continues adding logic to an
-already oversized file must either justify the owner boundary or report a split
-/ refactor follow-up.
-
-Function, method, component, or similarly cohesive block growth should be
-treated as the same entropy class. A touched block over roughly 80 lines, deeply
-nested logic, or a block that combines multiple reasons to change should be
-reported as a Complexity Delta risk even when the containing file is below 800
-lines.
-
-When the diff adds fallback, adapter, compatibility, guard, or branch logic, the
-Complexity Delta must be read together with Retirement Closure. Net new paths
-without deleted or scheduled old paths count as entropy increase and must be
-explained in `Risk/Unknown`.
-
-A new file is not automatically lower complexity. Creating or splitting a file
-is only a better recommendation when the owner, contract, call path, and
-retirement story are clearer than adding in place.
+before a task is claimed complete. It complements plan-time complexity
+budgeting: plans may predict the intended file and responsibility shape, but
+completion-time review must compare the actual diff against the final code or
+artifact shape.
 
 ### 3.0c TDD Mode
 
@@ -287,6 +256,9 @@ parent plan when durable planning artifacts are needed. Tiny execution slices
 that do not change the durable boundary should use the Planless Slice Lane:
 record a Slice Card, update checkpoint/evidence/drift state, and continue from
 the parent plan.
+
+This is also artifact complexity governance: excessive plan, spec, or work-log
+fan-out is itself a complexity regression even when no source file grew.
 
 Escalate back to a durable spec or plan only when the slice introduces a new
 owner, contract, schema, public API, architecture boundary, migration,

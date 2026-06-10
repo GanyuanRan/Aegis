@@ -1,5 +1,47 @@
 # Aegis Release Notes
 
+## v2.1.0 (2026-06-11)
+
+### Artifact-Wide Complexity Governance
+
+- Added `docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md` as the canonical
+  current owner for complexity governance across maintained source, maintained
+  test source, plan / decision artifacts, and process artifacts.
+- Extended workflow contracts so planning and execution stages now carry
+  `Complexity Budget`, and completion carries `Complexity Closure` plus
+  `Major Complexity Alert`.
+- Tightened the completion rule so `exceeded-unresolved` complexity overrun
+  blocks an Aegis completion claim instead of being hidden inside a generic
+  residual-risk note.
+
+### Workflow Quality And Fixture Alignment
+
+- Updated workflow-quality baselines, skill contracts, matrix fixtures, and
+  validation helpers so maintained oversized test files and plan/process
+  artifact sprawl are treated as first-class complexity signals.
+- Added representative workflow-quality samples for oversized maintained test
+  file governance and plan-artifact fan-out, keeping the forcing function
+  visible in release-facing checks.
+
+### Copilot Hook Hardening And Cross-Host Warning Hygiene
+
+- Hardened the Copilot PowerShell session-start wrapper so Windows environments
+  without `bash` still emit a valid compact `additionalContext` bootstrap
+  instead of silently returning `{}`.
+- Kept the fallback bounded to a minimal bootstrap path rather than cloning the
+  full shared bash hook owner.
+- Reworded the legacy custom-skills warning in `hooks/session-start` so it now
+  points users to the current host's supported skills surface instead of
+  assuming a Claude-only migration path.
+
+### Claude Hook Contract Surface Realignment
+
+- Restored `hooks/hooks.json` as the current Claude Code hook contract surface
+  and synchronized the Windows hook guidance and permission check with that
+  owner.
+- Kept `hooks/run-hook.cmd` as the Windows-safe command wrapper Claude Code
+  still invokes for `SessionStart`.
+
 ## v2.0.8 (2026-06-08)
 
 ### Claude Code Hook Contract Ownership Alignment
@@ -1878,7 +1920,7 @@ authoritative `GateDecision`, `PolicySnapshot`, or `completion authority`.
 - Added `tests/e2e/claude-hook-permissions-check.sh` to verify that
   `hooks/run-hook.cmd` and `hooks/session-start` are tracked as `100755`.
 - Added the Claude hook permission check to Layer 1 fast verification.
-- The check also parses `.claude-plugin/plugin.json` to confirm Claude Code SessionStart
+- The check also parses `hooks/hooks.json` to confirm Claude Code SessionStart
   still routes through `hooks/run-hook.cmd`.
 
 ### Verification

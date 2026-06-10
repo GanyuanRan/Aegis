@@ -90,16 +90,22 @@ medium/high work, inspect the likely owner files and current shape. This is an
 advisory design pressure check, not a gate and not completion authority. Do not
 force it onto tiny low-risk edits.
 
+Use `using-aegis/references/complexity-governance.md` for the shared artifact
+classes, pressure-signal interpretation, and over-budget handling.
+
 ```text
+Complexity Budget:
+- Artifact class:
+- Target files / artifacts:
+- Current pressure:
+- Projected post-change pressure:
+- Budget result: within-budget | at-risk | over-budget
+- Planned governance:
+
 Plan-Time Complexity Check:
 - Better file boundary:
 - Recommendation: edit-in-place | extract helper | add owner file | split task | defer refactor
 ```
-
-Pressure signals: 800+ line source file, 80+ line block, router/manager/handler
-or generic utility receiving a new responsibility, fallback/adapter/guard
-growth, duplicate owner risk, or owner mismatch. A new file still needs a clear
-owner, contract, and retirement story.
 
 **Exploring approaches:** Propose 2-3 approaches with trade-offs and
 recommendation. Make scope boundary explicit: what's in, what's deferred, what

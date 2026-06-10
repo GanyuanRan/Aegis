@@ -53,19 +53,15 @@ CMDBLOCK
 
 ```
 hooks/
-.claude-plugin/
-└── plugin.json          # Declares the Claude hook contract
-hooks/
+├── hooks.json           # Declares the Claude hook contract
 ├── session-start.cmd    # Polyglot wrapper (cross-platform entry point)
 └── session-start.sh     # Actual hook logic (bash script)
 ```
 
-### `.claude-plugin/plugin.json`
+### `hooks/hooks.json`
 
 ```json
 {
-  "name": "my-plugin",
-  "description": "Plugin with a Windows-safe startup hook",
   "hooks": {
     "SessionStart": [
       {
@@ -83,9 +79,6 @@ hooks/
 ```
 
 Note: The path must be quoted because `${CLAUDE_PLUGIN_ROOT}` may contain spaces on Windows (e.g., `C:\Program Files\...`).
-Inlining the hook contract in `.claude-plugin/plugin.json` also keeps Claude-specific
-hook metadata out of the generic root `hooks/` surface, which helps other hosts avoid
-accidentally ingesting Claude-only hook commands.
 
 ## Requirements
 
@@ -161,10 +154,9 @@ shift
 "${SCRIPT_DIR}/${SCRIPT_NAME}" "$@"
 ```
 
-### `.claude-plugin/plugin.json` using the reusable wrapper
+### `hooks/hooks.json` using the reusable wrapper
 ```json
 {
-  "name": "my-plugin",
   "hooks": {
     "SessionStart": [
       {

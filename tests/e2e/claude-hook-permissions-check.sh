@@ -39,7 +39,7 @@ command="$(
 import json
 from pathlib import Path
 
-data = json.loads(Path(".claude-plugin/plugin.json").read_text(encoding="utf-8"))
+data = json.loads(Path("hooks/hooks.json").read_text(encoding="utf-8"))
 print(data["hooks"]["SessionStart"][0]["hooks"][0]["command"])
 PY
 )"

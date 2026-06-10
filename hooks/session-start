@@ -71,7 +71,7 @@ fi
 warning_message=""
 legacy_skills_dir="${HOME}/.config/aegis/skills"
 if [ -d "$legacy_skills_dir" ]; then
-    warning_message="\n\n<important-reminder>IN YOUR FIRST REPLY AFTER SEEING THIS MESSAGE YOU MUST TELL THE USER:⚠️ **WARNING:** Aegis now uses Claude Code's skills system. Custom skills in ~/.config/aegis/skills will not be read. Move custom skills to ~/.claude/skills instead. To make this message go away, remove ~/.config/aegis/skills</important-reminder>"
+    warning_message="\n\n<important-reminder>IN YOUR FIRST REPLY AFTER SEEING THIS MESSAGE YOU MUST TELL THE USER:⚠️ **WARNING:** Aegis no longer reads custom skills from ~/.config/aegis/skills. Move them to the current host's supported skills surface (for example ~/.claude/skills, ~/.copilot/skills, ~/.agents/skills, or repository .github/skills as appropriate). To make this message go away, remove ~/.config/aegis/skills</important-reminder>"
 fi
 
 # Read compact using-aegis hot path

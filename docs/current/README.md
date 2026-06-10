@@ -54,6 +54,7 @@ The public current set is:
 - `docs/current/AEGIS_TARGET_STATE.md`
 - `docs/current/AEGIS_PRODUCT_BASELINE.md`
 - `docs/current/AEGIS_PROCESS_BASELINE.md`
+- `docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md`
 - `docs/current/AEGIS_WORKFLOW_GUIDE.md`
 - `docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md`
 - `docs/current/AEGIS_ACTIVATION_MODE.md`
@@ -82,6 +83,10 @@ The public current set is:
 `AEGIS_PROCESS_BASELINE.md`
 : Method-layer workflow baseline, evidence discipline, and shared method
   terminology such as `Design Defect` / `Implementation Drift`.
+
+`AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md`
+: Shared current baseline for complexity governance across source, test,
+  plan/decision, and process artifacts.
 
 `AEGIS_WORKFLOW_GUIDE.md`
 : English workflow guide for users and contributors. It explains the current

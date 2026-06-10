@@ -157,13 +157,22 @@ Pass criteria:
 Complexity governance should help agents choose safer boundaries before code is
 written, then report what actually happened after the diff exists.
 
+`docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md` is the canonical current
+owner for artifact classes, pressure signals, budget/closure shapes, and major
+complexity follow-up semantics.
+
 Pass criteria:
 
 - plan-time checks appear in `brainstorming` and `writing-plans`
 - pre-edit checks appear in implementation workflows before risky source edits
-- completion keeps `Complexity Delta` and adds a useful governance suggestion
+- completion keeps `Complexity Delta`, `Complexity Closure`, and adds a useful
+  governance suggestion
 - checks stay advisory, cheap for low-risk work, and do not treat new files as
   automatically better
+- maintained test source files are governed like maintained source code, not as
+  blanket low-risk exceptions
+- plan/spec/baseline/ADR/work-record artifacts use artifact-aware complexity
+  checks instead of source-code-only heuristics
 
 ### 3.10 Completion-Time Complexity Delta
 
@@ -176,6 +185,9 @@ Pass criteria:
   results
 - maintained source files over 800 lines, newly crossing 800 lines, or receiving
   new logic while already oversized are reported as review signals
+- maintained test source files over 800 lines, newly crossing 800 lines, or
+  receiving new logic while already oversized are reported as the same review
+  signal class
 - touched functions, methods, components, or cohesive blocks over roughly 80
   lines, deeply nested logic, or mixed reasons to change are reported as
   block-level complexity signals
@@ -185,6 +197,10 @@ Pass criteria:
   reported as residual risk
 - complexity movement is paired with a governance suggestion when follow-up is
   useful
+- completion distinguishes `within-budget`, `exceeded-and-governed`, and
+  `exceeded-unresolved`
+- if the result is `exceeded-unresolved`, Aegis does not claim the task is
+  complete
 
 ### 3.11 TDD Route Mode
 
@@ -230,6 +246,8 @@ Pass criteria:
   owner, contract, schema, public API, architecture boundary, persistence or
   migration surface, security/permission risk, distribution/release surface, or
   unclear verification boundary
+- artifact fan-out itself is treated as a complexity signal for plan and process
+  artifacts, not just a documentation style preference
 
 ### 3.13 Diagnostic Stop Transparency
 
@@ -442,6 +460,7 @@ ImpactStatementDraft: affected layers, owners, invariants, non-goals
 Product Risk Lens: value, non-goals, trade-offs, decision-needed
 Architecture Integrity Lens: invariant, owner/contract, overlap, higher-level path, retirement/falsifier, verdict
 Baseline Role Alignment: Product / Requirement Baseline, Architecture / Runtime Boundary Baseline, Design Defect / Implementation Drift, scope
+Complexity Budget: artifact class, current pressure, projected post-change pressure, planned governance
 Plan-Time Complexity Check: target files, shape signals, owner fit, recommendation
 Options: 2-3 choices with trade-offs and recommendation
 Decision Needed: approve brief/design, revise, or defer
@@ -500,6 +519,7 @@ Files: owners and edit boundaries
 Compatibility: invariants and non-goals
 Architecture Integrity Lens: invariant, owner/contract, overlap, higher-level path, retirement/falsifier, verdict
 Plan Pressure Test: owner / contract / retirement risk and verification scope
+Complexity Budget: artifact class, current pressure, projected post-change pressure, planned governance
 Plan-Time Complexity Check: target files, add-in-place risk, better boundary, recommendation
 Tasks: bite-sized steps with verification
 Risks: residual unknowns and rollback surface
@@ -544,6 +564,7 @@ Compact contract:
 ```text
 TDD Route: mode, decision, reason, verification
 Preflight Gate: low | route-to-plan | route-to-spec
+Complexity Budget: artifact class, current pressure, projected post-change pressure, planned governance
 Pre-Edit Complexity Check: target edit file, pressure signal, safer boundary, decision
 RED: failing test or reason strict TDD does not fit
 GREEN: minimal code and passing target test
@@ -603,6 +624,8 @@ Natural Aegis closeout: Aegis stays explicitly visible in non-trivial closeout
 when it materially shaped the task, and is naturally tied to the boundary,
 evidence discipline, or residual risk it influenced; structured trace only for
 audit/debug/release/long-task review or user request
+Complexity Closure: planned budget vs actual result, governed now, deferred follow-up, completion impact
+Major Complexity Alert: materially oversized maintained artifact that needs explicit user-visible follow-up
 ```
 
 Localize completion card labels and explanatory prose to the user's language.
@@ -632,6 +655,11 @@ Baseline Alignment:
 requirement and architecture baselines, or should be reported as Design Defect /
 Implementation Drift. It is separate from ADR Backfill and does not grant
 completion authority.
+
+Use `docs/current/AEGIS_PROCESS_BASELINE.md` §3.0e and §16 for the canonical
+meaning of `Product / Requirement Baseline`, `Architecture / Runtime Boundary
+Baseline`, `Design Defect`, `Implementation Drift`, and their compatibility
+aliases.
 
 When project instructions specifically require architecture reporting or
 completed medium/high work touched durable architecture surfaces, the
@@ -671,6 +699,10 @@ Do not force ADR ceremony onto simple wording edits, ordinary README cleanup,
 routine release-note edits, low-risk single-file changes, tests-only coverage
 improvements, or bug fixes that only restore the existing baseline.
 
+Use `docs/current/AEGIS_ADR_AUTO_BACKFILL.md` for canonical trigger criteria,
+durable-surface interpretation, create/amend/supersede/skip selection, and
+baseline-sync rules.
+
 When the suggested ADR action is create, amend, or supersede, or when baseline
 sync is needed or unknown, use `recording-architecture-decisions` for the ADR
 lifecycle and Baseline Sync Closure before the final completion claim.
@@ -699,30 +731,9 @@ Non-goals respected: yes | no | unknown
 Goal Closure is advisory and evidence-focused. It does not grant completion
 authority or decide final evidence sufficiency.
 
-For non-trivial code changes, include a compact `Complexity Delta` before the
-final completion claim:
-
-```text
-Complexity Delta:
-- Files over 800 lines:
-- Files newly crossing 800 lines:
-- Largest touched file delta:
-- Largest touched function/block:
-- New branches/fallbacks/adapters:
-- Retired branches/fallbacks/adapters:
-- Net entropy: decreased | stable | increased-with-justification
-- Required follow-up:
-```
-
-When useful, add `Complexity Governance Suggestion`:
-
-```text
-Complexity Governance Suggestion:
-- Recommendation: none | monitor | schedule-refactor | extract helper | split owner | open follow-up
-- Why:
-- Suggested scope:
-- Timing:
-```
+For the shared `Complexity Delta`, `Complexity Closure`, and
+`Major Complexity Alert` shapes, see
+`docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md`.
 
 For governance, compatibility, cleanup, or retirement work that adds, replaces,
 or retains old logic, include `Retirement Closure`:

@@ -52,6 +52,7 @@ echo "=== Workflow Quality Check ==="
 
 baseline="docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md"
 current_index="docs/current/README.md"
+complexity_baseline="docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md"
 process_doc="docs/current/AEGIS_PROCESS_BASELINE.md"
 trigger_doc="docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md"
 tdd_mode_doc="docs/current/AEGIS_TDD_MODE.md"
@@ -73,8 +74,15 @@ fi
 
 assert_contains "$current_index" "AEGIS_WORKFLOW_QUALITY_BASELINE.md" \
     "current docs index lists workflow quality baseline"
+assert_contains "$current_index" "AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md" \
+    "current docs index lists complexity governance baseline"
 assert_contains "$current_index" "AEGIS_TDD_MODE.md" \
     "current docs index lists TDD mode baseline"
+if [[ -f "$complexity_baseline" ]]; then
+    pass "complexity governance baseline exists"
+else
+    fail "complexity governance baseline exists"
+fi
 if [[ -f "$tdd_mode_doc" ]]; then
     pass "TDD mode baseline exists"
 else
@@ -92,18 +100,16 @@ assert_contains "$process_doc" "Pre-Edit Complexity Check" \
     "process baseline defines pre-edit complexity check"
 assert_contains "$process_doc" "Complexity Governance Suggestion" \
     "process baseline defines post-change complexity governance suggestion"
-assert_contains "$process_doc" "Files newly crossing 800 lines" \
-    "process baseline defines file threshold complexity signal"
-assert_contains "$process_doc" "Largest touched function/block" \
-    "process baseline defines block-level complexity signal"
-assert_contains "$process_doc" "Retired branches/fallbacks/adapters" \
-    "process baseline ties complexity delta to retirement"
+assert_contains "$process_doc" "AEGIS_COMPLEXITY_GOVERNANCE_BASELINE" \
+    "process baseline points to complexity governance baseline"
 assert_contains "$trigger_doc" "workflow-quality" \
     "trigger health references workflow-quality samples"
 assert_contains "$readme_en" "Workflow Quality" \
     "English README mentions workflow quality"
 assert_contains "$readme_zh" "Workflow Quality" \
     "Chinese README mentions workflow quality"
+assert_contains "$readme_zh" "AEGIS_COMPLEXITY_GOVERNANCE_BASELINE" \
+    "Chinese README mentions complexity governance baseline"
 
 for dimension in \
     "Trigger Accuracy" \
@@ -152,10 +158,8 @@ assert_contains "$baseline" "Pre-Edit Complexity Check" \
     "workflow quality baseline includes pre-edit complexity check"
 assert_contains "$baseline" "Complexity Governance Suggestion" \
     "workflow quality baseline includes complexity governance suggestion"
-assert_contains "$baseline" "Files newly crossing 800 lines" \
-    "workflow quality baseline includes file threshold complexity signal"
-assert_contains "$baseline" "Largest touched function/block" \
-    "workflow quality baseline includes block-level complexity signal"
+assert_contains "$baseline" "AEGIS_COMPLEXITY_GOVERNANCE_BASELINE" \
+    "workflow quality baseline points to complexity governance baseline"
 assert_contains "$baseline" "Retirement Closure" \
     "workflow quality baseline includes retirement closure"
 assert_contains "$baseline" "Anti-Entropy Declaration" \
@@ -245,6 +249,20 @@ assert_contains "$process_doc" "Architecture Defect.*architecture-scoped.*Design
     "process baseline keeps architecture defect compatibility alias"
 assert_contains "$process_doc" "Architecture Drift.*architecture-scoped.*Implementation Drift|architecture-scoped.*Implementation Drift.*Architecture Drift" \
     "process baseline keeps architecture drift compatibility alias"
+assert_contains "$complexity_baseline" "Complexity Budget" \
+    "complexity baseline defines complexity budget"
+assert_contains "$complexity_baseline" "Complexity Closure" \
+    "complexity baseline defines complexity closure"
+assert_contains "$complexity_baseline" "Major Complexity Alert" \
+    "complexity baseline defines major complexity alert"
+assert_contains "$complexity_baseline" "Files newly crossing 800 lines" \
+    "complexity baseline defines file threshold complexity signal"
+assert_contains "$complexity_baseline" "Largest touched function/block" \
+    "complexity baseline defines block-level complexity signal"
+assert_contains "$complexity_baseline" "maintained test source file" \
+    "complexity baseline governs maintained test source files"
+assert_contains "$complexity_baseline" "Retired branches/fallbacks/adapters" \
+    "complexity baseline ties complexity delta to retirement"
 assert_contains "$process_doc" "dual-baseline.*bootstrap template|Do not regress to a flat repo-inventory checklist" \
     "process baseline distinguishes bootstrap baselines from flat repo inventory"
 assert_contains "$process_doc" "Aegis Reason Note" \
@@ -287,6 +305,8 @@ assert_contains "skills/brainstorming/SKILL.md" "Product Risk Lens" \
     "brainstorming includes product risk lens"
 assert_contains "skills/brainstorming/SKILL.md" "Plan-Time Complexity Check" \
     "brainstorming includes plan-time complexity check"
+assert_contains "skills/brainstorming/SKILL.md" "Complexity Budget" \
+    "brainstorming includes complexity budget"
 assert_contains "skills/brainstorming/SKILL.md" "Architecture Integrity Lens" \
     "brainstorming includes architecture integrity lens"
 assert_contains "skills/brainstorming/SKILL.md" "Baseline Role Alignment" \
@@ -323,6 +343,8 @@ assert_contains "skills/writing-plans/SKILL.md" "Plan Pressure Test" \
     "writing-plans includes plan pressure test"
 assert_contains "skills/writing-plans/SKILL.md" "Plan-Time Complexity Check" \
     "writing-plans includes plan-time complexity check"
+assert_contains "skills/writing-plans/SKILL.md" "Complexity Budget" \
+    "writing-plans includes complexity budget"
 assert_contains "skills/writing-plans/SKILL.md" "owner / contract / retirement" \
     "writing-plans pressure-tests owner contract retirement risk"
 assert_contains "skills/writing-plans/SKILL.md" "Architecture Integrity Lens" \
@@ -341,6 +363,8 @@ assert_contains "skills/first-principles-review/SKILL.md" "Higher-level simplifi
     "first-principles review checks higher-level simplification"
 assert_contains "skills/test-driven-development/SKILL.md" "Pre-Edit Complexity Check" \
     "test-driven-development includes pre-edit complexity check"
+assert_contains "skills/test-driven-development/SKILL.md" "Complexity Budget" \
+    "test-driven-development includes complexity budget"
 assert_contains "skills/test-driven-development/SKILL.md" "TDD Mode" \
     "test-driven-development includes TDD mode"
 assert_contains "skills/test-driven-development/SKILL.md" "TDD Route" \
@@ -431,8 +455,12 @@ assert_contains "skills/verification-before-completion/SKILL.md" "recording-arch
     "verification skill routes ADR lifecycle closure to the dedicated skill when needed"
 assert_contains "skills/verification-before-completion/SKILL.md" "Complexity Delta" \
     "verification skill defines complexity delta check"
+assert_contains "skills/verification-before-completion/SKILL.md" "Complexity Closure" \
+    "verification skill defines complexity closure"
 assert_contains "skills/verification-before-completion/SKILL.md" "Complexity Governance Suggestion" \
     "verification skill defines complexity governance suggestion"
+assert_contains "skills/verification-before-completion/SKILL.md" "Major Complexity Alert" \
+    "verification skill defines major complexity alert"
 assert_contains "skills/verification-before-completion/SKILL.md" "Files newly crossing 800 lines" \
     "verification skill checks file threshold crossings"
 assert_contains "skills/verification-before-completion/SKILL.md" "Largest touched function/block" \
@@ -463,6 +491,8 @@ assert_contains "skills/long-task-continuation/SKILL.md" "Minimal Reporting Shap
     "long-task continuation keeps minimal reporting shape"
 assert_contains "skills/executing-plans/SKILL.md" "Pre-Edit Complexity Check" \
     "executing-plans re-checks complexity before source edits"
+assert_contains "skills/executing-plans/SKILL.md" "Complexity Budget" \
+    "executing-plans re-checks complexity budget before source edits"
 assert_contains "skills/brainstorming/SKILL.md" "ADR signals" \
     "brainstorming marks ADR signals without creating accepted memory"
 assert_contains "skills/brainstorming/SKILL.md" "unexecuted ideas" \
