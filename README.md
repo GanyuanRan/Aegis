@@ -159,6 +159,7 @@ Aegis 在实施前按复杂度路由：
 
 - [工作流程说明](docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md)
 - [工作流质量基线](docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md)
+- [复杂度治理基线](docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md)
 - [Runtime-ready 边界](docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md)
 - [Artifact schema baseline](docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md)
 

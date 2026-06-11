@@ -77,6 +77,22 @@ planning. Only proceed directly with TDD for low-complexity work whose intent,
 owner, compatibility boundary, verification path, and slice goal / success
 evidence are already clear.
 
+## Complexity Budget
+
+Before strict TDD on non-trivial work, record the planned complexity budget so
+RED/GREEN does not silently normalize a wrong or overloaded owner.
+
+```text
+Complexity Budget:
+- Artifact class:
+- Current pressure:
+- Projected post-change pressure:
+- Planned governance:
+```
+
+Use `using-aegis/references/complexity-governance.md` for shared artifact
+classes, pressure signals, and the meaning of planned governance.
+
 ## Pre-Edit Complexity Check
 
 Before production code edits, check whether the intended source edit would add

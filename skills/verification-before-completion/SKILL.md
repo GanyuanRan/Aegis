@@ -11,7 +11,7 @@ description: Use when about to claim work is complete, fixed, passing, verified,
   3. Read: output, exit code, failures
   4. Verify: output confirms claim? → state claim WITH evidence. Doesn't? → state actual status.
 → Done when: exact command run, output confirms, residual risk stated, confidence graded.
-  Non-trivial code changes → also report Complexity Delta and Complexity Governance Suggestion.
+  Non-trivial code changes → also report Complexity Delta, Complexity Governance Suggestion, and Major Complexity Alert when triggered.
   Governance/retirement work → also close Repair Track + Retirement Track + Residual Risk.
 
 # Verification Before Completion
@@ -124,8 +124,7 @@ TDD Completion Boundary:
    - Residual risk:
    ```
 
-   Advisory only. It does not authorize commit, tag, publish, merge, or
-   release, and it does not provide completion authority.
+   Advisory only. It does not authorize commit, tag, publish, merge, or release, and it does not provide completion authority.
 10. **Natural Aegis closeout**: when Aegis skills materially shaped a
    non-trivial task, keep Aegis explicitly visible in the final completion
    closeout.
@@ -207,6 +206,16 @@ TDD Completion Boundary:
    - Governed now:
    - Deferred follow-up:
    - Completion impact: complete | needs-follow-up | not-complete
+   ```
+
+   If a maintained artifact is materially oversized or crosses a major pressure
+   boundary, make the follow-up explicit:
+
+   ```text
+   Major Complexity Alert:
+   - Trigger:
+   - Why it matters:
+   - Visible follow-up:
    ```
 
    When the delta finds meaningful pressure, add:

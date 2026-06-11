@@ -165,8 +165,7 @@ Pass criteria:
 
 - plan-time checks appear in `brainstorming` and `writing-plans`
 - pre-edit checks appear in implementation workflows before risky source edits
-- completion keeps `Complexity Delta`, `Complexity Closure`, and adds a useful
-  governance suggestion
+- completion keeps `Complexity Delta`, `Complexity Closure`, and adds a useful `Complexity Governance Suggestion`
 - checks stay advisory, cheap for low-risk work, and do not treat new files as
   automatically better
 - maintained test source files are governed like maintained source code, not as
@@ -292,8 +291,7 @@ Pass criteria:
   risk first, tests first
 - `verification-before-completion` can emit a `Readiness Summary` for tests,
   docs, version, host compatibility, uncovered scope, and residual risk
-- `verification-before-completion` can emit a `Complexity Governance
-  Suggestion` after `Complexity Delta`
+- `verification-before-completion` can emit a `Complexity Governance Suggestion` after `Complexity Delta`
 - `recording-architecture-decisions` can use a `Retro / Memory Filter` to
   distinguish executed durable decisions from unexecuted ideas
 - a role persona is not a review lens; Aegis borrows sharp evaluation angles,
