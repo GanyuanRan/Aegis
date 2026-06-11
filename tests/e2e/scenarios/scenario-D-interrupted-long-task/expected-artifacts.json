@@ -3,6 +3,7 @@
     "TaskIntentDraft",
     "BaselineReadSetHint",
     "ImpactStatementDraft",
+    "BaselineUsageDraft",
     "TodoCheckpointDraft",
     "ResumeStateHint",
     "DriftCheckDraft",

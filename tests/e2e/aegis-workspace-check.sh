@@ -105,11 +105,34 @@ write_json "$ARTIFACT_PATH" '{
     --file "$ARTIFACT_PATH" >/dev/null
 pass "validate-artifact accepts a valid TaskIntentDraft"
 
+BASELINE_USAGE_ARTIFACT="$TARGET_ROOT/docs/aegis/work/2026-05-07-helper/baseline-usage-draft.json"
+write_json "$BASELINE_USAGE_ARTIFACT" '{
+  "schemaVersion": "aegis.schema.v0",
+  "taskId": "task-1",
+  "requiredBaselineRefs": ["docs/current/AEGIS_WORKFLOW_GUIDE.md#baseline-first"],
+  "deliveredContextRefs": ["docs/current/AEGIS_WORKFLOW_GUIDE.md#baseline-first"],
+  "acknowledgedBeforePlanRefs": ["docs/current/AEGIS_WORKFLOW_GUIDE.md#baseline-first"],
+  "citedInPlanRefs": ["docs/current/AEGIS_WORKFLOW_GUIDE.md#baseline-first"],
+  "missingRefs": [],
+  "decision": "continue"
+}'
+
+"${PYTHON_CMD[@]}" "$HELPER" validate-artifact \
+    --type BaselineUsageDraft \
+    --file "$BASELINE_USAGE_ARTIFACT" >/dev/null
+pass "validate-artifact accepts a valid BaselineUsageDraft"
+
 "${PYTHON_CMD[@]}" "$HELPER" append-index \
     --root "$TARGET_ROOT" \
     --path "$ARTIFACT_PATH" \
     --kind artifact \
     --title "Task intent draft sidecar" >/dev/null
+
+"${PYTHON_CMD[@]}" "$HELPER" append-index \
+    --root "$TARGET_ROOT" \
+    --path "$BASELINE_USAGE_ARTIFACT" \
+    --kind artifact \
+    --title "Baseline usage draft sidecar" >/dev/null
 
 "${PYTHON_CMD[@]}" "$HELPER" check --root "$TARGET_ROOT" >/dev/null
 pass "check validates indexed recognizable artifact JSON sidecars"

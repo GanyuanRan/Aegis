@@ -454,6 +454,7 @@ Compact contract:
 ```text
 TaskIntentDraft: outcome, scope, risk hints
 BaselineReadSetHint: candidate docs, missing authority
+BaselineUsageDraft: required refs, acknowledged refs, cited refs, missing refs, decision
 ImpactStatementDraft: affected layers, owners, invariants, non-goals
 Product Risk Lens: value, non-goals, trade-offs, decision-needed
 Architecture Integrity Lens: invariant, owner/contract, overlap, higher-level path, retirement/falsifier, verdict
@@ -512,6 +513,7 @@ Compact contract:
 
 ```text
 Plan Basis: approved requirement/spec refs
+BaselineUsageDraft: required baseline refs, acknowledged refs, cited refs, missing refs, decision
 Planless Slice Lane: use Slice Card when an existing parent plan/spec already owns the tiny slice
 Files: owners and edit boundaries
 Compatibility: invariants and non-goals
@@ -802,6 +804,7 @@ Compact contract:
 
 ```text
 TodoCheckpointDraft: current todo, completed todos, active slice, next step
+BaselineUsageDraft: required refs, acknowledged refs, cited refs, missing refs, decision
 Slice Card: goal, parent plan/spec, files, boundary, verification, stop
 Evidence: command/file/log refs
 DriftCheckDraft: scope, compatibility, retirement, decision

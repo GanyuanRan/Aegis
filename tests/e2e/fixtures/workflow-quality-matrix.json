@@ -79,7 +79,7 @@
       "mustNotDo": ["start-implementation-immediately", "skip-baseline-readset"],
       "expectedOutputShape": "task-intent-baseline-impact-options",
       "workspacePolicy": "spec-only-when-persistent-requirements-needed",
-      "expectedArtifacts": ["TaskIntentDraft", "BaselineReadSetHint", "ImpactStatementDraft"],
+      "expectedArtifacts": ["TaskIntentDraft", "BaselineReadSetHint", "BaselineUsageDraft", "ImpactStatementDraft"],
       "verificationSignal": "user-approved-brief-or-design-before-plan"
     },
     {
@@ -657,15 +657,15 @@
   "compactOutputContracts": {
     "using-aegis": ["Route", "Aegis Reason Note", "ArchitectureReviewRequired", "Why", "Next"],
     "goal-framing": ["Goal", "Success evidence", "Stop condition", "Non-goals", "Route", "Next", "Continuation"],
-    "brainstorming": ["TaskIntentDraft", "BaselineReadSetHint", "ImpactStatementDraft", "Product Risk Lens", "Architecture Integrity Lens", "Baseline Role Alignment", "Complexity Budget", "Plan-Time Complexity Check", "Options", "Decision Needed"],
-    "writing-plans": ["Plan Basis", "Files", "Compatibility", "Architecture Integrity Lens", "Plan Pressure Test", "Complexity Budget", "Plan-Time Complexity Check", "Tasks", "Risks", "Retirement"],
+    "brainstorming": ["TaskIntentDraft", "BaselineReadSetHint", "BaselineUsageDraft", "ImpactStatementDraft", "Product Risk Lens", "Architecture Integrity Lens", "Baseline Role Alignment", "Complexity Budget", "Plan-Time Complexity Check", "Options", "Decision Needed"],
+    "writing-plans": ["Plan Basis", "BaselineUsageDraft", "Files", "Compatibility", "Architecture Integrity Lens", "Plan Pressure Test", "Complexity Budget", "Plan-Time Complexity Check", "Tasks", "Risks", "Retirement"],
     "systematic-debugging": ["Symptom", "Reproduction", "Root Cause", "Layer Stop Card", "Fix Boundary", "Pre-Edit Complexity Check", "Verification"],
     "test-driven-development": ["TDD Route", "Preflight Gate", "Complexity Budget", "Pre-Edit Complexity Check", "RED", "GREEN", "REFACTOR", "Regression Scope"],
     "anti-entropy-governance": ["Anti-Entropy Declaration", "Retirement Decision", "Verification Plan", "Gap Closure", "Data Destruction Guard"],
     "requesting-code-review": ["Findings First", "Evidence Review", "Baseline / Current Authority", "Baseline Role Alignment", "Compatibility / Retirement", "Review Readiness"],
     "recording-architecture-decisions": ["Decision Candidate", "ADR Gate", "Retro / Memory Filter", "ADR Action", "Owner Surface", "Baseline Sync", "Boundary"],
     "verification-before-completion": ["evidence-action", "verification-result", "covered-scope", "uncovered-scope", "residual-risk", "confidence-grade", "Goal status", "Success evidence", "Stop state", "Non-goals respected", "Readiness Summary", "Natural Aegis closeout", "Semantic Slots", "Natural Surface", "Governance Receipt", "Complexity Delta", "Complexity Closure", "Complexity Governance Suggestion", "Major Complexity Alert", "Baseline Alignment", "Architecture Alignment", "ADR Backfill Check", "Retirement Closure", "Anti-Entropy Declaration", "Data Destruction Guard"],
-    "long-task-continuation": ["TodoCheckpointDraft", "Slice Card", "Evidence", "DriftCheckDraft", "Risk / Unknown", "Next"],
+    "long-task-continuation": ["TodoCheckpointDraft", "BaselineUsageDraft", "Slice Card", "Evidence", "DriftCheckDraft", "Risk / Unknown", "Next"],
     "executing-plans": ["Plan Review", "Todo", "Complexity Budget", "Pre-Edit Complexity Check", "Verification", "Checkpoint"]
   }
 }

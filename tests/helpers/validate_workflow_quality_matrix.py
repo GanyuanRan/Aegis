@@ -143,6 +143,7 @@ CONTRACT_REQUIREMENTS = {
     ],
     "executing-plans": ["Pre-Edit Complexity Check", "Complexity Budget"],
     "brainstorming": [
+        "BaselineUsageDraft",
         "Plan-Time Complexity Check",
         "Complexity Budget",
         "Product Risk Lens",

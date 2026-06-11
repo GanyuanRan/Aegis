@@ -135,6 +135,15 @@ ARTIFACT_SCHEMAS = {
         "changeKinds",
         "riskHints",
     ),
+    "BaselineUsageDraft": (
+        "schemaVersion",
+        "taskId",
+        "requiredBaselineRefs",
+        "acknowledgedBeforePlanRefs",
+        "citedInPlanRefs",
+        "missingRefs",
+        "decision",
+    ),
     "SubagentContextPacket": (
         "schemaVersion",
         "task",
@@ -214,6 +223,7 @@ ARTIFACT_SCHEMAS = {
 }
 ARTIFACT_FILENAME_TYPES = {
     "task-intent-draft": "TaskIntentDraft",
+    "baseline-usage-draft": "BaselineUsageDraft",
     "subagent-context-packet": "SubagentContextPacket",
     "baseline-read-set-hint": "BaselineReadSetHint",
     "impact-statement-draft": "ImpactStatementDraft",
@@ -230,6 +240,7 @@ DRIFT_DECISIONS = {
     "needs-verification",
     "blocked",
 }
+BASELINE_USAGE_DECISIONS = DRIFT_DECISIONS
 
 
 class WorkspaceError(Exception):
@@ -415,6 +426,12 @@ def validate_artifact_data(artifact_type: str, data: object, source: Path) -> li
             failures.append(
                 f"{source}: DriftCheckDraft decision must be advisory, got {decision}"
             )
+    if artifact_type == "BaselineUsageDraft":
+        decision = data.get("decision")
+        if decision not in BASELINE_USAGE_DECISIONS:
+            failures.append(
+                f"{source}: BaselineUsageDraft decision must be advisory, got {decision}"
+            )
 
     return failures
 
@@ -540,6 +557,16 @@ def command_new_work(args: argparse.Namespace) -> int:
         "whyRelevant": args.why_relevant or "Baseline read-set requires agent review.",
         "missingAuthority": list_arg(args.missing_authority),
     }
+    baseline_usage = {
+        "schemaVersion": SCHEMA_VERSION,
+        "taskId": task_id,
+        "requiredBaselineRefs": candidate_docs,
+        "deliveredContextRefs": [],
+        "acknowledgedBeforePlanRefs": [],
+        "citedInPlanRefs": [],
+        "missingRefs": candidate_docs,
+        "decision": "needs-baseline-readback" if candidate_docs else "continue",
+    }
     impact = {
         "schemaVersion": SCHEMA_VERSION,
         "affectedLayers": affected_layers,
@@ -573,6 +600,7 @@ def command_new_work(args: argparse.Namespace) -> int:
 
     write_json(target / "task-intent-draft.json", task_intent)
     write_json(target / "baseline-read-set-hint.json", baseline_hint)
+    write_json(target / "baseline-usage-draft.json", baseline_usage)
     write_json(target / "impact-statement-draft.json", impact)
     write_json(target / "todo-checkpoint-draft.json", checkpoint)
     write_json(target / "drift-check-draft.json", drift)
@@ -591,6 +619,12 @@ def command_new_work(args: argparse.Namespace) -> int:
         f"- Risk hints:\n{markdown_list(risk_hints)}"
         "\n## BaselineReadSetHint\n\n"
         f"{markdown_list(candidate_docs)}"
+        "\n## BaselineUsageDraft\n\n"
+        f"- Required baseline refs:\n{markdown_list(candidate_docs)}"
+        f"- Acknowledged before plan:\n{markdown_list(baseline_usage['acknowledgedBeforePlanRefs'])}"
+        f"- Cited in plan:\n{markdown_list(baseline_usage['citedInPlanRefs'])}"
+        f"- Missing refs:\n{markdown_list(baseline_usage['missingRefs'])}"
+        f"- Advisory decision: {baseline_usage['decision']}\n"
         "\n## ImpactStatementDraft\n\n"
         f"- Compatibility boundary: {compat_boundary}\n"
         f"- Affected layers:\n{markdown_list(affected_layers)}"
@@ -627,6 +661,7 @@ def command_new_work(args: argparse.Namespace) -> int:
         ("99-reflection.md", "work", f"{args.title} reflection"),
         ("task-intent-draft.json", "artifact", f"{args.title} task intent draft"),
         ("baseline-read-set-hint.json", "artifact", f"{args.title} baseline read-set hint"),
+        ("baseline-usage-draft.json", "artifact", f"{args.title} baseline usage draft"),
         ("impact-statement-draft.json", "artifact", f"{args.title} impact statement draft"),
         ("todo-checkpoint-draft.json", "artifact", f"{args.title} todo checkpoint draft"),
         ("drift-check-draft.json", "artifact", f"{args.title} drift check draft"),
@@ -689,6 +724,41 @@ def command_add_checkpoint(args: argparse.Namespace) -> int:
 
     append_work_file(root, target / "resume-state-hint.json", "artifact", f"{args.work} resume state hint")
     print(f"Updated checkpoint: {checkpoint_path}")
+    return 0
+
+
+def command_add_baseline_usage(args: argparse.Namespace) -> int:
+    root = resolve_root(args.root)
+    target = ensure_work_exists(root, args.work)
+    checkpoint = read_json_dict(target / "todo-checkpoint-draft.json")
+    baseline_usage = {
+        "schemaVersion": SCHEMA_VERSION,
+        "taskId": str(checkpoint.get("taskId", args.work)),
+        "requiredBaselineRefs": list_arg(args.required_baseline_ref),
+        "deliveredContextRefs": list_arg(args.delivered_context_ref),
+        "acknowledgedBeforePlanRefs": list_arg(args.acknowledged_baseline_ref),
+        "citedInPlanRefs": list_arg(args.cited_baseline_ref),
+        "missingRefs": list_arg(args.missing_ref),
+        "decision": args.decision,
+    }
+    failures = validate_artifact_data(
+        "BaselineUsageDraft", baseline_usage, target / "baseline-usage-draft.json"
+    )
+    if failures:
+        raise WorkspaceError("; ".join(failures))
+    write_json(target / "baseline-usage-draft.json", baseline_usage)
+    with (target / "10-intent.md").open("a", encoding="utf-8", newline="\n") as handle:
+        handle.write(
+            "\n## BaselineUsageDraft\n\n"
+            f"- Required baseline refs:\n{markdown_list(list_arg(args.required_baseline_ref))}"
+            f"- Delivered context refs:\n{markdown_list(list_arg(args.delivered_context_ref))}"
+            f"- Acknowledged before plan:\n{markdown_list(list_arg(args.acknowledged_baseline_ref))}"
+            f"- Cited in plan:\n{markdown_list(list_arg(args.cited_baseline_ref))}"
+            f"- Missing refs:\n{markdown_list(list_arg(args.missing_ref))}"
+            f"- Advisory decision: {args.decision}\n"
+        )
+    append_work_file(root, target / "baseline-usage-draft.json", "artifact", f"{args.work} baseline usage draft")
+    print(f"Updated baseline usage: {target / 'baseline-usage-draft.json'}")
     return 0
 
 
@@ -953,6 +1023,31 @@ def build_parser() -> argparse.ArgumentParser:
         "--unsafe-to-assume", action="append", default=[], help="unsafe assumption"
     )
     checkpoint_parser.set_defaults(func=command_add_checkpoint)
+
+    baseline_usage_parser = subparsers.add_parser(
+        "add-baseline-usage", help="update a BaselineUsageDraft sidecar"
+    )
+    baseline_usage_parser.add_argument("--root", required=True, help="target project root")
+    baseline_usage_parser.add_argument("--work", required=True, help="work directory name under docs/aegis/work")
+    baseline_usage_parser.add_argument(
+        "--decision", required=True, choices=sorted(BASELINE_USAGE_DECISIONS)
+    )
+    baseline_usage_parser.add_argument(
+        "--required-baseline-ref", action="append", default=[], help="required baseline ref"
+    )
+    baseline_usage_parser.add_argument(
+        "--delivered-context-ref", action="append", default=[], help="host-projected delivered context ref"
+    )
+    baseline_usage_parser.add_argument(
+        "--acknowledged-baseline-ref", action="append", default=[], help="acknowledged baseline ref before planning"
+    )
+    baseline_usage_parser.add_argument(
+        "--cited-baseline-ref", action="append", default=[], help="baseline ref cited in plan or verification"
+    )
+    baseline_usage_parser.add_argument(
+        "--missing-ref", action="append", default=[], help="missing baseline ref"
+    )
+    baseline_usage_parser.set_defaults(func=command_add_baseline_usage)
 
     evidence_parser = subparsers.add_parser(
         "add-evidence", help="add an EvidenceBundleDraft sidecar"

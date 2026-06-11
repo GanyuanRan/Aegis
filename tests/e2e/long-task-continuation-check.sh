@@ -13,6 +13,7 @@ required_files=(
     "$SCENARIO_DIR/prompt.txt"
     "$SCENARIO_DIR/expected-artifacts.json"
     "$SCENARIO_DIR/expected-behavior.json"
+    "$ARTIFACT_DIR/baseline-usage-draft.sample.json"
     "$ARTIFACT_DIR/todo-checkpoint-draft.sample.json"
     "$ARTIFACT_DIR/resume-state-hint.sample.json"
     "$ARTIFACT_DIR/drift-check-draft.sample.json"
@@ -32,6 +33,7 @@ for pattern in \
     "<aegis-workspace-helper> init" \
     "<aegis-workspace-helper> new-work" \
     "<aegis-workspace-helper> add-checkpoint" \
+    "<aegis-workspace-helper> add-baseline-usage" \
     "<aegis-workspace-helper> add-evidence" \
     "<aegis-workspace-helper> add-drift-check" \
     "<aegis-workspace-helper> bundle" \
@@ -63,13 +65,14 @@ artifact_dir = pathlib.Path(sys.argv[2])
 
 expected_artifacts = json.loads((scenario_dir / "expected-artifacts.json").read_text(encoding="utf-8"))
 expected_behavior = json.loads((scenario_dir / "expected-behavior.json").read_text(encoding="utf-8"))
+baseline_usage = json.loads((artifact_dir / "baseline-usage-draft.sample.json").read_text(encoding="utf-8"))
 checkpoint = json.loads((artifact_dir / "todo-checkpoint-draft.sample.json").read_text(encoding="utf-8"))
 resume = json.loads((artifact_dir / "resume-state-hint.sample.json").read_text(encoding="utf-8"))
 drift = json.loads((artifact_dir / "drift-check-draft.sample.json").read_text(encoding="utf-8"))
 
 failures = []
 
-for artifact_name in ["TodoCheckpointDraft", "ResumeStateHint", "DriftCheckDraft"]:
+for artifact_name in ["BaselineUsageDraft", "TodoCheckpointDraft", "ResumeStateHint", "DriftCheckDraft"]:
     if artifact_name not in expected_artifacts["requiredArtifacts"]:
         failures.append(f"Scenario D missing required artifact {artifact_name}")
 
@@ -79,6 +82,8 @@ for forbidden in expected_artifacts["forbiddenDecisions"]:
 
 if checkpoint.get("taskId") != resume.get("taskId") or checkpoint.get("taskId") != drift.get("taskId"):
     failures.append("Long-task artifact taskId values must match")
+if checkpoint.get("taskId") != baseline_usage.get("taskId"):
+    failures.append("BaselineUsageDraft taskId must match long-task artifacts")
 
 if not checkpoint.get("nextStep"):
     failures.append("TodoCheckpointDraft must include nextStep")
@@ -88,6 +93,8 @@ if not resume.get("mustReadBeforeContinuing"):
 
 if drift.get("decision") not in {"continue", "pause-for-user", "needs-baseline-readback", "needs-verification", "blocked"}:
     failures.append("DriftCheckDraft decision is not an allowed advisory value")
+if baseline_usage.get("decision") not in {"continue", "pause-for-user", "needs-baseline-readback", "needs-verification", "blocked"}:
+    failures.append("BaselineUsageDraft decision is not an allowed advisory value")
 
 prompt_text = (scenario_dir / "prompt.txt").read_text(encoding="utf-8").lower()
 for token in expected_behavior["mustMention"]:

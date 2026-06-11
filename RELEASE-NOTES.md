@@ -1,5 +1,34 @@
 # Aegis Release Notes
 
+## v2.1.1 (2026-06-11)
+
+### Baseline Usage Draft And Attention-Drift Visibility
+
+- Added `BaselineUsageDraft` as a runtime-ready advisory artifact that makes
+  baseline/context attention drift visible without claiming host-level
+  authoritative injection proof or internal model-attention proof.
+- The artifact now records required baseline refs, acknowledged-before-plan
+  refs, cited refs, missing refs, and an advisory decision, with optional
+  host-projected `deliveredContextRefs`.
+
+### Planning, Design, And Long-Task Workflow Integration
+
+- Extended `brainstorming`, `writing-plans`, and `long-task-continuation` so
+  baseline usage can be surfaced before design approval, before implementation
+  planning, and during resumable execution slices.
+- Tightened the user-visible workflow contracts so missing baseline refs can
+  pause safely in `needs-baseline-readback` instead of silently allowing a
+  plausible but under-constrained plan to continue.
+
+### Workspace Helper, Fixtures, And Scenario Coverage
+
+- Extended `scripts/aegis-workspace.py` with `BaselineUsageDraft` schema
+  validation, lifecycle creation support, filename inference, and the new
+  `add-baseline-usage` helper command.
+- Added artifact fixtures, long-task checks, workflow-quality matrix updates,
+  and representative scenario transcript coverage so the new artifact is
+  exercised in both contract validation and release-facing behavior checks.
+
 ## v2.1.0 (2026-06-11)
 
 ### Artifact-Wide Complexity Governance

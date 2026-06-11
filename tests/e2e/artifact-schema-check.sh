@@ -48,6 +48,15 @@ expected = {
         "whyRelevant",
         "missingAuthority",
     ],
+    "baseline-usage-draft.sample.json": [
+        "schemaVersion",
+        "taskId",
+        "requiredBaselineRefs",
+        "acknowledgedBeforePlanRefs",
+        "citedInPlanRefs",
+        "missingRefs",
+        "decision",
+    ],
     "impact-statement-draft.sample.json": [
         "schemaVersion",
         "affectedLayers",
@@ -131,6 +140,12 @@ for filename, fields in expected.items():
         )
 
     if filename == "drift-check-draft.sample.json":
+        forbidden = {"gate-passed", "completion-granted", "authoritatively-safe"}
+        if data.get("decision") in forbidden:
+            failures.append(
+                f"{filename}: decision must not be an authoritative completion value"
+            )
+    if filename == "baseline-usage-draft.sample.json":
         forbidden = {"gate-passed", "completion-granted", "authoritatively-safe"}
         if data.get("decision") in forbidden:
             failures.append(

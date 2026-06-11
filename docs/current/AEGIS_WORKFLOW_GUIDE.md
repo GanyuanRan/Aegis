@@ -516,6 +516,7 @@ Aegis can currently produce:
 
 - `TaskIntentDraft`
 - `BaselineReadSetHint`
+- `BaselineUsageDraft`
 - `ImpactStatementDraft`
 - `EvidenceBundleDraft`
 - `GateInputPack`

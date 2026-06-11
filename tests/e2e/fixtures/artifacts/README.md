@@ -9,6 +9,7 @@ They exist so Phase 5 can validate the minimum field set defined in:
 
 Long-task continuation fixtures additionally cover:
 
+- `BaselineUsageDraft`
 - `TodoCheckpointDraft`
 - `ResumeStateHint`
 - `DriftCheckDraft`

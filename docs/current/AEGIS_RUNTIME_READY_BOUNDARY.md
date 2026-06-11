@@ -75,7 +75,29 @@ Purpose:
 - Indicate which baseline documents should be read first for the current task
 - Expose authority gaps
 
-### 3.3 `ImpactStatementDraft`
+### 3.3 `BaselineUsageDraft`
+
+Minimum fields:
+
+- `taskId`
+- `requiredBaselineRefs`
+- `acknowledgedBeforePlanRefs`
+- `citedInPlanRefs`
+- `missingRefs`
+- `decision`
+
+Optional host-projected fields:
+
+- `deliveredContextRefs`
+
+Purpose:
+
+- Expose whether required baseline refs were acknowledged before planning and
+  later cited in plan/verification outputs
+- Keep baseline/context attention drift visible without asserting authoritative
+  host injection observability or internal model-attention proof
+
+### 3.4 `ImpactStatementDraft`
 
 Minimum fields:
 
@@ -90,7 +112,7 @@ Purpose:
 - Make high-risk tasks explicitly expose impact surface and compatibility boundaries before execution
 - Carry Ripple Signal Triage results when a pre-change signal indicates downstream, owner, source-of-truth, contract, fallback, or verification-scope risk
 
-### 3.4 `EvidenceBundleDraft`
+### 3.5 `EvidenceBundleDraft`
 
 Minimum fields:
 
@@ -104,7 +126,7 @@ Purpose:
 
 - Unify the naming and minimum structure of evidence collection
 
-### 3.5 `GateInputPack`
+### 3.6 `GateInputPack`
 
 Minimum fields:
 
@@ -118,7 +140,7 @@ Purpose:
 
 - Serve as the minimum input package for the future runtime core
 
-### 3.6 `TodoCheckpointDraft`
+### 3.7 `TodoCheckpointDraft`
 
 Minimum fields:
 
@@ -135,7 +157,7 @@ Purpose:
 
 - Enable long tasks to have recoverable todo / checkpoint state before and after each execution slice
 
-### 3.7 `ResumeStateHint`
+### 3.8 `ResumeStateHint`
 
 Minimum fields:
 
@@ -150,7 +172,7 @@ Purpose:
 
 - Provide a minimal re-entry point during session resumption, context compression, or agent handoff
 
-### 3.8 `DriftCheckDraft`
+### 3.9 `DriftCheckDraft`
 
 Minimum fields:
 
@@ -167,7 +189,7 @@ Purpose:
 
 - Explicitly check whether goals, baselines, compatibility boundaries, and retirement tracks have drifted during long task execution
 
-### 3.9 `SubagentContextPacket`
+### 3.10 `SubagentContextPacket`
 
 Minimum fields:
 

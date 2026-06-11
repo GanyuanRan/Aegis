@@ -488,6 +488,7 @@ Aegis 可以让宿主工作得更像一个治理严谨的工程代理，但当�
 
 - `TaskIntentDraft`
 - `BaselineReadSetHint`
+- `BaselineUsageDraft`
 - `ImpactStatementDraft`
 - `EvidenceBundleDraft`
 - `GateInputPack`

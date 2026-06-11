@@ -54,6 +54,7 @@ When this repository reaches its target state, it should simultaneously satisfy 
 4. It can stably produce:
    - `TaskIntentDraft`
    - `BaselineReadSetHint`
+   - `BaselineUsageDraft`
    - `ImpactStatementDraft`
    - `EvidenceBundleDraft`
    - `GateInputPack`

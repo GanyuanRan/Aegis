@@ -85,7 +85,44 @@ Current owner:
 
 - method pack
 
-### 3.3 `ImpactStatementDraft`
+### 3.3 `BaselineUsageDraft`
+
+Required fields:
+
+- `schemaVersion`
+- `taskId`
+- `requiredBaselineRefs`
+- `acknowledgedBeforePlanRefs`
+- `citedInPlanRefs`
+- `missingRefs`
+- `decision`
+
+Optional host-projected fields:
+
+- `deliveredContextRefs`
+
+Allowed `decision` values:
+
+- `continue`
+- `pause-for-user`
+- `needs-baseline-readback`
+- `needs-verification`
+- `blocked`
+
+Current owner:
+
+- method pack / host projection
+
+Purpose:
+
+- Make baseline/context attention drift visible without claiming authoritative
+  host observation or internal model-attention proof
+- Distinguish baseline refs that were required, acknowledged before planning,
+  and later cited in a plan or verification trail
+- Surface missing baseline refs early enough to pause in
+  `needs-baseline-readback`
+
+### 3.4 `ImpactStatementDraft`
 
 Required fields:
 
@@ -100,7 +137,7 @@ Current owner:
 
 - method pack
 
-### 3.4 `EvidenceBundleDraft`
+### 3.5 `EvidenceBundleDraft`
 
 Required fields:
 
@@ -115,7 +152,7 @@ Current owner:
 
 - method pack / host projection
 
-### 3.5 `GateInputPack`
+### 3.6 `GateInputPack`
 
 Required fields:
 
@@ -131,7 +168,7 @@ Current owner:
 - method pack assembles
 - future runtime core consumes
 
-### 3.6 `TodoCheckpointDraft`
+### 3.7 `TodoCheckpointDraft`
 
 Required fields:
 
@@ -149,7 +186,7 @@ Current owner:
 
 - method pack
 
-### 3.7 `ResumeStateHint`
+### 3.8 `ResumeStateHint`
 
 Required fields:
 
@@ -165,7 +202,7 @@ Current owner:
 
 - method pack / host projection
 
-### 3.8 `DriftCheckDraft`
+### 3.9 `DriftCheckDraft`
 
 Required fields:
 
@@ -191,7 +228,7 @@ Current owner:
 
 - method pack
 
-### 3.9 `SubagentContextPacket`
+### 3.10 `SubagentContextPacket`
 
 Required fields:
 

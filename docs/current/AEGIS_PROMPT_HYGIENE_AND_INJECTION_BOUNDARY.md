@@ -349,6 +349,7 @@ The following indicate prompt hygiene governance is insufficient:
 This document reinforces the following artifacts:
 
 - `BaselineReadSetHint`
+- `BaselineUsageDraft`
 - `EvidenceBundleDraft`
 - `SubagentContextPacket`
 - `TodoCheckpointDraft`
@@ -356,7 +357,10 @@ This document reinforces the following artifacts:
 - `DriftCheckDraft`
 
 Among them, `EvidenceBundleDraft` should preferentially save the evidence
-index, not the full raw material text. `SubagentContextPacket` should carry
-bounded task context and must-read excerpts, not a full conversation dump.
+index, not the full raw material text. `BaselineUsageDraft` may record
+host-projected `deliveredContextRefs`, but this remains advisory bookkeeping,
+not authoritative proof that a host injected, displayed, or the model actually
+consumed a context payload. `SubagentContextPacket` should carry bounded task
+context and must-read excerpts, not a full conversation dump.
 
 The future runtime core can read back original evidence based on these indexes and make authoritative sufficiency judgments; the current method pack only provides draft / hint / projection.

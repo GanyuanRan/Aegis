@@ -1,6 +1,6 @@
 {"type":"user","message":{"content":[{"type":"text","text":"Design and plan a narrow new feature change."}]}}
 {"type":"user","toolUseResult":{"name":"Skill","skill":"brainstorming","prompt":"Use brainstorming to explore scope and impact before implementation."}}
-{"type":"assistant","message":{"content":[{"type":"text","text":"Scope is narrow and impact is limited. I will keep TaskIntentDraft, BaselineReadSetHint, and ImpactStatementDraft lightweight while preserving evidence."}]}}
+{"type":"assistant","message":{"content":[{"type":"text","text":"Scope is narrow and impact is limited. I will keep TaskIntentDraft, BaselineReadSetHint, BaselineUsageDraft, and ImpactStatementDraft lightweight while preserving evidence."}]}}
 {"type":"user","toolUseResult":{"name":"Skill","skill":"writing-plans","prompt":"Use writing-plans to turn approved scope into a concrete plan."}}
 {"type":"assistant","message":{"content":[{"type":"text","text":"Baseline reads are identified, compatibility remains contained, and GateInputPack stays advisory."}]}}
 {"type":"user","toolUseResult":{"name":"Skill","skill":"requesting-code-review","prompt":"Use requesting-code-review before merge."}}

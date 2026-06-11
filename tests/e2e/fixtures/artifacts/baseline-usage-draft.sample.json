@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "taskId": "scenario-D-interrupted-long-task",
+  "requiredBaselineRefs": [
+    "docs/current/AEGIS_WORKFLOW_GUIDE.md#baseline-first",
+    "docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md"
+  ],
+  "deliveredContextRefs": [
+    "docs/current/AEGIS_WORKFLOW_GUIDE.md#baseline-first"
+  ],
+  "acknowledgedBeforePlanRefs": [
+    "docs/current/AEGIS_WORKFLOW_GUIDE.md#baseline-first"
+  ],
+  "citedInPlanRefs": [
+    "docs/current/AEGIS_WORKFLOW_GUIDE.md#baseline-first"
+  ],
+  "missingRefs": [
+    "docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md"
+  ],
+  "decision": "needs-baseline-readback"
+}
