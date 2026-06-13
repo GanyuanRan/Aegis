@@ -14,28 +14,45 @@ and known limitations, read:
 
 ## Current Verdict
 
-Antigravity is a supported target surface for Aegis in three shapes:
+Antigravity remains a supported Google-host target surface for Aegis in three
+shapes:
 
 - `Antigravity CLI` - terminal-first agent surface
 - `Antigravity IDE` - editor-integrated agent surface
 - `Antigravity App` - broader Antigravity 2.x app / project platform surface
 
-The current Aegis support status is structural and advisory. It is based on
-Google's public Antigravity positioning, which says Antigravity exposes Skills,
-MCP, JSON Hooks, plugins, slash commands, and subagents across Antigravity
-surfaces. It does **not** yet claim current release-level live smoke evidence
-for any Antigravity shape.
+The current active closeout target is **`Antigravity CLI`**.
 
-The public `google-antigravity/antigravity-cli` repository confirms the CLI is
-the terminal interface for the same Antigravity 2.0 agent engine, but it does
-not currently provide a repository-level Aegis install smoke result for this
-method pack.
+Current Aegis status by shape:
 
-The public Antigravity CLI `1.0.1` changelog says the CLI added plugin
-discovery for skills and agents through installed plugin directories. Aegis
-treats that as evidence that plugin-backed discovery is becoming available, not
-as proof that this repository has a verified Antigravity manifest or install
-directory yet.
+- `Antigravity CLI`
+  - active closeout target
+  - no current release-level fresh smoke verdict yet
+- `Antigravity IDE`
+  - structural target surface retained
+  - not the active closeout slice
+- `Antigravity App`
+  - structural target surface retained
+  - not the active closeout slice
+
+This split is evidence-driven rather than aspirational. Google's public
+Antigravity materials now establish several CLI-side facts that are relevant to
+closeout:
+
+- the installer and getting-started docs use the `agy` executable
+- the Plugins & Skills docs describe `agy plugin list` and
+  `agy plugin install /path/to/local/plugin`
+- the Gemini migration docs describe `agy plugin import gemini` and adapting
+  legacy custom-skills paths
+- the public `1.0.1` changelog says the CLI added plugin discovery for skills and agents through installed plugin directories
+- the public `1.0.8` changelog says custom skills and system slash commands now
+  reload dynamically on conversation switch or `/add-dir`
+
+Aegis treats those facts as host-contract evidence that `Antigravity CLI` is
+worth closing out next. They are **not** yet treated as proof that this
+repository has a verified Antigravity install/discovery path for the current
+method pack, and they do **not** yet count as release-level live smoke
+evidence for Aegis.
 
 ## Gemini CLI Transition Boundary
 
@@ -51,8 +68,8 @@ Antigravity, while Gemini CLI remains available as a transition path.
 
 ## Recommended Complete Installation
 
-Until Google's Antigravity plugin manifest and install contract have been
-verified for this repository, use the manual complete install path:
+Until Aegis records a fresh local Antigravity CLI install smoke, use the manual
+complete install path:
 
 1. Keep a local Aegis checkout for workspace helper support.
 2. Install or expose the `skills/` directories using Antigravity's Skills or
@@ -77,6 +94,20 @@ body. Any Antigravity-visible skill directories or plugin payloads should be
 treated as generated or host-managed views into the same `method_pack_root`,
 not as second editable copies.
 
+The current official Antigravity docs are useful as host references here, but
+they do not automatically make one Aegis installation path canonical. For
+example, the docs now show:
+
+```bash
+agy plugin list
+agy plugin install /path/to/local/plugin
+agy plugin import gemini
+```
+
+Those commands prove the host has a documented plugin and migration surface.
+They do **not** yet prove which Aegis repository path or manifest shape should
+be written as the verified Antigravity install contract for this method pack.
+
 If Antigravity exposes a separate skill discovery directory in the current
 release you are using, also verify that directory:
 
@@ -90,8 +121,9 @@ python scripts/aegis-doctor.py --discovery-root <antigravity-skill-discovery-roo
 ### Antigravity CLI
 
 Use this shape for terminal-first Aegis workflows. Public Antigravity materials
-describe CLI access to plugins, MCP, skills, hooks configuration, slash commands,
-subagents, `/agents`, `/config`, and `/keybindings`.
+describe CLI access to plugins, MCP, skills, hooks configuration, slash
+commands, subagents, `/agents`, `/config`, `/keybindings`, and the `agy`
+executable.
 
 Aegis should remain a method pack inside this surface. Antigravity's subagent
 support may make subagent-heavy Aegis skills more natural than the transitional
@@ -171,6 +203,25 @@ Expected result:
 - The host does not present Aegis as a full runtime platform, authoritative
   `GateDecision`, or final completion authority.
 
+## Current Aegis Verification Lane
+
+The current Aegis closeout lane for Google-host work is CLI-first:
+
+```bash
+bash tests/antigravity/run-tests.sh
+bash tests/antigravity/run-tests.sh --integration
+```
+
+Interpretation:
+
+- the base suite validates the Aegis-side host contract for docs and
+  registration/readback
+- the integration suite probes the local `agy` surface and classifies missing
+  CLI/runtime/auth conditions as explicit environment blockers
+- a skipped integration run is a recorded blocker, not a fresh host closeout
+- `Antigravity IDE` and `Antigravity App` stay structural until they have their
+  own fresh host evidence slice
+
 ## Updating
 
 ```bash
@@ -195,6 +246,19 @@ python scripts/aegis-update.py register \
 python scripts/aegis-update.py update --host antigravity-cli --json
 ```
 
+The current recommended updater semantics stay:
+
+- `syncMode = repo-only`
+- `discoveryShape = host-managed`
+
+Reason:
+
+- the official Antigravity docs now prove that a plugin surface exists
+- they do **not** yet prove which Aegis repository layout or manifest should be
+  treated as the verified staged-plugin contract for this method pack
+- until that contract is verified, Aegis should keep one canonical checkout and
+  avoid pretending it already owns an Antigravity-managed plugin cache layout
+
 If the verified Antigravity release you use exposes a separate skill discovery
 directory, register that host-specific exposure shape instead of editing a
 second checkout.
@@ -203,6 +267,9 @@ second checkout.
 
 - https://developers.googleblog.com/an-important-update-transitioning-gemini-cli-to-antigravity-cli/
 - https://github.com/google-antigravity/antigravity-cli
+- https://antigravity.google/docs/cli-install
+- https://antigravity.google/docs/cli-plugins
+- https://antigravity.google/docs/gcli-migration
 - https://antigravity.google/docs/cli-overview
 - https://antigravity.google/product/antigravity-cli
 - https://antigravity.google/product/antigravity-ide

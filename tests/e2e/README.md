@@ -80,6 +80,9 @@ Workspace helper coverage:
 - The helper can create helper-backed task lifecycle records and assemble a
   structural proof bundle for review or handoff. The bundle is still advisory
   method-pack evidence, not a final gate.
+- The helper can also create, amend, and supersede target-project
+  `docs/aegis/adr/` records while keeping ADR numbering, supersession markers,
+  and `INDEX.md` coverage inside the same target-project-only boundary.
 - `workspace-helper-wiring-check.sh` verifies that skills which write
   `docs/aegis/` records route through the shared helper or run helper checks.
 - `workspace-helper-resolution-check.sh` verifies that workflows resolve the

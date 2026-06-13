@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from datetime import date
 from pathlib import Path
@@ -241,6 +242,35 @@ DRIFT_DECISIONS = {
     "blocked",
 }
 BASELINE_USAGE_DECISIONS = DRIFT_DECISIONS
+ADR_SOURCE_STATUSES = (
+    "recorded-from-work",
+    "recorded-from-plan",
+    "recorded-from-spec",
+)
+ADR_MUTATION_STATUSES = ("amended", "superseded")
+ADR_BASELINE_SYNC_STATES = ("needed", "not-needed", "unknown")
+ADR_BASELINE_SYNC_ACTIONS = {
+    "create-snapshot": "create snapshot",
+    "update-baseline": "update baseline",
+    "cite-unchanged": "cite unchanged",
+    "blocked": "blocked",
+}
+ADR_FILENAME_RE = re.compile(r"^ADR-(\d{4})-([a-z0-9][a-z0-9-]*)\.md$")
+ADR_REQUIRED_PHRASES = (
+    "# ADR-",
+    "Status: `",
+    "## Source Evidence",
+    "## Context",
+    "## Decision",
+    "## Alternatives Considered",
+    "## Consequences",
+    "## Compatibility Boundary",
+    "## Retirement Impact",
+    "## Baseline Sync",
+    "## Evidence References",
+    "advisory Aegis Method Pack record",
+    "does not grant completion authority",
+)
 
 
 class WorkspaceError(Exception):
@@ -485,6 +515,170 @@ def optional_none(value: str | None) -> str | None:
     return value
 
 
+def require_text(value: str | None, label: str) -> str:
+    text = (value or "").strip()
+    if not text:
+        raise WorkspaceError(f"{label} must not be empty")
+    return text
+
+
+def require_list(values: list[str] | None, label: str) -> list[str]:
+    items = [item.strip() for item in list_arg(values) if item and item.strip()]
+    if not items:
+        raise WorkspaceError(f"{label} requires at least one value")
+    return items
+
+
+def adr_directory(root: Path) -> Path:
+    return workspace(root) / "adr"
+
+
+def normalize_slug(value: str, label: str) -> str:
+    slug = Path(value).name.lower()
+    if value != Path(value).name or slug in ("", ".", ".."):
+        raise WorkspaceError(f"{label} must be a single slug: {value}")
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", slug):
+        raise WorkspaceError(f"{label} must match [a-z0-9][a-z0-9-]*: {value}")
+    return slug
+
+
+def adr_id_from_path(path: Path) -> str:
+    match = ADR_FILENAME_RE.match(path.name)
+    if not match:
+        raise WorkspaceError(f"ADR filename must match ADR-####-slug.md: {path}")
+    return f"ADR-{match.group(1)}"
+
+
+def adr_title_from_path(path: Path) -> str:
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.startswith("# "):
+            return line[2:].strip()
+    return path.stem
+
+
+def existing_adr_records(root: Path) -> list[tuple[int, str, Path]]:
+    records = []
+    for path in sorted(adr_directory(root).glob("ADR-*.md")):
+        match = ADR_FILENAME_RE.match(path.name)
+        if match:
+            records.append((int(match.group(1)), match.group(2), path))
+    return records
+
+
+def next_adr_path(root: Path, slug: str) -> Path:
+    records = existing_adr_records(root)
+    for _, existing_slug, path in records:
+        if existing_slug == slug:
+            raise WorkspaceError(f"ADR slug already exists: {path}")
+    next_number = max((number for number, _, _ in records), default=0) + 1
+    return adr_directory(root) / f"ADR-{next_number:04d}-{slug}.md"
+
+
+def normalize_adr_path(root: Path, input_path: str) -> tuple[str, Path]:
+    rel_path, file_path = normalize_workspace_path(root, input_path)
+    adr_prefix = (WORKSPACE_REL / "adr").as_posix() + "/"
+    if not rel_path.startswith(adr_prefix):
+        raise WorkspaceError(
+            f"path must be inside {(WORKSPACE_REL / 'adr').as_posix()}: {file_path}"
+        )
+    if file_path.suffix.lower() != ".md":
+        raise WorkspaceError(f"ADR path must be a markdown file: {file_path}")
+    if not file_path.is_file():
+        raise WorkspaceError(f"ADR file does not exist: {file_path}")
+    return rel_path, file_path
+
+
+def render_baseline_sync(
+    needed: str,
+    target: str,
+    action: str,
+    reason: str,
+    heading_level: str = "##",
+) -> str:
+    return (
+        f"{heading_level} Baseline Sync\n\n"
+        f"- Needed: {needed}\n"
+        f"- Target: {target}\n"
+        f"- Action: {ADR_BASELINE_SYNC_ACTIONS[action]}\n"
+        f"- Reason: {reason}\n"
+    )
+
+
+def render_adr_markdown(
+    adr_id: str,
+    title: str,
+    entry_date: str,
+    status: str,
+    source_evidence: list[str],
+    context: str,
+    decision: str,
+    alternatives: list[str],
+    consequences: list[str],
+    compat_boundary: str,
+    retirement_impact: str,
+    baseline_sync_needed: str,
+    baseline_target: str,
+    baseline_action: str,
+    baseline_reason: str,
+    evidence_refs: list[str],
+    extra_sections: list[str] | None = None,
+) -> str:
+    extras = ""
+    if extra_sections:
+        extras = "".join(
+            section if section.endswith("\n") else section + "\n" for section in extra_sections
+        )
+
+    return (
+        f"# {adr_id} - {title}\n\n"
+        f"Status: `{status}`\n"
+        f"Date: `{entry_date}`\n\n"
+        "## Source Evidence\n\n"
+        f"{markdown_list(source_evidence)}"
+        "## Context\n\n"
+        f"{context}\n\n"
+        "## Decision\n\n"
+        f"{decision}\n\n"
+        "## Alternatives Considered\n\n"
+        f"{markdown_list(alternatives)}"
+        "## Consequences\n\n"
+        f"{markdown_list(consequences)}"
+        "## Compatibility Boundary\n\n"
+        f"{compat_boundary}\n\n"
+        "## Retirement Impact\n\n"
+        f"{retirement_impact}\n\n"
+        f"{render_baseline_sync(baseline_sync_needed, baseline_target, baseline_action, baseline_reason)}\n"
+        "## Evidence References\n\n"
+        f"{markdown_list(evidence_refs)}"
+        f"{extras}"
+        "## Boundary\n\n"
+        "This ADR is an advisory Aegis Method Pack record. It does not grant "
+        "completion authority or replace project-authoritative architecture "
+        "sources.\n"
+    )
+
+
+def ensure_adr_indexed(root: Path, path: Path, entry_date: str | None = None) -> None:
+    append_index_entry(root, str(path), "adr", adr_title_from_path(path), entry_date)
+
+
+def validate_adr_file(path: Path) -> list[str]:
+    failures = []
+    match = ADR_FILENAME_RE.match(path.name)
+    if not match:
+        failures.append(f"{path}: ADR filename must match ADR-####-slug.md")
+
+    text = path.read_text(encoding="utf-8")
+    for phrase in ADR_REQUIRED_PHRASES:
+        if phrase not in text:
+            failures.append(f"{path}: ADR missing phrase: {phrase}")
+
+    if "- Status: superseded" in text and "## Superseded By" not in text:
+        failures.append(f"{path}: superseded ADR marker requires a Superseded By section")
+
+    return failures
+
+
 def work_dir(root: Path, work: str) -> Path:
     work_name = Path(work).name
     if work != work_name or work_name in ("", ".", ".."):
@@ -518,6 +712,137 @@ def markdown_list(items: list[str]) -> str:
     if not items:
         return "- none\n"
     return "".join(f"- {item}\n" for item in items)
+
+
+def command_new_adr(args: argparse.Namespace) -> int:
+    root = resolve_root(args.root)
+    initialize_workspace(root)
+
+    slug = normalize_slug(args.slug, "ADR slug")
+    target = next_adr_path(root, slug)
+    adr_id = adr_id_from_path(target)
+    source_evidence = require_list(args.source_evidence, "--source-evidence")
+    alternatives = require_list(args.alternative, "--alternative")
+    consequences = require_list(args.consequence, "--consequence")
+    evidence_refs = require_list(args.evidence_ref, "--evidence-ref")
+    title = require_text(args.title, "ADR title")
+    content = render_adr_markdown(
+        adr_id=adr_id,
+        title=title,
+        entry_date=args.date,
+        status=args.status,
+        source_evidence=source_evidence,
+        context=require_text(args.context, "ADR context"),
+        decision=require_text(args.decision, "ADR decision"),
+        alternatives=alternatives,
+        consequences=consequences,
+        compat_boundary=require_text(args.compat_boundary, "compatibility boundary"),
+        retirement_impact=require_text(args.retirement_impact, "retirement impact"),
+        baseline_sync_needed=args.baseline_sync,
+        baseline_target=require_text(args.baseline_target, "baseline sync target"),
+        baseline_action=args.baseline_action,
+        baseline_reason=require_text(args.baseline_reason, "baseline sync reason"),
+        evidence_refs=evidence_refs,
+    )
+    write_text_lf(target, content)
+    ensure_adr_indexed(root, target, args.date)
+    print(f"Created ADR: {(WORKSPACE_REL / 'adr' / target.name).as_posix()}")
+    return 0
+
+
+def command_amend_adr(args: argparse.Namespace) -> int:
+    root = resolve_root(args.root)
+    initialize_workspace(root)
+
+    rel_path, target = normalize_adr_path(root, args.path)
+    source_evidence = require_list(args.source_evidence, "--source-evidence")
+    evidence_refs = require_list(args.evidence_ref, "--evidence-ref")
+    summary = require_text(args.summary, "amendment summary")
+
+    with target.open("a", encoding="utf-8", newline="\n") as handle:
+        handle.write(
+            "\n"
+            f"## Amendment - {args.date} - {summary}\n\n"
+            "- Status: amended\n\n"
+            "### Source Evidence\n\n"
+            f"{markdown_list(source_evidence)}"
+            "### Change Summary\n\n"
+            f"{summary}\n\n"
+            "### Compatibility Boundary\n\n"
+            f"{require_text(args.compat_boundary, 'compatibility boundary')}\n\n"
+            "### Retirement Impact\n\n"
+            f"{require_text(args.retirement_impact, 'retirement impact')}\n\n"
+            f"{render_baseline_sync(args.baseline_sync, require_text(args.baseline_target, 'baseline sync target'), args.baseline_action, require_text(args.baseline_reason, 'baseline sync reason'), heading_level='###')}\n"
+            "### Evidence References\n\n"
+            f"{markdown_list(evidence_refs)}"
+            "### Boundary\n\n"
+            "This amendment is an advisory Aegis Method Pack record. It does not grant "
+            "completion authority or replace project-authoritative architecture "
+            "sources.\n"
+        )
+
+    ensure_adr_indexed(root, target, args.date)
+    print(f"Amended ADR: {rel_path}")
+    return 0
+
+
+def command_supersede_adr(args: argparse.Namespace) -> int:
+    root = resolve_root(args.root)
+    initialize_workspace(root)
+
+    prior_rel, prior_path = normalize_adr_path(root, args.path)
+    prior_text = prior_path.read_text(encoding="utf-8")
+    if "## Superseded By" in prior_text:
+        raise WorkspaceError(f"ADR is already marked as superseded: {prior_path}")
+
+    slug = normalize_slug(args.slug, "ADR slug")
+    target = next_adr_path(root, slug)
+    adr_id = adr_id_from_path(target)
+    target_rel = (WORKSPACE_REL / "adr" / target.name).as_posix()
+    source_evidence = require_list(args.source_evidence, "--source-evidence")
+    alternatives = require_list(args.alternative, "--alternative")
+    consequences = require_list(args.consequence, "--consequence")
+    evidence_refs = require_list(args.evidence_ref, "--evidence-ref")
+    supersession_reason = require_text(args.supersession_reason, "supersession reason")
+    content = render_adr_markdown(
+        adr_id=adr_id,
+        title=require_text(args.title, "ADR title"),
+        entry_date=args.date,
+        status=args.status,
+        source_evidence=source_evidence,
+        context=require_text(args.context, "ADR context"),
+        decision=require_text(args.decision, "ADR decision"),
+        alternatives=alternatives,
+        consequences=consequences,
+        compat_boundary=require_text(args.compat_boundary, "compatibility boundary"),
+        retirement_impact=require_text(args.retirement_impact, "retirement impact"),
+        baseline_sync_needed=args.baseline_sync,
+        baseline_target=require_text(args.baseline_target, "baseline sync target"),
+        baseline_action=args.baseline_action,
+        baseline_reason=require_text(args.baseline_reason, "baseline sync reason"),
+        evidence_refs=evidence_refs,
+        extra_sections=[
+            "## Supersedes\n\n"
+            f"- ADR: {prior_rel}\n"
+            f"- Reason: {supersession_reason}\n"
+        ],
+    )
+    write_text_lf(target, content)
+
+    with prior_path.open("a", encoding="utf-8", newline="\n") as handle:
+        handle.write(
+            "\n"
+            "## Superseded By\n\n"
+            "- Status: superseded\n"
+            f"- Date: {args.date}\n"
+            f"- ADR: {target_rel}\n"
+            f"- Reason: {supersession_reason}\n"
+        )
+
+    ensure_adr_indexed(root, target, args.date)
+    ensure_adr_indexed(root, prior_path, args.date)
+    print(f"Created superseding ADR: {target_rel}")
+    return 0
 
 
 def command_new_work(args: argparse.Namespace) -> int:
@@ -926,6 +1251,8 @@ def command_check(args: argparse.Namespace) -> int:
         for rel_path in workspace_markdown_files(ws):
             if rel_path not in indexed_paths:
                 failures.append(f"workspace markdown is not indexed: {rel_path}")
+        for adr_path in sorted((ws / "adr").glob("*.md")):
+            failures.extend(validate_adr_file(adr_path))
 
     if ws.exists():
         for artifact_type, path in recognizable_artifact_json_files(ws):
@@ -972,6 +1299,149 @@ def build_parser() -> argparse.ArgumentParser:
     )
     validate_parser.add_argument("--file", required=True, help="artifact JSON file")
     validate_parser.set_defaults(func=command_validate_artifact)
+
+    new_adr_parser = subparsers.add_parser(
+        "new-adr", help="create a helper-backed ADR in a target project workspace"
+    )
+    new_adr_parser.add_argument("--root", required=True, help="target project root")
+    new_adr_parser.add_argument("--date", default=date.today().isoformat(), help="ADR date")
+    new_adr_parser.add_argument("--slug", required=True, help="ADR slug without numeric prefix")
+    new_adr_parser.add_argument("--title", required=True, help="human-readable ADR title")
+    new_adr_parser.add_argument(
+        "--status", required=True, choices=ADR_SOURCE_STATUSES, help="ADR evidence source status"
+    )
+    new_adr_parser.add_argument(
+        "--source-evidence", action="append", default=[], help="source evidence summary"
+    )
+    new_adr_parser.add_argument("--context", required=True, help="ADR context")
+    new_adr_parser.add_argument("--decision", required=True, help="ADR decision")
+    new_adr_parser.add_argument(
+        "--alternative", action="append", default=[], help="alternative considered"
+    )
+    new_adr_parser.add_argument(
+        "--consequence", action="append", default=[], help="decision consequence"
+    )
+    new_adr_parser.add_argument(
+        "--compat-boundary", required=True, help="compatibility boundary"
+    )
+    new_adr_parser.add_argument(
+        "--retirement-impact", required=True, help="retirement impact"
+    )
+    new_adr_parser.add_argument(
+        "--baseline-sync",
+        required=True,
+        choices=ADR_BASELINE_SYNC_STATES,
+        help="baseline sync requirement",
+    )
+    new_adr_parser.add_argument(
+        "--baseline-target", required=True, help="baseline sync target"
+    )
+    new_adr_parser.add_argument(
+        "--baseline-action",
+        required=True,
+        choices=sorted(ADR_BASELINE_SYNC_ACTIONS),
+        help="baseline sync action",
+    )
+    new_adr_parser.add_argument(
+        "--baseline-reason", required=True, help="baseline sync reason"
+    )
+    new_adr_parser.add_argument(
+        "--evidence-ref", action="append", default=[], help="evidence reference"
+    )
+    new_adr_parser.set_defaults(func=command_new_adr)
+
+    amend_adr_parser = subparsers.add_parser(
+        "amend-adr", help="append an amendment record to an existing workspace ADR"
+    )
+    amend_adr_parser.add_argument("--root", required=True, help="target project root")
+    amend_adr_parser.add_argument("--path", required=True, help="existing ADR path inside docs/aegis/adr")
+    amend_adr_parser.add_argument("--date", default=date.today().isoformat(), help="amendment date")
+    amend_adr_parser.add_argument("--summary", required=True, help="amendment summary")
+    amend_adr_parser.add_argument(
+        "--source-evidence", action="append", default=[], help="source evidence summary"
+    )
+    amend_adr_parser.add_argument(
+        "--compat-boundary", required=True, help="compatibility boundary"
+    )
+    amend_adr_parser.add_argument(
+        "--retirement-impact", required=True, help="retirement impact"
+    )
+    amend_adr_parser.add_argument(
+        "--baseline-sync",
+        required=True,
+        choices=ADR_BASELINE_SYNC_STATES,
+        help="baseline sync requirement",
+    )
+    amend_adr_parser.add_argument(
+        "--baseline-target", required=True, help="baseline sync target"
+    )
+    amend_adr_parser.add_argument(
+        "--baseline-action",
+        required=True,
+        choices=sorted(ADR_BASELINE_SYNC_ACTIONS),
+        help="baseline sync action",
+    )
+    amend_adr_parser.add_argument(
+        "--baseline-reason", required=True, help="baseline sync reason"
+    )
+    amend_adr_parser.add_argument(
+        "--evidence-ref", action="append", default=[], help="evidence reference"
+    )
+    amend_adr_parser.set_defaults(func=command_amend_adr)
+
+    supersede_adr_parser = subparsers.add_parser(
+        "supersede-adr", help="create a superseding ADR and mark the prior ADR"
+    )
+    supersede_adr_parser.add_argument("--root", required=True, help="target project root")
+    supersede_adr_parser.add_argument("--path", required=True, help="prior ADR path inside docs/aegis/adr")
+    supersede_adr_parser.add_argument("--date", default=date.today().isoformat(), help="ADR date")
+    supersede_adr_parser.add_argument("--slug", required=True, help="new ADR slug without numeric prefix")
+    supersede_adr_parser.add_argument("--title", required=True, help="human-readable ADR title")
+    supersede_adr_parser.add_argument(
+        "--status", required=True, choices=ADR_SOURCE_STATUSES, help="ADR evidence source status"
+    )
+    supersede_adr_parser.add_argument(
+        "--source-evidence", action="append", default=[], help="source evidence summary"
+    )
+    supersede_adr_parser.add_argument("--context", required=True, help="ADR context")
+    supersede_adr_parser.add_argument("--decision", required=True, help="ADR decision")
+    supersede_adr_parser.add_argument(
+        "--alternative", action="append", default=[], help="alternative considered"
+    )
+    supersede_adr_parser.add_argument(
+        "--consequence", action="append", default=[], help="decision consequence"
+    )
+    supersede_adr_parser.add_argument(
+        "--compat-boundary", required=True, help="compatibility boundary"
+    )
+    supersede_adr_parser.add_argument(
+        "--retirement-impact", required=True, help="retirement impact"
+    )
+    supersede_adr_parser.add_argument(
+        "--baseline-sync",
+        required=True,
+        choices=ADR_BASELINE_SYNC_STATES,
+        help="baseline sync requirement",
+    )
+    supersede_adr_parser.add_argument(
+        "--baseline-target", required=True, help="baseline sync target"
+    )
+    supersede_adr_parser.add_argument(
+        "--baseline-action",
+        required=True,
+        choices=sorted(ADR_BASELINE_SYNC_ACTIONS),
+        help="baseline sync action",
+    )
+    supersede_adr_parser.add_argument(
+        "--baseline-reason", required=True, help="baseline sync reason"
+    )
+    supersede_adr_parser.add_argument(
+        "--evidence-ref", action="append", default=[], help="evidence reference"
+    )
+    supersede_adr_parser.add_argument(
+        "--supersession-reason", required=True, help="why the prior ADR is superseded"
+    )
+    supersede_adr_parser.set_defaults(func=command_supersede_adr)
 
     new_work_parser = subparsers.add_parser(
         "new-work", help="create helper-backed work lifecycle records"

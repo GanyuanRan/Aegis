@@ -219,6 +219,32 @@ class AegisUpdateRegistryTests(unittest.TestCase):
             self.assertEqual(copy_entry["discoveryShape"], "direct-child")
             self.assertEqual(junction_entry["discoveryShape"], "umbrella-root")
 
+    def test_register_installation_defaults_antigravity_cli_to_host_managed(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-antigravity-shape-") as tmp:
+            registry = Path(tmp) / "installations.json"
+            root = Path(tmp) / "aegis"
+
+            entry = update.register_installation(
+                registry,
+                host="antigravity-cli",
+                method_pack_root=root,
+                sync_mode="repo-only",
+            )
+
+            self.assertEqual(entry["syncMode"], "repo-only")
+            self.assertEqual(entry["discoveryShape"], "host-managed")
+
+    def test_doctor_discovery_root_skips_host_managed_antigravity_shape(self):
+        entry = {
+            "id": "antigravity-cli:default",
+            "host": "antigravity-cli",
+            "syncMode": "repo-only",
+            "discoveryRoot": "/tmp/antigravity-plugin-cache",
+            "discoveryShape": "host-managed",
+        }
+
+        self.assertIsNone(update.doctor_discovery_root(entry))
+
     def test_default_method_pack_root_prefers_user_local_config(self):
         with tempfile.TemporaryDirectory(prefix="aegis-update-config-root-") as tmp:
             configured_root = Path(tmp) / "configured-aegis"

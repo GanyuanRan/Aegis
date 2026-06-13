@@ -321,11 +321,176 @@ fi
 "${PYTHON_CMD[@]}" "$HELPER" check --root "$TARGET_ROOT" >/dev/null
 pass "lifecycle commands assemble a structural proof bundle"
 
+ADR_ONE_PATH="$TARGET_ROOT/docs/aegis/adr/ADR-0001-helper-owner-boundary.md"
+"${PYTHON_CMD[@]}" "$HELPER" new-adr \
+    --root "$TARGET_ROOT" \
+    --date 2026-05-08 \
+    --slug helper-owner-boundary \
+    --title "Helper owner boundary" \
+    --status recorded-from-work \
+    --source-evidence "docs/aegis/work/2026-05-07-helper-lifecycle/proof-bundle.md" \
+    --context "Completed helper work now needs a durable project-local ADR record." \
+    --decision "Use docs/aegis/adr for target-project Aegis method-pack ADR memory." \
+    --alternative "Keep architecture memory only in proof bundles." \
+    --consequence "Completion-time ADR backfill gains a helper-backed record without creating runtime authority." \
+    --compat-boundary "Writes only to target-project docs/aegis/adr and validates structure only." \
+    --retirement-impact "Helper-backed ADR automation can retire the workspace ADR helper limitation once workflow wiring lands." \
+    --baseline-sync needed \
+    --baseline-target "docs/current/AEGIS_ADR_AUTO_BACKFILL.md" \
+    --baseline-action update-baseline \
+    --baseline-reason "Current ADR helper docs must reflect the new target-project command path." \
+    --evidence-ref "docs/aegis/work/2026-05-07-helper-lifecycle/proof-bundle.md" >/dev/null
+
+if [[ ! -f "$ADR_ONE_PATH" ]]; then
+    fail "new-adr must create the first workspace ADR file"
+fi
+if ! grep -q 'Status: `recorded-from-work`' "$ADR_ONE_PATH"; then
+    fail "new-adr must record the ADR evidence-source status"
+fi
+if ! grep -q "## Baseline Sync" "$ADR_ONE_PATH"; then
+    fail "new-adr must include a baseline sync section"
+fi
+if ! grep -q "advisory Aegis Method Pack record" "$ADR_ONE_PATH"; then
+    fail "new-adr must preserve the advisory method-pack boundary"
+fi
+"${PYTHON_CMD[@]}" "$HELPER" check --root "$TARGET_ROOT" >/dev/null
+pass "new-adr creates an indexed workspace ADR with the required structure"
+
+if "${PYTHON_CMD[@]}" "$HELPER" new-adr \
+    --root "$TARGET_ROOT" \
+    --date 2026-05-08 \
+    --slug helper-owner-boundary \
+    --title "Duplicate helper owner boundary" \
+    --status recorded-from-work \
+    --source-evidence "duplicate evidence" \
+    --context "Duplicate ADR slugs should be rejected." \
+    --decision "Reject duplicate slugs." \
+    --alternative "Allow duplicate slugs and rely on numbers only." \
+    --consequence "Slug collisions stay explicit." \
+    --compat-boundary "No compatibility change." \
+    --retirement-impact "No retirement change." \
+    --baseline-sync not-needed \
+    --baseline-target "docs/current/AEGIS_ADR_AUTO_BACKFILL.md" \
+    --baseline-action cite-unchanged \
+    --baseline-reason "No baseline writeback is needed for a rejected duplicate." \
+    --evidence-ref "docs/aegis/work/2026-05-07-helper-lifecycle/proof-bundle.md" >/tmp/aegis-workspace-adr-duplicate.out 2>&1; then
+    fail "new-adr must reject a duplicate ADR slug"
+fi
+if ! grep -q "ADR slug already exists" /tmp/aegis-workspace-adr-duplicate.out; then
+    fail "duplicate new-adr error should explain the ADR slug collision"
+fi
+pass "new-adr rejects duplicate ADR slugs"
+
+"${PYTHON_CMD[@]}" "$HELPER" amend-adr \
+    --root "$TARGET_ROOT" \
+    --path "$ADR_ONE_PATH" \
+    --date 2026-05-09 \
+    --summary "Added closeout evidence" \
+    --source-evidence "bash tests/e2e/aegis-workspace-check.sh" \
+    --compat-boundary "The ADR helper remains target-project only and structural." \
+    --retirement-impact "Fresh verification evidence can now justify retiring the helper automation limitation." \
+    --baseline-sync not-needed \
+    --baseline-target "docs/current/AEGIS_ADR_AUTO_BACKFILL.md" \
+    --baseline-action cite-unchanged \
+    --baseline-reason "The baseline target remains valid; only supporting evidence changed." \
+    --evidence-ref "docs/aegis/adr/ADR-0001-helper-owner-boundary.md" >/dev/null
+
+if ! grep -q "## Amendment - 2026-05-09 - Added closeout evidence" "$ADR_ONE_PATH"; then
+    fail "amend-adr must append an amendment section"
+fi
+if ! grep -q -- "- Status: amended" "$ADR_ONE_PATH"; then
+    fail "amend-adr must mark the appended section as amended"
+fi
+"${PYTHON_CMD[@]}" "$HELPER" check --root "$TARGET_ROOT" >/dev/null
+pass "amend-adr appends amendment records without breaking workspace validation"
+
+ADR_TWO_PATH="$TARGET_ROOT/docs/aegis/adr/ADR-0002-helper-owner-boundary-v2.md"
+"${PYTHON_CMD[@]}" "$HELPER" supersede-adr \
+    --root "$TARGET_ROOT" \
+    --path "$ADR_ONE_PATH" \
+    --date 2026-05-10 \
+    --slug helper-owner-boundary-v2 \
+    --title "Helper owner boundary v2" \
+    --status recorded-from-work \
+    --source-evidence "docs/aegis/work/2026-05-07-helper-lifecycle/proof-bundle.md" \
+    --context "The helper contract now includes explicit create, amend, and supersede commands." \
+    --decision "Supersede the earlier ADR with the command-backed helper contract." \
+    --alternative "Amend the prior ADR and keep the same decision scope." \
+    --consequence "Future contributors see the helper-backed contract as the current durable record." \
+    --compat-boundary "The helper still writes only to target-project docs/aegis/adr." \
+    --retirement-impact "The baseline-defined-only limitation can now shrink to workflow/documentation follow-up." \
+    --baseline-sync needed \
+    --baseline-target "docs/current/AEGIS_ADR_AUTO_BACKFILL.md" \
+    --baseline-action update-baseline \
+    --baseline-reason "Current ADR helper docs must describe the superseding command path." \
+    --evidence-ref "docs/aegis/work/2026-05-07-helper-lifecycle/proof-bundle.md" \
+    --supersession-reason "Helper automation moved from placeholder policy to command-backed workspace support." >/dev/null
+
+if [[ ! -f "$ADR_TWO_PATH" ]]; then
+    fail "supersede-adr must create a new superseding ADR file"
+fi
+if ! grep -q "## Supersedes" "$ADR_TWO_PATH"; then
+    fail "supersede-adr must record which ADR is being superseded"
+fi
+if ! grep -q "docs/aegis/adr/ADR-0001-helper-owner-boundary.md" "$ADR_TWO_PATH"; then
+    fail "supersede-adr must link the superseding ADR back to the prior ADR"
+fi
+if ! grep -q "## Superseded By" "$ADR_ONE_PATH"; then
+    fail "supersede-adr must mark the prior ADR as superseded"
+fi
+if ! grep -q -- "- Status: superseded" "$ADR_ONE_PATH"; then
+    fail "supersede-adr must append a superseded status marker to the prior ADR"
+fi
+"${PYTHON_CMD[@]}" "$HELPER" check --root "$TARGET_ROOT" >/dev/null
+pass "supersede-adr creates a superseding ADR and marks the prior ADR"
+
+if "${PYTHON_CMD[@]}" "$HELPER" supersede-adr \
+    --root "$TARGET_ROOT" \
+    --path "$ADR_ONE_PATH" \
+    --date 2026-05-11 \
+    --slug helper-owner-boundary-v3 \
+    --title "Helper owner boundary v3" \
+    --status recorded-from-work \
+    --source-evidence "docs/aegis/work/2026-05-07-helper-lifecycle/proof-bundle.md" \
+    --context "Already-superseded ADRs should not be superseded again." \
+    --decision "Reject the second supersession attempt." \
+    --alternative "Allow multiple superseded-by tails." \
+    --consequence "ADR lineage stays single-valued." \
+    --compat-boundary "No compatibility change." \
+    --retirement-impact "No retirement change." \
+    --baseline-sync not-needed \
+    --baseline-target "docs/current/AEGIS_ADR_AUTO_BACKFILL.md" \
+    --baseline-action cite-unchanged \
+    --baseline-reason "No writeback is needed for a rejected supersession." \
+    --evidence-ref "docs/aegis/work/2026-05-07-helper-lifecycle/proof-bundle.md" \
+    --supersession-reason "This should be rejected." >/tmp/aegis-workspace-adr-superseded.out 2>&1; then
+    fail "supersede-adr must reject an ADR that is already marked as superseded"
+fi
+if ! grep -q "already marked as superseded" /tmp/aegis-workspace-adr-superseded.out; then
+    fail "supersede-adr rejection should explain the existing superseded marker"
+fi
+pass "supersede-adr rejects already-superseded ADRs"
+
+cp "$ADR_TWO_PATH" "$ADR_TWO_PATH.bak"
+printf '# Broken ADR\n' > "$ADR_TWO_PATH"
+if "${PYTHON_CMD[@]}" "$HELPER" check --root "$TARGET_ROOT" >/tmp/aegis-workspace-broken-adr.out 2>&1; then
+    fail "check must fail when a workspace ADR loses required structure"
+fi
+mv "$ADR_TWO_PATH.bak" "$ADR_TWO_PATH"
+"${PYTHON_CMD[@]}" "$HELPER" check --root "$TARGET_ROOT" >/dev/null
+pass "check validates helper-backed ADR structure as well as index coverage"
+
 COUNT="$(grep -c 'docs/aegis/specs/2026-05-07-helper-design.md' "$TARGET_ROOT/docs/aegis/INDEX.md")"
 if [[ "$COUNT" != "1" ]]; then
     fail "append-index must not duplicate an existing path"
 fi
 pass "append-index avoids duplicate entries"
+
+ADR_COUNT="$(grep -c 'docs/aegis/adr/ADR-0001-helper-owner-boundary.md' "$TARGET_ROOT/docs/aegis/INDEX.md")"
+if [[ "$ADR_COUNT" != "1" ]]; then
+    fail "ADR helper mutations must not duplicate an existing ADR index path"
+fi
+pass "ADR helper mutations keep INDEX.md path entries idempotent"
 
 if "${PYTHON_CMD[@]}" "$HELPER" append-index \
     --root "$TARGET_ROOT" \

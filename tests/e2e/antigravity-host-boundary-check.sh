@@ -52,6 +52,7 @@ skill_discipline="skills/using-aegis/references/skill-discipline.md"
 antigravity_guide="docs/README.antigravity.md"
 antigravity_tools="skills/using-aegis/references/antigravity-tools.md"
 install_check="tests/e2e/install-verification-policy-check.sh"
+testing_doc="docs/testing.md"
 
 assert_contains "$matrix" "\`Antigravity CLI\`" \
     "compatibility matrix lists Antigravity CLI"
@@ -61,6 +62,8 @@ assert_contains "$matrix" "\`Antigravity App\`" \
     "compatibility matrix lists Antigravity App"
 assert_contains "$matrix" "plugin discovery.*skills.*agents|skills.*agents.*plugin discovery" \
     "compatibility matrix records Antigravity CLI plugin discovery evidence"
+assert_contains "$matrix" "Active closeout target|active closeout target" \
+    "compatibility matrix marks Antigravity CLI as the active closeout target"
 assert_contains "$matrix" "\`Gemini CLI\`.*[Tt]ransitional|[Tt]ransitional.*\`Gemini CLI\`" \
     "compatibility matrix marks Gemini CLI as transitional"
 assert_not_contains "$matrix" "\`Gemini CLI\`.*retir(ed|ing)?|retir(ed|ing)?.*\`Gemini CLI\`" \
@@ -82,6 +85,8 @@ assert_contains "$known_limits" "Transitional Compatibility|transitional compati
     "known limitations labels the Gemini CLI surface as transitional compatibility"
 assert_contains "$known_limits" "Antigravity CLI|Antigravity IDE|Antigravity App" \
     "known limitations records Antigravity structural support boundary"
+assert_contains "$known_limits" "active closeout target" \
+    "known limitations marks Antigravity CLI as the active closeout target"
 assert_contains "$known_limits" "plugin discovery.*skills.*agents|skills.*agents.*plugin discovery" \
     "known limitations records Antigravity CLI plugin discovery evidence"
 assert_contains "$prompt_hygiene" "Antigravity CLI|Antigravity IDE|Antigravity App" \
@@ -96,6 +101,12 @@ assert_contains "$skill_discipline" "references/antigravity-tools.md" \
     "skill discipline links Antigravity tool mapping"
 assert_contains "$install_check" "docs/README.antigravity.md" \
     "install verification policy includes Antigravity host guide"
+assert_contains "$testing_doc" "tests/antigravity/run-tests\\.sh" \
+    "testing docs include the Antigravity suite"
+assert_contains "$testing_doc" "agy --version" \
+    "testing docs include the Antigravity CLI runnable probe"
+assert_contains "$testing_doc" "agy plugin list" \
+    "testing docs include the Antigravity plugin surface probe"
 
 if [[ -f "$antigravity_guide" ]]; then
     pass "Antigravity host guide exists"
@@ -111,6 +122,16 @@ fi
 
 assert_contains "$antigravity_guide" "https://github.com/google-antigravity/antigravity-cli" \
     "Antigravity guide cites official CLI repository"
+assert_contains "$antigravity_guide" "active closeout target" \
+    "Antigravity guide marks Antigravity CLI as the active closeout target"
+assert_contains "$antigravity_guide" "\bagy\b" \
+    "Antigravity guide records the agy executable surface"
+assert_contains "$antigravity_guide" "agy plugin list" \
+    "Antigravity guide records the plugin list command"
+assert_contains "$antigravity_guide" "agy plugin install /path/to/local/plugin" \
+    "Antigravity guide records the local plugin install command"
+assert_contains "$antigravity_guide" "agy plugin import gemini" \
+    "Antigravity guide records the Gemini migration import command"
 assert_contains "$antigravity_guide" "discovery for skills and agents" \
     "Antigravity guide records CLI plugin discovery evidence"
 assert_contains "$antigravity_guide" "release-level live smoke evidence|release-level live smoke|fresh host smoke" \

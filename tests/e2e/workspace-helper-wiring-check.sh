@@ -40,6 +40,11 @@ require_pattern "skills/long-task-continuation/SKILL.md" "<aegis-workspace-helpe
 require_pattern "skills/long-task-continuation/SKILL.md" "<aegis-workspace-helper> add-drift-check"
 require_pattern "skills/long-task-continuation/SKILL.md" "<aegis-workspace-helper> bundle"
 
+require_pattern "skills/recording-architecture-decisions/SKILL.md" "<aegis-workspace-helper> new-adr"
+require_pattern "skills/recording-architecture-decisions/SKILL.md" "<aegis-workspace-helper> amend-adr"
+require_pattern "skills/recording-architecture-decisions/SKILL.md" "<aegis-workspace-helper> supersede-adr"
+require_pattern "skills/recording-architecture-decisions/SKILL.md" "<aegis-workspace-helper> check"
+
 require_pattern "skills/verification-before-completion/SKILL.md" "<aegis-workspace-helper> bundle"
 require_pattern "skills/verification-before-completion/SKILL.md" "<aegis-workspace-helper> check"
 

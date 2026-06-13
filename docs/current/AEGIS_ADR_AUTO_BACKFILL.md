@@ -245,6 +245,10 @@ Skill responsibilities:
     baseline sync closure requests
   - must run the ADR creation gate, choose create / amend / supersede / skip,
     choose the owner surface, and close baseline sync before any writeback
+  - when the chosen owner surface is target-project `docs/aegis/adr/`, should
+    route create / amend / supersede writeback through
+    `aegis-workspace.py new-adr`, `amend-adr`, or `supersede-adr`, then run
+    `aegis-workspace.py check --root <target-project-root>`
   - does not replace completion verification and does not grant completion
     authority
 - `verification-before-completion`
@@ -252,6 +256,8 @@ Skill responsibilities:
     medium/high work that touched architecture surfaces
   - should route create / amend / supersede actions, or needed / unknown
     baseline sync, through `recording-architecture-decisions`
+  - when helper-backed ADR writeback happens in a target project, should keep
+    the workspace helper `check --root` result inside the completion evidence
 - `requesting-code-review`
   - should flag missing ADR or baseline sync when the diff shows durable
     architecture decisions
@@ -280,13 +286,19 @@ ADR Auto Backfill does not:
 Current baseline behavior:
 
 - ADR Auto Backfill is defined as a method-pack workflow requirement.
-- Helper-backed ADR creation, amendment, and supersession may be added as
-  zero-dependency support commands.
-- Helper checks may validate structure, required sections, index coverage, and
-  source references.
+- Helper-backed ADR creation, amendment, and supersession now exist as
+  zero-dependency support commands for target-project `docs/aegis/adr/`.
+- `aegis-workspace.py new-adr` creates an indexed workspace ADR with the
+  minimum required sections.
+- `aegis-workspace.py amend-adr` appends an amendment record without rewriting
+  accepted ADR history.
+- `aegis-workspace.py supersede-adr` creates a new ADR, links it to the prior
+  ADR, and marks the prior ADR as superseded.
+- Helper checks validate ADR filename shape, required sections, index coverage,
+  and recognizable workspace JSON sidecars.
 - Helper checks must not decide architecture truth or completion authority.
 
-Recommended future support commands:
+Current helper support commands:
 
 ```text
 aegis-workspace.py new-adr

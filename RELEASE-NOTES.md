@@ -1,5 +1,38 @@
 # Aegis Release Notes
 
+## v2.1.3 (2026-06-13)
+
+### Antigravity CLI Closeout Lane And Boundary Sync
+
+- Reframed `Antigravity CLI` as the current active Google-host closeout target
+  while keeping `Antigravity IDE` and `Antigravity App` explicitly structural.
+- Added a dedicated `tests/antigravity/` verification lane plus current-doc,
+  README, and release-checklist sync so the repo now records a precise
+  environment blocker instead of a vague host-support gap when `agy` is absent.
+- Kept updater and doctor semantics bounded to the verified current contract:
+  `syncMode = repo-only`, `discoveryShape = host-managed`, and no claim that a
+  plugin-managed Aegis install surface is already verified.
+
+### Helper-Backed ADR Lifecycle Commands
+
+- Extended `scripts/aegis-workspace.py` with helper-backed `new-adr`,
+  `amend-adr`, and `supersede-adr` commands for target-project
+  `docs/aegis/adr/` workspaces.
+- Added structural ADR validation for filename shape, required sections,
+  supersession markers, and `INDEX.md` coverage without turning the helper into
+  architecture or completion authority.
+- Wired the dedicated ADR and completion skills to route target-project ADR
+  writeback through the shared workspace helper and to preserve helper `check`
+  output as completion evidence.
+
+### Workspace, Skill, And Release-Surface Coverage
+
+- Expanded `tests/e2e/aegis-workspace-check.sh` to exercise ADR creation,
+  amendment, supersession, duplicate rejection, and broken-ADR detection.
+- Updated current docs so ADR Auto Backfill no longer claims helper automation
+  is merely future work; the remaining limitation is now narrowed to workflow
+  judgment for ADR triggering and baseline-sync truth.
+
 ## v2.1.1 (2026-06-11)
 
 ### Baseline Usage Draft And Attention-Drift Visibility

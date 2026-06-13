@@ -65,6 +65,14 @@ If this release explicitly includes Codex distribution chain changes, it is reco
 bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh
 ```
 
+If this release explicitly includes Antigravity host-surface changes, it is
+recommended to supplement with:
+
+```bash
+bash tests/antigravity/run-tests.sh
+bash tests/antigravity/run-tests.sh --integration
+```
+
 If the current machine's default `bash` points to the WSL launcher rather than a usable Git Bash, or if known smoke latency still exists under Git Bash,
 record it in `AEGIS_KNOWN_LIMITATIONS.md`; do not misdiagnose environment and latency blockers as method-pack boundary regressions.
 
@@ -103,8 +111,11 @@ Confirm:
   owned by Aegis
 - Qoder is still described through native `~/.qoder/skills/`, `.qoder/skills/`,
   `.qoder/rules/`, and `AGENTS.md` surfaces, not as a fresh live smoke closeout
-- Antigravity CLI, Antigravity IDE, and Antigravity App are described as
-  structural target surfaces, not current release-level fresh smoke closeout
+- Antigravity CLI is described as the current active closeout target, while
+  Antigravity IDE and Antigravity App remain structural target surfaces until
+  they have separate fresh evidence
+- `docs/testing.md` names `tests/antigravity/run-tests.sh` and its
+  `--integration` lane as the current Antigravity CLI verification entrypoints
 - CC GUI is described as a structural JetBrains IDEA plugin layer target,
   direct `~/.agents/skills/<skill-name>/SKILL.md` skill-directory exposure is
   preserved for its OpenAI/GPT provider scanner regardless of selected GPT

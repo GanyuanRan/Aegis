@@ -22,7 +22,7 @@ It does not answer:
 ## 2. Snapshot Date
 
 The current snapshot is based on fresh evidence and current docs landed as of
-`2026-05-29`.
+`2026-06-13`.
 
 ---
 
@@ -48,9 +48,9 @@ The current snapshot is based on fresh evidence and current docs landed as of
 | `Qoder` | Native `SKILL.md` discovery and rules surfaces support structural install; no current release-level fresh smoke verdict | `docs/README.qoder.md` established; evidence from Qoder skills and rules docs, but real host regression is still deferred |
 | `Cursor` | Has `.cursor/INSTALL.md` install guide; no current release-level fresh smoke verdict | Structural goal established; not yet entered the current host regression slice |
 | `Windsurf` | Has `.windsurf/INSTALL.md` install guide; no current release-level fresh smoke verdict | Structural goal established; not yet entered the current host regression slice |
-| `Antigravity CLI` | Structural target added; no current release-level fresh smoke verdict | Google positions Antigravity CLI as the successor terminal surface with skills, hooks, subagents, MCP, plugins, and slash-command configuration; the public CLI `1.0.1` changelog adds plugin discovery for skills and agents from installed plugin directories, but the Aegis install / discovery contract still needs fresh verification |
-| `Antigravity IDE` | Structural target added; no current release-level fresh smoke verdict | Google positions Antigravity IDE as an editor surface with global or workspace-specific Skills, MCPs, and JSON Hooks; Aegis install path still needs fresh verification |
-| `Antigravity App` | Structural target added; no current release-level fresh smoke verdict | Google Antigravity 2.x app / project platform can carry Aegis method-pack projections, but no live host closeout has been run |
+| `Antigravity CLI` | Active closeout target; no current release-level fresh smoke verdict | Google positions Antigravity CLI as the successor terminal surface with the `agy` executable, plugin/skills management, migration import from Gemini CLI, and documented plugin discovery for skills and agents from installed plugin directories in the public `1.0.1` changelog; the public `1.0.8` changelog also adds dynamic custom-skill discovery improvements. Aegis now has a dedicated `tests/antigravity/run-tests.sh` lane, but the method-pack install / discovery contract still needs fresh local verification |
+| `Antigravity IDE` | Structural target retained; no current release-level fresh smoke verdict | Google positions Antigravity IDE as an editor surface with global or workspace-specific Skills, MCPs, and JSON Hooks; this shape is not the active closeout slice and still needs fresh verification |
+| `Antigravity App` | Structural target retained; no current release-level fresh smoke verdict | Google Antigravity 2.x app / project platform can carry Aegis method-pack projections, but this shape is not the active closeout slice and no live host closeout has been run |
 | `Pi CLI` | Agent Skills and Pi package surface supports method-pack exposure; no current release-level fresh smoke verdict | Pi documents skill discovery from `~/.pi/agent/skills/`, `~/.agents/skills/`, `.pi/skills/`, package `skills/` directories or `pi.skills` entries, and `pi install git:github.com/GanyuanRan/Aegis` package installs; Aegis still needs current release live smoke before claiming host closeout |
 | `OpenClaw` | Native `SKILL.md` skill installer supports local skill directories; no current release-level fresh smoke verdict | `docs/README.openclaw.md` established; evidence from OpenClaw `openclaw skills install` docs that Git/local installs expect `SKILL.md` at the source root; Aegis is multi-skill, so individual skill-directory install is the structural path pending live smoke |
 | `Hermes Agent` | Skills Hub / `~/.hermes/skills/` skill host surface supports method-pack exposure; no current release-level fresh smoke verdict | `docs/README.hermes-agent.md` established; evidence from Hermes Skills Hub, documented local skills path, GitHub path installs, and built-in coding delegation skills; live host regression still deferred |
@@ -97,20 +97,21 @@ The current snapshot only states:
 7. `GitHub Copilot` can expose Aegis through `.github/skills/`, `.github/copilot-instructions.md`, `.github/hooks/*.json`, and `AGENTS.md`, but support remains structural until a fresh Copilot install and agent smoke proves it for the current release
 8. `Qoder` can expose Aegis through `~/.qoder/skills/`, `.qoder/skills/`, `.qoder/rules/`, and `AGENTS.md`, but support remains structural until a fresh Qoder install smoke proves it for the current release
 9. `Cursor` and `Windsurf` have structured install guides but have not yet entered release-level fresh smoke
-10. `Antigravity CLI`, `Antigravity IDE`, and `Antigravity App` are now structural target surfaces, but still lack release-level fresh smoke evidence
-11. `Gemini CLI` is retained as a transitional compatibility surface after Google's `2026-05-19` transition announcement while Antigravity support matures
-12. `Pi CLI` can expose Aegis through `pi install git:github.com/GanyuanRan/Aegis`, Pi package `skills/` / `pi.skills` discovery, `~/.pi/agent/skills/`, `~/.agents/skills/`, or `.pi/skills/`, but support remains structural until a fresh Pi install smoke proves it for the current release
-13. `OpenClaw` can expose Aegis through individual local skill-directory installs, but `git:owner/repo` should not be written as the canonical whole-repo Aegis installer because OpenClaw expects `SKILL.md` at the source root
-14. `Hermes Agent` can expose Aegis through `~/.hermes/skills/` or documented GitHub path installs, but support remains structural until a fresh Hermes install smoke proves it for the current release
-15. `Warp`, as a terminal host, does not itself need an independent adapter
-16. The current method-pack still retains the cross-host installation goal
-17. "Support all plugin hosts" remains a product goal, not equivalent to "all hosts have current fresh closeout"
-18. Some hosts may require a compatibility exposure shape that differs from a
+10. `Antigravity CLI` is now the active Google-host closeout target, but still lacks release-level fresh smoke evidence
+11. `Antigravity IDE` and `Antigravity App` remain structural target surfaces rather than the active closeout slice
+12. `Gemini CLI` is retained as a transitional compatibility surface after Google's `2026-05-19` transition announcement while Antigravity support matures
+13. `Pi CLI` can expose Aegis through `pi install git:github.com/GanyuanRan/Aegis`, Pi package `skills/` / `pi.skills` discovery, `~/.pi/agent/skills/`, `~/.agents/skills/`, or `.pi/skills/`, but support remains structural until a fresh Pi install smoke proves it for the current release
+14. `OpenClaw` can expose Aegis through individual local skill-directory installs, but `git:owner/repo` should not be written as the canonical whole-repo Aegis installer because OpenClaw expects `SKILL.md` at the source root
+15. `Hermes Agent` can expose Aegis through `~/.hermes/skills/` or documented GitHub path installs, but support remains structural until a fresh Hermes install smoke proves it for the current release
+16. `Warp`, as a terminal host, does not itself need an independent adapter
+17. The current method-pack still retains the cross-host installation goal
+18. "Support all plugin hosts" remains a product goal, not equivalent to "all hosts have current fresh closeout"
+19. Some hosts may require a compatibility exposure shape that differs from a
     mainline host's canonical install shape; when that happens, the method-pack
     `skills/` tree remains the canonical source and the extra exposure should be
     treated as a generated compatibility view rather than a second editable
     owner
-19. The shared local `~/.config/aegis/config.toml` may declare one canonical
+20. The shared local `~/.config/aegis/config.toml` may declare one canonical
     `method_pack_root`; when it does, new host registrations should prefer that
     root and treat host-specific discovery roots, plugin caches, or copied skill
     trees as generated or host-managed views into the same Aegis body
@@ -132,11 +133,12 @@ When reading the current host verdict, follow this order:
 9. `docs/README.copilot.md`
 10. `docs/README.qoder.md`
 11. `docs/README.antigravity.md`
-12. `docs/README.pi.md`
-13. `docs/README.openclaw.md`
-14. `docs/README.hermes-agent.md`
-15. `.windsurf/INSTALL.md`
-16. `.cursor/INSTALL.md`
+12. `tests/antigravity/*`
+13. `docs/README.pi.md`
+14. `docs/README.openclaw.md`
+15. `docs/README.hermes-agent.md`
+16. `.windsurf/INSTALL.md`
+17. `.cursor/INSTALL.md`
 
 ---
 

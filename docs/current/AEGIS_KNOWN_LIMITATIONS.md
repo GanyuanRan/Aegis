@@ -281,59 +281,76 @@ request.
 
 ---
 
-### 2.14 ADR Auto Backfill Is Baseline-Defined Before Helper Automation
+### 2.14 ADR Auto Backfill Helper Exists, But Baseline Sync Still Depends On Workflow Judgment
 
 **Retained Item**
-- ADR Auto Backfill is currently defined as a method-pack workflow baseline, but
-  helper-backed `new-adr`, `amend-adr`, and `supersede-adr` commands are not yet
-  implemented
+- Helper-backed `new-adr`, `amend-adr`, and `supersede-adr` commands now exist,
+  but they only scaffold target-project `docs/aegis/adr/` records and validate
+  structure
+- The semantic decision to create, amend, supersede, or skip an ADR, plus the
+  truth of baseline sync closure, still depends on workflow judgment against the
+  current authority docs
 
 **Retention Reason**
-- The workflow boundary must be stable before helper automation is added. The
-  current repository already defines how completed work should backfill ADRs and
-  when baseline sync is mandatory, but script support and skill wiring still
-  need a separate implementation slice
+- The repository now has helper-backed ADR lifecycle commands, owner-surface
+  skill wiring, and e2e coverage, but those commands intentionally stop at
+  structural method-pack support. `recording-architecture-decisions` and
+  `verification-before-completion` still own ADR trigger judgment, owner-surface
+  choice, and baseline sync closure
 
 **Observation Metric**
 - `docs/current/AEGIS_ADR_AUTO_BACKFILL.md`
-- Future helper tests for ADR creation, amendment, supersession, index coverage,
-  and baseline sync checks
-- Review of `verification-before-completion`, `long-task-continuation`,
-  `writing-plans`, and `requesting-code-review` skill wiring
+- `bash tests/e2e/aegis-workspace-check.sh`
+- `bash tests/e2e/workspace-helper-wiring-check.sh`
+- `bash tests/e2e/workflow-quality-check.sh`
+- Review of actual completion notes for explicit ADR Backfill and Baseline Sync
+  closure when durable architecture surfaces changed
 
 **Retirement Trigger**
-- When helper-backed ADR lifecycle commands exist, affected skills invoke ADR
-  Auto Backfill at completion time, and e2e tests prove ADR/index/baseline sync
-  behavior without granting runtime authority
+- When real target-project usage shows helper-backed ADR writeback and baseline
+  sync closure happen reliably without stale docs, skipped routing, or
+  authority confusion
 
 ---
 
-### 2.15 Antigravity Structural Support Is Not Yet Fresh Host Closeout
+### 2.15 Antigravity CLI Is The Active Closeout Target, But Fresh Host Closeout Is Still Pending
 
 **Retained Item**
-- Antigravity CLI, Antigravity IDE, and Antigravity App are structural target
-  surfaces, not release-level fresh smoke verdicts
+- `Antigravity CLI` is the active Google-host closeout target, but still has no
+  fresh Aegis host closeout verdict
+- `Antigravity CLI` remains the active closeout target inside the current
+  Google-host slice
+- `Antigravity IDE` and `Antigravity App` remain structural target surfaces,
+  not release-level fresh smoke verdicts
 
 **Retention Reason**
 - Google positions Antigravity as the successor Google agent platform and
   documents public capabilities such as Skills, MCP, JSON Hooks, plugins,
-  slash commands, and subagents. The public Antigravity CLI `1.0.1` changelog
-  says plugin discovery for skills and agents from installed plugin directories
-  exists, but the stable local install / discovery contract for this Aegis
-  method pack still needs current release verification before Aegis can claim
-  host closeout.
+  slash commands, subagents, and the `agy` executable. The public docs now show
+  `agy plugin list`, `agy plugin install /path/to/local/plugin`, and
+  `agy plugin import gemini`. The public Antigravity CLI `1.0.1` changelog says
+  plugin discovery for skills and agents from installed plugin directories
+  exists, and the public `1.0.8` changelog also says custom skills and system
+  slash commands reload dynamically on conversation switch or `/add-dir`.
+- Those signals make `Antigravity CLI` the best next closeout target, but the
+  stable local install / discovery contract for this Aegis method pack still
+  needs current release verification before Aegis can claim host closeout.
 
 **Observation Metric**
 - `docs/README.antigravity.md`
 - `bash tests/e2e/antigravity-host-boundary-check.sh`
-- Future Antigravity CLI / IDE / App install smoke that proves skill discovery,
-  restart or reload behavior, and
+- `bash tests/antigravity/run-tests.sh`
+- `bash tests/antigravity/run-tests.sh --integration`
+- Future Antigravity CLI install smoke that proves skill discovery, restart or
+  reload behavior, and
   `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
 
 **Retirement Trigger**
-- When each Antigravity shape has a verified install/update path that proves
-  both skill discovery and project workspace support without turning Aegis into
-  an authoritative runtime core
+- When `Antigravity CLI` has a verified install/update path that proves both
+  skill discovery and project workspace support without turning Aegis into an
+  authoritative runtime core
+- `Antigravity IDE` and `Antigravity App` should retire or reclassify through
+  their own fresh evidence slices rather than piggybacking on CLI proof
 
 ---
 

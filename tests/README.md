@@ -18,6 +18,7 @@ Primary public entrypoints:
 
 Optional or slower public suites:
 
+- `antigravity/`
 - `claude-code/`
 - `skill-triggering/`
 - `explicit-skill-requests/`

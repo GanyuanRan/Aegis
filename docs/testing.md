@@ -94,6 +94,55 @@ Notes:
   - no duplicate-name override contract
 - Treat a skipped integration run as a recorded compatibility blocker, not as evidence that the OpenCode runtime path passed.
 
+### Antigravity CLI Closeout Tests
+
+For the current Google-host closeout slice, the Antigravity suite runs in two
+layers:
+
+```bash
+bash tests/antigravity/run-tests.sh
+bash tests/antigravity/run-tests.sh --integration
+```
+
+Notes:
+
+- The base suite validates the current Antigravity doc/contract surface and the
+  host-scoped updater registration/readback shape without requiring a runnable
+  `agy` CLI on the machine.
+- The integration suite is intentionally environment-bound and currently uses
+  two gates:
+  - CLI runnable probe: `agy --version`
+  - CLI plugin surface probe: `agy plugin list`
+- If `agy` is not on `PATH`, the suite skips with an explicit CLI blocker.
+- If the CLI exists but the plugin surface cannot be exercised because of local
+  auth/runtime/profile conditions, the suite skips with an explicit environment
+  blocker instead of reporting an Aegis regression.
+- If the CLI is runnable but no longer exposes the documented plugin surface,
+  the integration suite should fail as a host-contract regression.
+- Use `ANTIGRAVITY_CMD=/path/to/agy` when the executable is not directly on
+  `PATH`.
+- The current suite is CLI-first only. `Antigravity IDE` and `Antigravity App`
+  remain structural target surfaces until they have their own fresh host smoke
+  slice.
+
+### Workspace Helper ADR Lifecycle Tests
+
+The workspace helper ADR lifecycle is covered by the existing target-project
+e2e suite:
+
+```bash
+bash tests/e2e/aegis-workspace-check.sh
+```
+
+Notes:
+
+- The suite verifies `aegis-workspace.py new-adr`, `amend-adr`, and
+  `supersede-adr` against a temporary target project root.
+- It checks ADR numbering, supersession markers, `INDEX.md` coverage, and
+  structural `check --root` validation.
+- It also preserves the repository boundary that the Aegis method-pack
+  checkout itself must not ship a live `docs/aegis/` workspace.
+
 ### Phase 5 E2E Verification
 
 The current Phase 5 E2E work adds a new `tests/e2e/` owner path:

@@ -310,6 +310,12 @@ TDD Completion Boundary:
    lifecycle and Baseline Sync Closure before making the final completion
    claim. This keeps `verification-before-completion` as the completion owner
    while delegating the ADR/baseline writeback decision to the dedicated skill.
+   When that dedicated skill chooses target-project `docs/aegis/adr/` as the
+   owner surface, route file writes through `<aegis-workspace-helper> new-adr`,
+   `<aegis-workspace-helper> amend-adr`, or
+   `<aegis-workspace-helper> supersede-adr`, then run
+   `<aegis-workspace-helper> check --root <target-project-root>` before the
+   final completion claim.
 
 15. **Governance Closure**: for governance/cleanup/migration/compatibility/retirement work → final response must include. Do not skip this structure just because the implementation was small. Localize section labels and prose to the user's language; keep internal concepts in English only when they are product terms or file/path identifiers.
 
