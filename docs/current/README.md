@@ -44,7 +44,8 @@ When public docs conflict, use this order:
    `docs/README.deepseek-tui.md`,
    `docs/README.trae.md`, `docs/README.copilot.md`,
    `docs/README.qoder.md`, `docs/README.pi.md`,
-   `docs/README.openclaw.md`, and `docs/README.hermes-agent.md`
+   `docs/README.openclaw.md`, `docs/README.hermes-agent.md`,
+   and `docs/README.zcode.md`
 6. tests and fixtures
 
 ## 4. Public Current Baseline

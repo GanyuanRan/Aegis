@@ -54,6 +54,7 @@ The current snapshot is based on fresh evidence and current docs landed as of
 | `Pi CLI` | Agent Skills and Pi package surface supports method-pack exposure; no current release-level fresh smoke verdict | Pi documents skill discovery from `~/.pi/agent/skills/`, `~/.agents/skills/`, `.pi/skills/`, package `skills/` directories or `pi.skills` entries, and `pi install git:github.com/GanyuanRan/Aegis` package installs; Aegis still needs current release live smoke before claiming host closeout |
 | `OpenClaw` | Native `SKILL.md` skill installer supports local skill directories; no current release-level fresh smoke verdict | `docs/README.openclaw.md` established; evidence from OpenClaw `openclaw skills install` docs that Git/local installs expect `SKILL.md` at the source root; Aegis is multi-skill, so individual skill-directory install is the structural path pending live smoke |
 | `Hermes Agent` | Skills Hub / `~/.hermes/skills/` skill host surface supports method-pack exposure; no current release-level fresh smoke verdict | `docs/README.hermes-agent.md` established; evidence from Hermes Skills Hub, documented local skills path, GitHub path installs, and built-in coding delegation skills; live host regression still deferred |
+| `ZCode` | Native Claude-Code-compatible plugin marketplace reads `.claude-plugin/marketplace.json`; `@`-prefix `SKILL.md` skills and `AGENTS.md` supported; no current release-level fresh smoke verdict | `docs/README.zcode.md` established; evidence from ZCode plugin and skill official docs; Aegis's existing `.claude-plugin/` skeleton works with zero code changes, but live host regression still deferred |
 
 ### 3.2a Transitional Compatibility Host Surfaces
 
@@ -103,15 +104,16 @@ The current snapshot only states:
 13. `Pi CLI` can expose Aegis through `pi install git:github.com/GanyuanRan/Aegis`, Pi package `skills/` / `pi.skills` discovery, `~/.pi/agent/skills/`, `~/.agents/skills/`, or `.pi/skills/`, but support remains structural until a fresh Pi install smoke proves it for the current release
 14. `OpenClaw` can expose Aegis through individual local skill-directory installs, but `git:owner/repo` should not be written as the canonical whole-repo Aegis installer because OpenClaw expects `SKILL.md` at the source root
 15. `Hermes Agent` can expose Aegis through `~/.hermes/skills/` or documented GitHub path installs, but support remains structural until a fresh Hermes install smoke proves it for the current release
-16. `Warp`, as a terminal host, does not itself need an independent adapter
-17. The current method-pack still retains the cross-host installation goal
-18. "Support all plugin hosts" remains a product goal, not equivalent to "all hosts have current fresh closeout"
-19. Some hosts may require a compatibility exposure shape that differs from a
+16. `ZCode` can expose Aegis through its native `.claude-plugin/marketplace.json` reading (Claude Code plugin format), so the existing Claude Code plugin skeleton works with zero code changes; support remains structural until a fresh ZCode install smoke proves it for the current release
+17. `Warp`, as a terminal host, does not itself need an independent adapter
+18. The current method-pack still retains the cross-host installation goal
+19. "Support all plugin hosts" remains a product goal, not equivalent to "all hosts have current fresh closeout"
+20. Some hosts may require a compatibility exposure shape that differs from a
     mainline host's canonical install shape; when that happens, the method-pack
     `skills/` tree remains the canonical source and the extra exposure should be
     treated as a generated compatibility view rather than a second editable
     owner
-20. The shared local `~/.config/aegis/config.toml` may declare one canonical
+21. The shared local `~/.config/aegis/config.toml` may declare one canonical
     `method_pack_root`; when it does, new host registrations should prefer that
     root and treat host-specific discovery roots, plugin caches, or copied skill
     trees as generated or host-managed views into the same Aegis body
@@ -139,6 +141,7 @@ When reading the current host verdict, follow this order:
 15. `docs/README.hermes-agent.md`
 16. `.windsurf/INSTALL.md`
 17. `.cursor/INSTALL.md`
+18. `docs/README.zcode.md`
 
 ---
 

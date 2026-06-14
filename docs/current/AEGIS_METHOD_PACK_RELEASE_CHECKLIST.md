@@ -95,7 +95,8 @@ The following host documentation must be re-read before release:
 11. `docs/README.pi.md`
 12. `docs/README.openclaw.md`
 13. `docs/README.hermes-agent.md`
-14. `docs/testing.md`
+14. `docs/README.zcode.md`
+15. `docs/testing.md`
 
 Confirm:
 
@@ -127,6 +128,10 @@ Confirm:
   not a canonical whole-repo `git:GanyuanRan/Aegis` install
 - Hermes Agent is described as structural skill-host exposure until a fresh
   Hermes install smoke proves the current local discovery path
+- ZCode is described as a structural host target that natively reads
+  `.claude-plugin/marketplace.json` (Claude Code plugin format), so the
+  existing Claude Code plugin skeleton works with zero code changes, not as
+  fresh live smoke closeout
 - Gemini CLI is described as a transitional compatibility surface with the
   `2026-05-19` Google transition announcement and `2026-06-18` consumer
   service-stop boundary, while preserving enterprise and paid API key caveats

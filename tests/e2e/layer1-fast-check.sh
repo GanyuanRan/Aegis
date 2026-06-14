@@ -115,6 +115,7 @@ run_check "Antigravity host boundary" bash "$SCRIPT_DIR/antigravity-host-boundar
 run_check "CC GUI host boundary" bash "$SCRIPT_DIR/cc-gui-host-boundary-check.sh"
 run_check "Pi host boundary" bash "$SCRIPT_DIR/pi-host-boundary-check.sh"
 run_check "popular agent host boundary" bash "$SCRIPT_DIR/popular-agent-host-boundary-check.sh"
+run_check "ZCode host boundary" bash "$SCRIPT_DIR/zcode-host-boundary-check.sh"
 run_check "Copilot + Qoder host boundary" bash "$SCRIPT_DIR/copilot-qoder-host-boundary-check.sh"
 run_check "workflow quality policy" bash "$SCRIPT_DIR/workflow-quality-check.sh"
 run_check "goal framing policy" bash "$SCRIPT_DIR/goal-framing-check.sh"

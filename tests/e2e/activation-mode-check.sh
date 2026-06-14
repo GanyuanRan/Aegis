@@ -206,6 +206,10 @@ assert_contains "docs/README.hermes-agent.md" "AEGIS_ACTIVATION_MODE=explicit" \
     "Hermes Agent guide documents explicit activation caveat"
 assert_contains "docs/README.hermes-agent.md" "does not override Hermes Agent" \
     "Hermes Agent guide clarifies activation mode does not control native matcher"
+assert_contains "docs/README.zcode.md" "AEGIS_ACTIVATION_MODE=explicit" \
+    "ZCode guide documents explicit activation caveat"
+assert_contains "docs/README.zcode.md" "does not override ZCode" \
+    "ZCode guide clarifies activation mode does not control native matcher"
 assert_contains "README.en.md" 'aegis-doctor\.py activation-mode explicit' \
     "English README gives concise doctor activation command"
 assert_contains "README.md" 'aegis-doctor\.py activation-mode explicit' \

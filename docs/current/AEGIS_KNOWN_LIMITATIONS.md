@@ -538,6 +538,35 @@ request.
   discovery and project workspace support without turning Aegis into an
   authoritative runtime core
 
+---
+
+### 2.22 ZCode Structural Support Is Not Yet Fresh Host Closeout
+
+**Retained Item**
+- ZCode is a structural host target, not release-level fresh smoke verdict
+
+**Retention Reason**
+- ZCode documents a plugin marketplace that natively reads
+  `.claude-plugin/marketplace.json` (Claude Code plugin format), `SKILL.md`
+  skills invoked through the `@`-prefix picker, and repository guidance
+  through `AGENTS.md`.
+- Because ZCode natively reads the Claude Code plugin format, Aegis's existing
+  `.claude-plugin/` skeleton works with zero code changes. Current
+  release-level live host smoke is still required before claiming host
+  closeout.
+
+**Observation Metric**
+- `docs/README.zcode.md`
+- `bash tests/e2e/zcode-host-boundary-check.sh`
+- Future ZCode install smoke that proves plugin marketplace install,
+  `@`-prefix skill discovery after reload, and
+  `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
+
+**Retirement Trigger**
+- When ZCode has a verified install/update path that proves both skill
+  discovery and project workspace support without turning Aegis into an
+  authoritative runtime core
+
 ## 3. Default Reading Rule
 
 If a limitation appears simultaneously in README, host docs, or test descriptions, use this document as the current reading entry point.

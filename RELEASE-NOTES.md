@@ -1,5 +1,36 @@
 # Aegis Release Notes
 
+## v2.1.4 (2026-06-14)
+
+### ZCode Host Adaptation (Structural, Full Parity)
+
+- Registered `ZCode` as a structural host target, on equal footing with the
+  other 13 hosts. ZCode natively reads `.claude-plugin/marketplace.json`
+  (Claude Code plugin format), so Aegis's existing plugin skeleton works with
+  zero code changes.
+- Documented the install path (`/plugin marketplace add GanyuanRan/Aegis` →
+  `/plugin install aegis@aegis-dev`), `@`-prefix `SKILL.md` skill discovery,
+  `AGENTS.md` repository guidance, and the ZCode Memory surface in the new
+  `docs/README.zcode.md`.
+- Added a dedicated `tests/e2e/zcode-host-boundary-check.sh` (25 assertions
+  across 10 boundary surfaces plus guide content) and registered it in
+  `layer1-fast-check.sh`, matching the per-host boundary-test convention used
+  by every other host.
+
+### Cross-Surface Host Registration
+
+- Synced ZCode into the host compatibility matrix (§3.2 table, §4 prose, §5
+  evidence sources), the method-pack release checklist (doc-check list plus a
+  confirm bullet), a new `§2.22 ZCode Structural Support` known-limitations
+  entry, the prompt-hygiene host list, and the English / Chinese root README
+  host tables.
+- Appended ZCode to the `install-verification`, `goal-framing`, and
+  `activation-mode` policy test arrays so the host is held to the same
+  complete-install and portable goal-entry contracts as every other host.
+- Kept ZCode at `structural` status with no fresh-smoke claim, consistent with
+  the other 12 non-Codex/OpenCode hosts; the fresh-smoke upgrade is deferred
+  to the §2.22 Retirement Trigger.
+
 ## v2.1.3 (2026-06-13)
 
 ### Antigravity CLI Closeout Lane And Boundary Sync

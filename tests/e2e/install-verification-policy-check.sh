@@ -48,6 +48,7 @@ host_docs=(
     "docs/README.pi.md"
     "docs/README.openclaw.md"
     "docs/README.hermes-agent.md"
+    "docs/README.zcode.md"
 )
 
 for file in "${root_docs[@]}"; do

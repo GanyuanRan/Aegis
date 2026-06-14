@@ -75,6 +75,7 @@ host_docs=(
     "docs/README.pi.md"
     "docs/README.openclaw.md"
     "docs/README.hermes-agent.md"
+    "docs/README.zcode.md"
 )
 task_intent_fixture="tests/e2e/fixtures/artifacts/task-intent-draft.sample.json"
 subagent_packet_fixture="tests/e2e/fixtures/artifacts/subagent-context-packet.sample.json"
