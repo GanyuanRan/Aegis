@@ -1,5 +1,24 @@
 # Aegis Release Notes
 
+## v2.1.5 (2026-06-15)
+
+### ZCode Direct-Child Skill Discovery Fix
+
+- Rewrote `docs/README.zcode.md` to document the direct-child skill-directory
+  install (depth-1 discovery, mirroring CC GUI and Windsurf) as the primary
+  path. The prior v2.1.4 plugin-marketplace-only guide could cause silent
+  zero-skill discovery because ZCode's scanner does not read umbrella skill
+  directories. The universal `README.en.md` Quick Install prompt now routes
+  ZCode to the correct depth-1 steps with no ZCode-specific prompt needed.
+- Added depth-1 direct-child discovery-shape wording to the host compatibility
+  matrix (ZCode row and section 4), known-limitations section 2.22 Retention
+  Reason, and the ZCode boundary test (`--discovery-root`,
+  `--discovery-shape direct-child`, `mklink /J` / `ln -sfn` install shape,
+  umbrella pitfall).
+- Kept the Claude-Code-compatible plugin marketplace path as a documented
+  secondary install with a fallback pointer to the verified direct-child path.
+- Version bump 2.1.4 -> 2.1.5 across all 8 declared files.
+
 ## v2.1.4 (2026-06-14)
 
 ### ZCode Host Adaptation (Structural, Full Parity)

@@ -1,7 +1,7 @@
 # Aegis for ZCode
 
-Guide for using Aegis with ZCode through ZCode's native Claude-Code-compatible
-plugin marketplace and `SKILL.md` skill system.
+Guide for using Aegis with ZCode through ZCode's native skill discovery and its
+Claude-Code-compatible plugin marketplace.
 
 This page only covers the ZCode host install path. For the current
 `Aegis Method Pack` authority order, release gate, host compatibility status,
@@ -14,34 +14,85 @@ and known limitations, read:
 
 ## Current Verdict
 
-ZCode is structurally compatible with Aegis because current official ZCode
-guidance supports:
+ZCode is structurally compatible with Aegis because ZCode discovers skills
+defined by a `SKILL.md` file under user-level and project-level roots such as
+`~/.agents/skills/`, `~/.zcode/skills/`, `.zcode/skills/`, and `.agents/skills/`,
+and reads repository guidance through `AGENTS.md`.
 
-- a plugin marketplace that natively reads `.claude-plugin/marketplace.json`
-  (Claude Code plugin format)
-- skills defined by a `SKILL.md` file, invoked through the `@`-prefix picker
-- repository guidance through `AGENTS.md`
-- memory, plugin, command, hook, and MCP extension surfaces
+ZCode's skill scanner reads each root's *direct* subdirectories and expects:
 
-This lets Aegis project its skill, rule, and plugin discipline into ZCode
-without changing the method-pack boundary. Because ZCode natively reads the
-Claude Code plugin format, Aegis's existing `.claude-plugin/` skeleton works
-with zero code changes.
+```text
+<root>/<skill-name>/SKILL.md
+```
 
-This guide records structural compatibility and native install support. It
-does not claim current release-level live smoke evidence.
+This is a depth-1 scan, like CC GUI and Windsurf. An umbrella directory such as:
 
-## Recommended Complete Installation
+```text
+~/.agents/skills/aegis/ -> ~/.codex/aegis/skills/
+```
 
-Keep a local Aegis checkout and expose the method-pack through ZCode's native
-plugin marketplace flow. This preserves both skill discovery and project
-workspace support verification.
+does **not** work for ZCode, because `aegis/` does not itself contain a
+`SKILL.md`; the real skills live one level deeper. Use the direct-child
+installation below instead.
 
-The marketplace-install path copies Aegis into ZCode's plugin cache. The local
-Aegis checkout remains the canonical method-pack root for doctor checks and
-workspace helpers.
+ZCode also exposes a plugin marketplace that natively reads
+`.claude-plugin/marketplace.json` (Claude Code plugin format), plus memory,
+command, hook, and MCP extension surfaces.
 
-## Plugin Marketplace Installation
+This guide records structural compatibility and native install support. It does
+not claim current release-level live smoke evidence.
+
+## Recommended Installation (Direct-Child)
+
+Keep the Aegis method-pack checkout separate, then expose each Aegis skill as a
+direct child under `~/.agents/skills/`. This preserves:
+
+- ZCode depth-1 skill discovery through direct `SKILL.md` directories
+- Aegis project workspace support through the method-pack root
+- update and doctor verification through Aegis scripts
+
+### macOS / Linux
+
+```bash
+git clone https://github.com/GanyuanRan/Aegis.git ~/.codex/aegis
+mkdir -p ~/.agents/skills
+
+for skill_dir in ~/.codex/aegis/skills/*; do
+  [ -d "$skill_dir" ] || continue
+  ln -sfn "$skill_dir" "$HOME/.agents/skills/$(basename "$skill_dir")"
+done
+```
+
+### Windows PowerShell
+
+```powershell
+git clone https://github.com/GanyuanRan/Aegis.git "$env:USERPROFILE\.codex\aegis"
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.agents\skills"
+
+Get-ChildItem "$env:USERPROFILE\.codex\aegis\skills" -Directory | ForEach-Object {
+  $target = Join-Path "$env:USERPROFILE\.agents\skills" $_.Name
+  if (-not (Test-Path -LiteralPath $target)) {
+    cmd /c mklink /J "$target" "$($_.FullName)"
+  }
+}
+```
+
+Expected structural result:
+
+```text
+~/.agents/skills/using-aegis/SKILL.md
+~/.agents/skills/systematic-debugging/SKILL.md
+~/.agents/skills/brainstorming/SKILL.md
+```
+
+The canonical source of truth remains the method-pack root `skills/` tree. These
+direct-child directories are a compatibility exposure for ZCode's depth-1
+scanner, not a second editable skill tree.
+
+## Plugin Marketplace Installation (Alternative)
+
+ZCode's plugin marketplace also reads `.claude-plugin/marketplace.json`
+natively, so Aegis's existing plugin skeleton works without code changes.
 
 ### macOS / Linux
 
@@ -64,20 +115,9 @@ Reload plugins or restart ZCode:
 /reload-plugins
 ```
 
-For local development or smoke testing from a checked-out copy, point the
-marketplace at the local checkout:
-
-```bash
-git clone https://github.com/GanyuanRan/Aegis.git ~/Aegis
-```
-
-```text
-/plugin marketplace add /home/<user>/Aegis
-/plugin install aegis@aegis-dev --scope user
-/reload-plugins
-```
-
 ### Windows PowerShell
+
+For local development or smoke testing from a checked-out copy:
 
 ```powershell
 git clone https://github.com/GanyuanRan/Aegis.git "$env:USERPROFILE\Aegis"
@@ -89,8 +129,9 @@ git clone https://github.com/GanyuanRan/Aegis.git "$env:USERPROFILE\Aegis"
 /reload-plugins
 ```
 
-Use `--scope project` only when you intentionally want the project to record
-the plugin. Use `--scope local` for machine-local testing.
+If plugin-cache skill discovery does not expose all Aegis skills after this
+install, use the direct-child installation above, which is the verified
+structural path for ZCode's depth-1 scanner.
 
 ## Rules and Project Guidance
 
@@ -99,13 +140,13 @@ ZCode can also load:
 - `AGENTS.md`
 - ZCode Memory files (project conventions and code standards)
 
-For Aegis, keep detailed workflow logic in `skills/`. Use `AGENTS.md` or
-ZCode Memory only to reinforce routing, owner, and boundary discipline.
+For Aegis, keep detailed workflow logic in `skills/`. Use `AGENTS.md` or ZCode
+Memory only to reinforce routing, owner, and boundary discipline.
 
 ## Verification
 
-Restart ZCode or start a new session, then open the `@`-prefix skill picker
-or ask:
+Restart ZCode or start a new session, then open the `@`-prefix skill picker or
+ask:
 
 ```text
 Tell me which Aegis skill you would use before debugging a failing test.
@@ -131,8 +172,7 @@ condition, and non-goals before routing onward. `/aegis-goal <task>` is an
 optional shortcut only when the current host/session supports slash-style
 aliases.
 
-For complete-install verification, run this from the local Aegis checkout
-when filesystem access is available:
+For complete-install verification, run this from the local Aegis checkout:
 
 ```bash
 cd <aegis-method-pack-root>
@@ -145,28 +185,58 @@ the installed Aegis method-pack root.
 Treat the install as complete only if the JSON reports `"ok": true`,
 `"workspaceSupport": "available"`, and `"configStatus": "configured"`.
 
+For ZCode skill discovery, also verify the discovery root:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py --discovery-root ~/.agents/skills
+```
+
+PowerShell:
+
+```powershell
+Set-Location "$env:USERPROFILE\.codex\aegis"
+python scripts\aegis-doctor.py --discovery-root "$env:USERPROFILE\.agents\skills"
+```
+
 ## Updating
 
-Marketplace-installed plugins are copied into ZCode's plugin cache. Update
-from ZCode's plugin manager or reinstall after the repository changes:
+For direct-child installs, symlinks point into the method-pack checkout, so
+`git pull` is enough — no need to recreate them:
+
+```bash
+cd ~/.codex/aegis
+git pull
+python scripts/aegis-doctor.py --write-config --json
+```
+
+Register the installation with Aegis's host-scoped updater:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-update.py register \
+  --host zcode \
+  --sync-mode junction \
+  --discovery-shape direct-child \
+  --discovery-root ~/.agents/skills \
+  --reload-hint "restart ZCode"
+python scripts/aegis-update.py update --host zcode --json
+```
+
+The update skill form is `aegis:update`. It uses the same host-scoped registry
+and updates only the current host unless the user explicitly asks for `--all`.
+
+For marketplace installs, reinstall after the repository changes:
 
 ```text
 /plugin install aegis@aegis-dev --scope user
 /reload-plugins
 ```
 
-For a local-development checkout, pull updates from the method-pack root:
-
-```bash
-cd <aegis-method-pack-root>
-git pull
-/reload-plugins
-```
-
 ## Activation Mode
 
-ZCode uses native skill discovery through the `@`-prefix picker. This
-repository does not currently ship a ZCode-specific bootstrap hook.
+ZCode uses native skill discovery through the `@`-prefix picker. It does not
+currently use an Aegis bootstrap hook from this repository.
 
 That means `AEGIS_ACTIVATION_MODE=explicit` does not override ZCode's own
 matcher by itself. For explicit use, ask ZCode to load an Aegis skill directly,
@@ -192,27 +262,45 @@ this host, the command does not override ZCode's native matcher.
 
 ## Uninstalling
 
+For direct-child installs, remove the Aegis skill directories from:
+
 ```text
-/plugin uninstall aegis@aegis-dev
+~/.agents/skills/
 ```
 
-If you also want to remove the marketplace source:
+If you installed only Aegis into that directory, remove the Aegis skill folders
+and restart ZCode. If you also keep personal skills there, delete only the
+Aegis skill folders that point into `~/.codex/aegis/skills/`.
+
+For marketplace installs:
 
 ```text
+/plugin uninstall aegis@aegis-dev
 /plugin marketplace remove aegis-dev
 ```
 
-For a local-development checkout, remove the cloned Aegis directory after
-uninstalling the plugin.
-
 ## Troubleshooting
 
-### Skills are not visible
+### Skills are not visible (umbrella symlink pitfall)
 
-1. Confirm the `aegis` plugin appears in ZCode's plugin manager.
-2. Run `/reload-plugins` or restart ZCode.
-3. Re-open the `@`-prefix skill picker and look for Aegis skills.
-4. Confirm the installed plugin cache contains the `skills/` directory.
+Do not use the Codex umbrella symlink (`~/.agents/skills/aegis/ ->
+~/.codex/aegis/skills/`) for ZCode. ZCode's depth-1 scanner expects each
+direct child of `~/.agents/skills/` to contain a `SKILL.md`. The umbrella
+`aegis/` directory does not, so ZCode discovers zero Aegis skills.
+
+Use the direct-child installation above instead, which exposes each Aegis skill
+as `~/.agents/skills/<skill-name>/SKILL.md`. This is the same shape CC GUI and
+Windsurf require.
+
+### Skills are not visible (general)
+
+1. Confirm that direct skill directories exist:
+   `~/.agents/skills/<skill-name>/SKILL.md`.
+2. Avoid relying only on the umbrella directory for ZCode skill discovery.
+3. Restart ZCode or start a new session.
+4. Re-open the `@`-prefix skill picker and look for Aegis skills.
+5. Run `python scripts/aegis-doctor.py --discovery-root ~/.agents/skills` from
+   the Aegis method-pack root.
 
 ### Project workspace support not verified
 

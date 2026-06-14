@@ -48,6 +48,8 @@ assert_contains "$matrix" "ZCode.*no current release-level fresh smoke verdict|Z
     "compatibility matrix keeps ZCode out of fresh closeout"
 assert_contains "$matrix" "ZCode.*\\.claude-plugin/marketplace\\.json|\\.claude-plugin/marketplace\\.json.*ZCode" \
     "compatibility matrix records ZCode Claude-Code-compatible plugin contract"
+assert_contains "$matrix" "\.agents/skills/<skill-name>/SKILL\.md|~/.agents/skills/<skill-name>/SKILL\.md" \
+    "compatibility matrix records ZCode direct-child skill-directory shape"
 
 assert_contains "$known_limits" "ZCode Structural Support" \
     "known limitations records ZCode structural support boundary"
@@ -55,6 +57,8 @@ assert_contains "$known_limits" "not release-level fresh smoke verdict" \
     "known limitations avoids live smoke claim"
 assert_contains "$known_limits" "\.claude-plugin/marketplace\.json" \
     "known limitations records ZCode plugin marketplace evidence"
+assert_contains "$known_limits" "\.agents/skills/<skill-name>/SKILL\.md|~/.agents/skills/<skill-name>/SKILL\.md" \
+    "known limitations records ZCode direct skill-directory path"
 
 assert_contains "$release_checklist" "docs/README.zcode.md" \
     "release checklist includes ZCode host guide"
@@ -94,6 +98,16 @@ assert_contains "$zcode_guide" "GateDecision|completion authority" \
     "ZCode guide preserves authority boundary"
 assert_contains "$zcode_guide" "AGENTS.md" \
     "ZCode guide documents AGENTS.md guidance surface"
+assert_contains "$zcode_guide" "\.agents/skills/<skill-name>/SKILL\.md|~/.agents/skills/<skill-name>/SKILL\.md" \
+    "ZCode guide documents direct skill-directory discovery shape"
+assert_contains "$zcode_guide" "--discovery-root" \
+    "ZCode guide includes skill discovery verification"
+assert_contains "$zcode_guide" "--discovery-shape direct-child" \
+    "ZCode guide records direct-child updater discovery shape"
+assert_contains "$zcode_guide" "mklink /J|ln -sfn" \
+    "ZCode guide documents direct-child symlink/junction install shape"
+assert_contains "$zcode_guide" "umbrella" \
+    "ZCode guide warns against the umbrella symlink pitfall"
 
 assert_contains "$install_check" "docs/README.zcode.md" \
     "install verification policy includes ZCode guide"

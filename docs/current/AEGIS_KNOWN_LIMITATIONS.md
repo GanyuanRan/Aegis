@@ -546,7 +546,11 @@ request.
 - ZCode is a structural host target, not release-level fresh smoke verdict
 
 **Retention Reason**
-- ZCode documents a plugin marketplace that natively reads
+- ZCode's skill scanner reads each root's direct subdirectories and expects
+  `~/.agents/skills/<skill-name>/SKILL.md` (depth-1, like CC GUI and Windsurf).
+  An umbrella `~/.agents/skills/aegis/` directory does not expose Aegis skills
+  to ZCode. Use the direct-child install documented in `docs/README.zcode.md`.
+- ZCode also documents a plugin marketplace that natively reads
   `.claude-plugin/marketplace.json` (Claude Code plugin format), `SKILL.md`
   skills invoked through the `@`-prefix picker, and repository guidance
   through `AGENTS.md`.
@@ -558,8 +562,9 @@ request.
 **Observation Metric**
 - `docs/README.zcode.md`
 - `bash tests/e2e/zcode-host-boundary-check.sh`
-- Future ZCode install smoke that proves plugin marketplace install,
-  `@`-prefix skill discovery after reload, and
+- Future ZCode install smoke that proves direct-child skill discovery under
+  `~/.agents/skills/`, plugin marketplace install, `@`-prefix skill discovery
+  after reload, and
   `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
 
 **Retirement Trigger**
