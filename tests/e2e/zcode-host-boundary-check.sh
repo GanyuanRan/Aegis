@@ -102,8 +102,8 @@ assert_contains "$zcode_guide" "\.agents/skills/<skill-name>/SKILL\.md|~/.agents
     "ZCode guide documents direct skill-directory discovery shape"
 assert_contains "$zcode_guide" "--discovery-root" \
     "ZCode guide includes skill discovery verification"
-assert_contains "$zcode_guide" "--discovery-shape direct-child" \
-    "ZCode guide records direct-child updater discovery shape"
+assert_contains "$zcode_guide" "defaults.*direct-child|direct-child.*default" \
+    "ZCode guide records default direct-child updater discovery shape"
 assert_contains "$zcode_guide" "mklink /J|ln -sfn" \
     "ZCode guide documents direct-child symlink/junction install shape"
 assert_contains "$zcode_guide" "umbrella" \

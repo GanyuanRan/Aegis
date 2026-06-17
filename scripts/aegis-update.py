@@ -131,8 +131,19 @@ def default_discovery_shape(sync_mode: str) -> str:
     return "umbrella-root"
 
 
-def normalized_discovery_shape(value: str | None, sync_mode: str) -> str:
-    shape = value or default_discovery_shape(sync_mode)
+def default_discovery_shape_for_host(host: str | None, sync_mode: str) -> str:
+    normalized_host = host.strip().lower() if host else ""
+    if normalized_host == "zcode":
+        return "direct-child"
+    return default_discovery_shape(sync_mode)
+
+
+def normalized_discovery_shape(
+    value: str | None,
+    sync_mode: str,
+    host: str | None = None,
+) -> str:
+    shape = value or default_discovery_shape_for_host(host, sync_mode)
     if shape not in VALID_DISCOVERY_SHAPES:
         raise UpdateError(
             f"discovery_shape must be one of: {', '.join(sorted(VALID_DISCOVERY_SHAPES))}"
@@ -158,11 +169,11 @@ def register_installation(
         raise UpdateError(f"sync_mode must be one of: {', '.join(sorted(VALID_SYNC_MODES))}")
     if update_mode not in VALID_UPDATE_MODES:
         raise UpdateError(f"update_mode must be one of: {', '.join(sorted(VALID_UPDATE_MODES))}")
-    shape = normalized_discovery_shape(discovery_shape, sync_mode)
 
     normalized_host = host.strip().lower()
     if not normalized_host:
         raise UpdateError("host is required")
+    shape = normalized_discovery_shape(discovery_shape, sync_mode, normalized_host)
 
     root = Path(method_pack_root).expanduser().resolve()
     helper = (
@@ -273,8 +284,125 @@ def branch_remote_ref(tracked_ref: str) -> tuple[str, str]:
     return ref, f"origin/{ref}"
 
 
+def is_junction(path: Path) -> bool:
+    checker = getattr(path, "is_junction", None)
+    return bool(checker and checker())
+
+
+def link_points_to(path: Path, target: Path) -> bool:
+    try:
+        return path.resolve(strict=False) == target.resolve(strict=True)
+    except OSError:
+        return False
+
+
+def is_aegis_owned_skill_link(path: Path, source_skills: Path) -> bool:
+    if not (path.is_symlink() or is_junction(path)):
+        return False
+    try:
+        link_target = path.resolve(strict=False)
+        source_root = source_skills.resolve(strict=True)
+    except OSError:
+        return False
+    return link_target == source_root or source_root in link_target.parents
+
+
+def remove_link_like_directory(path: Path) -> None:
+    if path.is_symlink():
+        path.unlink()
+    elif is_junction(path):
+        path.rmdir()
+    else:
+        raise UpdateError(f"Refusing to remove non-link skill directory: {path}")
+
+
+def create_direct_child_link(source: Path, destination: Path) -> bool:
+    if destination.exists() or destination.is_symlink():
+        if link_points_to(destination, source):
+            return False
+        raise UpdateError(
+            "direct-child sync will not overwrite an existing skill directory: "
+            f"{destination}"
+        )
+
+    try:
+        if os.name == "nt":
+            run_command(["cmd", "/c", "mklink", "/J", str(destination), str(source)])
+        else:
+            os.symlink(source, destination, target_is_directory=True)
+    except FileExistsError:
+        if link_points_to(destination, source):
+            return False
+        raise
+    except OSError as exc:
+        raise UpdateError(f"failed to create direct-child skill link {destination}: {exc}") from exc
+    return True
+
+
+def ensure_direct_child_links(entry: dict[str, Any]) -> str:
+    sync_mode = entry.get("syncMode", "repo-only")
+    shape = normalized_discovery_shape(entry.get("discoveryShape"), sync_mode, entry.get("host"))
+    if shape != "direct-child" or sync_mode not in {"junction", "symlink"}:
+        return f"{sync_mode}: no direct-child link step required"
+
+    discovery_root = entry.get("discoveryRoot")
+    if not discovery_root:
+        raise UpdateError("direct-child junction/symlink sync requires discoveryRoot")
+
+    source_skills = Path(entry["methodPackRoot"]) / "skills"
+    target_root = Path(discovery_root)
+    if not source_skills.is_dir():
+        raise UpdateError(f"Source skills directory is missing: {source_skills}")
+    target_root.mkdir(parents=True, exist_ok=True)
+
+    expected_skills = {
+        child.name: child
+        for child in source_skills.iterdir()
+        if child.is_dir() and (child / "SKILL.md").is_file()
+    }
+
+    pruned = 0
+    for child in target_root.iterdir():
+        if child.name not in expected_skills and is_aegis_owned_skill_link(child, source_skills):
+            remove_link_like_directory(child)
+            pruned += 1
+
+    created = 0
+    current = 0
+    for name, source in sorted(expected_skills.items()):
+        destination = target_root / name
+        if create_direct_child_link(source, destination):
+            created += 1
+        else:
+            current += 1
+
+    missing = [
+        name
+        for name in sorted(expected_skills)
+        if not (target_root / name / "SKILL.md").is_file()
+        or not link_points_to(target_root / name, expected_skills[name])
+    ]
+    if missing:
+        raise UpdateError(
+            "direct-child discovery root is missing current skill links: "
+            + ", ".join(missing)
+        )
+
+    return (
+        f"{sync_mode}: direct-child links current in {target_root.as_posix()} "
+        f"({created} created, {current} already current, {pruned} stale pruned)"
+    )
+
+
 def sync_skills(entry: dict[str, Any]) -> str:
     sync_mode = entry.get("syncMode", "repo-only")
+    shape = normalized_discovery_shape(
+        entry.get("discoveryShape"),
+        sync_mode,
+        entry.get("host"),
+    )
+    if sync_mode in {"junction", "symlink"} and shape == "direct-child":
+        return ensure_direct_child_links(entry)
     if sync_mode in {"junction", "symlink", "repo-only"}:
         return f"{sync_mode}: no copy step required"
     if sync_mode == "plugin-managed":
@@ -316,6 +444,7 @@ def doctor_discovery_root(entry: dict[str, Any]) -> str | None:
     shape = normalized_discovery_shape(
         entry.get("discoveryShape"),
         entry.get("syncMode", "repo-only"),
+        entry.get("host"),
     )
     if shape in {"umbrella-root", "direct-child"}:
         return discovery_root
@@ -615,6 +744,7 @@ def build_parser() -> argparse.ArgumentParser:
     register.add_argument("--tracked-ref", default="main")
     register.add_argument("--update-mode", choices=sorted(VALID_UPDATE_MODES), default="manual")
     register.add_argument("--reload-hint")
+    register.add_argument("--config", help="config path passed through to aegis-doctor.py")
 
     status = subparsers.add_parser("status", parents=[common], help="show registered installations")
     status.add_argument("--host")
@@ -632,7 +762,21 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def command_register(args: argparse.Namespace) -> Any:
-    return register_installation(
+    normalized_host = args.host.strip().lower()
+    requested_shape = normalized_discovery_shape(
+        args.discovery_shape,
+        args.sync_mode,
+        normalized_host,
+    )
+    if (
+        normalized_host == "zcode"
+        and requested_shape == "direct-child"
+        and args.sync_mode in {"junction", "symlink"}
+        and not args.discovery_root
+    ):
+        raise UpdateError("ZCode direct-child junction/symlink registration requires --discovery-root")
+
+    entry = register_installation(
         Path(args.registry).expanduser(),
         host=args.host,
         install_id=args.install_id,
@@ -645,6 +789,27 @@ def command_register(args: argparse.Namespace) -> Any:
         update_mode=args.update_mode,
         reload_hint=args.reload_hint,
     )
+    if entry.get("host") != "zcode":
+        return entry
+
+    sync_result = sync_skills(entry)
+    doctor_result = run_doctor(
+        entry,
+        config_path=Path(args.config).expanduser() if args.config else None,
+    )
+    result = dict(entry)
+    result["status"] = "registered"
+    result["sync"] = sync_result
+    result["verified"] = True
+    result["doctor"] = {
+        "ok": doctor_result.get("ok"),
+        "workspaceSupport": doctor_result.get("workspaceSupport"),
+        "configStatus": doctor_result.get("configStatus"),
+        "expectedDiscoveryShape": doctor_result.get("expectedDiscoveryShape"),
+        "discoveryShapeStatus": doctor_result.get("discoveryShapeStatus"),
+        "compatibilityExposureStatus": doctor_result.get("compatibilityExposureStatus"),
+    }
+    return result
 
 
 def command_status(args: argparse.Namespace) -> Any:

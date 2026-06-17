@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -21,6 +22,15 @@ update = load_module("aegis_update", "scripts/aegis-update.py")
 
 
 class AegisUpdateRegistryTests(unittest.TestCase):
+    def make_method_pack_with_skills(self, root: Path, skills: list[str]) -> Path:
+        source_skills = root / "skills"
+        source_skills.mkdir(parents=True)
+        for skill in skills:
+            skill_dir = source_skills / skill
+            skill_dir.mkdir()
+            (skill_dir / "SKILL.md").write_text(f"# {skill}\n", encoding="utf-8")
+        return source_skills
+
     def test_register_installation_keeps_hosts_separate(self):
         with tempfile.TemporaryDirectory(prefix="aegis-update-") as tmp:
             registry = Path(tmp) / "installations.json"
@@ -218,6 +228,141 @@ class AegisUpdateRegistryTests(unittest.TestCase):
 
             self.assertEqual(copy_entry["discoveryShape"], "direct-child")
             self.assertEqual(junction_entry["discoveryShape"], "umbrella-root")
+
+    def test_register_installation_defaults_zcode_to_direct_child(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-zcode-shape-") as tmp:
+            registry = Path(tmp) / "installations.json"
+            root = Path(tmp) / "aegis"
+
+            entry = update.register_installation(
+                registry,
+                host="ZCode",
+                method_pack_root=root,
+                discovery_root=Path(tmp) / "zcode-skills",
+                sync_mode="junction",
+            )
+
+            self.assertEqual(entry["host"], "zcode")
+            self.assertEqual(entry["syncMode"], "junction")
+            self.assertEqual(entry["discoveryShape"], "direct-child")
+
+    def test_sync_skills_creates_direct_child_links_for_zcode_junction(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-zcode-links-") as tmp:
+            method_pack_root = Path(tmp) / "method-pack"
+            self.make_method_pack_with_skills(method_pack_root, ["using-aegis", "brainstorming"])
+            discovery_root = Path(tmp) / "discovery"
+            sync_mode = "junction" if os.name == "nt" else "symlink"
+            entry = {
+                "id": "zcode:default",
+                "host": "zcode",
+                "methodPackRoot": method_pack_root.as_posix(),
+                "syncMode": sync_mode,
+                "discoveryRoot": discovery_root.as_posix(),
+                "discoveryShape": "direct-child",
+            }
+
+            update.sync_skills(entry)
+
+            for skill in ["using-aegis", "brainstorming"]:
+                self.assertTrue((discovery_root / skill / "SKILL.md").is_file())
+                self.assertEqual(
+                    (discovery_root / skill / "SKILL.md").read_text(encoding="utf-8"),
+                    f"# {skill}\n",
+                )
+
+    def test_sync_skills_prunes_stale_direct_child_links(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-zcode-prune-") as tmp:
+            method_pack_root = Path(tmp) / "method-pack"
+            source_skills = self.make_method_pack_with_skills(method_pack_root, ["using-aegis"])
+            retired_source = source_skills / "retired-skill"
+            retired_source.mkdir()
+            discovery_root = Path(tmp) / "discovery"
+            discovery_root.mkdir()
+            personal_skill = discovery_root / "personal-skill"
+            personal_skill.mkdir()
+            (personal_skill / "SKILL.md").write_text("# personal\n", encoding="utf-8")
+            stale_link = discovery_root / "retired-skill"
+            sync_mode = "junction" if os.name == "nt" else "symlink"
+            try:
+                update.create_direct_child_link(retired_source, stale_link)
+            except update.UpdateError as exc:
+                self.skipTest(f"direct-child link creation unavailable: {exc}")
+            entry = {
+                "id": "zcode:default",
+                "host": "zcode",
+                "methodPackRoot": method_pack_root.as_posix(),
+                "syncMode": sync_mode,
+                "discoveryRoot": discovery_root.as_posix(),
+                "discoveryShape": "direct-child",
+            }
+
+            update.sync_skills(entry)
+
+            self.assertFalse(stale_link.exists())
+            self.assertTrue((discovery_root / "using-aegis" / "SKILL.md").is_file())
+            self.assertTrue((personal_skill / "SKILL.md").is_file())
+
+    def test_command_register_syncs_and_verifies_zcode_installation(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-zcode-register-") as tmp:
+            parser = update.build_parser()
+            registry = Path(tmp) / "installations.json"
+            root = Path(tmp) / "method-pack"
+            discovery_root = Path(tmp) / "discovery"
+            args = parser.parse_args(
+                [
+                    "register",
+                    "--registry",
+                    registry.as_posix(),
+                    "--host",
+                    "zcode",
+                    "--method-pack-root",
+                    root.as_posix(),
+                    "--sync-mode",
+                    "junction",
+                    "--discovery-root",
+                    discovery_root.as_posix(),
+                ]
+            )
+
+            with patch.object(update, "sync_skills") as sync_skills, patch.object(
+                update, "run_doctor"
+            ) as run_doctor:
+                sync_skills.return_value = "junction: direct-child links current"
+                run_doctor.return_value = {
+                    "ok": True,
+                    "workspaceSupport": "available",
+                    "configStatus": "configured",
+                }
+                result = update.command_register(args)
+
+            self.assertEqual(result["status"], "registered")
+            self.assertEqual(result["discoveryShape"], "direct-child")
+            self.assertTrue(result["verified"])
+            sync_skills.assert_called_once()
+            run_doctor.assert_called_once()
+
+    def test_command_register_requires_zcode_discovery_root_before_registry_write(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-zcode-register-root-") as tmp:
+            parser = update.build_parser()
+            registry = Path(tmp) / "installations.json"
+            args = parser.parse_args(
+                [
+                    "register",
+                    "--registry",
+                    registry.as_posix(),
+                    "--host",
+                    "zcode",
+                    "--method-pack-root",
+                    (Path(tmp) / "method-pack").as_posix(),
+                    "--sync-mode",
+                    "junction",
+                ]
+            )
+
+            with self.assertRaisesRegex(update.UpdateError, "--discovery-root"):
+                update.command_register(args)
+
+            self.assertFalse(registry.exists())
 
     def test_register_installation_defaults_antigravity_cli_to_host_managed(self):
         with tempfile.TemporaryDirectory(prefix="aegis-update-antigravity-shape-") as tmp:

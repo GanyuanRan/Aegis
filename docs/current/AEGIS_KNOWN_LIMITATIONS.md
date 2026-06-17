@@ -226,12 +226,12 @@ It only records limitations supported by current fresh evidence and does not spe
 - `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --discovery-root <host-skill-discovery-root>`
 - Host-specific restart/reload plus skill discovery smoke where available
 
-For copy-based compatibility exposures, the current updater can refresh the
-direct-child skill directories from the canonical `skills/` tree, prune stale
-copied Aegis skill directories, and run the same discovery-root structural
-readback through `aegis-doctor.py`. This remains method-pack-side structural
-verification only; host restart/reload may still be required before the running
-host loads the refreshed content.
+For copy-based and direct-child link compatibility exposures, the current
+updater can refresh the direct-child skill directories from the canonical
+`skills/` tree, prune stale Aegis-managed exposure entries, and run the same
+discovery-root structural readback through `aegis-doctor.py`. This remains
+method-pack-side structural verification only; host restart/reload may still be
+required before the running host loads the refreshed content.
 
 When `~/.config/aegis/config.toml` declares `method_pack_root`, the shared
 updater now prefers that canonical root for new host registration defaults.
@@ -549,7 +549,8 @@ request.
 - ZCode's skill scanner reads each root's direct subdirectories and expects
   `~/.agents/skills/<skill-name>/SKILL.md` (depth-1, like CC GUI and Windsurf).
   An umbrella `~/.agents/skills/aegis/` directory does not expose Aegis skills
-  to ZCode. Use the direct-child install documented in `docs/README.zcode.md`.
+  to ZCode. Use the updater-managed direct-child install documented in
+  `docs/README.zcode.md`.
 - ZCode also documents a plugin marketplace that natively reads
   `.claude-plugin/marketplace.json` (Claude Code plugin format), `SKILL.md`
   skills invoked through the `@`-prefix picker, and repository guidance
@@ -562,10 +563,12 @@ request.
 **Observation Metric**
 - `docs/README.zcode.md`
 - `bash tests/e2e/zcode-host-boundary-check.sh`
-- Future ZCode install smoke that proves direct-child skill discovery under
-  `~/.agents/skills/`, plugin marketplace install, `@`-prefix skill discovery
-  after reload, and
-  `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
+- `cd <aegis-method-pack-root> && python scripts/aegis-update.py register --host zcode --sync-mode junction --discovery-root ~/.agents/skills --json`
+  now performs register-time direct-child link creation, registry write, and
+  method-pack-side doctor verification
+- Release-level live ZCode smoke is still required to prove plugin marketplace
+  install, `@`-prefix skill discovery after reload, and current hot-path loading
+  inside the running host
 
 **Retirement Trigger**
 - When ZCode has a verified install/update path that proves both skill

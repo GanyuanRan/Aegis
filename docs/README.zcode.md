@@ -42,10 +42,15 @@ command, hook, and MCP extension surfaces.
 This guide records structural compatibility and native install support. It does
 not claim current release-level live smoke evidence.
 
-## Recommended Installation (Direct-Child)
+## Recommended Installation (Updater-Managed Direct-Child)
 
-Keep the Aegis method-pack checkout separate, then expose each Aegis skill as a
-direct child under `~/.agents/skills/`. This preserves:
+Keep the Aegis method-pack checkout separate, then register ZCode with Aegis's
+host-scoped updater. When the host is recognized as `zcode`, the updater defaults
+the discovery shape to `direct-child`, creates the skill links under
+`~/.agents/skills/`, writes the host registry entry, and runs doctor
+verification in one step.
+
+This preserves:
 
 - ZCode depth-1 skill discovery through direct `SKILL.md` directories
 - Aegis project workspace support through the method-pack root
@@ -55,26 +60,24 @@ direct child under `~/.agents/skills/`. This preserves:
 
 ```bash
 git clone https://github.com/GanyuanRan/Aegis.git ~/.codex/aegis
-mkdir -p ~/.agents/skills
-
-for skill_dir in ~/.codex/aegis/skills/*; do
-  [ -d "$skill_dir" ] || continue
-  ln -sfn "$skill_dir" "$HOME/.agents/skills/$(basename "$skill_dir")"
-done
+cd ~/.codex/aegis
+python scripts/aegis-update.py register \
+  --host zcode \
+  --sync-mode junction \
+  --discovery-root ~/.agents/skills \
+  --reload-hint "restart ZCode"
 ```
 
 ### Windows PowerShell
 
 ```powershell
 git clone https://github.com/GanyuanRan/Aegis.git "$env:USERPROFILE\.codex\aegis"
-New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.agents\skills"
-
-Get-ChildItem "$env:USERPROFILE\.codex\aegis\skills" -Directory | ForEach-Object {
-  $target = Join-Path "$env:USERPROFILE\.agents\skills" $_.Name
-  if (-not (Test-Path -LiteralPath $target)) {
-    cmd /c mklink /J "$target" "$($_.FullName)"
-  }
-}
+Set-Location "$env:USERPROFILE\.codex\aegis"
+python scripts\aegis-update.py register `
+  --host zcode `
+  --sync-mode junction `
+  --discovery-root "$env:USERPROFILE\.agents\skills" `
+  --reload-hint "restart ZCode"
 ```
 
 Expected structural result:
@@ -88,6 +91,34 @@ Expected structural result:
 The canonical source of truth remains the method-pack root `skills/` tree. These
 direct-child directories are a compatibility exposure for ZCode's depth-1
 scanner, not a second editable skill tree.
+
+### Manual Fallback (Not Recommended)
+
+Use this only when the updater is unavailable. The updater-managed path above is
+preferred because it also records the host registry entry, prunes retired Aegis
+links, and runs doctor verification.
+
+macOS / Linux:
+
+```bash
+mkdir -p ~/.agents/skills
+for skill_dir in ~/.codex/aegis/skills/*; do
+  [ -d "$skill_dir" ] || continue
+  ln -sfn "$skill_dir" "$HOME/.agents/skills/$(basename "$skill_dir")"
+done
+```
+
+Windows PowerShell:
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.agents\skills"
+Get-ChildItem "$env:USERPROFILE\.codex\aegis\skills" -Directory | ForEach-Object {
+  $target = Join-Path "$env:USERPROFILE\.agents\skills" $_.Name
+  if (-not (Test-Path -LiteralPath $target)) {
+    cmd /c mklink /J "$target" "$($_.FullName)"
+  }
+}
+```
 
 ## Plugin Marketplace Installation (Alternative)
 
@@ -201,26 +232,26 @@ python scripts\aegis-doctor.py --discovery-root "$env:USERPROFILE\.agents\skills
 
 ## Updating
 
-For direct-child installs, symlinks point into the method-pack checkout, so
-`git pull` is enough — no need to recreate them:
+For registered direct-child installs, the updater refreshes the method-pack
+checkout, keeps the direct-child links current, prunes retired Aegis links, and
+runs doctor verification:
 
 ```bash
-cd ~/.codex/aegis
-git pull
-python scripts/aegis-doctor.py --write-config --json
+cd <aegis-method-pack-root>
+python scripts/aegis-update.py update --host zcode --json
 ```
 
-Register the installation with Aegis's host-scoped updater:
+If the installation was created manually, register it once. For `--host zcode`,
+the updater defaults `discoveryShape` to `direct-child`, so no explicit
+`--discovery-shape` flag is required:
 
 ```bash
 cd <aegis-method-pack-root>
 python scripts/aegis-update.py register \
   --host zcode \
   --sync-mode junction \
-  --discovery-shape direct-child \
   --discovery-root ~/.agents/skills \
   --reload-hint "restart ZCode"
-python scripts/aegis-update.py update --host zcode --json
 ```
 
 The update skill form is `aegis:update`. It uses the same host-scoped registry
