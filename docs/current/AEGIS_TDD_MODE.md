@@ -42,8 +42,11 @@ user or project TDD requests, or weaken `verification-before-completion`.
 On hosts that rely on native skill discovery rather than an Aegis bootstrap
 router, `off` does not by itself override the host's own semantic matcher.
 Those hosts need narrow automatic trigger wording for
-`test-driven-development`, or a host profile that hides automatic TDD entry
-points.
+`test-driven-development`, anchored to literal conversation markers such as
+`TDD Route: strict`, `strict TDD`, `test-first`, or `RED / GREEN / REFACTOR`,
+or a host profile that hides automatic TDD entry points. If the skill loads
+without one of those markers while `off` is active, the skill body should exit
+instead of inferring strict TDD from generic risky-code wording.
 
 ## 3. Route Heuristics
 

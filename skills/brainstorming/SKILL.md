@@ -67,8 +67,8 @@ and `ImpactStatementDraft` (affected layers, owners, invariants, compat,
 non-goals). Refresh when scope changes.
 
 **Compact output contract:** `TaskIntentDraft`, `BaselineReadSetHint`,
-`BaselineUsageDraft`, `ImpactStatementDraft`, `Product Risk Lens`,
-`Architecture Integrity Lens`, `Baseline Role Alignment`,
+`BaselineUsageDraft`, `Requirement Ready Check`, `ImpactStatementDraft`,
+`Product Risk Lens`, `Architecture Integrity Lens`, `Baseline Role Alignment`,
 `Plan-Time Complexity Check`, `Options`, and `Decision Needed`. Use this
 compact shape before expanding into a full design structure.
 
@@ -89,6 +89,25 @@ BaselineUsageDraft:
 authoritative proof that a host injected or the model internally consumed a
 context payload. The artifact exists to make baseline/context attention drift
 visible before the design is recommended or approved.
+
+Use a compact `Requirement Ready Check` before recommending a design when the
+requirement is not already confirmed and complete:
+
+```text
+Requirement Ready Check:
+- Requirement source refs:
+- Goals and scope refs:
+- User / scenario refs:
+- Requirement item refs:
+- Acceptance / verification criteria refs:
+- Open blocker questions:
+- Decision: ready | needs-source | needs-goal-alignment | needs-scenario | needs-acceptance-criteria | needs-clarification | needs-user-decision | blocked
+```
+
+Treat task intent, conversation, source documents, and agent inference as
+candidate requirement sources until project authority confirms them. If the
+decision is not `ready`, keep the design at proposal/spec clarification level;
+do not turn the gap into implementation tasks.
 
 **Product Risk Lens:** For ambiguous product, feature, UI, workflow, or
 architecture choices, add a compact review lens, not persona roleplay:
@@ -272,8 +291,10 @@ When creating `docs/aegis/BASELINE-GOVERNANCE.md` for the first time, use this t
 # Baseline Governance
 
 ## 1. Baseline Roles
-- Product / Requirement Baseline: problem, accepted behavior, success evidence,
-  non-goals, workflow constraints, and approved requirement/spec intent.
+- Product / Requirement Baseline: confirmed requirement sources, target state,
+  goals and scope, users / scenarios, requirement items, acceptance /
+  verification criteria, non-goals, workflow constraints, open questions,
+  change records, and approved requirement/spec intent.
 - Architecture / Runtime Boundary Baseline: canonical owner, contract,
   source-of-truth boundary, dependency direction, compatibility, runtime-ready
   boundary, and retirement state.
@@ -354,8 +375,11 @@ Status: `initial dual-baseline snapshot`
 
 ## 4. Product / Requirement Baseline
 ### 4.1 Current Truth
-- accepted problem
-- target user or workflow
+- confirmed requirement sources or current authority gaps
+- target state, goals, and scope
+- target users, roles, usage scenarios, or system scenarios
+- functional, quality, constraint, and delivery / transition requirement items
+- acceptance / verification criteria and evidence expectations
 - success evidence, value claim, or phase focus already fixed
 
 ### 4.2 Non-negotiables

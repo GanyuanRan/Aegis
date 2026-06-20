@@ -74,6 +74,10 @@ This repository is responsible for the following four categories:
 
 - This repository's own authority docs
 - Method layer baseline
+- Baseline role alignment vocabulary
+- Minimum `Product / Requirement Baseline` shape for method-layer use:
+  requirement sources, goals and scope, users / scenarios, requirement items,
+  acceptance / verification criteria, open questions, and change records
 - Boundary documentation with the future runtime core
 
 ---

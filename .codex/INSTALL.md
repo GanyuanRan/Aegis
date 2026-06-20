@@ -55,9 +55,13 @@ asks Codex to start every conversation with Aegis.
 
 `AEGIS_TDD_MODE=off` has the same boundary in Codex: it changes Aegis-side TDD
 route semantics, but it does not directly control Codex's native matcher. Keep
-the `test-driven-development` trigger narrow and rely on explicit invocation or
+the `test-driven-development` trigger narrow, anchored to literal conversation
+markers such as `TDD Route: strict`, `strict TDD`, `test-first`, or
+`RED / GREEN / REFACTOR`, and rely on explicit invocation or
 `using-aegis`-selected strict-route work instead of expecting the environment
-variable alone to suppress every automatic TDD load.
+variable alone to suppress every automatic TDD load. If Codex still loads the
+skill without those markers while `AEGIS_TDD_MODE=off`, the skill should exit
+back to non-TDD routing rather than starting RED by inference.
 
 For hook-based hosts, the recommended user-local config is:
 

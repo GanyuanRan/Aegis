@@ -1,5 +1,40 @@
 # Aegis Release Notes
 
+## v2.1.7 (2026-06-20)
+
+### Requirements Baseline Readiness
+
+- Expanded the public `Product / Requirement Baseline` definition from a narrow
+  problem / acceptance view into a fuller requirements baseline shape covering
+  sources, goals and scope, users / scenarios, requirement item categories,
+  acceptance and verification criteria, open questions, and change records.
+- Added a lightweight `Requirement Ready Check` contract for design, planning,
+  execution, and completion workflows. It remains method-pack guidance only and
+  does not create a runtime gate, schema authority, or completion authority.
+- Updated `brainstorming`, `writing-plans`, and
+  `verification-before-completion` so requirement gaps are surfaced before
+  design recommendation, task decomposition, or completion claims.
+- Clarified completion wording so a completed task or slice is not overstated
+  as accepted requirement satisfaction.
+
+### TDD Trigger Boundary
+
+- Narrowed native-host entry into `test-driven-development` to explicit TDD
+  markers such as `TDD Route: strict`, `strict TDD`, `test-first`, or
+  `RED / GREEN / REFACTOR`.
+- Documented the `AEGIS_TDD_MODE=off` boundary for Codex and native
+  direct-skill hosts: it disables automatic Aegis-side TDD routing but does not
+  weaken completion verification.
+- Added workflow-quality and TDD policy samples that prevent strict TDD from
+  being inferred from risky implementation wording alone when TDD mode is off.
+
+### Release Surface
+
+- Bumped all declared package and host manifest versions from `2.1.6` to
+  `2.1.7`.
+- Extended workflow-quality checks so the requirements readiness and TDD trigger
+  boundaries remain covered by automated policy verification.
+
 ## v2.1.5 (2026-06-15)
 
 ### ZCode Direct-Child Skill Discovery Fix

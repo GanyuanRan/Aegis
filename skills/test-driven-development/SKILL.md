@@ -1,10 +1,13 @@
 ---
 name: test-driven-development
-description: Use when strict TDD is explicitly requested, or when an approved atomic implementation task has already chosen TDD Route strict.
+description: Use when the user explicitly requests strict or test-first TDD, or when the current conversation already contains an explicit `TDD Route: strict` decision from another Aegis workflow.
 ---
 
 # Execute
 
+→ False-positive entry on a native-direct-skill host? → **Exit immediately unless the user explicitly asked for TDD or the conversation already contains `TDD Route: strict`.**
+  In `off` mode, do not start RED / GREEN / REFACTOR from generic bugfix, contract, shared-module, or risky-code wording alone.
+  Hand control back to `using-aegis`, `systematic-debugging`, `writing-plans`, or the fast path with verification.
 → Implementing a feature or bugfix under TDD Route `strict`? → **No production code without a failing test first.**
   Gate: medium/high complexity? → route to brainstorming or writing-plans first.
   Mode: `auto` chooses strict/light/skipped by risk; `off` disables automatic TDD, not completion verification.
@@ -27,9 +30,20 @@ TDD Mode has two values: `auto` and `off`. `auto` lets Aegis choose a
 `TDD Route`; `off` disables automatic TDD routing but never disables
 `verification-before-completion`.
 
+On native-direct-skill hosts, automatic entry must stay anchored to literal
+conversation markers such as `TDD Route: strict`, `strict TDD`, `test-first`,
+or `RED / GREEN / REFACTOR`, not generic risky-implementation wording.
+
 ## When to Use
 
-New features, bug fixes, refactoring, behavior/logic changes, interface/data contract changes, cross-module or shared module changes, core logic refactors.
+Only enter this skill after one of these explicit entry signals exists:
+
+- the user explicitly asks for strict TDD, test-first development, or RED / GREEN / REFACTOR
+- the current conversation already contains `TDD Route: strict` from another Aegis workflow
+
+Typical strict-route shapes once entry is already justified: new features, bug
+fixes, refactoring, behavior or logic changes, interface/data contract changes,
+cross-module or shared-module changes, and core logic refactors.
 
 Exceptions (ask your human partner): throwaway prototypes, generated code, config files, pure docs cleanup, read-only diagnosis, comment-only changes.
 
@@ -54,6 +68,9 @@ environment-bound work where TDD does not fit.
 In `off`, do not automatically require TDD. Explicit user/project TDD requests
 still apply, and risky work may still justify recommending strict TDD.
 `verification-before-completion` still applies before any completion claim.
+If this skill was loaded anyway without an explicit TDD request or a visible
+`TDD Route: strict` marker, exit instead of improvising an automatic strict
+route from risk words alone.
 
 ## Preflight Gate
 

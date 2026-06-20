@@ -215,6 +215,17 @@
       "verificationSignal": "tdd-route-off-no-automatic-tdd-fresh-completion-evidence"
     },
     {
+      "id": "tdd-off-native-host-risky-code-no-explicit-tdd",
+      "prompt": "TDD mode is off. On a native-skill host, plan this risky producer/consumer contract slice, but do not enter TDD unless the conversation explicitly records `TDD Route: strict` or I explicitly ask for test-first development.",
+      "expectedPrimarySkill": "writing-plans",
+      "allowedSecondarySkills": ["verification-before-completion"],
+      "mustNotDo": ["auto-trigger-tdd", "infer-strict-route-from-risk-alone", "treat-off-as-skip-verification"],
+      "expectedOutputShape": "plan-basis-files-compat-tasks-risks-retirement",
+      "workspacePolicy": "plan-record-under-docs-aegis-plans",
+      "expectedArtifacts": ["BaselineReadSetHint", "ImpactStatementDraft"],
+      "verificationSignal": "tdd-off-native-host-literal-marker-boundary"
+    },
+    {
       "id": "tdd-green-local-not-final-completion",
       "prompt": "We reached GREEN on a strict TDD slice, but the parent acceptance is not fully covered yet. Verify whether this is only slice-local completion or true task completion.",
       "expectedPrimarySkill": "verification-before-completion",

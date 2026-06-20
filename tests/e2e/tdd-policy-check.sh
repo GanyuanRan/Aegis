@@ -90,8 +90,12 @@ assert_contains "$codex_guide" "AEGIS_TDD_MODE=off" \
     "Codex guide documents TDD mode caveat"
 assert_contains "$codex_guide" "does not directly control Codex's native matcher|does not override Codex's own semantic matcher" \
     "Codex guide explains TDD mode does not control native matcher"
+assert_contains "$codex_guide" "TDD Route: strict|strict TDD|test-first|RED / GREEN / REFACTOR" \
+    "Codex guide narrows TDD trigger wording to literal markers"
 assert_contains "$codex_install" "AEGIS_TDD_MODE=off" \
     "Codex install surface documents TDD mode caveat"
+assert_contains "$codex_install" "TDD Route: strict|strict TDD|test-first|RED / GREEN / REFACTOR" \
+    "Codex install surface narrows TDD trigger wording to literal markers"
 
 assert_contains "$tdd_skill" "contract|cross-module|shared module|core logic" \
     "TDD applies to contracts, cross-module changes, and core logic"
@@ -99,10 +103,14 @@ assert_contains "$tdd_skill" "TDD Mode" \
     "TDD skill defines TDD Mode"
 assert_contains "$tdd_skill" "TDD Route" \
     "TDD skill defines TDD Route"
-assert_contains "$tdd_skill" "description: Use when strict TDD is explicitly requested, or when an approved atomic implementation task has already chosen TDD Route strict\\." \
+assert_contains "$tdd_skill" 'description: Use when the user explicitly requests strict or test-first TDD, or when the current conversation already contains an explicit `TDD Route: strict` decision from another Aegis workflow\.' \
     "TDD skill keeps a narrow native trigger boundary"
 assert_not_contains "$tdd_skill" "description: Use when implementing any feature or bugfix, before writing implementation code" \
     "TDD skill no longer broad-matches every implementation request"
+assert_contains "$tdd_skill" "False-positive entry on a native-direct-skill host" \
+    "TDD skill exits when native host loading does not carry an explicit TDD signal"
+assert_contains "$tdd_skill" "TDD Route: strict|strict TDD|test-first|RED / GREEN / REFACTOR" \
+    "TDD skill anchors native-host entry to literal conversation markers"
 assert_contains "$tdd_skill" "auto.*strict.*light.*skipped|strict.*light.*skipped" \
     "TDD skill defines AUTO route decisions"
 assert_contains "$tdd_skill" "off.*automatic TDD|automatic TDD.*off" \

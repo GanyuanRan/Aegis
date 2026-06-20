@@ -311,6 +311,10 @@ assert_contains "skills/brainstorming/SKILL.md" "Architecture Integrity Lens" \
     "brainstorming includes architecture integrity lens"
 assert_contains "skills/brainstorming/SKILL.md" "Baseline Role Alignment" \
     "brainstorming includes baseline role alignment"
+assert_contains "skills/brainstorming/SKILL.md" "Requirement Ready Check" \
+    "brainstorming includes requirement ready check"
+assert_contains "skills/brainstorming/SKILL.md" "needs-acceptance-criteria" \
+    "brainstorming surfaces missing acceptance criteria"
 assert_contains "skills/brainstorming/SKILL.md" "Product / Requirement Baseline" \
     "brainstorming template names product requirement baseline role"
 assert_contains "skills/brainstorming/SKILL.md" "Architecture / Runtime Boundary Baseline" \
@@ -349,6 +353,10 @@ assert_contains "skills/writing-plans/SKILL.md" "owner / contract / retirement" 
     "writing-plans pressure-tests owner contract retirement risk"
 assert_contains "skills/writing-plans/SKILL.md" "Architecture Integrity Lens" \
     "writing-plans includes architecture integrity lens"
+assert_contains "skills/writing-plans/SKILL.md" "Requirement Ready Check" \
+    "writing-plans includes requirement ready check before task decomposition"
+assert_contains "skills/writing-plans/SKILL.md" "do not create implementation tasks" \
+    "writing-plans blocks implementation tasks when requirements are not ready"
 assert_contains "skills/writing-plans/SKILL.md" "Planless Slice Lane" \
     "writing-plans includes planless slice lane"
 assert_contains "skills/writing-plans/SKILL.md" "Slice Card" \
@@ -435,6 +443,12 @@ assert_contains "skills/verification-before-completion/SKILL.md" "Baseline Align
     "verification skill defines baseline alignment check"
 assert_contains "skills/verification-before-completion/SKILL.md" "Requirement / acceptance alignment" \
     "verification skill checks requirement acceptance alignment"
+assert_contains "skills/verification-before-completion/SKILL.md" "Requirement Ready Check" \
+    "verification skill reports requirement ready check"
+assert_contains "skills/verification-before-completion/SKILL.md" "Requirement acceptance boundary" \
+    "verification skill distinguishes task or slice completion from requirement acceptance"
+assert_contains "skills/verification-before-completion/SKILL.md" "task or slice completion.*accepted requirement satisfaction|accepted requirement satisfaction.*task or slice completion" \
+    "verification skill prevents overstating task or slice completion as requirement acceptance"
 assert_contains "skills/verification-before-completion/SKILL.md" "Architecture / owner / contract alignment" \
     "verification skill checks architecture owner contract alignment"
 assert_contains "skills/verification-before-completion/SKILL.md" "Product / Requirement Baseline" \
@@ -479,6 +493,10 @@ assert_contains "skills/verification-before-completion/SKILL.md" "Retention reas
     "verification skill requires retention reason"
 assert_contains "skills/verification-before-completion/SKILL.md" "Retirement trigger" \
     "verification skill requires retirement trigger"
+assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" "Requirement Ready Check" \
+    "process baseline defines requirement ready check"
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "Requirement acceptance boundary" \
+    "workflow quality baseline distinguishes requirement acceptance boundary"
 assert_contains "skills/anti-entropy-governance/SKILL.md" "confirmation-first" \
     "anti-entropy skill defines confirmation-first path"
 assert_contains "skills/anti-entropy-governance/SKILL.md" "Data Destruction Guard" \

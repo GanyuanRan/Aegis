@@ -10,7 +10,7 @@ description: Use when you have a spec or requirements for a multi-step task, bef
   2. Update the parent workstream checkpoint/evidence/drift state if persistent state is needed
   3. Do not save a new plan for the micro-slice
 → Have approved spec/requirements for a new workstream or an escalation trigger? → **Write implementation plan. Assume engineer has zero context.**
-  1. Scope check: fact/assumption/unknown, baseline, Ripple Signal Triage, compatibility boundary, dual-track needs
+  1. Scope check: fact/assumption/unknown, baseline, Requirement Ready Check, Ripple Signal Triage, compatibility boundary, dual-track needs
   2. File map: what files created/modified, clear boundaries, follow existing patterns
   3. Bite-sized tasks (2-5 min each): exact file paths, complete code, exact commands, expected output
   4. Self-review: spec coverage, placeholders, type consistency, compatibility, verification, dual-track
@@ -78,10 +78,10 @@ what/why/acceptance and do not expand into a formal design unless new
 architecture, contract, migration, or cross-module uncertainty appears.
 
 Compact output contract before writing the plan: `Plan Basis`,
-`BaselineUsageDraft`, `Files`, `Compatibility`, `Architecture Integrity Lens`,
-`Plan Pressure Test`, `Plan-Time Complexity Check`, `Tasks`, `Risks`, and
-`Retirement`. Expand only where the approved scope, risk, or verification
-surface requires it.
+`BaselineUsageDraft`, `Requirement Ready Check`, `Files`, `Compatibility`,
+`Architecture Integrity Lens`, `Plan Pressure Test`,
+`Plan-Time Complexity Check`, `Tasks`, `Risks`, and `Retirement`. Expand only
+where the approved scope, risk, or verification surface requires it.
 
 Use a compact `BaselineUsageDraft` whenever the plan depends on specific
 baseline docs or current-authority refs:
@@ -100,6 +100,25 @@ BaselineUsageDraft:
 authoritative proof that a host injected or the model internally consumed a
 context payload. The artifact exists to make baseline/context attention drift
 visible before and during planning.
+
+Use a compact `Requirement Ready Check` before task decomposition unless the
+input is already an approved plan/spec whose acceptance boundary is explicit:
+
+```text
+Requirement Ready Check:
+- Requirement source refs:
+- Goals and scope refs:
+- User / scenario refs:
+- Requirement item refs:
+- Acceptance / verification criteria refs:
+- Open blocker questions:
+- Decision: ready | needs-source | needs-goal-alignment | needs-scenario | needs-acceptance-criteria | needs-clarification | needs-user-decision | blocked
+```
+
+If the decision is not `ready`, do not create implementation tasks. Return to
+the requirement/spec owner with the smallest missing evidence or decision. A
+task intent, conversation, or agent inference can be cited as a candidate
+source, but it is not durable requirement authority by itself.
 
 Use the `Architecture Integrity Lens` before task decomposition when an
 executable plan may still encode responsibility overlap, a wrong canonical
@@ -200,14 +219,16 @@ Before you leave this workflow, the written plan must make these items answerabl
 
 1. **What problem or approved scope this plan is implementing**
 2. **Which baseline docs, ADRs, or requirements shaped the plan**
-3. **Which required baseline refs were explicitly acknowledged before planning and which were actually cited in the plan**
-4. **What files own the change**
-5. **What compatibility boundary must hold**
-6. **Whether the architecture integrity check found a higher-level owner /
+3. **Whether the Requirement Ready Check is ready, or which requirement source,
+   scenario, acceptance, clarification, or user decision is still missing**
+4. **Which required baseline refs were explicitly acknowledged before planning and which were actually cited in the plan**
+5. **What files own the change**
+6. **What compatibility boundary must hold**
+7. **Whether the architecture integrity check found a higher-level owner /
    contract path before task decomposition**
-7. **What plan-time complexity pressure exists and which edit boundary is safer**
-8. **What verification proves each major slice**
-9. **What risks, rollback surface, old owner/fallback handling, ADR signal preservation, and baseline-sync signals remain**
+8. **What plan-time complexity pressure exists and which edit boundary is safer**
+9. **What verification proves each major slice**
+10. **What risks, rollback surface, old owner/fallback handling, ADR signal preservation, and baseline-sync signals remain**
 
 ## Bite-Sized Task Granularity
 

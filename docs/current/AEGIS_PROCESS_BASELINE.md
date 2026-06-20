@@ -184,12 +184,56 @@ completion authority.
 
 Aegis baseline checks must keep two roles separate:
 
-- `Product / Requirement Baseline`: what problem is being solved, who it is for,
-  acceptance evidence, non-goals, workflow constraints, and approved requirement
-  or spec intent.
+- `Product / Requirement Baseline`: the confirmed requirement source of truth
+  for target state, goals and scope, users and scenarios, requirement items,
+  acceptance / verification criteria, non-goals, workflow constraints, open
+  questions, and approved requirement or spec intent.
 - `Architecture / Runtime Boundary Baseline`: canonical owners, contracts,
   source-of-truth boundaries, runtime-ready/method-pack boundary, dependency
   direction, compatibility surfaces, and retirement expectations.
+
+When a project needs an explicit requirements model, the minimum sufficient
+shape is:
+
+```text
+Requirements Baseline
+- requirement sources
+- goals and scope
+- users and usage / system scenarios
+- requirement items:
+  - functional
+  - quality
+  - constraint
+  - delivery-transition
+- acceptance and verification criteria
+- open questions
+- change and alignment records
+- requirement ready check
+```
+
+Business / mission requirements belong inside goals and scope. They are not the
+name or full boundary of the baseline. A project may expose this as
+`Requirements Baseline` or `Product / Requirement Baseline`; new method-layer
+docs should not introduce a separate top-level `Business Requirements Baseline`
+owner.
+
+Use a lightweight `Requirement Ready Check` before design, planning, execution,
+or acceptance judgment depends on a requirement being complete:
+
+```text
+Requirement Ready Check:
+- Requirement source refs:
+- Goals and scope refs:
+- User / scenario refs:
+- Requirement item refs:
+- Acceptance / verification criteria refs:
+- Open blocker questions:
+- Decision: ready | needs-source | needs-goal-alignment | needs-scenario | needs-acceptance-criteria | needs-clarification | needs-user-decision | blocked
+```
+
+`ready` means the requirement is ready for the next method-layer step. It does
+not mean the requirement is implemented, verified, accepted, or granted
+completion authority.
 
 Task-scoped input can inform a baseline check, but it is not automatically
 durable authority. Snapshots are evidence of current state. ADRs record why a
@@ -766,8 +810,12 @@ Low-complexity tasks (no `work/`, no 7-dimension review) do not trigger snapshot
 Before classifying a baseline disagreement, identify which baseline role owns the
 truth:
 
-- `Product / Requirement Baseline`: user problem, acceptance evidence, non-goals,
-  workflow constraints, approved requirement/spec intent.
+- `Product / Requirement Baseline`: confirmed requirement sources, target state,
+  goals and scope, users and usage / system scenarios, functional requirements,
+  quality requirements, constraint requirements, delivery / transition
+  requirements, acceptance / verification criteria, non-goals, workflow
+  constraints, open questions, change records, and approved requirement/spec
+  intent.
 - `Architecture / Runtime Boundary Baseline`: canonical owner, contract
   inventory, dependency direction, source-of-truth owner, compatibility boundary,
   runtime-ready/method-pack boundary, and retirement state.
@@ -785,7 +833,8 @@ relevant requirement/design/baseline itself.
 
 Criteria:
 - The `Product / Requirement Baseline` contradicts the user's accepted problem,
-  success evidence, non-goal, or workflow constraint.
+  target state, requirement source, goal, scenario, requirement item, acceptance
+  / verification criterion, non-goal, or workflow constraint.
 - The `Architecture / Runtime Boundary Baseline` records an owner, contract,
   dependency direction, or source-of-truth boundary that contradicts the actual
   correct system shape.
@@ -838,8 +887,12 @@ work should report `Design Defect` / `Implementation Drift` plus
 ### 16.5 Baseline Check Protocol
 
 Before every non-trivial change:
-1. Read the latest Product / Requirement Baseline candidate: user goal,
-   accepted requirements/spec, product/current docs, or task intent.
+1. Read the latest Product / Requirement Baseline candidate: requirement
+   sources, goals and scope, users / scenarios, requirement items, acceptance /
+   verification criteria, open questions, accepted requirements/spec,
+   product/current docs, or task intent. If only a task intent or conversation
+   exists, treat it as a candidate requirement source, not durable baseline
+   authority.
 2. Read the latest Architecture / Runtime Boundary Baseline candidate:
    baseline snapshot, ADR, current authority doc, owner map, contract inventory,
    or runtime boundary doc.

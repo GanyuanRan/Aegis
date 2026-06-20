@@ -27,6 +27,7 @@ EXPECTED_IDS = {
     "tdd-auto-small-task-light-verification",
     "tdd-auto-risky-code-strict",
     "tdd-off-no-automatic-tdd",
+    "tdd-off-native-host-risky-code-no-explicit-tdd",
     "tdd-green-local-not-final-completion",
     "minimal-sufficient-repair-not-local-patch",
     "core-file-complexity-delta-before-completion",
@@ -282,6 +283,17 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
             "skip-verification-before-completion",
         ],
         "signals": ["fresh-completion-evidence"],
+    },
+    "tdd-off-native-host-risky-code-no-explicit-tdd": {
+        "primary": "writing-plans",
+        "allowed": ["verification-before-completion"],
+        "must_not": [
+            "auto-trigger-tdd",
+            "infer-strict-route-from-risk-alone",
+            "treat-off-as-skip-verification",
+        ],
+        "signals": ["literal-marker-boundary", "tdd-off"],
+        "shapes": ["plan-basis-files-compat-tasks-risks-retirement"],
     },
     "tdd-green-local-not-final-completion": {
         "primary": "verification-before-completion",

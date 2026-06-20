@@ -198,6 +198,7 @@ Minimum samples:
 | New ambiguous feature | `brainstorming` | `writing-plans` | Start implementation immediately |
 | Explicit Aegis goal | `goal-framing` | `using-aegis`, `systematic-debugging` | Force full workflow or create workspace records by default |
 | Approved implementation plan | `writing-plans` or `executing-plans` | `test-driven-development` | Re-design without cause |
+| `TDD Mode = off` on a native-direct-skill host | `writing-plans`, `systematic-debugging`, or none | `verification-before-completion` | Infer strict TDD from risky wording alone |
 | Release or completion claim | `verification-before-completion` | `requesting-code-review` | Claim completion without evidence |
 | Repeated fixes / fallback growth | `systematic-debugging` | `first-principles-review` | Add another local patch |
 | Post-compaction bug continuation | `using-aegis` | `systematic-debugging`, `verification-before-completion` | Continue without re-entry |

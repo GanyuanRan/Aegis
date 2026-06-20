@@ -307,8 +307,14 @@ creating heavy ceremony.
 
 Pass criteria:
 
-- `Product / Requirement Baseline` is the place to check the problem, accepted
-  behavior, success evidence, non-goals, and user/workflow constraints
+- `Product / Requirement Baseline` is the place to check confirmed requirement
+  sources, goals and scope, users / scenarios, functional / quality /
+  constraint / delivery-transition requirement items, acceptance /
+  verification criteria, non-goals, open questions, and user/workflow
+  constraints
+- `Requirement Ready Check` reports whether a requirement has enough confirmed
+  source, goal, scenario, requirement-item, acceptance, and open-question
+  context to proceed to design, planning, execution, or acceptance judgment
 - `Architecture / Runtime Boundary Baseline` is the place to check canonical
   owner, contract, source-of-truth, dependency direction, compatibility,
   runtime-ready/method-pack boundary, and retirement state
@@ -458,7 +464,7 @@ BaselineUsageDraft: required refs, acknowledged refs, cited refs, missing refs, 
 ImpactStatementDraft: affected layers, owners, invariants, non-goals
 Product Risk Lens: value, non-goals, trade-offs, decision-needed
 Architecture Integrity Lens: invariant, owner/contract, overlap, higher-level path, retirement/falsifier, verdict
-Baseline Role Alignment: Product / Requirement Baseline, Architecture / Runtime Boundary Baseline, Design Defect / Implementation Drift, scope
+Baseline Role Alignment: Product / Requirement Baseline, Architecture / Runtime Boundary Baseline, Requirement Ready Check, Design Defect / Implementation Drift, scope
 Complexity Budget: artifact class, current pressure, projected post-change pressure, planned governance
 Plan-Time Complexity Check: target files, shape signals, owner fit, recommendation
 Options: 2-3 choices with trade-offs and recommendation
@@ -643,8 +649,10 @@ Baseline Alignment:
 - Trigger: yes | no
 - Product / Requirement Baseline:
 - Architecture / Runtime Boundary Baseline:
+- Requirement Ready Check:
 - Requirement / acceptance alignment:
 - Architecture / owner / contract alignment:
+- Requirement acceptance boundary: task-or-slice-done | requirement-verified | requirement-accepted | risk-accepted | not-accepted | unknown
 - Result: aligned | Design Defect | Implementation Drift | missing-authority | needs-clarification
 - scope: requirements | architecture | both
 - Evidence:
@@ -654,7 +662,10 @@ Baseline Alignment:
 `Baseline Alignment` states whether the completed work matches the current
 requirement and architecture baselines, or should be reported as Design Defect /
 Implementation Drift. It is separate from ADR Backfill and does not grant
-completion authority.
+completion authority. A completed task, completed slice, or passing test can
+support `requirement-verified`, but only confirmed acceptance criteria or
+authorized risk acceptance can support `requirement-accepted` or
+`risk-accepted`.
 
 Use `docs/current/AEGIS_PROCESS_BASELINE.md` §3.0e and §16 for the canonical
 meaning of `Product / Requirement Baseline`, `Architecture / Runtime Boundary

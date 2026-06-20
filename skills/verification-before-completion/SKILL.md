@@ -70,6 +70,12 @@ TDD Completion Boundary:
 - Match the boundary to the claim being made, and keep any higher open boundary
   explicit.
 - If only slice-level evidence exists, do not claim whole-task `done`.
+- A completed task or slice means the authorized execution / verification
+  boundary reached its stop condition. It does not mean the underlying
+  requirement is accepted.
+- `Requirement accepted` requires the relevant Product / Requirement Baseline
+  item and acceptance / verification criteria to be satisfied, or an explicit
+  authorized risk acceptance.
 - If no explicit boundary exists and atomicity is not clear, downgrade to
   `needs-verification` or return to framing/planning.
 
@@ -255,13 +261,20 @@ TDD Completion Boundary:
    - Trigger: yes | no
    - Product / Requirement Baseline:
    - Architecture / Runtime Boundary Baseline:
+   - Requirement Ready Check:
    - Requirement / acceptance alignment:
    - Architecture / owner / contract alignment:
+   - Requirement acceptance boundary: task-or-slice-done | requirement-verified | requirement-accepted | risk-accepted | not-accepted | unknown
    - Result: aligned | Design Defect | Implementation Drift | missing-authority | needs-clarification
    - scope: requirements | architecture | both
    - Evidence:
    - Residual risk:
    ```
+
+   Use the requirement acceptance boundary to avoid overstating completion:
+   passing tests or a completed task / slice can support
+   `requirement-verified`, but only confirmed acceptance criteria or authorized
+   acceptance can support `requirement-accepted` or `risk-accepted`.
 
    When project instructions specifically require architecture reporting or the
    completed work touched durable architecture surfaces, the architecture-scoped
@@ -369,6 +382,7 @@ TDD Completion Boundary:
 
 - Reporting "done" when only one layer was checked
 - Treating agent success as equivalent to independent verification
+- Treating task or slice completion as accepted requirement satisfaction
 - Forgetting to mention residual risk or uncovered scope
 - Saying "verified" when the command was narrow but the claim is broad
 - Presenting method-pack verification as if it grants final authority
