@@ -1,5 +1,48 @@
 # Aegis Release Notes
 
+## v2.1.8 (2026-06-22)
+
+### Root-Cause Claim Discipline
+
+- Added a `Pre-Claim Gate` to `systematic-debugging` (new `Phase 3.5`). When a
+  patch-shape signal fires (guard, fallback, consumer/caller patch,
+  artifact/cache patch, or sample-only naming), the agent must pass five
+  mechanical checks before claiming a root cause: causal closure, falsifier
+  checked, adversarial self-refutation, topology classified, and layer-ceiling
+  proof. This addresses recurring premature closure, where an intermediate
+  breakpoint or ripple is summarized as the root cause. The gate is advisory
+  method-pack discipline; it is not a `GateDecision`, `PolicySnapshot`, or
+  completion authority. The quick bug lane is exempt when no patch-shape
+  signal fires.
+- Added a `Causal Topology Gate` that replaces the implicit single-root
+  default with explicit classification into six topologies: `single-root`,
+  `single-root-multi-symptom`, `chain`, `independent-compound`,
+  `conjunctive-cluster`, and `disjunctive-or`. Cluster and compound
+  classifications require member enumeration with necessity and sufficiency
+  tests, plus an anti-disguise check that seeks a shared upstream cause (which
+  collapses a cluster back to single-root-multi-symptom when found).
+- Added two hard signals (`H14` cluster member not enumerated or necessity
+  tested; `H15` anti-disguise check skipped) and two depth signals (`D6`
+  topology explicitly classified; `D7` anti-disguise check executed) to the
+  `systematic-debugging` quality gate.
+- Added a supporting doc `root-cause-claim-contract.md` with the gate
+  rationale, the six-topology table, member proof requirements, and a worked
+  example replaying a real two-turn session where the gate would have caught
+  both a premature L4 stop and a hidden second root.
+- Added two workflow-quality fixtures: a conjunctive-cluster case that
+  collapses to a spec-gap single root, and an independent-compound case with
+  divergent chains. Extended the matrix validator to require the new
+  `topology` field on layer-stop samples and to enforce topology-specific
+  signals and prohibitions on the new fixtures.
+
+### Release Surface
+
+- Bumped all declared package and host manifest versions from `2.1.7` to
+  `2.1.8`.
+- Extended `debugging-patch-shape-gate-check`, `workflow-quality-check`, and
+  the matrix validator so the pre-claim gate, topology gate, and new depth
+  signals remain covered by automated policy verification.
+
 ## v2.1.7 (2026-06-20)
 
 ### Requirements Baseline Readiness

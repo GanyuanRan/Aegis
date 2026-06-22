@@ -393,6 +393,10 @@ assert_contains "skills/systematic-debugging/SKILL.md" "User Intervention Point"
     "systematic debugging exposes user intervention point"
 assert_contains "skills/systematic-debugging/SKILL.md" "Falsifier" \
     "systematic debugging exposes falsifier for layer stop"
+assert_contains "skills/systematic-debugging/SKILL.md" "Pre-Claim Gate" \
+    "systematic debugging defines pre-claim gate before claiming root cause"
+assert_contains "skills/systematic-debugging/SKILL.md" "Causal Topology Gate" \
+    "systematic debugging defines causal topology gate for multi-root classification"
 assert_contains "skills/long-task-continuation/SKILL.md" "Planless Slice Lane" \
     "long-task continuation includes planless slice lane"
 assert_contains "skills/long-task-continuation/SKILL.md" "Slice Card" \

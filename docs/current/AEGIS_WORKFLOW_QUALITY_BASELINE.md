@@ -547,7 +547,9 @@ Compact contract:
 Symptom: observed failure
 Reproduction: command/input and result
 Root Cause: evidence-backed owner and cause
-Layer Stop Card: stop layer, checked path, evidence, excluded layers, falsifier, user intervention point, next action
+Layer Stop Card: stop layer, topology, checked path, evidence, excluded layers, falsifier, user intervention point, next action
+Pre-Claim Gate: causal closure, falsifier checked, adversarial self-refutation, topology classified, layer ceiling proof — required before claiming root cause when a patch-shape signal fires
+Topology Card: explicit causal topology (single-root / single-root-multi-symptom / chain / independent-compound / conjunctive-cluster / disjunctive-or) with member necessity and sufficiency tests and anti-disguise check
 Fix Boundary: canonical owner, compatibility, non-edits
 Pre-Edit Complexity Check: target edit file, pressure signal, safer boundary, decision
 Verification: failing test or reproduction now passing
@@ -558,6 +560,13 @@ Quick bug lane is allowed for low-risk bugs, but root-cause evidence is still
 required. Use `Layer Stop Card` when the diagnostic stop point is ambiguous,
 crosses a boundary, reaches L5/L6/L7, or is corrected by a user-provided
 falsifier. Do not use it for simple factual Q&A or tiny fast-path responses.
+
+Use `Pre-Claim Gate` and `Topology Card` when a patch-shape signal fires
+(guard, fallback, consumer/caller patch, artifact/cache patch, or sample-only
+naming) or the diagnosis crosses a component boundary. The gate turns a
+self-judged stop into a checkable, falsifiable claim; it is advisory
+method-pack discipline, not a `GateDecision`, `PolicySnapshot`, or completion
+authority.
 
 ### 4.4a `test-driven-development`
 

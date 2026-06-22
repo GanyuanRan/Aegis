@@ -41,6 +41,8 @@ EXPECTED_IDS = {
     "layer-stop-spec-gap",
     "fast-path-no-layer-stop-card",
     "layer-stop-user-falsifier-correction",
+    "topology-conjunctive-cluster-collapses-to-spec-gap",
+    "topology-independent-compound-divergent",
     "strong-opinion-product-risk-lens",
     "strong-opinion-plan-pressure-test",
     "architecture-integrity-higher-level-path",
@@ -129,7 +131,12 @@ CONTRACT_REQUIREMENTS = {
         "Natural Surface",
         "Governance Receipt",
     ],
-    "systematic-debugging": ["Layer Stop Card", "Pre-Edit Complexity Check"],
+    "systematic-debugging": [
+        "Layer Stop Card",
+        "Pre-Edit Complexity Check",
+        "Pre-Claim Gate",
+        "Topology Card",
+    ],
     "test-driven-development": [
         "Pre-Edit Complexity Check",
         "TDD Route",
@@ -653,6 +660,8 @@ LAYER_REQUIRED = {
     "layer-stop-cross-system-contract": "L5 Cross-system Contract",
     "layer-stop-spec-gap": "L7 Spec Gap",
     "layer-stop-user-falsifier-correction": "L5 Cross-system Contract",
+    "topology-conjunctive-cluster-collapses-to-spec-gap": "L7 Spec Gap",
+    "topology-independent-compound-divergent": "L5 Cross-system Contract",
 }
 
 REQUIRED_LAYER_FIELDS = {
@@ -664,6 +673,7 @@ REQUIRED_LAYER_FIELDS = {
     "falsifier",
     "userInterventionPoint",
     "nextAction",
+    "topology",
 }
 
 
@@ -839,6 +849,18 @@ def validate_layer_stop_samples(by_id: dict[str, dict[str, Any]]) -> None:
         )
         require(card.get("required") is True, f"{sample_id} layerStopCard must be required")
         require(card.get("stopLayer") == stop_layer, f"{sample_id} must stop at {stop_layer}")
+        topology = card.get("topology")
+        require(
+            topology in {
+                "single-root",
+                "single-root-multi-symptom",
+                "chain",
+                "independent-compound",
+                "conjunctive-cluster",
+                "disjunctive-or",
+            },
+            f"{sample_id} layerStopCard topology must be one of the six causal topologies",
+        )
         for field in (
             "checkedPath",
             "evidenceForStop",
@@ -859,6 +881,38 @@ def validate_layer_stop_samples(by_id: dict[str, dict[str, Any]]) -> None:
         require(
             "skip-layer-stop-card" in item.get("mustNotDo", []),
             f"{sample_id} must forbid skipping layer stop card",
+        )
+
+    conjunctive = sample(by_id, "topology-conjunctive-cluster-collapses-to-spec-gap")
+    require(
+        conjunctive.get("layerStopCard", {}).get("topology") == "single-root-multi-symptom",
+        "conjunctive cluster sample must show anti-disguise collapse to single-root-multi-symptom",
+    )
+    for forbidden in ("skip-anti-disguise-check", "collapse-to-cluster-without-shared-cause-proof"):
+        require(
+            forbidden in conjunctive.get("mustNotDo", []),
+            f"conjunctive cluster sample must forbid {forbidden}",
+        )
+    for signal in ("anti-disguise", "member-necessity-test", "spec-gap-shared-cause"):
+        require(
+            signal in conjunctive.get("verificationSignal", ""),
+            f"conjunctive cluster sample must require {signal}",
+        )
+
+    divergent = sample(by_id, "topology-independent-compound-divergent")
+    require(
+        divergent.get("layerStopCard", {}).get("topology") == "independent-compound",
+        "independent compound sample must classify topology as independent-compound",
+    )
+    for forbidden in ("merge-two-roots-into-one", "skip-member-necessity-test"):
+        require(
+            forbidden in divergent.get("mustNotDo", []),
+            f"independent compound sample must forbid {forbidden}",
+        )
+    for signal in ("divergent-chains", "independent-compound", "both-roots-fixed"):
+        require(
+            signal in divergent.get("verificationSignal", ""),
+            f"independent compound sample must require {signal}",
         )
 
     correction = sample(by_id, "layer-stop-user-falsifier-correction")

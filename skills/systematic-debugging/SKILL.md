@@ -194,6 +194,52 @@ escalate to the full workflow.
    - **Goal** | **DeeperCause** (yes/no/uncertain) | **Evidence** | **Risk/Unknown** | **Decision** (exit/iterate/escalate)
    - If DeeperCause = uncertain → continue or escalate. Only exit when root cause is deep enough and evidence is sufficient.
 
+### Phase 3.5: Pre-Claim Gate
+
+Before claiming a root cause and entering Phase 4, check whether the
+Pre-Claim Gate applies. It applies whenever any Patch-Shape Triage signal is
+active (candidate fix is a guard, fallback, consumer/caller patch,
+artifact/cache patch, or sample-only naming — i.e. H1 / H3 / H8 / H10 / H11 /
+H13), or whenever the diagnosis crosses a component or system boundary, or a
+previous fix left a residual symptom.
+
+When it applies, do not state a root cause or edit code until the five
+mechanical checks below pass. See `root-cause-claim-contract.md` for the full
+rationale, the six-topology table, and a worked example.
+
+1. **Causal Closure** — every causal edge from symptom to claimed root has an
+   evidence anchor (file:line, test, log, reproduction). One "probably" edge
+   leaves the chain open.
+2. **Falsifier Checked** — state "if X were not the root cause, observable F
+   would appear," and confirm F was checked and absent.
+3. **Adversarial Self-Refutation** — generate the strongest single argument
+   that this root cause is wrong, and show why it does not hold.
+4. **Causal Topology Gate** — classify the topology explicitly; do not default
+   to single-root. Topology and the anti-disguise check are in Phase 4 Step
+   4bis and in `root-cause-claim-contract.md`.
+5. **Layer Ceiling Proof** — if the claim stops at L?, show why L?+1 is
+   unreachable by concrete constraint, not by omission.
+
+Required output before entering Phase 4 when the gate fires:
+
+```text
+Pre-Claim Gate Pass:
+Topology: single-root | single-root-multi-symptom | chain | independent-compound | conjunctive-cluster | disjunctive-or
+CausalClosure: closed | open-edge: <edge>
+Falsifier: <if not-X then F; F checked: yes/no>
+SelfRefutation: <strongest objection> -> <why it does not hold>
+LayerCeiling: <L?> -> <why L?+1 unreachable>
+Verdict: pass | fail-<which-gate>
+```
+
+This gate is advisory method-pack discipline. It is not a `GateDecision`,
+`PolicySnapshot`, evidence sufficiency authority, or completion authority. It
+turns a self-judged stop ("I think this is deep enough") into a checkable,
+falsifiable claim ("here is the evidence chain, the falsifier I checked, the
+objection I survived, and the ceiling I reached"). The quick bug lane is
+exempt when no Patch-Shape signal fires and the bug is single-owner at the
+canonical owner.
+
 ### Phase 4: Implementation
 
 **Fix the root cause, not the symptom:**
@@ -240,10 +286,41 @@ escalate to the full workflow.
 
    4. If uncertain whether convergent or divergent: **escalate. Do not guess.**
 
-   **Compound root cause forms:**
+   **Compound root cause forms (legacy shorthand):**
    - True compound — ≥2 independent bugs surfaced together
    - Single-root multi-symptom — 1 root, ≥2 symptom paths → fix root, all resolve
    - Chain causal — A causes B causes C → fix A, B and C auto-resolve
+
+   **Causal Topology Gate (full form, used by the Pre-Claim Gate):** the three
+   legacy forms above are a shorthand. Before claiming any root — single or
+   compound — classify the topology explicitly. The default is `unknown`; you
+   must actively exclude the multi-root topologies before collapsing to a
+   single-root claim. See `root-cause-claim-contract.md` for the full table,
+   member necessity/sufficiency tests, and the anti-disguise check.
+
+   | Topology | Structure | Stop condition | Repair shape |
+   | --- | --- | --- | --- |
+   | `single-root` | A → symptom | Layer Ceiling Proof at A | fix A |
+   | `single-root-multi-symptom` | A → B, C, D | Layer Ceiling Proof at A | fix A; symptoms self-resolve |
+   | `chain` | A → B → C → symptom | Layer Ceiling Proof at A | drill to A, fix A |
+   | `independent-compound` | A → symptom, Y → symptom, A ⊥ Y | each root passes Gate 1/2/5; no shared upstream | fix A **and** Y; missing one leaves symptom |
+   | `conjunctive-cluster` | A ∧ B ∧ C → symptom (each necessary, none sufficient) | enumerate members, necessity test each, sufficiency test the set, anti-disguise check | fix **all** members; missing one leaves symptom |
+   | `disjunctive-or` | A ∨ B → symptom (any one suffices) | enumerate all disjuncts | fix one to stop symptom; enumerate rest for defense-in-depth |
+
+   **Member proof (cluster / compound):** each claimed member must pass a
+   necessity test ("if this member alone were removed, would the symptom still
+   occur?" — if yes, it is not a member). The set must pass a sufficiency test
+   (together the members explain every observed manifestation). Necessity
+   tests here are conceptual proofs, not empirical runs — a method-pack
+   ceiling; state this honestly when the cluster has many members.
+
+   **Anti-disguise check (most often skipped):** before accepting
+   `conjunctive-cluster`, ask whether members X and Y share a deeper common
+   cause Z, such that X and Y are merely two manifestations of Z. If yes, the
+   topology collapses to `single-root-multi-symptom` or `chain` rooted at Z —
+   drill to Z. The reverse check protects `independent-compound`: if two
+   divergent chains share upstream Z, they are not independent and Z is the
+   root.
 
 5. **If 3+ Fixes Failed: Question Architecture**
 
@@ -308,6 +385,8 @@ Before you claim debugging is complete:
    - **H11** — candidate fix patches artifact/download/export/readback/cache symptoms without proving the producer and source-of-truth owner
    - **H12** — candidate fix keeps duplicate owners active, moves authority silently, or says "keep both for now" without a retirement trigger
    - **H13** — candidate fix names only the observed sample wording/input instead of proving the bug class
+   - **H14** — topology is `conjunctive-cluster` or `independent-compound` but the member set is not enumerated, or a member was not necessity-tested
+   - **H15** — topology was declared `conjunctive-cluster` or `independent-compound` without running the anti-disguise check (a shared upstream Z may collapse the cluster/compound to a single root)
 
    Terminal unactionable (T-class — any hit = stop drilling, switch to mitigation):
    - **T1** — required change is outside this repo's boundary
@@ -324,6 +403,11 @@ Before you claim debugging is complete:
    - **D4** — no same-pattern occurrences remain unaddressed in repo
    - **D5** — Minimality Check verdict is `sufficient repair`, or the local
      patch is explicitly bounded with retention reason and retirement trigger
+   - **D6** — Causal topology is explicitly classified (not defaulted to
+     single-root); if `conjunctive-cluster` or `independent-compound`, every
+     member is enumerated and necessity-tested, and the set is sufficiency-tested
+   - **D7** — anti-disguise check has been run for any `conjunctive-cluster`
+     or `independent-compound` classification (a shared upstream Z was sought)
 
 3. **Reflection** — re-run Goal / DeeperCause / Evidence / Risk/Unknown / Decision
 4. **Confirm** the fix addressed the source, not just the sample
@@ -367,4 +451,4 @@ add monitoring.
 
 ## Supporting Techniques
 
-See `root-cause-tracing.md`, `defense-in-depth.md`, `condition-based-waiting.md`, `feedback-loop-construction.md` in this directory for deeper guidance on specific diagnostic scenarios.
+See `root-cause-tracing.md`, `defense-in-depth.md`, `condition-based-waiting.md`, `feedback-loop-construction.md`, and `root-cause-claim-contract.md` in this directory for deeper guidance on specific diagnostic scenarios.

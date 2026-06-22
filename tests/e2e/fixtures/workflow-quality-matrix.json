@@ -348,6 +348,7 @@
       "layerStopCard": {
         "required": true,
         "stopLayer": "L3 System",
+        "topology": "single-root",
         "checkedPath": "L1 Symptom -> L2 Logic -> L3 System",
         "evidenceForStop": "broken local component boundary and canonical owner identified; no architecture or external contract evidence",
         "excludedLayers": ["L4 Architecture", "L5 Cross-system Contract", "L6 Platform", "L7 Spec Gap"],
@@ -369,6 +370,7 @@
       "layerStopCard": {
         "required": true,
         "stopLayer": "L5 Cross-system Contract",
+        "topology": "single-root",
         "checkedPath": "L1 Symptom -> L2 Logic -> L3 System -> L4 Architecture -> L5 Cross-system Contract",
         "evidenceForStop": "producer and consumer are internally coherent but disagree on shared schema, timing, or lifecycle contract",
         "excludedLayers": ["L6 Platform", "L7 Spec Gap"],
@@ -390,6 +392,7 @@
       "layerStopCard": {
         "required": true,
         "stopLayer": "L7 Spec Gap",
+        "topology": "single-root",
         "checkedPath": "L1 Symptom -> L2 Logic -> L3 System -> L4 Architecture -> L5 Cross-system Contract -> L6 Platform -> L7 Spec Gap",
         "evidenceForStop": "no current code, contract, baseline, ADR, or product note defines correct behavior for the case",
         "excludedLayers": ["L2 Logic", "L3 System", "L4 Architecture", "L5 Cross-system Contract", "L6 Platform"],
@@ -425,12 +428,57 @@
       "layerStopCard": {
         "required": true,
         "stopLayer": "L5 Cross-system Contract",
+        "topology": "single-root",
         "checkedPath": "initial L7 hypothesis -> user-provided contract falsifier -> L5 Cross-system Contract",
         "evidenceForStop": "user-supplied contract defines the behavior, converting the diagnosis from missing spec to boundary mismatch",
         "excludedLayers": ["L6 Platform", "L7 Spec Gap"],
         "falsifier": "the cited contract is obsolete, irrelevant to this path, or superseded by a newer authority",
         "userInterventionPoint": "intervene if the contract source, date, or applicability is misread",
         "nextAction": "read back the contract excerpt, correct the stop layer, and align the boundary owner"
+      }
+    },
+    {
+      "id": "topology-conjunctive-cluster-collapses-to-spec-gap",
+      "prompt": "Two fixes were each necessary but neither alone removes the symptom: a missing contract family and a projection layer reading the wrong source. Decide the causal topology before claiming a root cause.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": ["first-principles-review", "verification-before-completion"],
+      "mustNotDo": ["skip-layer-stop-card", "skip-anti-disguise-check", "collapse-to-cluster-without-shared-cause-proof", "stop-at-symptom-layer-as-root"],
+      "expectedOutputShape": "topology-classified-root-cause-plus-layer-stop-card",
+      "workspacePolicy": "workspace-if-medium-risk-or-process-trail-needed",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "layer-stop-card-with-conjunctive-cluster-member-necessity-test-anti-disguise-collapse-to-single-root-multi-symptom-spec-gap-shared-cause",
+      "layerStopCard": {
+        "required": true,
+        "stopLayer": "L7 Spec Gap",
+        "topology": "single-root-multi-symptom",
+        "checkedPath": "L1 Symptom -> L2 Logic -> L3 System -> L4 Architecture -> L5 Cross-system Contract -> L6 Platform -> L7 Spec Gap",
+        "evidenceForStop": "two necessary members (missing conversion family + projection source-of-truth) share a deeper L7 cause: whole-file artifact generation was never defined as a first-class workflow with a completeness obligation; anti-disguise check collapses the conjunctive cluster to single-root-multi-symptom",
+        "excludedLayers": ["L2 Logic", "L3 System", "L4 Architecture", "L5 Cross-system Contract", "L6 Platform"],
+        "falsifier": "one of the two members alone fully removes the symptom without addressing the spec gap",
+        "userInterventionPoint": "intervene if the two members do not actually share a deeper cause, making this a true conjunctive cluster requiring both fixes",
+        "nextAction": "address the L7 spec gap as the root and repair both ripple paths in the same change"
+      }
+    },
+    {
+      "id": "topology-independent-compound-divergent",
+      "prompt": "Two independent failures both produce the same user-visible error. Diagnose whether this is one root or two, and prove independence before fixing either.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": ["first-principles-review", "verification-before-completion"],
+      "mustNotDo": ["skip-layer-stop-card", "merge-two-roots-into-one", "skip-member-necessity-test", "fix-only-one-root"],
+      "expectedOutputShape": "independent-compound-topology-plus-layer-stop-card",
+      "workspacePolicy": "workspace-if-medium-risk-or-process-trail-needed",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "layer-stop-card-with-independent-compound-divergent-chains-member-necessity-test-both-roots-fixed",
+      "layerStopCard": {
+        "required": true,
+        "stopLayer": "L5 Cross-system Contract",
+        "topology": "independent-compound",
+        "checkedPath": "L1 Symptom -> two divergent causal chains (A and Y) -> necessity test each -> anti-disguise check confirms no shared upstream",
+        "evidenceForStop": "two causal chains reach the symptom through different reproduction conditions and share no upstream cause; each member independently reproduces the symptom; anti-disguise check found no common Z",
+        "excludedLayers": ["L6 Platform", "L7 Spec Gap"],
+        "falsifier": "a shared upstream cause Z is found that explains both chains, collapsing the topology to single-root-multi-symptom",
+        "userInterventionPoint": "intervene if a shared upstream cause is later discovered that was missed by the anti-disguise check",
+        "nextAction": "fix both roots independently; verify the symptom is eliminated only after both are addressed"
       }
     },
     {
@@ -670,7 +718,7 @@
     "goal-framing": ["Goal", "Success evidence", "Stop condition", "Non-goals", "Route", "Next", "Continuation"],
     "brainstorming": ["TaskIntentDraft", "BaselineReadSetHint", "BaselineUsageDraft", "ImpactStatementDraft", "Product Risk Lens", "Architecture Integrity Lens", "Baseline Role Alignment", "Complexity Budget", "Plan-Time Complexity Check", "Options", "Decision Needed"],
     "writing-plans": ["Plan Basis", "BaselineUsageDraft", "Files", "Compatibility", "Architecture Integrity Lens", "Plan Pressure Test", "Complexity Budget", "Plan-Time Complexity Check", "Tasks", "Risks", "Retirement"],
-    "systematic-debugging": ["Symptom", "Reproduction", "Root Cause", "Layer Stop Card", "Fix Boundary", "Pre-Edit Complexity Check", "Verification"],
+    "systematic-debugging": ["Symptom", "Reproduction", "Root Cause", "Layer Stop Card", "Pre-Claim Gate", "Topology Card", "Fix Boundary", "Pre-Edit Complexity Check", "Verification"],
     "test-driven-development": ["TDD Route", "Preflight Gate", "Complexity Budget", "Pre-Edit Complexity Check", "RED", "GREEN", "REFACTOR", "Regression Scope"],
     "anti-entropy-governance": ["Anti-Entropy Declaration", "Retirement Decision", "Verification Plan", "Gap Closure", "Data Destruction Guard"],
     "requesting-code-review": ["Findings First", "Evidence Review", "Baseline / Current Authority", "Baseline Role Alignment", "Compatibility / Retirement", "Review Readiness"],

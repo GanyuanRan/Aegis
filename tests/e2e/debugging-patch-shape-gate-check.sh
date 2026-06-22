@@ -83,6 +83,22 @@ assert_contains "$debugging_skill" "H10.*re-parses raw text|H10.*re-infers actio
     "debugging quality gate adds H10 downstream re-inference signal"
 assert_contains "$debugging_skill" "H13.*observed sample" \
     "debugging quality gate adds sample-only patch signal"
+assert_contains "$debugging_skill" "H14.*topology is.*conjunctive-cluster.*member set is not enumerated" \
+    "debugging quality gate adds H14 cluster member enumeration signal"
+assert_contains "$debugging_skill" "H15.*anti-disguise check" \
+    "debugging quality gate adds H15 anti-disguise check signal"
+assert_contains "$debugging_skill" "Pre-Claim Gate" \
+    "debugging defines Pre-Claim Gate before claiming root cause"
+assert_contains "$debugging_skill" "Causal Topology Gate" \
+    "debugging defines Causal Topology Gate for multi-root classification"
+assert_contains "$debugging_skill" "anti-disguise check" \
+    "debugging requires anti-disguise check before accepting a cluster"
+assert_contains "$debugging_skill" "necessity test" \
+    "debugging requires member necessity test for cluster and compound"
+assert_contains "$debugging_skill" "D6.*topology is explicitly classified" \
+    "debugging depth gate adds D6 explicit topology classification"
+assert_contains "$debugging_skill" "D7.*anti-disguise check has been run" \
+    "debugging depth gate adds D7 anti-disguise check executed"
 
 assert_contains "$process_baseline" "keyword, phrase, regex, negation-word list" \
     "process baseline defines patch-shape ripple signals"
