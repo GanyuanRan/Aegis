@@ -43,6 +43,14 @@ These rules should enter:
 - Host-specific profile
 - Install / usage guide
 
+Bootstrap adapters must stay thin. A host adapter may decide activation mode,
+TDD mode, JSON shape, skill discovery path, legacy warnings, and host tool
+mapping, but it should source the portable hot path from
+`skills/using-aegis/SKILL.md` or a host-native reference to that file. It should
+not copy the full skill body into a separate prompt owner, replace
+task-specific skills with one large fixed prompt, or grant runtime /
+completion authority.
+
 ### 2.3 Repo Contribution Rules
 
 Rules that only constrain current repository contributions and local implementation include:

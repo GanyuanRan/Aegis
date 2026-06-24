@@ -20,6 +20,8 @@ EXPECTED_IDS = {
     "approved-spec-to-plan",
     "completion-claim",
     "architecture-completion-adr-backfill-check",
+    "pre-addition-existence-check-before-design",
+    "pre-addition-existence-check-before-plan",
     "plan-time-complexity-check-before-design",
     "plan-time-complexity-check-before-plan",
     "pre-edit-complexity-check-before-code",
@@ -136,6 +138,7 @@ CONTRACT_REQUIREMENTS = {
         "Pre-Edit Complexity Check",
         "Pre-Claim Gate",
         "Topology Card",
+        "Minimality Check",
     ],
     "test-driven-development": [
         "Pre-Edit Complexity Check",
@@ -152,6 +155,7 @@ CONTRACT_REQUIREMENTS = {
     "executing-plans": ["Pre-Edit Complexity Check", "Complexity Budget"],
     "brainstorming": [
         "BaselineUsageDraft",
+        "Existence Check",
         "Plan-Time Complexity Check",
         "Complexity Budget",
         "Product Risk Lens",
@@ -159,6 +163,7 @@ CONTRACT_REQUIREMENTS = {
         "Baseline Role Alignment",
     ],
     "writing-plans": [
+        "Existence Check",
         "Plan-Time Complexity Check",
         "Complexity Budget",
         "Plan Pressure Test",
@@ -330,11 +335,49 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
         ],
         "signals": [
             "minimality-check",
+            "existing-owner-reuse-path",
             "correct-owner",
             "bug-class-fixed",
+            "existence-proof",
             "retirement",
             "verdict",
         ],
+    },
+    "pre-addition-existence-check-before-design": {
+        "primary": "brainstorming",
+        "allowed": ["first-principles-review", "anti-entropy-governance"],
+        "must_not": [
+            "add-new-surface-without-existence-check",
+            "skip-existing-owner-reuse-check",
+            "treat-new-artifact-as-default",
+            "turn-existence-check-into-runtime-gate",
+        ],
+        "signals": [
+            "existence-check",
+            "existing-owner-reuse-candidate",
+            "creation-proof",
+            "entropy-retirement-impact",
+            "reuse-existing-or-add-with-proof",
+        ],
+        "shapes": ["existence-check"],
+    },
+    "pre-addition-existence-check-before-plan": {
+        "primary": "writing-plans",
+        "allowed": ["first-principles-review", "anti-entropy-governance"],
+        "must_not": [
+            "write-tasks-before-existence-check",
+            "create-new-owner-without-creation-proof",
+            "retain-fallback-without-retirement-impact",
+            "skip-reuse-existing-decision",
+        ],
+        "signals": [
+            "existence-check",
+            "proposed-new-surface",
+            "existing-owner-reuse-candidate",
+            "creation-proof",
+            "entropy-retirement-impact",
+        ],
+        "shapes": ["existence-check"],
     },
     "strong-opinion-product-risk-lens": {
         "primary": "brainstorming",
@@ -696,7 +739,7 @@ def require_contains(actual: list[str] | str, required: str, message: str) -> No
 
 def validate_shape(data: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]]]:
     quality_dimensions = set(data.get("qualityDimensions", []))
-    for dimension in ("baseline-role-alignment", "aegis-invocation-visibility"):
+    for dimension in ("baseline-role-alignment", "aegis-invocation-visibility", "pre-addition-minimality"):
         require(
             dimension in quality_dimensions,
             f"workflow quality matrix must include {dimension} dimension",

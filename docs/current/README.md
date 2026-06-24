@@ -64,6 +64,9 @@ The public current set is:
 - `docs/current/AEGIS_RULE_LAYERING.md`
 - `docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md`
 - `docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md`
+- `docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md`
+- `docs/current/AEGIS_DEFERRED_LEDGER.md`
+- `docs/current/AEGIS_MINIMALITY_REFERENCE.md`
 - `docs/current/AEGIS_DUAL_TRACK_GOVERNANCE.md`
 - `docs/current/AEGIS_ADR_AUTO_BACKFILL.md`
 - `docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md`
@@ -118,6 +121,18 @@ false-positive layers.
 : Quality baseline for high-frequency workflows, compact output contracts,
   representative samples, fast-path cheapness, evidence freshness, artifact
   stability, workspace laziness, and authority boundary.
+
+`AEGIS_AGENTIC_BENCHMARK_BASELINE.md`
+: Public baseline for measuring Aegis in representative agentic tasks without
+  turning benchmark output into runtime authority or generic savings claims.
+
+`AEGIS_DEFERRED_LEDGER.md`
+: Lightweight marker convention for searchable deferred follow-up and
+  retirement work.
+
+`AEGIS_MINIMALITY_REFERENCE.md`
+: Aegis-specific "check before adding" reference for skills, artifacts,
+  adapters, fallbacks, and benchmark metrics.
 
 `AEGIS_DUAL_TRACK_GOVERNANCE.md`
 : Repair track plus retirement track governance.

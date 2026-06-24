@@ -148,6 +148,12 @@ assert_contains "$tdd_mode_doc" 'aegis-doctor\.py tdd-mode auto' \
 
 assert_contains "$baseline" "Plan-Time Complexity Check" \
     "workflow quality baseline includes plan-time complexity check"
+assert_contains "$baseline" "Existence Check" \
+    "workflow quality baseline includes pre-addition existence check"
+assert_contains "$process_doc" "Pre-Addition Minimality" \
+    "process baseline defines pre-addition minimality"
+assert_contains "$process_doc" "AEGIS_MINIMALITY_REFERENCE" \
+    "process baseline points to minimality reference"
 assert_contains "$baseline" "TDD Route" \
     "workflow quality baseline includes TDD route"
 assert_contains "$baseline" "auto.*strict.*light.*skipped|strict.*light.*skipped" \
@@ -305,6 +311,10 @@ assert_contains "skills/brainstorming/SKILL.md" "Product Risk Lens" \
     "brainstorming includes product risk lens"
 assert_contains "skills/brainstorming/SKILL.md" "Plan-Time Complexity Check" \
     "brainstorming includes plan-time complexity check"
+assert_contains "skills/brainstorming/SKILL.md" "Existence Check" \
+    "brainstorming includes pre-addition existence check"
+assert_contains "skills/brainstorming/SKILL.md" "AEGIS_MINIMALITY_REFERENCE" \
+    "brainstorming points to minimality reference"
 assert_contains "skills/brainstorming/SKILL.md" "Complexity Budget" \
     "brainstorming includes complexity budget"
 assert_contains "skills/brainstorming/SKILL.md" "Architecture Integrity Lens" \
@@ -345,6 +355,10 @@ assert_contains "skills/writing-plans/SKILL.md" "Compact output contract" \
     "writing-plans exposes compact output contract"
 assert_contains "skills/writing-plans/SKILL.md" "Plan Pressure Test" \
     "writing-plans includes plan pressure test"
+assert_contains "skills/writing-plans/SKILL.md" "Existence Check" \
+    "writing-plans includes pre-addition existence check"
+assert_contains "skills/writing-plans/SKILL.md" "AEGIS_MINIMALITY_REFERENCE" \
+    "writing-plans points to minimality reference"
 assert_contains "skills/writing-plans/SKILL.md" "Plan-Time Complexity Check" \
     "writing-plans includes plan-time complexity check"
 assert_contains "skills/writing-plans/SKILL.md" "Complexity Budget" \
@@ -387,6 +401,10 @@ assert_contains "skills/systematic-debugging/SKILL.md" "Quick bug lane" \
     "systematic debugging defines quick bug lane"
 assert_contains "skills/systematic-debugging/SKILL.md" "Pre-Edit Complexity Check" \
     "systematic debugging includes pre-edit complexity check"
+assert_contains "skills/systematic-debugging/SKILL.md" "Minimality Check" \
+    "systematic debugging includes minimality check"
+assert_contains "skills/systematic-debugging/SKILL.md" "AEGIS_MINIMALITY_REFERENCE" \
+    "systematic debugging points to minimality reference"
 assert_contains "skills/systematic-debugging/SKILL.md" "Layer Stop Card" \
     "systematic debugging defines layer stop card"
 assert_contains "skills/systematic-debugging/SKILL.md" "User Intervention Point" \

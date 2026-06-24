@@ -13,7 +13,8 @@
     "strong-opinion-review-lenses",
     "baseline-role-alignment",
     "aegis-invocation-visibility",
-    "semantic-slots-natural-surface"
+    "semantic-slots-natural-surface",
+    "pre-addition-minimality"
   ],
   "samples": [
     {
@@ -138,6 +139,28 @@
       "verificationSignal": "fresh-evidence-plus-architecture-alignment-trigger-action-baseline-sync-or-skip-reason"
     },
     {
+      "id": "pre-addition-existence-check-before-design",
+      "prompt": "This feature direction may require a new Aegis skill, artifact, or host adapter. Before recommending a design, decide whether the new surface needs to exist or whether an existing owner can carry it.",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": ["first-principles-review", "anti-entropy-governance", "writing-plans"],
+      "mustNotDo": ["add-new-surface-without-existence-check", "skip-existing-owner-reuse-check", "treat-new-artifact-as-default", "turn-existence-check-into-runtime-gate"],
+      "expectedOutputShape": "task-intent-baseline-impact-existence-check-options-decision-needed",
+      "workspacePolicy": "spec-only-when-persistent-requirements-needed",
+      "expectedArtifacts": ["TaskIntentDraft", "BaselineReadSetHint", "ImpactStatementDraft"],
+      "verificationSignal": "existence-check-existing-owner-reuse-candidate-creation-proof-entropy-retirement-impact-reuse-existing-or-add-with-proof"
+    },
+    {
+      "id": "pre-addition-existence-check-before-plan",
+      "prompt": "The spec is approved, but the implementation plan would add a new owner, fallback, and benchmark metric. Before writing tasks, prove each new surface needs to exist or route it to an existing owner.",
+      "expectedPrimarySkill": "writing-plans",
+      "allowedSecondarySkills": ["first-principles-review", "anti-entropy-governance"],
+      "mustNotDo": ["write-tasks-before-existence-check", "create-new-owner-without-creation-proof", "retain-fallback-without-retirement-impact", "skip-reuse-existing-decision"],
+      "expectedOutputShape": "plan-basis-files-existence-check-compat-tasks-risks-retirement",
+      "workspacePolicy": "plan-record-under-docs-aegis-plans",
+      "expectedArtifacts": ["BaselineReadSetHint", "ImpactStatementDraft"],
+      "verificationSignal": "existence-check-proposed-new-surface-existing-owner-reuse-candidate-creation-proof-entropy-retirement-impact"
+    },
+    {
       "id": "plan-time-complexity-check-before-design",
       "prompt": "Before we design this feature, the likely owner file is already large and mixed-purpose. Check whether adding there will worsen complexity, or whether a better file boundary is needed.",
       "expectedPrimarySkill": "brainstorming",
@@ -245,7 +268,7 @@
       "expectedOutputShape": "root-cause-owner-patch-shape-minimality-check-fix-boundary",
       "workspacePolicy": "workspace-if-medium-risk-or-plan-update-needed",
       "expectedArtifacts": ["EvidenceBundleDraft"],
-      "verificationSignal": "minimality-check-correct-owner-bug-class-fixed-new-branch-fallback-old-path-retirement-verdict"
+      "verificationSignal": "minimality-check-existing-owner-reuse-path-correct-owner-bug-class-fixed-existence-proof-new-branch-fallback-old-path-retirement-verdict"
     },
     {
       "id": "direct-adr-lifecycle-request",
@@ -716,9 +739,9 @@
   "compactOutputContracts": {
     "using-aegis": ["Route", "Aegis Reason Note", "ArchitectureReviewRequired", "Why", "Next"],
     "goal-framing": ["Goal", "Success evidence", "Stop condition", "Non-goals", "Route", "Next", "Continuation"],
-    "brainstorming": ["TaskIntentDraft", "BaselineReadSetHint", "BaselineUsageDraft", "ImpactStatementDraft", "Product Risk Lens", "Architecture Integrity Lens", "Baseline Role Alignment", "Complexity Budget", "Plan-Time Complexity Check", "Options", "Decision Needed"],
-    "writing-plans": ["Plan Basis", "BaselineUsageDraft", "Files", "Compatibility", "Architecture Integrity Lens", "Plan Pressure Test", "Complexity Budget", "Plan-Time Complexity Check", "Tasks", "Risks", "Retirement"],
-    "systematic-debugging": ["Symptom", "Reproduction", "Root Cause", "Layer Stop Card", "Pre-Claim Gate", "Topology Card", "Fix Boundary", "Pre-Edit Complexity Check", "Verification"],
+    "brainstorming": ["TaskIntentDraft", "BaselineReadSetHint", "BaselineUsageDraft", "ImpactStatementDraft", "Product Risk Lens", "Existence Check", "Architecture Integrity Lens", "Baseline Role Alignment", "Complexity Budget", "Plan-Time Complexity Check", "Options", "Decision Needed"],
+    "writing-plans": ["Plan Basis", "BaselineUsageDraft", "Files", "Compatibility", "Existence Check", "Architecture Integrity Lens", "Plan Pressure Test", "Complexity Budget", "Plan-Time Complexity Check", "Tasks", "Risks", "Retirement"],
+    "systematic-debugging": ["Symptom", "Reproduction", "Root Cause", "Layer Stop Card", "Pre-Claim Gate", "Topology Card", "Fix Boundary", "Minimality Check", "Pre-Edit Complexity Check", "Verification"],
     "test-driven-development": ["TDD Route", "Preflight Gate", "Complexity Budget", "Pre-Edit Complexity Check", "RED", "GREEN", "REFACTOR", "Regression Scope"],
     "anti-entropy-governance": ["Anti-Entropy Declaration", "Retirement Decision", "Verification Plan", "Gap Closure", "Data Destruction Guard"],
     "requesting-code-review": ["Findings First", "Evidence Review", "Baseline / Current Authority", "Baseline Role Alignment", "Compatibility / Retirement", "Review Readiness"],

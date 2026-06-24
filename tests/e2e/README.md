@@ -30,6 +30,12 @@ Bootstrap entrypoints:
 - `project-bootstrap-policy-check.sh`
 - `trigger-health-check.sh`
 - `workflow-quality-check.sh`
+- `agentic-benchmark-check.sh`
+- `host-instruction-invariants-check.sh`
+- `bootstrap-adapter-contract-check.sh`
+- `deferred-ledger-check.sh`
+- `minimality-reference-check.sh`
+- `host-adapter-smoke-check.sh`
 - `goal-framing-check.sh`
 - `first-principles-review-check.sh`
 - `long-task-continuation-check.sh`
@@ -66,6 +72,25 @@ Workspace helper coverage:
 - `workflow-quality-check.sh` verifies the workflow quality baseline, compact
   output contracts, and representative samples for fast-path cheapness,
   evidence freshness, artifact stability, and workspace laziness.
+- `agentic-benchmark-check.sh` verifies the benchmark design fixture for
+  with/without Aegis scenario coverage, isolation controls, metric boundaries,
+  and no authority overclaim.
+- `host-instruction-invariants-check.sh` verifies that global rules and thin
+  host instruction adapters preserve the key method-pack, evidence,
+  priority, and no-authority-overclaim invariants without byte-for-byte copy
+  checks.
+- `bootstrap-adapter-contract-check.sh` verifies that bootstrap adapters source
+  the canonical `using-aegis` hot path or host-native references while keeping
+  host-specific activation, TDD mode, JSON, discovery, warning, and tool
+  mapping logic outside the portable method body.
+- `deferred-ledger-check.sh` verifies the deferred marker convention, parser,
+  and current repository scan for malformed retained follow-up / retirement
+  entries.
+- `minimality-reference-check.sh` verifies the Aegis-specific reference for
+  checking before adding new skills, artifacts, adapters, fallbacks, or
+  benchmark metrics.
+- `host-adapter-smoke-check.sh` parses core host manifests and hook configs for
+  version alignment, expected paths, assets, and the no-live-workspace boundary.
 - `goal-framing-check.sh` verifies the opt-in goal-framing entry, optional
   TaskIntentDraft goal fields, SubagentContextPacket shape, and no-file default
   policy.

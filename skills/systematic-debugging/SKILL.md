@@ -11,7 +11,7 @@ description: Use when encountering any bug, test failure, or unexpected behavior
      L5 cross-system contract → L6 platform constraint → L7 spec gap.
      Stop when no deeper "why" remains OR terminal unactionable (T1-T4).
   2. Identify owner: compare with working code → locate canonical owner → flag duplicate owners as a finding
-  3. Before fixing, run Patch-Shape Triage and Ripple Signal Triage if the candidate fix touches shared/core/cross-module behavior, contract, source-of-truth, fallback, adapter, duplicate owner, producer+consumer, or consumer-side patching. Also run Pre-Edit Complexity Check when the candidate fix touches an overloaded owner or may worsen source complexity.
+  3. Before fixing, run Patch-Shape Triage and Ripple Signal Triage if the candidate fix touches shared/core/cross-module behavior, contract, source-of-truth, fallback, adapter, duplicate owner, producer+consumer, or consumer-side patching. Run Minimality Check when the candidate fix adds a new branch, fallback, owner, adapter, or compatibility path. Also run Pre-Edit Complexity Check when the candidate fix touches an overloaded owner or may worsen source complexity.
   4. Prove: one hypothesis → minimal test → iterate. 3+ failed fixes = question architecture, do not attempt another code fix.
      After fix, if any symptom persists → differential diagnosis (Phase 4 Step 4bis).
   5. Fix: failing test → minimal code at canonical owner → verify → Reflection + architecture review → repair + retirement track
@@ -136,15 +136,20 @@ escalate to the full workflow.
    ```text
    Minimality Check:
    - Smallest textual diff:
+   - Existing owner / reuse path:
    - Correct owner:
    - Bug class fixed:
    - New branch/fallback added:
+   - Existence proof for new path:
    - Old path retired or scheduled:
    - Verdict: sufficient repair | local patch | needs first-principles review
    ```
 
    `local patch` is a mitigation, not a sufficient repair, unless it is the
    canonical owner and includes a retention reason plus retirement trigger.
+   For candidate additions that are not ordinary repair code, use
+   `docs/current/AEGIS_MINIMALITY_REFERENCE.md` to check whether the new surface
+   needs to exist before editing.
 
    If the repair or retirement boundary depends on deleting old paths,
    retaining compat for a proven external dependency, or stopping on

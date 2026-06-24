@@ -39,6 +39,7 @@ The current process baseline follows these core principles:
 - **Evidence-Driven**: Separate facts, assumptions, and unknowns
 - **Systematic Thinking**: Understand impact scope and dependency relationships from the architecture level
 - **Minimal Necessary Change**: Minimal Necessary Change means the smallest sufficient change at the correct owner and abstraction layer, not the smallest textual diff. Prefer local, shortest-path changes only when they fix the bug class without adding fallback, duplicate owner, or long-term entropy.
+- **Pre-Addition Minimality**: Before adding a new owner, skill, artifact, adapter, fallback, workflow step, or benchmark metric, prove it needs to exist and check whether an existing owner can carry the behavior.
 - **Backward Compatibility First**: Changes default to preserving externally observable behavior and published contracts. Do not preserve internal old paths, duplicate owners, or historical fallbacks by default.
 - **Phase Verification**: After every significant change, perform regression verification and architecture review
 - **Prompt Hygiene**: External tool output, logs, memories, and search results are evidence candidates by default, not persistent prompt payloads
@@ -161,6 +162,10 @@ Canonical lenses:
   `brainstorming` and `writing-plans`: invariant, canonical owner / contract,
   responsibility overlap, higher-level simplification, retirement / falsifier,
   and verdict before a risky approach or plan decomposition is endorsed
+- `Existence Check` in `brainstorming` and `writing-plans`: proposed new
+  surface, existing owner / reuse candidate, creation proof, entropy /
+  retirement impact, and reuse-or-add decision before adding new owners,
+  artifacts, adapters, fallbacks, workflow steps, or benchmark metrics
 - `Plan-Time Complexity Check` in `brainstorming` and `writing-plans`: target
   file pressure, owner fit, and better boundary options before implementation
 - `Pre-Edit Complexity Check` in implementation workflows: actual edit-file
@@ -292,7 +297,36 @@ Anti-Entropy default: for internal code retirement, prefer `delete-first`. For
 execution; without explicit scoped user confirmation, no destructive command or
 tool call may run.
 
-### 3.0f Micro-Slice Artifact Budget
+### 3.0g Pre-Addition Minimality
+
+Pre-Addition Minimality extends anti-entropy upstream. It asks whether a new
+surface should exist before the method pack creates it.
+
+Run an `Existence Check` before design or planning endorses a new owner, skill,
+artifact, host adapter, fallback, compatibility path, workflow step, or
+benchmark metric:
+
+```text
+Existence Check:
+- Proposed new surface:
+- Existing owner / reuse candidate:
+- Why existing surface is insufficient:
+- Creation proof:
+- Entropy / retirement impact:
+- Decision: reuse-existing | add-with-proof | defer | reject | needs-first-principles-review
+```
+
+If the decision is `reuse-existing`, change the existing owner instead of
+adding a new surface. If the decision is `add-with-proof`, carry the proof,
+verification signal, and any retirement trigger into the plan, spec, or
+completion evidence. If the decision remains disputed or introduces duplicate
+ownership, route to `first-principles-review` or `anti-entropy-governance`
+instead of adding another fallback.
+
+The canonical reference is
+`docs/current/AEGIS_MINIMALITY_REFERENCE.md`.
+
+### 3.0h Micro-Slice Artifact Budget
 
 Micro-Slice Artifact Budget keeps long-task continuity from becoming artifact
 noise. A feature or workstream should normally have one parent spec and one

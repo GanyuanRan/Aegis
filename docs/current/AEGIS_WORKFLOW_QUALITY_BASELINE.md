@@ -36,12 +36,16 @@ Workflow hardening must optimize for:
 6. clearer diagnostic stop points for debugging work
 7. TDD strictness that scales by task risk instead of burdening every edit
 8. bounded plan/spec artifacts for long tasks that execute many micro-slices
+9. pre-addition minimality so new owners, artifacts, adapters, fallbacks, and
+   metrics are justified before they exist
 
 The stable path is sample-driven hardening:
 
 - define representative task samples first
 - lock expected routing, output shape, workspace policy, and artifact policy
 - only then change skill wording or workflow depth
+- use the agentic benchmark baseline when a claim depends on with/without Aegis
+  behavior across representative tasks
 
 Do not make `using-aegis` heavier in order to compensate for weak task-specific
 workflow boundaries.
@@ -281,6 +285,11 @@ Pass criteria:
   Lens` when an executable direction may still encode responsibility overlap,
   a wrong canonical owner, caller-side fallback, stale path, or missed
   higher-level owner / contract / source-of-truth simplification
+- `brainstorming` and `writing-plans` can use a compact `Existence Check` when
+  an approach or plan would add a new owner, skill, artifact, adapter,
+  fallback, workflow step, or benchmark metric; the check should prefer reuse
+  of an existing owner unless creation has proof, verification, and retirement
+  impact accounted for
 - `brainstorming` and `writing-plans` can use a compact
   `Plan-Time Complexity Check` to identify target file pressure, add-in-place
   risk, and safer file boundaries before implementation
@@ -419,6 +428,28 @@ make the minimal repair and verify it.
 The example is valid because it exposes the semantic slots that matter for the
 task. It is not a replacement for completion evidence after the work is done.
 
+### 3.18 Pre-Addition Minimality
+
+Aegis should check whether a new surface needs to exist before it is designed
+or planned.
+
+Pass criteria:
+
+- `brainstorming` and `writing-plans` use `Existence Check` when an approach or
+  plan would add a new owner, skill, artifact, host adapter, fallback,
+  compatibility path, workflow step, or benchmark metric
+- the check names the proposed new surface and an existing owner / reuse
+  candidate
+- creation is justified with proof, not preference for new structure
+- entropy and retirement impact are visible before the approach or task list is
+  endorsed
+- `reuse-existing` routes work to the existing owner instead of creating a new
+  surface
+- `add-with-proof` carries verification signal and any retirement trigger into
+  the design or plan
+- the check remains advisory method-pack discipline, not a runtime gate,
+  authoritative `GateDecision`, or completion authority
+
 ---
 
 ## 4. Compact Output Contracts
@@ -463,6 +494,7 @@ BaselineReadSetHint: candidate docs, missing authority
 BaselineUsageDraft: required refs, acknowledged refs, cited refs, missing refs, decision
 ImpactStatementDraft: affected layers, owners, invariants, non-goals
 Product Risk Lens: value, non-goals, trade-offs, decision-needed
+Existence Check: proposed new surface, existing owner / reuse candidate, creation proof, entropy / retirement impact, decision
 Architecture Integrity Lens: invariant, owner/contract, overlap, higher-level path, retirement/falsifier, verdict
 Baseline Role Alignment: Product / Requirement Baseline, Architecture / Runtime Boundary Baseline, Requirement Ready Check, Design Defect / Implementation Drift, scope
 Complexity Budget: artifact class, current pressure, projected post-change pressure, planned governance
@@ -523,6 +555,7 @@ BaselineUsageDraft: required baseline refs, acknowledged refs, cited refs, missi
 Planless Slice Lane: use Slice Card when an existing parent plan/spec already owns the tiny slice
 Files: owners and edit boundaries
 Compatibility: invariants and non-goals
+Existence Check: proposed new surface, existing owner / reuse candidate, creation proof, entropy / retirement impact, decision
 Architecture Integrity Lens: invariant, owner/contract, overlap, higher-level path, retirement/falsifier, verdict
 Plan Pressure Test: owner / contract / retirement risk and verification scope
 Complexity Budget: artifact class, current pressure, projected post-change pressure, planned governance
@@ -551,6 +584,7 @@ Layer Stop Card: stop layer, topology, checked path, evidence, excluded layers, 
 Pre-Claim Gate: causal closure, falsifier checked, adversarial self-refutation, topology classified, layer ceiling proof — required before claiming root cause when a patch-shape signal fires
 Topology Card: explicit causal topology (single-root / single-root-multi-symptom / chain / independent-compound / conjunctive-cluster / disjunctive-or) with member necessity and sufficiency tests and anti-disguise check
 Fix Boundary: canonical owner, compatibility, non-edits
+Minimality Check: smallest textual diff, existing owner / reuse path, correct owner, bug class fixed, new branch/fallback, old path retirement, verdict
 Pre-Edit Complexity Check: target edit file, pressure signal, safer boundary, decision
 Verification: failing test or reproduction now passing
 Repair Track / Retirement Track: when fallback, owner, or contract risk exists
@@ -903,6 +937,11 @@ Workflow quality is advisory method-pack verification.
 
 It can show whether Aegis workflows are likely to be useful, compact, and
 evidence-aware in representative tasks.
+
+The agentic benchmark fixture is the public design contract for measuring
+with/without Aegis behavior. It measures route, evidence, authority, owner,
+retirement, and workspace discipline; it does not turn benchmark output into
+completion authority.
 
 It does not grant authoritative runtime decisions, final gate decisions,
 evidence sufficiency, or completion authority.

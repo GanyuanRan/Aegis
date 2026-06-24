@@ -39,12 +39,13 @@ You MUST create a task for each of these items and complete them in order:
 2. **Choose the path and scope** — real design? diagnosis? route accordingly or decompose first
 3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
 4. **Draft working artifacts** — `TaskIntentDraft`, `BaselineReadSetHint`, `BaselineUsageDraft`, `ImpactStatementDraft`
-5. **Propose 2-3 approaches** — with trade-offs and your recommendation
-6. **Present design** — in sections scaled to complexity, get user approval where required
-7. **Write spec artifact** — save a Spec Brief or Design Spec under `docs/aegis/specs/` when persistent requirements are needed
-8. **Spec self-review** — check for placeholders, contradictions, ambiguity, scope, boundary
-9. **User reviews written spec** — ask user to review before proceeding
-10. **Transition to implementation** — invoke writing-plans skill (terminal state)
+5. **Run existence check when adding new surfaces** — only if an approach adds a new owner, skill, artifact, adapter, fallback, workflow step, or benchmark metric
+6. **Propose 2-3 approaches** — with trade-offs and your recommendation
+7. **Present design** — in sections scaled to complexity, get user approval where required
+8. **Write spec artifact** — save a Spec Brief or Design Spec under `docs/aegis/specs/` when persistent requirements are needed
+9. **Spec self-review** — check for placeholders, contradictions, ambiguity, scope, boundary
+10. **User reviews written spec** — ask user to review before proceeding
+11. **Transition to implementation** — invoke writing-plans skill (terminal state)
 
 **The terminal state is invoking writing-plans.** Do NOT invoke any other implementation skill.
 
@@ -68,9 +69,10 @@ non-goals). Refresh when scope changes.
 
 **Compact output contract:** `TaskIntentDraft`, `BaselineReadSetHint`,
 `BaselineUsageDraft`, `Requirement Ready Check`, `ImpactStatementDraft`,
-`Product Risk Lens`, `Architecture Integrity Lens`, `Baseline Role Alignment`,
-`Plan-Time Complexity Check`, `Options`, and `Decision Needed`. Use this
-compact shape before expanding into a full design structure.
+`Existence Check`, `Product Risk Lens`, `Architecture Integrity Lens`,
+`Baseline Role Alignment`, `Plan-Time Complexity Check`, `Options`, and
+`Decision Needed`. Use this compact shape before expanding into a full design
+structure.
 
 Use a compact `BaselineUsageDraft` whenever the design direction depends on
 specific baseline docs or current-authority refs:
@@ -108,6 +110,26 @@ Treat task intent, conversation, source documents, and agent inference as
 candidate requirement sources until project authority confirms them. If the
 decision is not `ready`, keep the design at proposal/spec clarification level;
 do not turn the gap into implementation tasks.
+
+**Existence Check:** Before recommending an approach that adds a new owner,
+skill, artifact, host adapter, fallback, compatibility path, workflow step, or
+benchmark metric, check whether it needs to exist. Use
+`docs/current/AEGIS_MINIMALITY_REFERENCE.md` as the reference. Do not force this
+onto ordinary feature design that reuses existing owners and artifacts.
+
+```text
+Existence Check:
+- Proposed new surface:
+- Existing owner / reuse candidate:
+- Why existing surface is insufficient:
+- Creation proof:
+- Entropy / retirement impact:
+- Decision: reuse-existing | add-with-proof | defer | reject | needs-first-principles-review
+```
+
+If the decision is `reuse-existing`, recommend the reuse path instead of a new
+surface. If the decision is `add-with-proof`, carry the proof, verification
+signal, and any retirement trigger into the design/spec.
 
 **Product Risk Lens:** For ambiguous product, feature, UI, workflow, or
 architecture choices, add a compact review lens, not persona roleplay:
@@ -150,12 +172,13 @@ Plan-Time Complexity Check:
 recommendation. Make scope boundary explicit: what's in, what's deferred, what
 belongs elsewhere.
 
-Before approach selection, use `first-principles-review` and its
-`Decision Hygiene Review` when the candidate direction introduces a new owner,
-duplicate owner, fallback, adapter, compat-only carrier, delete-first question,
-unverified assumption, or "long-term stable" claim. Do not make it a
-universal design ceremony; return to this workflow once the decision surface is
-clean.
+Before approach selection, use `Existence Check` for any proposed new surface.
+Escalate to `first-principles-review` and its `Decision Hygiene Review` when
+the candidate direction still introduces a new owner, duplicate owner,
+fallback, adapter, compat-only carrier, delete-first question, unverified
+assumption, or "long-term stable" claim after the existence check. Do not make
+either check a universal design ceremony; return to this workflow once the
+decision surface is clean.
 
 When the central decision is internal retirement vs compat retention vs
 persistent-state confirmation, compose `anti-entropy-governance`. It classifies

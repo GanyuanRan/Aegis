@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "purpose": "Prevent drift in agent-facing Aegis instruction surfaces without byte-for-byte copy checks.",
+  "requiredSurfaces": [
+    "AGENTS.md",
+    "GLOBAL_USER_RULES_LITE.md",
+    "GLOBAL_USER_RULES_TEMPLATE.md",
+    "GLOBAL_USER_RULES_LITE.zh-CN.md",
+    "GLOBAL_USER_RULES_TEMPLATE.zh-CN.md",
+    ".github/copilot-instructions.md",
+    "GEMINI.md"
+  ],
+  "surfaces": [
+    {
+      "path": "AGENTS.md",
+      "requiredRegex": [
+        "Aegis Method Pack \\(runtime-ready\\)",
+        "authoritative runtime core",
+        "authoritative `GateDecision`",
+        "authoritative `PolicySnapshot`",
+        "final completion authority",
+        "fresh\\s+verification\\s+evidence"
+      ]
+    },
+    {
+      "path": "GLOBAL_USER_RULES_LITE.md",
+      "requiredRegex": [
+        "At the start of each turn",
+        "Simple, local, low-risk tasks may use a fast path",
+        "fresh verification evidence",
+        "method layer",
+        "completion authority",
+        "target project's rules take priority"
+      ]
+    },
+    {
+      "path": "GLOBAL_USER_RULES_TEMPLATE.md",
+      "requiredRegex": [
+        "does not turn Aegis into a runtime core or final authority",
+        "Route by task complexity before implementation",
+        "Create Aegis project records lazily",
+        "Do not claim work is complete without fresh verification evidence",
+        "authoritative gate decisions",
+        "final completion authority"
+      ]
+    },
+    {
+      "path": "GLOBAL_USER_RULES_LITE.zh-CN.md",
+      "requiredRegex": [
+        "每轮开始先判断当前任务是否匹配已安装的 Aegis skill",
+        "简单、局部、低风险任务走快速路径",
+        "声明完成前必须有新的验证证据",
+        "Aegis 是方法层",
+        "completion authority",
+        "用户当前明确指令和目标项目规则优先"
+      ]
+    },
+    {
+      "path": "GLOBAL_USER_RULES_TEMPLATE.zh-CN.md",
+      "requiredRegex": [
+        "不会把\\s*Aegis\\s*变成 runtime core",
+        "实施前先按任务复杂度路由",
+        "懒创建 Aegis 项目记录",
+        "没有 fresh verification evidence，不声明工作完成",
+        "authoritative gate decision",
+        "final completion authority"
+      ]
+    },
+    {
+      "path": ".github/copilot-instructions.md",
+      "requiredRegex": [
+        "method-pack workflow discipline",
+        "Aegis Method Pack \\(runtime-ready\\)",
+        "not a runtime core",
+        "target-project rules above Aegis guidance",
+        "do not claim authoritative `GateDecision` or final completion authority",
+        "fresh verification evidence"
+      ],
+      "maxChars": 2000
+    },
+    {
+      "path": "GEMINI.md",
+      "requiredRegex": [
+        "@\\./skills/using-aegis/SKILL\\.md",
+        "@\\./skills/using-aegis/references/gemini-tools\\.md"
+      ],
+      "maxLines": 8
+    }
+  ],
+  "forbiddenPositiveClaims": [
+    "Aegis grants completion authority",
+    "Aegis provides authoritative GateDecision",
+    "Aegis is an authoritative runtime core",
+    "benchmark proves final evidence sufficiency"
+  ]
+}

@@ -79,7 +79,7 @@ architecture, contract, migration, or cross-module uncertainty appears.
 
 Compact output contract before writing the plan: `Plan Basis`,
 `BaselineUsageDraft`, `Requirement Ready Check`, `Files`, `Compatibility`,
-`Architecture Integrity Lens`, `Plan Pressure Test`,
+`Existence Check`, `Architecture Integrity Lens`, `Plan Pressure Test`,
 `Plan-Time Complexity Check`, `Tasks`, `Risks`, and `Retirement`. Expand only
 where the approved scope, risk, or verification surface requires it.
 
@@ -119,6 +119,28 @@ If the decision is not `ready`, do not create implementation tasks. Return to
 the requirement/spec owner with the smallest missing evidence or decision. A
 task intent, conversation, or agent inference can be cited as a candidate
 source, but it is not durable requirement authority by itself.
+
+Use a compact `Existence Check` before task decomposition when a plan would add
+a new owner, skill, artifact, host adapter, fallback, compatibility path,
+workflow step, or benchmark metric. Use
+`docs/current/AEGIS_MINIMALITY_REFERENCE.md` as the reference and keep the check
+advisory. Do not force it onto plans that only reuse existing owners and
+surfaces.
+
+```text
+Existence Check:
+- Proposed new surface:
+- Existing owner / reuse candidate:
+- Why existing surface is insufficient:
+- Creation proof:
+- Entropy / retirement impact:
+- Decision: reuse-existing | add-with-proof | defer | reject | needs-first-principles-review
+```
+
+If the decision is `reuse-existing`, write tasks against the existing owner
+instead of creating a new surface. If the decision is `add-with-proof`, carry
+the proof, verification signal, and any retirement trigger into the relevant
+task.
 
 Use the `Architecture Integrity Lens` before task decomposition when an
 executable plan may still encode responsibility overlap, a wrong canonical
@@ -183,8 +205,10 @@ rediscovering the decision from scratch.
 If task decomposition would encode a new owner, duplicate owner, fallback,
 adapter, compat-only carrier, delete-first question, unverified assumption, or
 long-term stability claim that the spec did not already settle, use
-`first-principles-review` and its `Decision Hygiene Review` or `Architecture
-Integrity Lens` before task decomposition.
+`Existence Check` first. If the new surface is still justified but the owner,
+contract, or retirement decision remains risky, use `first-principles-review`
+and its `Decision Hygiene Review` or `Architecture Integrity Lens` before task
+decomposition.
 
 When the plan must decide between deleting old internal paths, retaining compat
 for a proven external boundary, or stopping for persistent-state confirmation,
@@ -224,11 +248,13 @@ Before you leave this workflow, the written plan must make these items answerabl
 4. **Which required baseline refs were explicitly acknowledged before planning and which were actually cited in the plan**
 5. **What files own the change**
 6. **What compatibility boundary must hold**
-7. **Whether the architecture integrity check found a higher-level owner /
+7. **Whether any new surface passed an Existence Check or was routed to an
+   existing owner**
+8. **Whether the architecture integrity check found a higher-level owner /
    contract path before task decomposition**
-8. **What plan-time complexity pressure exists and which edit boundary is safer**
-9. **What verification proves each major slice**
-10. **What risks, rollback surface, old owner/fallback handling, ADR signal preservation, and baseline-sync signals remain**
+9. **What plan-time complexity pressure exists and which edit boundary is safer**
+10. **What verification proves each major slice**
+11. **What risks, rollback surface, old owner/fallback handling, ADR signal preservation, and baseline-sync signals remain**
 
 ## Bite-Sized Task Granularity
 
@@ -263,11 +289,13 @@ Never write: "TBD", "TODO", "implement later", "fill in details", "Add appropria
 Check plan against spec: 1) Spec coverage — can you point to a task for each
 requirement? 2) Placeholder scan — any TBD/TODO/vague instructions? 3) Type
 consistency — do signatures match across tasks? 4) Compatibility — invariants,
-non-goals, stable interfaces marked? 5) Plan-time complexity and minimality —
+non-goals, stable interfaces marked? 5) Existence check — any new owner,
+artifact, adapter, fallback, workflow step, or benchmark metric has proof and a
+reuse decision? 6) Plan-time complexity and minimality —
 lowest-entropy owner/file boundary that fixes the bug class, not just the
-smallest textual diff? 6) Architecture integrity — any higher-level owner /
-contract / source-of-truth simplification skipped? 7) Verification — exact
-commands? 8) Dual-track, decision hygiene, and ADR/baseline-sync signals
+smallest textual diff? 7) Architecture integrity — any higher-level owner /
+contract / source-of-truth simplification skipped? 8) Verification — exact
+commands? 9) Dual-track, decision hygiene, and ADR/baseline-sync signals
 preserved where needed?
 
 Fix issues inline. Re-review is not needed — just fix and move on.

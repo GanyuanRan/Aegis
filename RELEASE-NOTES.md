@@ -1,5 +1,66 @@
 # Aegis Release Notes
 
+## v2.2.0 (2026-06-24)
+
+### Pre-Addition Minimality
+
+- Added `Pre-Addition Minimality` to the process baseline. Before Aegis adds a
+  new owner, skill, artifact, adapter, fallback, workflow step, or benchmark
+  metric, the workflow now checks whether an existing owner can carry the
+  behavior.
+- Added the shared `Existence Check` contract for `brainstorming` and
+  `writing-plans`, with explicit fields for proposed surface, reuse candidate,
+  creation proof, entropy / retirement impact, and the final
+  `reuse-existing` / `add-with-proof` / `defer` / `reject` decision.
+- Extended `systematic-debugging` minimality discipline so candidate fixes that
+  add branches, fallbacks, owners, adapters, or compatibility paths name the
+  existing owner / reuse path and provide existence proof before editing.
+- Added `docs/current/AEGIS_MINIMALITY_REFERENCE.md` as the public reference for
+  checking before adding skills, artifacts, host adapters, fallbacks, and
+  benchmark metrics. The reference remains advisory method-pack guidance and
+  does not create a runtime gate or completion authority.
+
+### Benchmark And Deferred Work Baselines
+
+- Added `docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md` and its matrix
+  fixture to define how Aegis can be measured against no-Aegis and explicit
+  Aegis arms across representative agentic tasks.
+- The benchmark baseline prioritizes governance-quality signals such as route
+  correctness, evidence freshness, authority boundary, false-completion rate,
+  owner-fix accuracy, retirement coverage, workspace laziness, and task
+  completeness. Cost, time, token count, and diff size remain supporting
+  metrics rather than primary Aegis success claims.
+- Added `docs/current/AEGIS_DEFERRED_LEDGER.md` plus
+  `scripts/aegis-deferred-ledger.py` for searchable `aegis-followup` and
+  `aegis-retire` markers. The ledger records retained follow-up and retirement
+  work, but does not decide whether a deferral is acceptable and does not grant
+  completion authority.
+
+### Host And Workflow Verification
+
+- Added thin-bootstrap-adapter invariants so host bootstrap surfaces continue to
+  source the canonical `skills/using-aegis/SKILL.md` hot path or a host-native
+  reference instead of copying the full method body into a separate prompt
+  owner.
+- Added host instruction invariant checks for global rules, GitHub Copilot
+  instructions, and Gemini references so agent-facing surfaces preserve the
+  method-pack boundary, evidence-before-completion rule, and target-project
+  priority order.
+- Added a lightweight host adapter smoke check that parses core manifests,
+  hook configs, version fields, expected assets, and the no-live-workspace
+  boundary.
+- Extended the workflow-quality matrix and validator for pre-addition
+  minimality samples, `Existence Check` compact output contracts, and the
+  expanded `Minimality Check` in debugging.
+
+### Release Surface
+
+- Bumped all declared package and host manifest versions from `2.1.8` to
+  `2.2.0`.
+- Registered the new agentic benchmark, host instruction invariant, bootstrap
+  adapter contract, deferred ledger, minimality reference, and host adapter
+  smoke checks in `tests/e2e/layer1-fast-check.sh`.
+
 ## v2.1.8 (2026-06-22)
 
 ### Root-Cause Claim Discipline

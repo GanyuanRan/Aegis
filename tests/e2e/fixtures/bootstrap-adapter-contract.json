@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "purpose": "Keep host bootstrap adapters thin and sourced from canonical Aegis skill bodies.",
+  "canonicalHotPath": "skills/using-aegis/SKILL.md",
+  "adapters": [
+    {
+      "path": "hooks/session-start",
+      "requiredRegex": [
+        "skills/using-aegis/SKILL\\.md",
+        "AEGIS_ACTIVATION_MODE",
+        "AEGIS_TDD_MODE",
+        "verification-before-completion still applies",
+        "load only the relevant skill or reference"
+      ]
+    },
+    {
+      "path": "hooks/copilot-session-start.ps1",
+      "requiredRegex": [
+        "skills/using-aegis/SKILL\\.md",
+        "AEGIS_HOOK_JSON_STYLE",
+        "COPILOT_CLI",
+        "verification-before-completion still applies",
+        "load only the relevant skill or reference"
+      ]
+    },
+    {
+      "path": ".opencode/plugins/aegis.js",
+      "requiredRegex": [
+        "using-aegis.+SKILL\\.md|SKILL\\.md.+using-aegis",
+        "extractAndStripFrontmatter",
+        "experimental\\.chat\\.messages\\.transform",
+        "first user message",
+        "verification-before-completion still applies",
+        "native \\\\?`skill\\\\?` tool"
+      ]
+    },
+    {
+      "path": "GEMINI.md",
+      "requiredRegex": [
+        "@\\./skills/using-aegis/SKILL\\.md",
+        "@\\./skills/using-aegis/references/gemini-tools\\.md"
+      ],
+      "referenceOnly": true
+    }
+  ],
+  "allowedAdapterResponsibilities": [
+    "activation-mode",
+    "tdd-mode",
+    "host-json-shape",
+    "host-tool-mapping",
+    "skill-discovery-path",
+    "legacy-warning"
+  ],
+  "forbiddenAdapterResponsibilities": [
+    "copy-full-using-aegis-body",
+    "grant-runtime-authority",
+    "grant-completion-authority",
+    "replace-task-specific-skills-with-one-large-prompt"
+  ]
+}
