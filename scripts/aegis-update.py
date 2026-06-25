@@ -151,6 +151,33 @@ def normalized_discovery_shape(
     return shape
 
 
+def normalize_discovery_name_prefix(value: str | None) -> str:
+    if value is None:
+        return ""
+    if "\0" in value or "/" in value or "\\" in value:
+        raise UpdateError("discovery_name_prefix must not contain path separators")
+    if value in {".", ".."}:
+        raise UpdateError("discovery_name_prefix must not be a relative path segment")
+    return value
+
+
+def discovery_skill_dir_name(skill_name: str, prefix: str) -> str:
+    return f"{prefix}{skill_name}"
+
+
+def entry_discovery_name_prefix(entry: dict[str, Any], shape: str | None = None) -> str:
+    sync_mode = entry.get("syncMode", "repo-only")
+    discovery_shape = shape or normalized_discovery_shape(
+        entry.get("discoveryShape"),
+        sync_mode,
+        entry.get("host"),
+    )
+    prefix = normalize_discovery_name_prefix(entry.get("discoveryNamePrefix"))
+    if prefix and discovery_shape != "direct-child":
+        raise UpdateError("discoveryNamePrefix requires direct-child discoveryShape")
+    return prefix
+
+
 def register_installation(
     registry_path: Path,
     *,
@@ -159,6 +186,7 @@ def register_installation(
     discovery_root: Path | None = None,
     sync_mode: str = "repo-only",
     discovery_shape: str | None = None,
+    discovery_name_prefix: str | None = None,
     tracked_ref: str = "main",
     update_mode: str = "manual",
     reload_hint: str | None = None,
@@ -174,6 +202,9 @@ def register_installation(
     if not normalized_host:
         raise UpdateError("host is required")
     shape = normalized_discovery_shape(discovery_shape, sync_mode, normalized_host)
+    name_prefix = normalize_discovery_name_prefix(discovery_name_prefix)
+    if name_prefix and shape != "direct-child":
+        raise UpdateError("discovery_name_prefix requires direct-child discovery_shape")
 
     root = Path(method_pack_root).expanduser().resolve()
     helper = (
@@ -196,6 +227,8 @@ def register_installation(
     }
     if discovery_root:
         entry["discoveryRoot"] = Path(discovery_root).expanduser().resolve().as_posix()
+    if name_prefix:
+        entry["discoveryNamePrefix"] = name_prefix
 
     data = load_registry(registry_path)
     installations = data["installations"]
@@ -342,6 +375,7 @@ def create_direct_child_link(source: Path, destination: Path) -> bool:
 def ensure_direct_child_links(entry: dict[str, Any]) -> str:
     sync_mode = entry.get("syncMode", "repo-only")
     shape = normalized_discovery_shape(entry.get("discoveryShape"), sync_mode, entry.get("host"))
+    name_prefix = entry_discovery_name_prefix(entry, shape)
     if shape != "direct-child" or sync_mode not in {"junction", "symlink"}:
         return f"{sync_mode}: no direct-child link step required"
 
@@ -356,7 +390,7 @@ def ensure_direct_child_links(entry: dict[str, Any]) -> str:
     target_root.mkdir(parents=True, exist_ok=True)
 
     expected_skills = {
-        child.name: child
+        discovery_skill_dir_name(child.name, name_prefix): child
         for child in source_skills.iterdir()
         if child.is_dir() and (child / "SKILL.md").is_file()
     }
@@ -369,18 +403,18 @@ def ensure_direct_child_links(entry: dict[str, Any]) -> str:
 
     created = 0
     current = 0
-    for name, source in sorted(expected_skills.items()):
-        destination = target_root / name
+    for target_name, source in sorted(expected_skills.items()):
+        destination = target_root / target_name
         if create_direct_child_link(source, destination):
             created += 1
         else:
             current += 1
 
     missing = [
-        name
-        for name in sorted(expected_skills)
-        if not (target_root / name / "SKILL.md").is_file()
-        or not link_points_to(target_root / name, expected_skills[name])
+        target_name
+        for target_name in sorted(expected_skills)
+        if not (target_root / target_name / "SKILL.md").is_file()
+        or not link_points_to(target_root / target_name, expected_skills[target_name])
     ]
     if missing:
         raise UpdateError(
@@ -401,6 +435,7 @@ def sync_skills(entry: dict[str, Any]) -> str:
         sync_mode,
         entry.get("host"),
     )
+    name_prefix = entry_discovery_name_prefix(entry, shape)
     if sync_mode in {"junction", "symlink"} and shape == "direct-child":
         return ensure_direct_child_links(entry)
     if sync_mode in {"junction", "symlink", "repo-only"}:
@@ -420,15 +455,21 @@ def sync_skills(entry: dict[str, Any]) -> str:
         raise UpdateError(f"Source skills directory is missing: {source}")
     target.mkdir(parents=True, exist_ok=True)
     expected_skill_names = {
-        child.name
+        discovery_skill_dir_name(child.name, name_prefix)
         for child in source.iterdir()
         if child.is_dir() and (child / "SKILL.md").is_file()
     }
     for child in target.iterdir():
-        if child.is_dir() and child.name not in expected_skill_names and (child / "SKILL.md").is_file():
+        should_prune = child.name not in expected_skill_names
+        if name_prefix and not child.name.startswith(name_prefix):
+            should_prune = False
+        if child.is_dir() and should_prune and (child / "SKILL.md").is_file():
             shutil.rmtree(child)
     for child in source.iterdir():
-        destination = target / child.name
+        if child.is_dir() and (child / "SKILL.md").is_file():
+            destination = target / discovery_skill_dir_name(child.name, name_prefix)
+        else:
+            destination = target / child.name
         if child.is_dir():
             shutil.copytree(child, destination, dirs_exist_ok=True)
         elif child.is_file():
@@ -451,6 +492,19 @@ def doctor_discovery_root(entry: dict[str, Any]) -> str | None:
     return None
 
 
+def doctor_discovery_name_prefix(entry: dict[str, Any]) -> str | None:
+    sync_mode = entry.get("syncMode", "repo-only")
+    shape = normalized_discovery_shape(
+        entry.get("discoveryShape"),
+        sync_mode,
+        entry.get("host"),
+    )
+    if shape != "direct-child":
+        return None
+    prefix = entry_discovery_name_prefix(entry, shape)
+    return prefix or None
+
+
 def verify_copy_discovery_root(entry: dict[str, Any]) -> None:
     if entry.get("syncMode") != "copy-skills":
         return
@@ -458,8 +512,9 @@ def verify_copy_discovery_root(entry: dict[str, Any]) -> None:
     if not discovery_root:
         raise UpdateError("copy-skills sync requires discoveryRoot")
     root = Path(discovery_root)
+    prefix = entry_discovery_name_prefix(entry)
     for skill in COPY_DISCOVERY_KEY_SKILLS:
-        skill_md = root / skill / "SKILL.md"
+        skill_md = root / discovery_skill_dir_name(skill, prefix) / "SKILL.md"
         if not skill_md.is_file():
             raise UpdateError(f"copied discovery root is missing {skill}/SKILL.md: {root}")
 
@@ -476,6 +531,9 @@ def run_doctor(entry: dict[str, Any], *, config_path: Path | None) -> dict[str, 
     discovery_root = doctor_discovery_root(entry)
     if discovery_root:
         command.extend(["--discovery-root", discovery_root])
+        discovery_name_prefix = doctor_discovery_name_prefix(entry)
+        if discovery_name_prefix:
+            command.extend(["--discovery-name-prefix", discovery_name_prefix])
 
     result = run_command(command)
     try:
@@ -741,6 +799,7 @@ def build_parser() -> argparse.ArgumentParser:
     register.add_argument("--workspace-helper")
     register.add_argument("--sync-mode", choices=sorted(VALID_SYNC_MODES), default="repo-only")
     register.add_argument("--discovery-shape", choices=sorted(VALID_DISCOVERY_SHAPES))
+    register.add_argument("--discovery-name-prefix")
     register.add_argument("--tracked-ref", default="main")
     register.add_argument("--update-mode", choices=sorted(VALID_UPDATE_MODES), default="manual")
     register.add_argument("--reload-hint")
@@ -768,13 +827,15 @@ def command_register(args: argparse.Namespace) -> Any:
         args.sync_mode,
         normalized_host,
     )
+    discovery_name_prefix = normalize_discovery_name_prefix(args.discovery_name_prefix)
+    if discovery_name_prefix and requested_shape != "direct-child":
+        raise UpdateError("--discovery-name-prefix requires --discovery-shape direct-child")
     if (
-        normalized_host == "zcode"
-        and requested_shape == "direct-child"
-        and args.sync_mode in {"junction", "symlink"}
+        requested_shape == "direct-child"
+        and args.sync_mode in {"junction", "symlink", "copy-skills"}
         and not args.discovery_root
     ):
-        raise UpdateError("ZCode direct-child junction/symlink registration requires --discovery-root")
+        raise UpdateError("direct-child sync registration requires --discovery-root")
 
     entry = register_installation(
         Path(args.registry).expanduser(),
@@ -785,6 +846,7 @@ def command_register(args: argparse.Namespace) -> Any:
         workspace_helper=Path(args.workspace_helper) if args.workspace_helper else None,
         sync_mode=args.sync_mode,
         discovery_shape=args.discovery_shape,
+        discovery_name_prefix=args.discovery_name_prefix,
         tracked_ref=args.tracked_ref,
         update_mode=args.update_mode,
         reload_hint=args.reload_hint,

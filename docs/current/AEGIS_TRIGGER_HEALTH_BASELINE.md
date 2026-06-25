@@ -72,6 +72,9 @@ Question:
 Evidence:
 
 - `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --discovery-root <host-skill-discovery-root>`
+- `--discovery-name-prefix <prefix>` as directed by the host guide when the
+  host-visible skill directories are prefixed, such as
+  `aegis-<skill-name>/SKILL.md`
 - host-specific `/skills`, plugin reload, or fresh-session smoke
 
 Failure owner:

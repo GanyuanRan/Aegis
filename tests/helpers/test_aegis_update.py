@@ -90,6 +90,25 @@ class AegisUpdateRegistryTests(unittest.TestCase):
             data = update.load_registry(registry)
             self.assertEqual(data["installations"][0]["discoveryShape"], "direct-child")
 
+    def test_register_installation_records_discovery_name_prefix(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-prefix-") as tmp:
+            registry = Path(tmp) / "installations.json"
+            root = Path(tmp) / "aegis"
+
+            entry = update.register_installation(
+                registry,
+                host="copilot",
+                method_pack_root=root,
+                discovery_root=Path(tmp) / "skills",
+                sync_mode="junction",
+                discovery_shape="direct-child",
+                discovery_name_prefix="aegis-",
+            )
+
+            self.assertEqual(entry["discoveryNamePrefix"], "aegis-")
+            data = update.load_registry(registry)
+            self.assertEqual(data["installations"][0]["discoveryNamePrefix"], "aegis-")
+
     def test_update_without_host_refuses_ambiguous_multi_host_registry(self):
         data = {
             "schemaVersion": 1,
@@ -174,6 +193,36 @@ class AegisUpdateRegistryTests(unittest.TestCase):
         self.assertIn("--discovery-root", command)
         self.assertIn("/tmp/codebuddy-skills", command)
 
+    def test_run_doctor_passes_registered_discovery_name_prefix(self):
+        entry = {
+            "id": "copilot:default",
+            "host": "copilot",
+            "methodPackRoot": REPO_ROOT.as_posix(),
+            "syncMode": "junction",
+            "discoveryRoot": "/tmp/repo/.github/skills",
+            "discoveryShape": "direct-child",
+            "discoveryNamePrefix": "aegis-",
+        }
+
+        with patch.object(update, "run_command") as run_command:
+            run_command.return_value.stdout = json.dumps(
+                {
+                    "ok": True,
+                    "workspaceSupport": "available",
+                    "configStatus": "configured",
+                    "expectedDiscoveryShape": "prefixed-direct-child-skill-directories",
+                    "discoveryShapeStatus": "current",
+                    "compatibilityExposureStatus": "generated-copy-view-current",
+                    "discoveryNamePolicy": "prefix:aegis-",
+                    "discoveryNamePrefix": "aegis-",
+                }
+            )
+            update.run_doctor(entry, config_path=None)
+
+        command = run_command.call_args.args[0]
+        self.assertIn("--discovery-name-prefix", command)
+        self.assertIn("aegis-", command)
+
     def test_sync_skills_prunes_stale_aegis_skill_directories_for_copy_mode(self):
         with tempfile.TemporaryDirectory(prefix="aegis-update-copy-") as tmp:
             method_pack_root = Path(tmp) / "method-pack"
@@ -204,6 +253,36 @@ class AegisUpdateRegistryTests(unittest.TestCase):
             self.assertFalse(stale_skill.exists())
             for skill in update.COPY_DISCOVERY_KEY_SKILLS:
                 self.assertTrue((discovery_root / skill / "SKILL.md").is_file())
+
+    def test_sync_skills_copies_prefixed_direct_child_skills(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-prefixed-copy-") as tmp:
+            method_pack_root = Path(tmp) / "method-pack"
+            self.make_method_pack_with_skills(
+                method_pack_root,
+                list(update.COPY_DISCOVERY_KEY_SKILLS),
+            )
+            discovery_root = Path(tmp) / "discovery"
+            discovery_root.mkdir()
+            personal_skill = discovery_root / "personal-skill"
+            personal_skill.mkdir()
+            (personal_skill / "SKILL.md").write_text("# personal\n", encoding="utf-8")
+
+            entry = {
+                "id": "prefixed-copy:default",
+                "host": "prefixed-copy",
+                "methodPackRoot": method_pack_root.as_posix(),
+                "syncMode": "copy-skills",
+                "discoveryRoot": discovery_root.as_posix(),
+                "discoveryShape": "direct-child",
+                "discoveryNamePrefix": "aegis-",
+            }
+
+            update.sync_skills(entry)
+
+            for skill in update.COPY_DISCOVERY_KEY_SKILLS:
+                self.assertTrue((discovery_root / f"aegis-{skill}" / "SKILL.md").is_file())
+                self.assertFalse((discovery_root / skill).exists())
+            self.assertTrue((personal_skill / "SKILL.md").is_file())
 
     def test_register_installation_defaults_discovery_shape_from_sync_mode(self):
         with tempfile.TemporaryDirectory(prefix="aegis-update-default-shape-") as tmp:
@@ -269,6 +348,28 @@ class AegisUpdateRegistryTests(unittest.TestCase):
                     (discovery_root / skill / "SKILL.md").read_text(encoding="utf-8"),
                     f"# {skill}\n",
                 )
+
+    def test_sync_skills_creates_prefixed_direct_child_links(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-prefixed-links-") as tmp:
+            method_pack_root = Path(tmp) / "method-pack"
+            self.make_method_pack_with_skills(method_pack_root, ["using-aegis", "brainstorming"])
+            discovery_root = Path(tmp) / "discovery"
+            sync_mode = "junction" if os.name == "nt" else "symlink"
+            entry = {
+                "id": "copilot:default",
+                "host": "copilot",
+                "methodPackRoot": method_pack_root.as_posix(),
+                "syncMode": sync_mode,
+                "discoveryRoot": discovery_root.as_posix(),
+                "discoveryShape": "direct-child",
+                "discoveryNamePrefix": "aegis-",
+            }
+
+            update.sync_skills(entry)
+
+            for skill in ["using-aegis", "brainstorming"]:
+                self.assertTrue((discovery_root / f"aegis-{skill}" / "SKILL.md").is_file())
+                self.assertFalse((discovery_root / skill).exists())
 
     def test_sync_skills_prunes_stale_direct_child_links(self):
         with tempfile.TemporaryDirectory(prefix="aegis-update-zcode-prune-") as tmp:

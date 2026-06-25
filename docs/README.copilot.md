@@ -70,6 +70,9 @@ This exposes each Aegis skill directly at:
 .github/skills/aegis-<skill-name>/SKILL.md
 ```
 
+The `aegis-` prefix is only the Copilot-visible repository skill name policy.
+The canonical method-pack source remains `skills/<skill-name>/SKILL.md`.
+
 Because the checkout remains at `~/.copilot/aegis`, project workspace support
 can be verified from that method-pack root.
 
@@ -160,6 +163,19 @@ the installed Aegis method-pack root.
 Treat the install as complete only if the JSON reports `"ok": true`,
 `"workspaceSupport": "available"`, and `"configStatus": "configured"`.
 
+To verify the Copilot-visible repository skill discovery view, run doctor from
+the method-pack checkout and pass the target repository's `.github/skills`
+directory plus the explicit name prefix:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py --discovery-root <target-repo>/.github/skills --discovery-name-prefix aegis-
+```
+
+This checks that `.github/skills/aegis-<skill-name>/SKILL.md` still exposes the
+current canonical skill bodies without making the prefixed repository view a
+second source of truth.
+
 ## Updating
 
 ### macOS / Linux
@@ -227,10 +243,11 @@ repository links are gone.
 ### Skills are not visible
 
 1. Confirm `.github/skills/aegis-<skill-name>/SKILL.md` exists.
-2. Reopen the repository or start a new Copilot session.
-3. Check whether another repository instruction surface is shadowing the skill
+2. From the method-pack checkout, run `python scripts/aegis-doctor.py --discovery-root <target-repo>/.github/skills --discovery-name-prefix aegis-`.
+3. Reopen the repository or start a new Copilot session.
+4. Check whether another repository instruction surface is shadowing the skill
    request.
-4. Keep detailed workflow logic in the skill body instead of only in
+5. Keep detailed workflow logic in the skill body instead of only in
    `.github/copilot-instructions.md`.
 
 ### Session-start hook fails on Windows

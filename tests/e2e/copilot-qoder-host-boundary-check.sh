@@ -119,6 +119,8 @@ assert_contains "$copilot_guide" "AGENTS\\.md" \
     "Copilot guide records AGENTS guidance surface"
 assert_contains "$copilot_guide" "aegis-doctor\\.py --write-config --json" \
     "Copilot guide includes complete-install doctor"
+assert_contains "$copilot_guide" "--discovery-name-prefix aegis-" \
+    "Copilot guide documents prefixed discovery-root doctor verification"
 assert_contains "$copilot_guide" "Aegis goal:" \
     "Copilot guide documents portable goal entry"
 assert_contains "$copilot_guide" "AEGIS_ACTIVATION_MODE=explicit" \

@@ -106,7 +106,8 @@ Confirm:
 - CodeBuddy still distinguishes between `.codebuddy-plugin/` skeleton, manual `SKILL.md` install, and incomplete live smoke
 - DeepSeek-TUI is still described as manual `SKILL.md` copy install, not a one-click GitHub installer for multi-skill repos
 - Trae is still described as manual `.trae/skills` / `~/.trae/skills` install, and the `.agents/skills/` optional capability is not written as the canonical chain
-- GitHub Copilot is still described through `.github/skills/`,
+- GitHub Copilot is still described through prefixed
+  `.github/skills/aegis-<skill-name>/SKILL.md`,
   `.github/copilot-instructions.md`, optional `.github/hooks/*.json`, and
   `AGENTS.md`, not as a repository-local runtime authority or a host adapter
   owned by Aegis

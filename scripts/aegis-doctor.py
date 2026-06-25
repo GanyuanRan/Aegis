@@ -54,6 +54,28 @@ class DoctorError(Exception):
     pass
 
 
+def normalize_discovery_name_prefix(value: str | None) -> str:
+    if value is None:
+        return ""
+    if "\0" in value or "/" in value or "\\" in value:
+        raise DoctorError("discovery name prefix must not contain path separators")
+    if value in {".", ".."}:
+        raise DoctorError("discovery name prefix must not be a relative path segment")
+    return value
+
+
+def discovery_name_policy(prefix: str, *, canonical_source: bool = False) -> str:
+    if canonical_source:
+        return "canonical-source"
+    if prefix:
+        return f"prefix:{prefix}"
+    return "identity"
+
+
+def discovery_skill_dir_name(skill_name: str, prefix: str) -> str:
+    return f"{prefix}{skill_name}"
+
+
 def file_content_matches(current: Path, expected: Path) -> bool:
     try:
         return current.read_text(encoding="utf-8") == expected.read_text(encoding="utf-8")
@@ -303,9 +325,15 @@ def check_discovery_root(discovery_root: Path, skills: Path) -> None:
         raise DoctorError(f"cannot resolve discovery root: {exc}") from exc
 
 
-def classify_discovery_root(discovery_root: Path, skills: Path) -> dict[str, str]:
+def classify_discovery_root(
+    discovery_root: Path,
+    skills: Path,
+    *,
+    discovery_name_prefix: str | None = None,
+) -> dict[str, str]:
     if not discovery_root.is_dir():
         raise DoctorError(f"discovery root is not a directory: {discovery_root}")
+    name_prefix = normalize_discovery_name_prefix(discovery_name_prefix)
 
     try:
         if discovery_root.resolve() == skills.resolve():
@@ -313,6 +341,11 @@ def classify_discovery_root(discovery_root: Path, skills: Path) -> dict[str, str
                 "expectedDiscoveryShape": "method-pack-skills-root",
                 "discoveryShapeStatus": "current",
                 "compatibilityExposureStatus": "canonical-source",
+                "discoveryNamePolicy": discovery_name_policy(
+                    name_prefix,
+                    canonical_source=True,
+                ),
+                "discoveryNamePrefix": name_prefix,
             }
     except OSError as exc:
         raise DoctorError(f"cannot resolve discovery root: {exc}") from exc
@@ -325,17 +358,21 @@ def classify_discovery_root(discovery_root: Path, skills: Path) -> dict[str, str
         expected_skill = skill_dir / "SKILL.md"
         if not expected_skill.is_file():
             continue
-        candidate_skill = discovery_root / skill_dir.name / "SKILL.md"
+        target_name = discovery_skill_dir_name(skill_dir.name, name_prefix)
+        candidate_skill = discovery_root / target_name / "SKILL.md"
         if not candidate_skill.is_file():
-            missing.append(skill_dir.name)
+            missing.append(target_name)
             continue
         if not file_content_matches(candidate_skill, expected_skill):
-            stale.append(skill_dir.name)
+            stale.append(target_name)
 
     if missing:
         joined = ", ".join(missing)
+        prefix_detail = f" using name prefix {name_prefix!r}" if name_prefix else ""
         raise DoctorError(
-            "discovery root does not expose the expected direct-child skill directories: "
+            "discovery root does not expose the expected direct-child skill directories"
+            + prefix_detail
+            + ": "
             + joined
         )
     if stale:
@@ -346,9 +383,15 @@ def classify_discovery_root(discovery_root: Path, skills: Path) -> dict[str, str
         )
 
     return {
-        "expectedDiscoveryShape": "direct-child-skill-directories",
+        "expectedDiscoveryShape": (
+            "prefixed-direct-child-skill-directories"
+            if name_prefix
+            else "direct-child-skill-directories"
+        ),
         "discoveryShapeStatus": "current",
         "compatibilityExposureStatus": "generated-copy-view-current",
+        "discoveryNamePolicy": discovery_name_policy(name_prefix),
+        "discoveryNamePrefix": name_prefix,
     }
 
 
@@ -384,7 +427,11 @@ def perform_check(args: argparse.Namespace) -> dict[str, object]:
     )
     if args.discovery_root:
         discovery_root = Path(args.discovery_root).expanduser()
-        discovery_result = classify_discovery_root(discovery_root, skills)
+        discovery_result = classify_discovery_root(
+            discovery_root,
+            skills,
+            discovery_name_prefix=args.discovery_name_prefix,
+        )
         checks.append(
             {
                 "name": "discovery-root-current",
@@ -473,6 +520,7 @@ def print_text(result: dict[str, object]) -> None:
         print(f"Expected discovery shape: {result['expectedDiscoveryShape']}")
         print(f"Discovery shape status: {result['discoveryShapeStatus']}")
         print(f"Compatibility exposure status: {result['compatibilityExposureStatus']}")
+        print(f"Discovery name policy: {result['discoveryNamePolicy']}")
     trigger_health = result.get("triggerHealth", {})
     if isinstance(trigger_health, dict):
         print(f"Trigger health baseline: {trigger_health.get('baseline')}")
@@ -498,7 +546,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--config", help="config path; defaults to ~/.config/aegis/config.toml")
     parser.add_argument(
         "--discovery-root",
-        help="optional host skill discovery directory; must resolve to this method pack's skills directory",
+        help="optional host skill discovery directory; verifies canonical or direct-child exposure",
+    )
+    parser.add_argument(
+        "--discovery-name-prefix",
+        default="",
+        help="optional direct-child skill directory name prefix, such as aegis-",
     )
     parser.add_argument(
         "--write-config",

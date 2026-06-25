@@ -1,5 +1,59 @@
 # Aegis Release Notes
 
+## v2.2.1 (2026-06-25)
+
+### Discovery Contract
+
+- Added explicit prefixed direct-child discovery verification to
+  `aegis-doctor.py` through `--discovery-name-prefix`. Hosts that expose
+  Aegis skills as `aegis-<skill-name>/SKILL.md` can now verify that generated
+  view without renaming the canonical `skills/<skill-name>/SKILL.md` source
+  tree.
+- Added `discoveryNamePrefix` to the host-scoped update registry contract.
+  `aegis-update.py` now uses the same prefix mapping when creating
+  direct-child links, copying skill directories, and passing discovery
+  verification through to doctor.
+- Kept the canonical owner model unchanged: method-pack `skills/` remains the
+  source of truth, while prefixed host directories are generated compatibility
+  views rather than second editable skill owners.
+
+### Copilot Verification
+
+- Updated the GitHub Copilot guide to document the prefixed repository skill
+  view at `.github/skills/aegis-<skill-name>/SKILL.md` and the matching doctor
+  command:
+  `python scripts/aegis-doctor.py --discovery-root <target-repo>/.github/skills --discovery-name-prefix aegis-`.
+- Synced the host compatibility snapshot, known limitations, trigger-health
+  baseline, release checklist, root install prompts, and `update-aegis` skill
+  so prefixed discovery roots are recorded as an explicit host exposure
+  contract.
+
+### Verification
+
+- Added helper and e2e coverage for canonical discovery roots, identity
+  direct-child discovery roots, prefixed direct-child discovery roots, stale
+  compatibility exposure rejection, update-registry prefix propagation, and
+  prefixed direct-child copy/link sync.
+- Fresh checks passed:
+  `python tests/helpers/test_workspace_text_write_compat.py`,
+  `python tests/helpers/test_aegis_update.py`,
+  `python tests/helpers/test_parse_codex_skills.py`,
+  `bash tests/e2e/aegis-doctor-check.sh`,
+  `bash tests/e2e/copilot-qoder-host-boundary-check.sh`,
+  `bash tests/e2e/install-verification-policy-check.sh`,
+  `bash tests/e2e/trigger-health-check.sh`,
+  `bash tests/e2e/boundary-compliance-check.sh`,
+  `bash tests/e2e/governance-completion-contract-check.sh`,
+  `bash tests/e2e/context-budget-check.sh`, and
+  `bash tests/e2e/layer1-fast-check.sh --host-profile none`.
+
+### Release Surface
+
+- Bumped all declared package and host manifest versions from `2.2.0` to
+  `2.2.1`.
+- This release still ships `Aegis Method Pack (runtime-ready)`. It does not add
+  authoritative `GateDecision`, `PolicySnapshot`, or `completion authority`.
+
 ## v2.2.0 (2026-06-24)
 
 ### Pre-Addition Minimality

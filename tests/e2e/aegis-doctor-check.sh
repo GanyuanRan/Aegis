@@ -118,6 +118,24 @@ assert_contains "$TMP_ROOT/discovery-compat.json" '"discoveryShapeStatus": "curr
 assert_contains "$TMP_ROOT/discovery-compat.json" '"compatibilityExposureStatus": "generated-copy-view-current"' \
     "doctor JSON mode reports copy-based compatibility exposure"
 
+PREFIXED_COMPAT_ROOT="$TMP_ROOT/prefixed-compat-skills"
+mkdir -p "$PREFIXED_COMPAT_ROOT"
+for skill_dir in "$REPO_ROOT"/skills/*; do
+    if [[ -d "$skill_dir" && -f "$skill_dir/SKILL.md" ]]; then
+        skill_name="$(basename "$skill_dir")"
+        mkdir -p "$PREFIXED_COMPAT_ROOT/aegis-$skill_name"
+        cp "$skill_dir/SKILL.md" "$PREFIXED_COMPAT_ROOT/aegis-$skill_name/SKILL.md"
+    fi
+done
+
+"${PYTHON_CMD[@]}" "$DOCTOR" --config "$CONFIG_PATH" --json \
+    --discovery-root "$PREFIXED_COMPAT_ROOT" \
+    --discovery-name-prefix aegis- >"$TMP_ROOT/discovery-prefixed-compat.json"
+assert_contains "$TMP_ROOT/discovery-prefixed-compat.json" '"expectedDiscoveryShape": "prefixed-direct-child-skill-directories"' \
+    "doctor JSON mode reports prefixed direct-child discovery shape"
+assert_contains "$TMP_ROOT/discovery-prefixed-compat.json" '"discoveryNamePolicy": "prefix:aegis-"' \
+    "doctor JSON mode reports prefixed discovery name policy"
+
 printf '\n# stale-compatibility-copy\n' >>"$COMPAT_ROOT/using-aegis/SKILL.md"
 if "${PYTHON_CMD[@]}" "$DOCTOR" --config "$CONFIG_PATH" --discovery-root "$COMPAT_ROOT" >"$TMP_ROOT/discovery-stale.txt" 2>&1; then
     fail "doctor rejects stale compatibility exposure"

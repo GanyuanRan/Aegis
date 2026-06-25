@@ -245,8 +245,12 @@ semantics, keep them separate:
 - `syncMode` describes how Aegis reaches the host surface
 - `discoveryShape` describes what the host should see there, such as
   `umbrella-root` or `direct-child`
+- `discoveryNamePrefix` describes an optional host-visible direct-child
+  directory name prefix, such as Copilot's repository skill view using
+  `aegis-<skill-name>/SKILL.md`
 
-Do not overload `syncMode` alone to carry both meanings.
+Do not overload `syncMode` alone to carry transport, shape, and naming
+semantics.
 
 The update registry is host-scoped. Plain `aegis:update` should update the
 current host installation only; all-host updates require an explicit `--all`

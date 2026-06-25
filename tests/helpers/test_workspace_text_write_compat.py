@@ -112,6 +112,31 @@ class WorkspaceTextWriteCompatibilityTests(unittest.TestCase):
             with self.assertRaises(doctor.DoctorError):
                 doctor.classify_discovery_root(discovery_root, REPO_ROOT / "skills")
 
+    def test_doctor_classifies_prefixed_direct_child_discovery_shape(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-prefixed-discovery-view-") as tmp:
+            discovery_root = Path(tmp)
+            for skill_dir in (REPO_ROOT / "skills").iterdir():
+                if not skill_dir.is_dir():
+                    continue
+                target = discovery_root / f"aegis-{skill_dir.name}"
+                target.mkdir(parents=True, exist_ok=True)
+                (target / "SKILL.md").write_text(
+                    (skill_dir / "SKILL.md").read_text(encoding="utf-8"),
+                    encoding="utf-8",
+                )
+
+            compat = doctor.classify_discovery_root(
+                discovery_root,
+                REPO_ROOT / "skills",
+                discovery_name_prefix="aegis-",
+            )
+
+            self.assertEqual(
+                compat["expectedDiscoveryShape"], "prefixed-direct-child-skill-directories"
+            )
+            self.assertEqual(compat["discoveryNamePolicy"], "prefix:aegis-")
+            self.assertEqual(compat["discoveryNamePrefix"], "aegis-")
+
 
 if __name__ == "__main__":
     unittest.main()
