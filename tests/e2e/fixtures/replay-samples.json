@@ -17,7 +17,7 @@
   "samples": [
     {
       "id": "change-necessity-before-edit",
-      "scenarioClass": "ambiguous-feature-shaping",
+      "scenarioClass": "quick-bug-change-necessity",
       "promptPath": "tests/e2e/replay-samples/change-necessity-before-edit/prompt.txt",
       "seedProjectPath": "tests/e2e/fixtures/replay-projects/change-necessity-before-edit",
       "isolationControls": [
@@ -28,7 +28,7 @@
       "benchmarkMetrics": [
         "route-correctness",
         "evidence-freshness",
-        "workspace-laziness",
+        "owner-fix-accuracy",
         "task-completeness"
       ],
       "arms": [

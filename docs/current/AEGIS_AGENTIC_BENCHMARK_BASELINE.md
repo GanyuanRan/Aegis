@@ -58,6 +58,7 @@ They are not primary success claims for Aegis.
 The minimum benchmark suite should include:
 
 - ambiguous feature shaping before implementation
+- quick bug repair that must surface Change Necessity before source edits
 - shared-owner bug repair instead of caller-side fallback
 - completion claim with missing evidence
 - fallback or compatibility cleanup with retirement trigger

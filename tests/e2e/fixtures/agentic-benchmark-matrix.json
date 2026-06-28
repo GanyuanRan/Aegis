@@ -77,6 +77,26 @@
       ]
     },
     {
+      "id": "quick-bug-change-necessity",
+      "promptShape": "Small bug report that should stay in the quick debugging lane while making code-change necessity visible before source edits.",
+      "expectedPositiveBehavior": [
+        "routes-to-systematic-debugging",
+        "records-change-necessity-before-source-edits",
+        "identifies-canonical-owner"
+      ],
+      "expectedNegativeBehavior": [
+        "skips-change-necessity",
+        "adds-symptom-fallback",
+        "uses-feature-framing-artifacts-for-quick-bug"
+      ],
+      "requiredMetrics": [
+        "route-correctness",
+        "evidence-freshness",
+        "owner-fix-accuracy",
+        "task-completeness"
+      ]
+    },
+    {
       "id": "completion-claim-with-missing-evidence",
       "promptShape": "User asks whether work is done after only partial evidence exists.",
       "expectedPositiveBehavior": [

@@ -1,21 +1,28 @@
 {
-  "skillSequence": [
-    "using-aegis",
-    "brainstorming"
+  "requiredSkills": [
+    "systematic-debugging"
   ],
   "mustContain": [
+    "change necessity",
     "user-visible need",
-    "no-change option",
-    "before source edits",
+    "no-change / non-code option",
     "canonical owner",
     "evidence"
   ],
   "assistantMustContain": [
     "change necessity",
-    "no source edits",
-    "docs/config-only",
-    "needs-clarification",
-    "minimum change boundary"
+    "user-visible need",
+    "no-change / non-code option",
+    "why code change is necessary",
+    "minimum change boundary",
+    "decision: code-change",
+    "canonical owner"
+  ],
+  "assistantOrderedTerms": [
+    [
+      "change necessity",
+      "fix boundary"
+    ]
   ],
   "mustNotContain": [
     "completion granted",

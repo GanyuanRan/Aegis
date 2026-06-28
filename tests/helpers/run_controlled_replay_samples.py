@@ -212,7 +212,11 @@ def init_git_workspace(target_path: Path) -> bool:
 
 
 def replay_score(summary: dict[str, Any]) -> int:
-    return len(summary.get("matchedSkillSequence", [])) + len(summary.get("requiredArtifactsPresent", []))
+    skill_score = max(
+        len(summary.get("matchedSkillSequence", [])),
+        len(summary.get("requiredSkillsPresent", [])),
+    )
+    return skill_score + len(summary.get("requiredArtifactsPresent", []))
 
 
 def find_bash() -> str:

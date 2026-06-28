@@ -1,7 +1,3 @@
 {
-  "requiredArtifacts": [
-    "TaskIntentDraft",
-    "Requirement Ready Check",
-    "ImpactStatementDraft"
-  ]
+  "requiredArtifacts": []
 }
