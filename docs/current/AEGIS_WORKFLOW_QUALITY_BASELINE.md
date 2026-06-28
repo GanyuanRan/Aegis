@@ -38,6 +38,8 @@ Workflow hardening must optimize for:
 8. bounded plan/spec artifacts for long tasks that execute many micro-slices
 9. pre-addition minimality so new owners, artifacts, adapters, fallbacks, and
    metrics are justified before they exist
+10. visible change necessity before non-trivial source edits without making
+    `using-aegis` heavier
 
 The stable path is sample-driven hardening:
 
@@ -293,6 +295,10 @@ Pass criteria:
 - `brainstorming` and `writing-plans` can use a compact
   `Plan-Time Complexity Check` to identify target file pressure, add-in-place
   risk, and safer file boundaries before implementation
+- `writing-plans`, `systematic-debugging`, and `test-driven-development` can
+  use a compact `Change Necessity` slot before non-trivial source edits so
+  no-change, docs/config-only, code-change, and needs-clarification decisions
+  are visible before implementation
 - `test-driven-development`, `systematic-debugging`, and `executing-plans` can
   use a compact `Pre-Edit Complexity Check` to avoid stuffing new logic into an
   overloaded or wrong owner
@@ -450,6 +456,29 @@ Pass criteria:
 - the check remains advisory method-pack discipline, not a runtime gate,
   authoritative `GateDecision`, or completion authority
 
+### 3.19 Change Necessity Before Source Edits
+
+Aegis should make the reason for code change visible before non-trivial source
+edits, while keeping `using-aegis` compact and route-only.
+
+Pass criteria:
+
+- `using-aegis` delegates Change Necessity to the owning workflow instead of
+  expanding the hot path
+- `writing-plans` records `Change Necessity` before task decomposition when the
+  plan will endorse source edits
+- `systematic-debugging` records `Change Necessity` after root cause and before
+  repair code for non-trivial fixes
+- `test-driven-development` records `Change Necessity` before strict RED/GREEN
+  enters production code edits
+- the slot distinguishes `no-change`, `docs/config-only`, `code-change`, and
+  `needs-clarification`
+- the decision carries a minimum change boundary into files, fix boundary, or
+  TDD route
+- tiny fast-path edits may satisfy the slot in natural prose
+- the slot remains advisory method-pack discipline, not a runtime gate,
+  authoritative `GateDecision`, or completion authority
+
 ---
 
 ## 4. Compact Output Contracts
@@ -555,6 +584,7 @@ BaselineUsageDraft: required baseline refs, acknowledged refs, cited refs, missi
 Planless Slice Lane: use Slice Card when an existing parent plan/spec already owns the tiny slice
 Files: owners and edit boundaries
 Compatibility: invariants and non-goals
+Change Necessity: user-visible need, no-change / non-code option, why code change, minimum boundary, decision
 Existence Check: proposed new surface, existing owner / reuse candidate, creation proof, entropy / retirement impact, decision
 Architecture Integrity Lens: invariant, owner/contract, overlap, higher-level path, retirement/falsifier, verdict
 Plan Pressure Test: owner / contract / retirement risk and verification scope
@@ -583,6 +613,7 @@ Root Cause: evidence-backed owner and cause
 Layer Stop Card: stop layer, topology, checked path, evidence, excluded layers, falsifier, user intervention point, next action
 Pre-Claim Gate: causal closure, falsifier checked, adversarial self-refutation, topology classified, layer ceiling proof — required before claiming root cause when a patch-shape signal fires
 Topology Card: explicit causal topology (single-root / single-root-multi-symptom / chain / independent-compound / conjunctive-cluster / disjunctive-or) with member necessity and sufficiency tests and anti-disguise check
+Change Necessity: user-visible need, no-change / non-code option, why code change, minimum boundary, decision
 Fix Boundary: canonical owner, compatibility, non-edits
 Minimality Check: smallest textual diff, existing owner / reuse path, correct owner, bug class fixed, new branch/fallback, old path retirement, verdict
 Pre-Edit Complexity Check: target edit file, pressure signal, safer boundary, decision
@@ -613,6 +644,7 @@ Compact contract:
 ```text
 TDD Route: mode, decision, reason, verification
 Preflight Gate: low | route-to-plan | route-to-spec
+Change Necessity: user-visible need, no-change / non-code option, why code change, minimum boundary, decision
 Complexity Budget: artifact class, current pressure, projected post-change pressure, planned governance
 Pre-Edit Complexity Check: target edit file, pressure signal, safer boundary, decision
 RED: failing test or reason strict TDD does not fit

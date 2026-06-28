@@ -22,6 +22,7 @@ EXPECTED_IDS = {
     "architecture-completion-adr-backfill-check",
     "pre-addition-existence-check-before-design",
     "pre-addition-existence-check-before-plan",
+    "change-necessity-before-code-change",
     "plan-time-complexity-check-before-design",
     "plan-time-complexity-check-before-plan",
     "pre-edit-complexity-check-before-code",
@@ -135,12 +136,14 @@ CONTRACT_REQUIREMENTS = {
     ],
     "systematic-debugging": [
         "Layer Stop Card",
+        "Change Necessity",
         "Pre-Edit Complexity Check",
         "Pre-Claim Gate",
         "Topology Card",
         "Minimality Check",
     ],
     "test-driven-development": [
+        "Change Necessity",
         "Pre-Edit Complexity Check",
         "TDD Route",
         "Complexity Budget",
@@ -163,6 +166,7 @@ CONTRACT_REQUIREMENTS = {
         "Baseline Role Alignment",
     ],
     "writing-plans": [
+        "Change Necessity",
         "Existence Check",
         "Plan-Time Complexity Check",
         "Complexity Budget",
@@ -378,6 +382,22 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
             "entropy-retirement-impact",
         ],
         "shapes": ["existence-check"],
+    },
+    "change-necessity-before-code-change": {
+        "primary": "writing-plans",
+        "allowed": ["systematic-debugging", "test-driven-development"],
+        "must_not": [
+            "write-source-edits-before-change-necessity",
+            "force-using-aegis-heavy-entry",
+            "skip-non-code-option-check",
+        ],
+        "signals": [
+            "change-necessity",
+            "code-change-decision",
+            "minimum-change-boundary",
+            "using-aegis-stays-route-only",
+        ],
+        "shapes": ["change-necessity"],
     },
     "strong-opinion-product-risk-lens": {
         "primary": "brainstorming",
@@ -739,7 +759,12 @@ def require_contains(actual: list[str] | str, required: str, message: str) -> No
 
 def validate_shape(data: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]]]:
     quality_dimensions = set(data.get("qualityDimensions", []))
-    for dimension in ("baseline-role-alignment", "aegis-invocation-visibility", "pre-addition-minimality"):
+    for dimension in (
+        "baseline-role-alignment",
+        "aegis-invocation-visibility",
+        "pre-addition-minimality",
+        "change-necessity-before-source-edits",
+    ):
         require(
             dimension in quality_dimensions,
             f"workflow quality matrix must include {dimension} dimension",

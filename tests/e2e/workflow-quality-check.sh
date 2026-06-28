@@ -371,6 +371,8 @@ assert_contains "skills/writing-plans/SKILL.md" "Requirement Ready Check" \
     "writing-plans includes requirement ready check before task decomposition"
 assert_contains "skills/writing-plans/SKILL.md" "do not create implementation tasks" \
     "writing-plans blocks implementation tasks when requirements are not ready"
+assert_contains "skills/writing-plans/SKILL.md" "Change Necessity" \
+    "writing-plans surfaces change necessity before code-edit tasks"
 assert_contains "skills/writing-plans/SKILL.md" "Planless Slice Lane" \
     "writing-plans includes planless slice lane"
 assert_contains "skills/writing-plans/SKILL.md" "Slice Card" \
@@ -391,6 +393,8 @@ assert_contains "skills/test-driven-development/SKILL.md" "TDD Mode" \
     "test-driven-development includes TDD mode"
 assert_contains "skills/test-driven-development/SKILL.md" "TDD Route" \
     "test-driven-development includes TDD route"
+assert_contains "skills/test-driven-development/SKILL.md" "Change Necessity" \
+    "test-driven-development checks change necessity before strict code edits"
 assert_contains "skills/test-driven-development/SKILL.md" "strict.*light.*skipped|strict.*skipped.*light" \
     "test-driven-development defines strict light skipped route"
 assert_contains "skills/test-driven-development/SKILL.md" "verification-before-completion" \
@@ -403,6 +407,8 @@ assert_contains "skills/systematic-debugging/SKILL.md" "Pre-Edit Complexity Chec
     "systematic debugging includes pre-edit complexity check"
 assert_contains "skills/systematic-debugging/SKILL.md" "Minimality Check" \
     "systematic debugging includes minimality check"
+assert_contains "skills/systematic-debugging/SKILL.md" "Change Necessity" \
+    "systematic debugging checks change necessity before repair code"
 assert_contains "skills/systematic-debugging/SKILL.md" "AEGIS_MINIMALITY_REFERENCE" \
     "systematic debugging points to minimality reference"
 assert_contains "skills/systematic-debugging/SKILL.md" "Layer Stop Card" \
@@ -625,6 +631,10 @@ assert_not_contains "skills/using-aegis/SKILL.md" "Required evidence slots|Gover
     "using-aegis does not absorb verification output contract"
 assert_not_contains "skills/using-aegis/SKILL.md" "Design Spec.*Design Spec.*Design Spec" \
     "using-aegis hot path avoids repeated design-spec ceremony"
+assert_contains "skills/using-aegis/SKILL.md" "owner workflow.*Change Necessity" \
+    "using-aegis delegates change necessity to owner workflows"
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "Change Necessity Before Source Edits" \
+    "workflow quality baseline defines change necessity before source edits"
 
 "${PYTHON_CMD[@]}" tests/helpers/validate_workflow_quality_matrix.py "$matrix"
 if (( failures > 0 )); then

@@ -30,6 +30,7 @@ Its job is to make AI coding agent work more stable, evidence-driven, and
 recoverable:
 
 - classify task type and risk before editing
+- make code-change necessity visible before non-trivial source edits
 - read project baselines and authority sources before acting from session memory
 - split complex work into verifiable slices
 - keep repair, compatibility, retirement, and verification evidence visible
@@ -327,6 +328,7 @@ Before implementation, confirm:
 - the requirement or issue is defined
 - owner and impact scope are identified
 - required baselines have been read
+- code change is necessary versus no-change, docs/config-only, or clarification
 - the task can be split into verifiable slices
 
 Test iron law:

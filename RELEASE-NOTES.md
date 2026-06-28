@@ -1,5 +1,61 @@
 # Aegis Release Notes
 
+## v2.2.2 (2026-06-28)
+
+### Change Necessity Before Source Edits
+
+- Added `Change Necessity Before Source Edits` to the process baseline so
+  non-trivial source edits must make the code-change decision visible before
+  implementation.
+- Introduced the compact `Change Necessity` semantic slot with explicit
+  `no-change`, `docs/config-only`, `code-change`, and `needs-clarification`
+  decisions.
+- Kept `using-aegis` compact and route-only. The hot path now delegates
+  `Change Necessity` to the owning workflow instead of carrying a heavier
+  checklist itself.
+
+### Workflow Ownership
+
+- Updated `writing-plans` so implementation plans state why code changes are
+  necessary before task decomposition and carry the minimum boundary into files,
+  tasks, and verification.
+- Updated `systematic-debugging` so root-cause repair work surfaces
+  `Change Necessity` before non-trivial repair code, while preserving
+  Patch-Shape Triage, Ripple Signal Triage, Minimality Check, and Pre-Edit
+  Complexity Check behavior.
+- Updated `test-driven-development` so strict RED/GREEN work confirms code
+  change necessity before entering production code edits.
+
+### Workflow Quality Coverage
+
+- Added a workflow-quality dimension and representative sample for
+  change-necessity-before-code-change behavior.
+- Extended compact output contracts and validation so `writing-plans`,
+  `systematic-debugging`, and `test-driven-development` keep the semantic slot
+  visible.
+- Added e2e checks that confirm `using-aegis` delegates the responsibility
+  without absorbing the heavier workflow contract.
+
+### Verification
+
+- Fresh checks passed:
+  `bash scripts/bump-version.sh --check`,
+  `python tests/helpers/test_parse_codex_skills.py`,
+  `python tests/helpers/validate_workflow_quality_matrix.py tests/e2e/fixtures/workflow-quality-matrix.json`,
+  `bash tests/e2e/workflow-quality-check.sh`,
+  `bash tests/e2e/context-budget-check.sh`,
+  `bash tests/e2e/boundary-compliance-check.sh`,
+  `bash tests/e2e/tdd-policy-check.sh`,
+  `bash tests/e2e/layer1-fast-check.sh --host-profile none`, and
+  `git diff --check`.
+
+### Release Surface
+
+- Bumped all declared package and host manifest versions from `2.2.1` to
+  `2.2.2`.
+- This release still ships `Aegis Method Pack (runtime-ready)`. It does not add
+  authoritative `GateDecision`, `PolicySnapshot`, or `completion authority`.
+
 ## v2.2.1 (2026-06-25)
 
 ### Discovery Contract

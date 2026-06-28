@@ -39,6 +39,7 @@ The current process baseline follows these core principles:
 - **Evidence-Driven**: Separate facts, assumptions, and unknowns
 - **Systematic Thinking**: Understand impact scope and dependency relationships from the architecture level
 - **Minimal Necessary Change**: Minimal Necessary Change means the smallest sufficient change at the correct owner and abstraction layer, not the smallest textual diff. Prefer local, shortest-path changes only when they fix the bug class without adding fallback, duplicate owner, or long-term entropy.
+- **Change Necessity Before Source Edits**: Before non-trivial source edits, the owning workflow states why code change is necessary versus no-change, docs/config-only, or clarification. Keep `using-aegis` route-only.
 - **Pre-Addition Minimality**: Before adding a new owner, skill, artifact, adapter, fallback, workflow step, or benchmark metric, prove it needs to exist and check whether an existing owner can carry the behavior.
 - **Backward Compatibility First**: Changes default to preserving externally observable behavior and published contracts. Do not preserve internal old paths, duplicate owners, or historical fallbacks by default.
 - **Phase Verification**: After every significant change, perform regression verification and architecture review
@@ -166,6 +167,10 @@ Canonical lenses:
   surface, existing owner / reuse candidate, creation proof, entropy /
   retirement impact, and reuse-or-add decision before adding new owners,
   artifacts, adapters, fallbacks, workflow steps, or benchmark metrics
+- `Change Necessity` in `writing-plans`, `systematic-debugging`, and
+  `test-driven-development`: user-visible need, no-change / non-code option,
+  why code change is necessary, minimum change boundary, and decision before
+  non-trivial source edits
 - `Plan-Time Complexity Check` in `brainstorming` and `writing-plans`: target
   file pressure, owner fit, and better boundary options before implementation
 - `Pre-Edit Complexity Check` in implementation workflows: actual edit-file
@@ -342,6 +347,36 @@ Escalate back to a durable spec or plan only when the slice introduces a new
 owner, contract, schema, public API, architecture boundary, migration,
 persistence, security/permission concern, distribution/release surface, or an
 unclear verification boundary.
+
+### 3.0i Change Necessity Before Source Edits
+
+Change Necessity makes the "should we edit code at all?" judgment visible
+before a non-trivial workflow writes source code. It is a semantic slot for the
+owning workflow, not a new artifact, not a new skill, and not a heavier
+`using-aegis` hot path.
+
+Use this compact shape when a plan, bug repair, or strict TDD slice is about to
+endorse non-trivial source edits:
+
+```text
+Change Necessity:
+- User-visible need:
+- No-change / non-code option:
+- Why code change is necessary:
+- Minimum change boundary:
+- Decision: no-change | docs/config-only | code-change | needs-clarification
+```
+
+If the decision is `no-change`, do not write source code. If the decision is
+`docs/config-only`, route the work to that narrower change and verify it. If
+the decision is `needs-clarification`, pause before implementation. If the
+decision is `code-change`, carry the minimum boundary into `Files`,
+`Fix Boundary`, `TDD Route`, or the relevant implementation task.
+
+Tiny fast-path edits may satisfy this in natural prose. Medium/high work should
+make the slot explicit before task decomposition, repair, or strict RED/GREEN.
+The slot stays advisory method-pack discipline; it does not grant runtime
+authority, authoritative `GateDecision`, or completion authority.
 
 ### 3.1 Ripple Signal Triage
 
@@ -768,13 +803,18 @@ This process baseline should be projected into the following skills as a priorit
     caller-side fallback, stale path, and retirement / falsifier checks; do not
     add it to the always-loaded hot path
 - `using-aegis`
-  - Add complexity routing, project workspace creation boundary, and prompt hygiene hot path
+  - Add complexity routing, project workspace creation boundary, prompt hygiene
+    hot path, and light delegation to owner workflows for Change Necessity
 - `systematic-debugging`
-  - Explicitly cover the "Symptom → Logic → System → Architecture" diagnostic layers
+  - Explicitly cover the "Symptom → Logic → System → Architecture" diagnostic
+    layers and surface Change Necessity before repair code
 - `writing-plans`
-  - Introduce impact, compat, retirement, and verification perspectives
+  - Introduce impact, compat, retirement, Change Necessity, and verification
+    perspectives
 - `test-driven-development`
-  - Position TDD as the implementation discipline for approved atomic tasks, preventing medium/high-complexity tasks from bypassing planning
+  - Position TDD as the implementation discipline for approved atomic tasks,
+    preventing medium/high-complexity tasks from bypassing planning, and confirm
+    code-change necessity before strict RED/GREEN enters production edits
 - `requesting-code-review`
   - Add evidence sufficiency, requirements/product alignment, Design Defect /
     Implementation Drift checks, and missing ADR / baseline sync findings for

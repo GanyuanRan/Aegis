@@ -14,7 +14,8 @@
     "baseline-role-alignment",
     "aegis-invocation-visibility",
     "semantic-slots-natural-surface",
-    "pre-addition-minimality"
+    "pre-addition-minimality",
+    "change-necessity-before-source-edits"
   ],
   "samples": [
     {
@@ -104,6 +105,17 @@
       "workspacePolicy": "plan-record-under-docs-aegis-plans",
       "expectedArtifacts": ["BaselineReadSetHint", "ImpactStatementDraft"],
       "verificationSignal": "plan-has-exact-commands-and-file-boundaries"
+    },
+    {
+      "id": "change-necessity-before-code-change",
+      "prompt": "Before planning this approved behavior change, make it visible why a code change is necessary instead of no-change, docs/config-only, or asking for clarification.",
+      "expectedPrimarySkill": "writing-plans",
+      "allowedSecondarySkills": ["systematic-debugging", "test-driven-development"],
+      "mustNotDo": ["write-source-edits-before-change-necessity", "force-using-aegis-heavy-entry", "skip-non-code-option-check"],
+      "expectedOutputShape": "plan-basis-change-necessity-files-compat-tasks-risks-retirement",
+      "workspacePolicy": "plan-record-under-docs-aegis-plans",
+      "expectedArtifacts": ["BaselineReadSetHint", "ImpactStatementDraft"],
+      "verificationSignal": "change-necessity-code-change-decision-minimum-change-boundary-using-aegis-stays-route-only"
     },
     {
       "id": "completion-claim",
@@ -740,9 +752,9 @@
     "using-aegis": ["Route", "Aegis Reason Note", "ArchitectureReviewRequired", "Why", "Next"],
     "goal-framing": ["Goal", "Success evidence", "Stop condition", "Non-goals", "Route", "Next", "Continuation"],
     "brainstorming": ["TaskIntentDraft", "BaselineReadSetHint", "BaselineUsageDraft", "ImpactStatementDraft", "Product Risk Lens", "Existence Check", "Architecture Integrity Lens", "Baseline Role Alignment", "Complexity Budget", "Plan-Time Complexity Check", "Options", "Decision Needed"],
-    "writing-plans": ["Plan Basis", "BaselineUsageDraft", "Files", "Compatibility", "Existence Check", "Architecture Integrity Lens", "Plan Pressure Test", "Complexity Budget", "Plan-Time Complexity Check", "Tasks", "Risks", "Retirement"],
-    "systematic-debugging": ["Symptom", "Reproduction", "Root Cause", "Layer Stop Card", "Pre-Claim Gate", "Topology Card", "Fix Boundary", "Minimality Check", "Pre-Edit Complexity Check", "Verification"],
-    "test-driven-development": ["TDD Route", "Preflight Gate", "Complexity Budget", "Pre-Edit Complexity Check", "RED", "GREEN", "REFACTOR", "Regression Scope"],
+    "writing-plans": ["Plan Basis", "BaselineUsageDraft", "Files", "Compatibility", "Change Necessity", "Existence Check", "Architecture Integrity Lens", "Plan Pressure Test", "Complexity Budget", "Plan-Time Complexity Check", "Tasks", "Risks", "Retirement"],
+    "systematic-debugging": ["Symptom", "Reproduction", "Root Cause", "Layer Stop Card", "Pre-Claim Gate", "Topology Card", "Change Necessity", "Fix Boundary", "Minimality Check", "Pre-Edit Complexity Check", "Verification"],
+    "test-driven-development": ["TDD Route", "Preflight Gate", "Change Necessity", "Complexity Budget", "Pre-Edit Complexity Check", "RED", "GREEN", "REFACTOR", "Regression Scope"],
     "anti-entropy-governance": ["Anti-Entropy Declaration", "Retirement Decision", "Verification Plan", "Gap Closure", "Data Destruction Guard"],
     "requesting-code-review": ["Findings First", "Evidence Review", "Baseline / Current Authority", "Baseline Role Alignment", "Compatibility / Retirement", "Review Readiness"],
     "recording-architecture-decisions": ["Decision Candidate", "ADR Gate", "Retro / Memory Filter", "ADR Action", "Owner Surface", "Baseline Sync", "Boundary"],
