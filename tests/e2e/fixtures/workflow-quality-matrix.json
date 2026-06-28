@@ -56,11 +56,11 @@
       "prompt": "A single helper returns the wrong default value. Please fix it quickly and verify the test.",
       "expectedPrimarySkill": "systematic-debugging",
       "allowedSecondarySkills": ["test-driven-development", "verification-before-completion"],
-      "mustNotDo": ["guess-fix-without-reproduction", "emit-full-architecture-ceremony"],
-      "expectedOutputShape": "quick-bug-lane-root-cause-and-evidence",
+      "mustNotDo": ["guess-fix-without-reproduction", "edit-source-before-change-necessity", "emit-full-architecture-ceremony"],
+      "expectedOutputShape": "quick-bug-lane-root-cause-change-necessity-and-evidence",
       "workspacePolicy": "workspace-only-if-medium-risk",
       "expectedArtifacts": ["EvidenceBundleDraft"],
-      "verificationSignal": "failing-test-or-reproduction-then-fresh-pass"
+      "verificationSignal": "failing-test-or-reproduction-then-change-necessity-before-source-edit-then-fresh-pass"
     },
     {
       "id": "failing-test-diagnosis",

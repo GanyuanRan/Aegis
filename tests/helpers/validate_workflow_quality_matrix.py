@@ -189,6 +189,20 @@ CONTRACT_REQUIREMENTS = {
 }
 
 SAMPLE_RULES: dict[str, dict[str, Any]] = {
+    "quick-single-owner-bug": {
+        "primary": "systematic-debugging",
+        "must_not": [
+            "guess-fix-without-reproduction",
+            "edit-source-before-change-necessity",
+            "emit-full-architecture-ceremony",
+        ],
+        "signals": [
+            "reproduction",
+            "change-necessity-before-source-edit",
+            "fresh-pass",
+        ],
+        "shapes": ["quick-bug-lane", "change-necessity"],
+    },
     "architecture-completion-adr-backfill-check": {
         "primary": "verification-before-completion",
         "allowed": ["recording-architecture-decisions"],

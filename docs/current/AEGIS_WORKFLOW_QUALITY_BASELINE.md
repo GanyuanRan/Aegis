@@ -468,7 +468,8 @@ Pass criteria:
 - `writing-plans` records `Change Necessity` before task decomposition when the
   plan will endorse source edits
 - `systematic-debugging` records `Change Necessity` after root cause and before
-  repair code for non-trivial fixes
+  repair code for non-trivial fixes; quick bug lane may use one compact
+  sentence, but it still appears before source edits
 - `test-driven-development` records `Change Necessity` before strict RED/GREEN
   enters production code edits
 - the slot distinguishes `no-change`, `docs/config-only`, `code-change`, and
@@ -622,9 +623,10 @@ Repair Track / Retirement Track: when fallback, owner, or contract risk exists
 ```
 
 Quick bug lane is allowed for low-risk bugs, but root-cause evidence is still
-required. Use `Layer Stop Card` when the diagnostic stop point is ambiguous,
-crosses a boundary, reaches L5/L6/L7, or is corrected by a user-provided
-falsifier. Do not use it for simple factual Q&A or tiny fast-path responses.
+required, and `Change Necessity` still appears before source edits. Use
+`Layer Stop Card` when the diagnostic stop point is ambiguous, crosses a
+boundary, reaches L5/L6/L7, or is corrected by a user-provided falsifier. Do
+not use it for simple factual Q&A or tiny fast-path responses.
 
 Use `Pre-Claim Gate` and `Topology Card` when a patch-shape signal fires
 (guard, fallback, consumer/caller patch, artifact/cache patch, or sample-only

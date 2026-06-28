@@ -409,6 +409,8 @@ assert_contains "skills/systematic-debugging/SKILL.md" "Minimality Check" \
     "systematic debugging includes minimality check"
 assert_contains "skills/systematic-debugging/SKILL.md" "Change Necessity" \
     "systematic debugging checks change necessity before repair code"
+assert_contains "skills/systematic-debugging/SKILL.md" "Quick bug lane.*Change Necessity.*before source edits" \
+    "systematic debugging quick bug lane requires change necessity before source edits"
 assert_contains "skills/systematic-debugging/SKILL.md" "AEGIS_MINIMALITY_REFERENCE" \
     "systematic debugging points to minimality reference"
 assert_contains "skills/systematic-debugging/SKILL.md" "Layer Stop Card" \

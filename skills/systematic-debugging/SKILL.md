@@ -37,7 +37,9 @@ Especially under time pressure, when "just one quick fix" seems obvious, after m
 
 For low-risk, single-owner bugs, keep the report compact: `Symptom`,
 `Reproduction`, `Root Cause`, `Change Necessity`, `Fix Boundary`, and
-`Verification`. Still collect root-cause evidence before editing. If fallback,
+`Verification`. Still collect root-cause evidence before editing. Quick bug lane must surface Change Necessity before source edits; one compact sentence is enough
+when it names the user-visible need, no-change / non-code option, why code
+change is necessary, minimum change boundary, and decision. If fallback,
 duplicate owner, consumer-side patching, contract risk, shared logic, or
 cross-module behavior appears, escalate to the full workflow.
 
