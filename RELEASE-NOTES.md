@@ -1,5 +1,60 @@
 # Aegis Release Notes
 
+## v2.2.3 (2026-06-28)
+
+### Quick Bug Routing
+
+- Routed bug, failure, regression, and unexpected-behavior fast paths from
+  `using-aegis` into `systematic-debugging` so small bug fixes still collect
+  root-cause evidence before source edits.
+- Kept `using-aegis` within its hot-path budget and preserved it as a compact
+  router instead of moving the full `Change Necessity` checklist into the
+  always-loaded entrypoint.
+- Updated workflow-quality checks and doctor hot-path verification so this
+  routing stays covered.
+
+### Explicit Change Decisions
+
+- Tightened `systematic-debugging` quick bug lane so natural prose still keeps
+  an explicit decision token such as `Decision: code-change`.
+- Clarified that minimum-boundary wording is not a substitute for the decision.
+- Kept the decision advisory method-pack discipline, not a `GateDecision`,
+  `PolicySnapshot`, or completion authority.
+
+### Replay And Benchmark Calibration
+
+- Added a quick-bug replay scenario for change necessity before the fix
+  boundary.
+- Extended the replay analyzer to score required skills, semantic slots,
+  ordered semantic terms, and natural Chinese/English phrasings without turning
+  keyword matching into runtime authority.
+- Calibrated live replay evidence against multiple real Codex transcripts:
+  the analyzer now treats direct live failures caused by missing aliases as
+  test-oracle false negatives, while the no-Aegis baseline remains a failing
+  contrast arm.
+
+### Verification
+
+- Fresh checks passed:
+  `bash scripts/bump-version.sh --check`,
+  `python -m py_compile scripts/aegis-doctor.py tests/helpers/run_controlled_replay_samples.py tests/helpers/normalize_live_replay_log.py tests/helpers/validate_agentic_benchmark_matrix.py tests/helpers/validate_workflow_quality_matrix.py`,
+  `bash tests/e2e/context-budget-check.sh`,
+  `bash tests/e2e/workflow-quality-check.sh`,
+  `bash tests/e2e/controlled-replay-check.sh`,
+  `bash tests/e2e/agentic-benchmark-check.sh`,
+  live replay transcript rechecks for 11 post-skill Codex samples,
+  no-Aegis baseline negative recheck,
+  `bash tests/e2e/run-all.sh --full --host-profile fast`,
+  `bash tests/e2e/layer1-fast-check.sh --host-profile none`, and
+  `git diff --check`.
+
+### Release Surface
+
+- Bumped all declared package and host manifest versions from `2.2.2` to
+  `2.2.3`.
+- This release still ships `Aegis Method Pack (runtime-ready)`. It does not add
+  authoritative `GateDecision`, `PolicySnapshot`, or `completion authority`.
+
 ## v2.2.2 (2026-06-28)
 
 ### Change Necessity Before Source Edits
