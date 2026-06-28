@@ -465,6 +465,8 @@ Pass criteria:
 
 - `using-aegis` delegates Change Necessity to the owning workflow instead of
   expanding the hot path
+- bug, failure, regression, or unexpected behavior does not stop at a
+  `using-aegis`-only fast path; it routes to `systematic-debugging`
 - `writing-plans` records `Change Necessity` before task decomposition when the
   plan will endorse source edits
 - `systematic-debugging` records `Change Necessity` after root cause and before
@@ -502,6 +504,9 @@ Next: <smallest safe action>
 
 For obvious fast-path work, the route and reason note can stay implicit in the
 normal answer unless the user asks about Aegis routing or traceability.
+Bug, failure, regression, or unexpected behavior is not `using-aegis`-only
+fast-path work; route it to `systematic-debugging`, which may then use the
+quick bug lane.
 Set `ArchitectureReviewRequired: yes` when a medium/high task or project rule
 touches architecture, contract, cross-module data flow, canonical owner,
 source-of-truth owner, context/answering/runtime flow, public user-visible
@@ -624,6 +629,8 @@ Repair Track / Retirement Track: when fallback, owner, or contract risk exists
 
 Quick bug lane is allowed for low-risk bugs, but root-cause evidence is still
 required, and `Change Necessity` still appears before source edits. Use
+an explicit decision token such as `Decision: code-change`; minimum-boundary
+wording is not a substitute for the decision. Use
 `Layer Stop Card` when the diagnostic stop point is ambiguous, crosses a
 boundary, reaches L5/L6/L7, or is corrected by a user-provided falsifier. Do
 not use it for simple factual Q&A or tiny fast-path responses.

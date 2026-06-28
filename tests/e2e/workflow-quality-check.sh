@@ -411,6 +411,12 @@ assert_contains "skills/systematic-debugging/SKILL.md" "Change Necessity" \
     "systematic debugging checks change necessity before repair code"
 assert_contains "skills/systematic-debugging/SKILL.md" "Quick bug lane.*Change Necessity.*before source edits" \
     "systematic debugging quick bug lane requires change necessity before source edits"
+assert_contains "skills/systematic-debugging/SKILL.md" "explicit decision token" \
+    "systematic debugging quick bug lane requires explicit code-change decision"
+assert_contains "skills/systematic-debugging/SKILL.md" "Decision: code-change" \
+    "systematic debugging quick bug lane names code-change decision token"
+assert_contains "$baseline" "explicit decision token.*Decision: code-change" \
+    "workflow quality baseline requires explicit quick bug decision token"
 assert_contains "skills/systematic-debugging/SKILL.md" "AEGIS_MINIMALITY_REFERENCE" \
     "systematic debugging points to minimality reference"
 assert_contains "skills/systematic-debugging/SKILL.md" "Layer Stop Card" \
@@ -635,6 +641,10 @@ assert_not_contains "skills/using-aegis/SKILL.md" "Design Spec.*Design Spec.*Des
     "using-aegis hot path avoids repeated design-spec ceremony"
 assert_contains "skills/using-aegis/SKILL.md" "owner workflow.*Change Necessity" \
     "using-aegis delegates change necessity to owner workflows"
+assert_contains "skills/using-aegis/SKILL.md" "Bug, failure, regression, or unexpected behavior routes to.*systematic-debugging" \
+    "using-aegis routes bug fast path to systematic-debugging"
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "does not stop at a.*using-aegis.*fast path.*systematic-debugging|using-aegis.*fast path.*systematic-debugging" \
+    "workflow quality baseline keeps bug repairs out of using-aegis-only fast path"
 assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "Change Necessity Before Source Edits" \
     "workflow quality baseline defines change necessity before source edits"
 

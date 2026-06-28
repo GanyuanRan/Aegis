@@ -34,6 +34,7 @@ STALE_USING_AEGIS_PATTERNS = (
 
 REQUIRED_USING_AEGIS_PATTERNS = (
     "Spec Brief or Design Spec only",
+    "Bug, failure, regression, or unexpected behavior routes to",
     "Workspace support is lazy",
     "configured Aegis workspace support",
 )
