@@ -16,7 +16,11 @@ elif command -v cmd.exe >/dev/null 2>&1; then
 else
     codex_cmd="codex"
 fi
-codex_smoke_suffix="${CODEX_SMOKE_SUFFIX:-For this smoke test, do not attempt full implementation. Briefly state the first skill/workflow you would use and the first next step only.}"
+if [ "${CODEX_SMOKE_SUFFIX+x}" = "x" ]; then
+    codex_smoke_suffix="$CODEX_SMOKE_SUFFIX"
+else
+    codex_smoke_suffix="For this smoke test, do not attempt full implementation. Briefly state the first skill/workflow you would use and the first next step only."
+fi
 codex_helper_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 codex_parser_script="$codex_helper_dir/parse_codex_skills.py"
 

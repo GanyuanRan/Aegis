@@ -1,0 +1,137 @@
+{
+  "version": 1,
+  "status": "draft",
+  "authorityBoundary": "advisory-method-pack-evidence-not-completion-authority",
+  "sourceProjectPolicy": "controlled-fixture-projects-only",
+  "workspacePolicy": "copy-seed-to-temp-per-arm",
+  "liveExecution": {
+    "status": "opt-in",
+    "entrypoint": "tests/e2e/live-replay-capture.sh",
+    "requiresEnv": "AEGIS_LIVE_REPLAY=1",
+    "defaultArm": "aegis-auto",
+    "baselineNoAegisStatus": "not-created-by-default",
+    "outputPolicy": "repo-local-tmp-only",
+    "authorityBoundary": "advisory-method-pack-evidence-not-completion-authority"
+  },
+  "benchmarkMatrix": "tests/e2e/fixtures/agentic-benchmark-matrix.json",
+  "samples": [
+    {
+      "id": "change-necessity-before-edit",
+      "scenarioClass": "ambiguous-feature-shaping",
+      "promptPath": "tests/e2e/replay-samples/change-necessity-before-edit/prompt.txt",
+      "seedProjectPath": "tests/e2e/fixtures/replay-projects/change-necessity-before-edit",
+      "isolationControls": [
+        "fresh-temporary-workspace-per-run",
+        "same-prompt-and-seeded-repo-per-arm",
+        "preserve-transcripts-and-diffs"
+      ],
+      "benchmarkMetrics": [
+        "route-correctness",
+        "evidence-freshness",
+        "workspace-laziness",
+        "task-completeness"
+      ],
+      "arms": [
+        {
+          "id": "aegis-auto",
+          "transcriptPath": "tests/e2e/fixtures/transcripts/with-aegis/change-necessity-before-edit.jsonl",
+          "expectedBehaviorPath": "tests/e2e/replay-samples/change-necessity-before-edit/expected-behavior.json",
+          "expectedArtifactsPath": "tests/e2e/replay-samples/change-necessity-before-edit/expected-artifacts.json",
+          "expectedContractPass": true
+        },
+        {
+          "id": "baseline-no-aegis",
+          "transcriptPath": "tests/e2e/baselines/without-aegis/change-necessity-before-edit.jsonl",
+          "expectedBehaviorPath": "tests/e2e/replay-samples/change-necessity-before-edit/expected-behavior.json",
+          "expectedArtifactsPath": "tests/e2e/replay-samples/change-necessity-before-edit/expected-artifacts.json",
+          "expectedContractPass": false
+        }
+      ],
+      "comparisons": [
+        {
+          "strongerArm": "aegis-auto",
+          "weakerArm": "baseline-no-aegis",
+          "expectation": "stronger-passes-and-scores-higher"
+        }
+      ]
+    },
+    {
+      "id": "shared-owner-bug-repair",
+      "scenarioClass": "shared-owner-bug-repair",
+      "promptPath": "tests/e2e/replay-samples/shared-owner-bug-repair/prompt.txt",
+      "seedProjectPath": "tests/e2e/fixtures/replay-projects/shared-owner-bug-repair",
+      "isolationControls": [
+        "fresh-temporary-workspace-per-run",
+        "same-prompt-and-seeded-repo-per-arm",
+        "preserve-transcripts-and-diffs"
+      ],
+      "benchmarkMetrics": [
+        "owner-fix-accuracy",
+        "evidence-freshness",
+        "task-completeness"
+      ],
+      "arms": [
+        {
+          "id": "aegis-auto",
+          "transcriptPath": "tests/e2e/fixtures/transcripts/with-aegis/scenario-B-bug-fix.jsonl",
+          "expectedBehaviorPath": "tests/e2e/scenarios/scenario-B-bug-fix/expected-behavior.json",
+          "expectedArtifactsPath": "tests/e2e/scenarios/scenario-B-bug-fix/expected-artifacts.json",
+          "expectedContractPass": true
+        },
+        {
+          "id": "baseline-no-aegis",
+          "transcriptPath": "tests/e2e/baselines/without-aegis/scenario-B-bug-fix.jsonl",
+          "expectedBehaviorPath": "tests/e2e/scenarios/scenario-B-bug-fix/expected-behavior.json",
+          "expectedArtifactsPath": "tests/e2e/scenarios/scenario-B-bug-fix/expected-artifacts.json",
+          "expectedContractPass": false
+        }
+      ],
+      "comparisons": [
+        {
+          "strongerArm": "aegis-auto",
+          "weakerArm": "baseline-no-aegis",
+          "expectation": "stronger-passes-and-scores-higher"
+        }
+      ]
+    },
+    {
+      "id": "completion-evidence-boundary",
+      "scenarioClass": "completion-claim-with-missing-evidence",
+      "promptPath": "tests/e2e/replay-samples/completion-evidence-boundary/prompt.txt",
+      "seedProjectPath": "tests/e2e/fixtures/replay-projects/completion-evidence-boundary",
+      "isolationControls": [
+        "fresh-temporary-workspace-per-run",
+        "same-prompt-and-seeded-repo-per-arm",
+        "preserve-transcripts-and-diffs"
+      ],
+      "benchmarkMetrics": [
+        "false-completion-rate",
+        "evidence-freshness",
+        "authority-boundary"
+      ],
+      "arms": [
+        {
+          "id": "aegis-auto",
+          "transcriptPath": "tests/e2e/fixtures/transcripts/with-aegis/scenario-E-tdd-local-green.jsonl",
+          "expectedBehaviorPath": "tests/e2e/scenarios/scenario-E-tdd-local-green/expected-behavior.json",
+          "expectedArtifactsPath": "tests/e2e/scenarios/scenario-E-tdd-local-green/expected-artifacts.json",
+          "expectedContractPass": true
+        },
+        {
+          "id": "baseline-no-aegis",
+          "transcriptPath": "tests/e2e/baselines/without-aegis/scenario-E-tdd-local-green.jsonl",
+          "expectedBehaviorPath": "tests/e2e/scenarios/scenario-E-tdd-local-green/expected-behavior.json",
+          "expectedArtifactsPath": "tests/e2e/scenarios/scenario-E-tdd-local-green/expected-artifacts.json",
+          "expectedContractPass": false
+        }
+      ],
+      "comparisons": [
+        {
+          "strongerArm": "aegis-auto",
+          "weakerArm": "baseline-no-aegis",
+          "expectation": "stronger-passes-and-scores-higher"
+        }
+      ]
+    }
+  ]
+}

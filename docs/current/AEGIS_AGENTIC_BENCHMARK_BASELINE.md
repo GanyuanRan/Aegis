@@ -111,3 +111,55 @@ The machine-checkable benchmark fixture lives at:
 
 The fixture is a design contract for the benchmark harness. It is advisory
 method-pack verification, not a runtime gate.
+
+## 8. Controlled Replay Samples
+
+Controlled replay samples are the first sample layer below the benchmark
+contract. They use seeded fixture projects, the same prompt per arm, and
+per-arm temporary workspaces so replay evidence is not taken from local user
+projects.
+
+The replay manifest lives at:
+
+`tests/e2e/fixtures/replay-samples.json`
+
+The replay runner:
+
+- copies each seeded fixture project into a fresh temporary workspace per arm
+- initializes an isolated git workspace for replay auditability
+- analyzes captured transcripts through `tests/e2e/analyze-transcript.sh`
+- checks that the Aegis arm satisfies the behavior contract and scores higher
+  than the no-Aegis contrast arm
+
+This layer is benchmark-ready evidence plumbing. It does not run a live host agent.
+It does not prove host adapter compatibility, and it does not grant final
+evidence sufficiency or completion authority.
+
+## 9. Live Replay Capture
+
+Live replay capture is an opt-in environment-bound path for running a host
+against one controlled replay sample arm and then feeding the captured output
+back through the transcript analyzer.
+
+The entrypoint is:
+
+`tests/e2e/live-replay-capture.sh`
+
+The live capture path:
+
+- requires `AEGIS_LIVE_REPLAY=1` before invoking a host CLI
+- writes raw logs, normalized transcripts, summaries, and metadata under
+  repo-local `.tmp/`
+- reuses `tests/helpers/codex-cli.sh` and `tests/helpers/claude-cli.sh` for
+  host invocation instead of defining a new host adapter
+- normalizes raw host output through
+  `tests/helpers/normalize_live_replay_log.py`
+- currently captures only a single `aegis-auto` arm by default
+
+The live capture path must not fabricate a no-Aegis baseline. A trustworthy
+`baseline-no-aegis` live arm requires isolated host configuration and plugin
+discovery boundaries, and should be added only when that isolation is explicit.
+
+Live capture output is environment-bound benchmark evidence. It is not part of
+the default Layer 1 offline gate, does not prove host compatibility on its own,
+and does not grant final evidence sufficiency or completion authority.

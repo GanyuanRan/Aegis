@@ -31,6 +31,9 @@ Bootstrap entrypoints:
 - `trigger-health-check.sh`
 - `workflow-quality-check.sh`
 - `agentic-benchmark-check.sh`
+- `controlled-replay-check.sh`
+- `live-replay-capture-check.sh`
+- `live-replay-capture.sh`
 - `host-instruction-invariants-check.sh`
 - `bootstrap-adapter-contract-check.sh`
 - `deferred-ledger-check.sh`
@@ -50,7 +53,9 @@ Layer 1 host profiles:
 Supporting bootstrap assets:
 
 - `fixtures/artifacts/`
+- `fixtures/replay-projects/`
 - `fixtures/transcripts/`
+- `replay-samples/`
 - `scenarios/`
 - `scenarios/scenario-D-interrupted-long-task/`
 - `baselines/without-aegis/`
@@ -75,6 +80,19 @@ Workspace helper coverage:
 - `agentic-benchmark-check.sh` verifies the benchmark design fixture for
   with/without Aegis scenario coverage, isolation controls, metric boundaries,
   and no authority overclaim.
+- `controlled-replay-check.sh` verifies benchmark-ready controlled replay
+  samples by copying seeded fixture projects into per-arm temporary workspaces,
+  analyzing captured transcripts through `analyze-transcript.sh`, and checking
+  with/without Aegis contrast without using local user projects or live host
+  execution.
+- `live-replay-capture-check.sh` dry-runs the live replay capture entrypoint so
+  Layer 1 can verify workspace preparation, explicit opt-in, and no fabricated
+  no-Aegis baseline without invoking a host model.
+- `live-replay-capture.sh` is an environment-bound, opt-in runner for capturing
+  one live `aegis-auto` arm from a controlled replay sample. It requires
+  `AEGIS_LIVE_REPLAY=1`, writes only under repo-local `.tmp/`, normalizes the
+  raw host log for `analyze-transcript.sh`, and does not grant benchmark or
+  completion authority.
 - `host-instruction-invariants-check.sh` verifies that global rules and thin
   host instruction adapters preserve the key method-pack, evidence,
   priority, and no-authority-overclaim invariants without byte-for-byte copy

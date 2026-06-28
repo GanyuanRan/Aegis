@@ -1,0 +1,9 @@
+{
+  "name": "completion-evidence-boundary-replay-seed",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node src/math.test.js"
+  }
+}

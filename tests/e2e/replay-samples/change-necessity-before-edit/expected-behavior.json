@@ -1,0 +1,26 @@
+{
+  "skillSequence": [
+    "using-aegis",
+    "brainstorming"
+  ],
+  "mustContain": [
+    "user-visible need",
+    "no-change option",
+    "before source edits",
+    "canonical owner",
+    "evidence"
+  ],
+  "assistantMustContain": [
+    "change necessity",
+    "no source edits",
+    "docs/config-only",
+    "needs-clarification",
+    "minimum change boundary"
+  ],
+  "mustNotContain": [
+    "completion granted",
+    "authoritative gate decision",
+    "I changed src",
+    "added a fallback"
+  ]
+}

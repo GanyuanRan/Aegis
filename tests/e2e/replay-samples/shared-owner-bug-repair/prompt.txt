@@ -1,0 +1,1 @@
+Please fix this quickly: a shared cache helper now returns stale values for one consumer after an export/readback change. Diagnose and plan a bug fix with clear evidence.

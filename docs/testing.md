@@ -167,6 +167,32 @@ Notes:
   no-file default policy.
 - Full host smoke remains owned by the existing Codex / OpenCode suites and can be pulled into later E2E slices after the fast profile is stable.
 
+### Controlled Replay And Live Capture
+
+Controlled replay keeps benchmark samples off local user projects:
+
+```bash
+bash tests/e2e/controlled-replay-check.sh
+```
+
+This copies seeded fixture projects into repo-local `.tmp/` workspaces,
+analyzes captured transcripts, and checks with/without Aegis contrast.
+
+Live replay capture is opt-in and environment-bound:
+
+```bash
+bash tests/e2e/live-replay-capture.sh --sample change-necessity-before-edit --dry-run
+AEGIS_LIVE_REPLAY=1 AEGIS_TEST_CLI=codex bash tests/e2e/live-replay-capture.sh --sample change-necessity-before-edit
+```
+
+The dry run only prepares the temporary workspace. The live run invokes the
+selected host, captures the raw log, normalizes it for
+`tests/e2e/analyze-transcript.sh`, and writes the summary under `.tmp/`.
+
+The live capture path currently captures one `aegis-auto` arm at a time. It
+does not create a trustworthy no-Aegis baseline automatically; that requires
+explicit isolated host configuration and plugin discovery boundaries.
+
 ### Requirements
 
 - Must run from the **aegis plugin directory** (not from temp directories)

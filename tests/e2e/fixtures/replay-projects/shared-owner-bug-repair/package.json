@@ -1,0 +1,9 @@
+{
+  "name": "shared-owner-bug-replay-seed",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node src/cache.test.js"
+  }
+}

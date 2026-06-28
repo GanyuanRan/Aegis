@@ -1,0 +1,9 @@
+{
+  "name": "change-necessity-replay-seed",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node src/settings.test.js"
+  }
+}
