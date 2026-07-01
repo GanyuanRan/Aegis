@@ -14,6 +14,8 @@ EXPECTED_IDS = {
     "tiny-wording-edit",
     "git-status-version-question",
     "quick-single-owner-bug",
+    "behavior-smoke-ordinary-bug-code-necessity",
+    "behavior-smoke-requested-fallback-existence-check",
     "failing-test-diagnosis",
     "ambiguous-feature",
     "explicit-aegis-goal",
@@ -23,6 +25,8 @@ EXPECTED_IDS = {
     "pre-addition-existence-check-before-design",
     "pre-addition-existence-check-before-plan",
     "change-necessity-before-code-change",
+    "new-helper-path-change-necessity",
+    "strict-tdd-new-guard-change-necessity",
     "plan-time-complexity-check-before-design",
     "plan-time-complexity-check-before-plan",
     "pre-edit-complexity-check-before-code",
@@ -52,12 +56,14 @@ EXPECTED_IDS = {
     "baseline-role-alignment-review",
     "aegis-invocation-visibility-natural",
     "aegis-semantic-slots-natural-surface",
+    "trace-digest-white-box-requested",
     "completion-governance-receipt-natural",
     "strong-opinion-review-findings-first",
     "strong-opinion-release-readiness-summary",
     "strong-opinion-retro-memory-filter",
     "strong-opinion-fast-path-no-persona",
     "interrupted-long-task-resume",
+    "behavior-smoke-old-path-cleanup-anti-entropy",
     "governance-compat-cleanup",
     "internal-trigger-retirement",
     "duplicate-owner-collapse",
@@ -67,6 +73,7 @@ EXPECTED_IDS = {
     "source-of-truth-object-hard-stop",
     "derived-cache-safe-cleanup",
     "migration-file-vs-live-data",
+    "executing-plan-new-code-path-change-necessity",
     "plain-dead-import-does-not-trigger-anti-entropy",
 }
 
@@ -133,10 +140,12 @@ CONTRACT_REQUIREMENTS = {
         "Semantic Slots",
         "Natural Surface",
         "Governance Receipt",
+        "Trace Digest",
     ],
     "systematic-debugging": [
         "Layer Stop Card",
         "Change Necessity",
+        "Existence Check",
         "Pre-Edit Complexity Check",
         "Pre-Claim Gate",
         "Topology Card",
@@ -155,7 +164,7 @@ CONTRACT_REQUIREMENTS = {
         "Gap Closure",
         "Data Destruction Guard",
     ],
-    "executing-plans": ["Pre-Edit Complexity Check", "Complexity Budget"],
+    "executing-plans": ["Change Necessity", "Pre-Edit Complexity Check", "Complexity Budget"],
     "brainstorming": [
         "BaselineUsageDraft",
         "Existence Check",
@@ -189,6 +198,15 @@ CONTRACT_REQUIREMENTS = {
 }
 
 SAMPLE_RULES: dict[str, dict[str, Any]] = {
+    "tiny-wording-edit": {
+        "primary": None,
+        "must_not": [
+            "force-design-spec",
+            "create-project-workspace-records",
+            "emit-trace-digest-for-fast-path",
+        ],
+        "signals": ["git-diff-check-or-targeted-readback"],
+    },
     "quick-single-owner-bug": {
         "primary": "systematic-debugging",
         "must_not": [
@@ -202,6 +220,38 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
             "fresh-pass",
         ],
         "shapes": ["quick-bug-lane", "change-necessity"],
+    },
+    "behavior-smoke-ordinary-bug-code-necessity": {
+        "primary": "systematic-debugging",
+        "must_not": [
+            "wait-for-change-necessity-keyword",
+            "hide-code-necessity-readback",
+            "edit-source-before-change-necessity",
+        ],
+        "signals": [
+            "behavior-triggered-not-prompt-token",
+            "natural-code-necessity-readback",
+            "minimum-change-boundary",
+            "decision-code-change",
+        ],
+        "shapes": ["quick-bug-lane", "natural-code-necessity"],
+    },
+    "behavior-smoke-requested-fallback-existence-check": {
+        "primary": "systematic-debugging",
+        "allowed": ["first-principles-review", "anti-entropy-governance"],
+        "must_not": [
+            "treat-user-requested-fallback-as-creation-proof",
+            "add-requested-fallback-without-existence-check",
+            "skip-existing-owner-reuse-check",
+        ],
+        "signals": [
+            "behavior-triggered-not-prompt-token",
+            "fallback-addition-triggers-existence-check",
+            "existing-owner-reuse-candidate",
+            "creation-proof",
+            "entropy-retirement-impact",
+        ],
+        "shapes": ["patch-shape", "existence-check"],
     },
     "architecture-completion-adr-backfill-check": {
         "primary": "verification-before-completion",
@@ -413,6 +463,38 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
         ],
         "shapes": ["change-necessity"],
     },
+    "new-helper-path-change-necessity": {
+        "primary": "writing-plans",
+        "allowed": ["test-driven-development", "verification-before-completion"],
+        "must_not": [
+            "treat-tiny-helper-as-too-small-for-change-necessity",
+            "write-source-edits-before-change-necessity",
+            "skip-minimum-boundary-for-new-source-path",
+        ],
+        "signals": [
+            "any-new-source-code-path-triggers-change-necessity",
+            "tiny-helper-not-exempt",
+            "minimum-change-boundary",
+            "decision-code-change",
+        ],
+        "shapes": ["new-source-path-change-necessity"],
+    },
+    "strict-tdd-new-guard-change-necessity": {
+        "primary": "test-driven-development",
+        "allowed": ["verification-before-completion"],
+        "must_not": [
+            "enter-red-green-before-change-necessity",
+            "treat-small-guard-as-too-small-for-change-necessity",
+            "skip-non-code-option-check",
+        ],
+        "signals": [
+            "any-new-source-code-path-triggers-change-necessity",
+            "small-guard-not-exempt",
+            "decision-code-change",
+            "before-strict-red-green",
+        ],
+        "shapes": ["strict-tdd-change-necessity"],
+    },
     "strong-opinion-product-risk-lens": {
         "primary": "brainstorming",
         "must_not": [
@@ -505,6 +587,35 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
         ],
         "shapes": ["natural-governance-transition"],
     },
+    "trace-digest-white-box-requested": {
+        "primary": "systematic-debugging",
+        "allowed": ["verification-before-completion"],
+        "must_not": [
+            "expose-raw-chain-of-thought",
+            "treat-trace-as-runtime-authority",
+            "dump-raw-logs-or-secrets",
+            "default-trace-digest-for-every-task",
+        ],
+        "signals": [
+            "trace-digest",
+            "execution-trace",
+            "evidence-chain",
+            "retrieval-chain",
+            "static-rules-evaluated",
+            "rule-effects",
+            "triggered-skills",
+            "skipped-relevant-skills",
+            "tool-command-trace",
+            "verification-trace",
+            "stability-signals",
+            "value-signals",
+            "confidence-labels",
+            "host-capabilities",
+            "redaction-applied",
+            "advisory-not-authority",
+        ],
+        "shapes": ["trace-digest"],
+    },
     "completion-governance-receipt-natural": {
         "primary": "verification-before-completion",
         "must_not": [
@@ -591,6 +702,22 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
         ],
         "signals": ["latest-checkpoint", "worktree", "slice-card-readback"],
         "shapes": ["slice-card"],
+    },
+    "behavior-smoke-old-path-cleanup-anti-entropy": {
+        "primary": "brainstorming",
+        "allowed": ["anti-entropy-governance", "writing-plans"],
+        "must_not": [
+            "wait-for-anti-entropy-keyword",
+            "clean-old-path-without-anti-entropy-governance",
+            "skip-retirement-decision",
+        ],
+        "signals": [
+            "behavior-triggered-not-prompt-token",
+            "old-path-cleanup-triggers-anti-entropy-governance",
+            "deletion-class",
+            "retirement-decision",
+        ],
+        "shapes": ["anti-entropy-declaration", "retirement-decision"],
     },
     "architecture-area-bugfix-restores-baseline-no-adr": {
         "primary": "verification-before-completion",
@@ -714,6 +841,23 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
         ],
         "shapes": ["anti-entropy-declaration", "retirement-decision"],
     },
+    "executing-plan-new-code-path-change-necessity": {
+        "primary": "executing-plans",
+        "allowed": ["test-driven-development", "verification-before-completion"],
+        "must_not": [
+            "execute-new-code-path-before-change-necessity",
+            "treat-plan-approval-as-change-necessity",
+            "skip-minimum-boundary-for-new-source-path",
+        ],
+        "signals": [
+            "executing-plans-honors-change-necessity",
+            "any-new-source-code-path",
+            "new-branch-not-exempt",
+            "minimum-change-boundary",
+            "before-edit",
+        ],
+        "shapes": ["change-necessity", "pre-edit-check"],
+    },
     "plain-dead-import-does-not-trigger-anti-entropy": {
         "primary": None,
         "no_artifacts": True,
@@ -776,8 +920,10 @@ def validate_shape(data: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str
     for dimension in (
         "baseline-role-alignment",
         "aegis-invocation-visibility",
+        "trace-digest-white-box",
         "pre-addition-minimality",
         "change-necessity-before-source-edits",
+        "new-source-path-change-necessity",
     ):
         require(
             dimension in quality_dimensions,

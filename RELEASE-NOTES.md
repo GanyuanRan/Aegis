@@ -1,5 +1,61 @@
 # Aegis Release Notes
 
+## v2.3.0 (2026-07-01)
+
+### Default English README
+
+- Made the English README the default GitHub entry point at `README.md`.
+- Moved the Chinese README to `README.zh-CN.md`.
+- Kept `README.en.md` as a compatibility pointer so existing links continue to
+  lead users to the current English and Chinese README files.
+
+### User-Visible Governance
+
+- Added a compact `Trace Digest` contract so Aegis can make governance work
+  visible without exposing raw chain-of-thought.
+- Added confidence labels, evidence-chain summaries, host capability markers,
+  redaction guidance, and trace overhead budgets for user-facing workflow
+  visibility.
+- Added benchmark signals for trace digest coverage, static rule-effect
+  attribution, external skill-call stability, and negative fast-path noise
+  control.
+
+### Change Necessity For New Source Paths
+
+- Tightened `Change Necessity` so every new source-code path must surface the
+  code-change necessity check before editing.
+- Clarified that tiny helpers, guards, branches, fallback paths, adapters, and
+  owner-creating code are not exempt merely because they are small.
+- Kept pure documentation/config work and mechanical edits on lighter paths
+  when no new source-code path is introduced.
+
+### Workflow Quality Coverage
+
+- Added smoke coverage for ordinary bug repair, requested fallback work, old
+  path cleanup, new helper paths, strict TDD guard creation, executing-plan code
+  creation, and white-box trace digest requests.
+- Updated workflow-quality validation so new semantic slots stay owned by the
+  relevant workflow rather than drifting into duplicate governance owners.
+
+### Verification
+
+- Fresh checks passed:
+  `bash scripts/bump-version.sh --check`,
+  `python tests/helpers/validate_workflow_quality_matrix.py tests/e2e/fixtures/workflow-quality-matrix.json`,
+  `python tests/helpers/test_parse_codex_skills.py`,
+  `bash tests/e2e/workflow-quality-check.sh`,
+  `bash tests/e2e/context-budget-check.sh`,
+  `bash tests/e2e/boundary-compliance-check.sh`,
+  `bash tests/e2e/layer1-fast-check.sh --host-profile none`, and
+  `git diff --check`.
+
+### Release Surface
+
+- Bumped all declared package and host manifest versions from `2.2.3` to
+  `2.3.0`.
+- This release still ships `Aegis Method Pack (runtime-ready)`. It does not add
+  authoritative `GateDecision`, `PolicySnapshot`, or `completion authority`.
+
 ## v2.2.3 (2026-06-28)
 
 ### Quick Bug Routing

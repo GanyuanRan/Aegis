@@ -122,8 +122,16 @@ task intent, conversation, or agent inference can be cited as a candidate
 source, but it is not durable requirement authority by itself.
 
 Use a compact `Change Necessity` before task decomposition when the plan would
-endorse non-trivial source edits. This is the "should code change at all?"
-check; it is not a new artifact or a `using-aegis` hot-path expansion.
+endorse any new source-code path or non-trivial source edits. This is the
+"should code change at all?" check; it is not a new artifact or a
+`using-aegis` hot-path expansion.
+
+This is behavior-triggered, not prompt-triggered. If the plan is about to add
+any new source-code path or create non-trivial source-edit tasks, expose a
+natural readback even when the user did not ask for it. A tiny helper, small
+guard, new branch, fallback, adapter, or owner is not exempt. Example: "Code
+necessity check: a non-code path is insufficient because <reason>; the minimum
+change boundary is <owner/files>, so the decision is code-change."
 
 ```text
 Change Necessity:
@@ -138,7 +146,8 @@ If the decision is `no-change`, do not write code-edit tasks. If the decision
 is `docs/config-only`, narrow the plan to that surface. If the decision is
 `needs-clarification`, return to the requirement/spec owner. If the decision is
 `code-change`, carry the minimum boundary into `Files`, task steps, and
-verification.
+verification. Approved requirements do not by themselves prove that a new
+source-code path is necessary.
 
 Use a compact `Existence Check` before task decomposition when a plan would add
 a new owner, skill, artifact, host adapter, fallback, compatibility path,

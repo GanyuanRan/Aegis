@@ -29,7 +29,7 @@ Aegis 当前是：
 它的职责是把 AI coding agent 的工作过程变得更稳定、更证据驱动、更可恢复：
 
 - 先判断任务类型和风险，而不是直接改代码
-- 非平凡源码改动前，先显式判断代码变更是否必要
+- 新增任何源码路径前，以及非平凡源码改动前，先显式判断代码变更是否必要
 - 先读项目基线和 authority source，而不是凭会话印象行动
 - 把复杂任务拆成可验证的小步骤
 - 让修复、兼容、退休旧逻辑和验证证据同时可见
@@ -318,6 +318,11 @@ TDD Mode 控制 test-first 纪律，不控制完成证据。两种模式下
 - 已判断是需要代码变更，而不是 no-change、docs/config-only 或继续澄清
 - 任务可拆成可验证的小切片
 
+这个判断不依赖用户说出某个关键词。只要 Aegis 将要新增任何源码路径，或进入
+非平凡源码改动，就应自然说明：非代码路径为什么不足、最小改动边界在哪里，以及
+为什么进入 `code-change`。tiny helper、small guard、新分支、fallback、adapter
+或 owner 都不能因为“看起来很小”而豁免。
+
 测试铁律：
 
 - 代码错，修代码
@@ -479,6 +484,14 @@ Aegis 面向用户的输出优先使用中文，并遵循：
 - 性能：基线、瓶颈、收益
 - 风险与回滚：触发条件、回滚步骤、feature flag
 
+当 Aegis 实质影响一个非平凡任务时，应自然露出它影响的治理点：代码必要性、
+fallback 或新 owner 是否必要、反熵退役、baseline alignment、验证边界或剩余风险。
+
+当用户要求白盒审计时，使用按需 `Trace Digest`，而不是默认流程日志。它可以
+总结执行轨迹、证据链、检索链、内置静态规则效果、skill 调用稳定性、tool /
+command trace、验证链、价值信号、宿主能力缺口、不可用字段和 redaction。它不能
+暴露原始内部推理链，也不能声称 runtime authority。
+
 ---
 
 ## 15. 边界提醒
@@ -497,6 +510,9 @@ Aegis 可以让宿主工作得更像一个治理严谨的工程代理，但当�
 - `SubagentContextPacket`
 - `TodoCheckpointDraft`
 - `ResumeStateHint`
+
+Aegis 也可以按需产出 advisory 的 `Trace Digest` 白盒摘要。`Trace Digest`
+不是权威 `GateDecision`、`PolicySnapshot` 或 completion authority。
 - `DriftCheckDraft`
 
 这些都是 draft、hint 或 projection input。它们可以帮助未来 runtime core

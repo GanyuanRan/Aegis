@@ -14,8 +14,10 @@
     "baseline-role-alignment",
     "aegis-invocation-visibility",
     "semantic-slots-natural-surface",
+    "trace-digest-white-box",
     "pre-addition-minimality",
-    "change-necessity-before-source-edits"
+    "change-necessity-before-source-edits",
+    "new-source-path-change-necessity"
   ],
   "samples": [
     {
@@ -34,7 +36,7 @@
       "prompt": "Please fix this typo in the README sentence.",
       "expectedPrimarySkill": null,
       "allowedSecondarySkills": [],
-      "mustNotDo": ["force-design-spec", "create-project-workspace-records"],
+      "mustNotDo": ["force-design-spec", "create-project-workspace-records", "emit-trace-digest-for-fast-path"],
       "expectedOutputShape": "short-change-summary-and-verification",
       "workspacePolicy": "no-workspace",
       "expectedArtifacts": [],
@@ -61,6 +63,28 @@
       "workspacePolicy": "workspace-only-if-medium-risk",
       "expectedArtifacts": ["EvidenceBundleDraft"],
       "verificationSignal": "failing-test-or-reproduction-then-change-necessity-before-source-edit-then-fresh-pass"
+    },
+    {
+      "id": "behavior-smoke-ordinary-bug-code-necessity",
+      "prompt": "The settings page shows `unset` instead of the default theme. Please fix it and verify the result.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": ["test-driven-development", "verification-before-completion"],
+      "mustNotDo": ["wait-for-change-necessity-keyword", "hide-code-necessity-readback", "edit-source-before-change-necessity"],
+      "expectedOutputShape": "quick-bug-lane-root-cause-natural-code-necessity-and-evidence",
+      "workspacePolicy": "workspace-only-if-medium-risk",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "behavior-triggered-not-prompt-token-natural-code-necessity-readback-minimum-change-boundary-decision-code-change"
+    },
+    {
+      "id": "behavior-smoke-requested-fallback-existence-check",
+      "prompt": "Add a renderer fallback so unknown theme values show the default label. Keep the fix small.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": ["first-principles-review", "anti-entropy-governance", "verification-before-completion"],
+      "mustNotDo": ["treat-user-requested-fallback-as-creation-proof", "add-requested-fallback-without-existence-check", "skip-existing-owner-reuse-check"],
+      "expectedOutputShape": "patch-shape-existence-check-before-fallback",
+      "workspacePolicy": "workspace-if-medium-risk-or-plan-update-needed",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "behavior-triggered-not-prompt-token-fallback-addition-triggers-existence-check-existing-owner-reuse-candidate-creation-proof-entropy-retirement-impact"
     },
     {
       "id": "failing-test-diagnosis",
@@ -116,6 +140,28 @@
       "workspacePolicy": "plan-record-under-docs-aegis-plans",
       "expectedArtifacts": ["BaselineReadSetHint", "ImpactStatementDraft"],
       "verificationSignal": "change-necessity-code-change-decision-minimum-change-boundary-using-aegis-stays-route-only"
+    },
+    {
+      "id": "new-helper-path-change-necessity",
+      "prompt": "An approved change says to add a tiny helper function for display labels. Write the implementation plan, but keep it lightweight.",
+      "expectedPrimarySkill": "writing-plans",
+      "allowedSecondarySkills": ["test-driven-development", "verification-before-completion"],
+      "mustNotDo": ["treat-tiny-helper-as-too-small-for-change-necessity", "write-source-edits-before-change-necessity", "skip-minimum-boundary-for-new-source-path"],
+      "expectedOutputShape": "new-source-path-change-necessity-minimum-boundary-lightweight-plan",
+      "workspacePolicy": "plan-record-under-docs-aegis-plans",
+      "expectedArtifacts": ["BaselineReadSetHint", "ImpactStatementDraft"],
+      "verificationSignal": "any-new-source-code-path-triggers-change-necessity-tiny-helper-not-exempt-minimum-change-boundary-decision-code-change"
+    },
+    {
+      "id": "strict-tdd-new-guard-change-necessity",
+      "prompt": "TDD Route: strict. Add a small guard for empty theme IDs, then run the focused regression.",
+      "expectedPrimarySkill": "test-driven-development",
+      "allowedSecondarySkills": ["verification-before-completion"],
+      "mustNotDo": ["enter-red-green-before-change-necessity", "treat-small-guard-as-too-small-for-change-necessity", "skip-non-code-option-check"],
+      "expectedOutputShape": "strict-tdd-change-necessity-before-red-green-for-new-guard",
+      "workspacePolicy": "workspace-only-if-medium-risk",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "any-new-source-code-path-triggers-change-necessity-small-guard-not-exempt-decision-code-change-before-strict-red-green"
     },
     {
       "id": "completion-claim",
@@ -583,6 +629,17 @@
       "verificationSignal": "semantic-slots-natural-surface-owner-baseline-failure-example-minimal-repair-verification"
     },
     {
+      "id": "trace-digest-white-box-requested",
+      "prompt": "For this non-trivial bugfix, include an Aegis execution trace digest so I can audit the evidence chain, retrieval chain, rule effects, skill routing stability, and verification coverage.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": ["verification-before-completion"],
+      "mustNotDo": ["expose-raw-chain-of-thought", "treat-trace-as-runtime-authority", "dump-raw-logs-or-secrets", "default-trace-digest-for-every-task"],
+      "expectedOutputShape": "trace-digest-execution-evidence-retrieval-rule-effects-skills-verification-value-signals",
+      "workspacePolicy": "workspace-only-if-medium-risk-or-process-trail-needed",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "trace-digest-execution-trace-evidence-chain-retrieval-chain-static-rules-evaluated-rule-effects-triggered-skills-skipped-relevant-skills-tool-command-trace-verification-trace-stability-signals-value-signals-confidence-labels-host-capabilities-redaction-applied-advisory-not-authority"
+    },
+    {
       "id": "strong-opinion-review-findings-first",
       "prompt": "Review this risky diff and be blunt: lead with bugs, risks, and missing tests before any summary.",
       "expectedPrimarySkill": "requesting-code-review",
@@ -636,6 +693,17 @@
       "workspacePolicy": "work-record-required-for-medium-plus-long-task",
       "expectedArtifacts": ["TodoCheckpointDraft", "ResumeStateHint", "DriftCheckDraft", "EvidenceBundleDraft"],
       "verificationSignal": "latest-checkpoint-and-worktree-slice-card-readback"
+    },
+    {
+      "id": "behavior-smoke-old-path-cleanup-anti-entropy",
+      "prompt": "Remove the old compatibility branch now that the normalizer owns this behavior. Keep supported behavior intact.",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": ["anti-entropy-governance", "writing-plans", "verification-before-completion"],
+      "mustNotDo": ["wait-for-anti-entropy-keyword", "clean-old-path-without-anti-entropy-governance", "skip-retirement-decision"],
+      "expectedOutputShape": "anti-entropy-declaration-retirement-decision-for-old-path-cleanup",
+      "workspacePolicy": "spec-or-plan-record-required",
+      "expectedArtifacts": ["TaskIntentDraft", "ImpactStatementDraft"],
+      "verificationSignal": "behavior-triggered-not-prompt-token-old-path-cleanup-triggers-anti-entropy-governance-deletion-class-retirement-decision"
     },
     {
       "id": "governance-compat-cleanup",
@@ -737,6 +805,17 @@
       "verificationSignal": "contract-carrying-code-high-risk-verification-no-destructive-execution"
     },
     {
+      "id": "executing-plan-new-code-path-change-necessity",
+      "prompt": "Execute the approved plan task that adds a new parser branch. The plan is approved, so keep momentum, but preserve Aegis pre-edit governance.",
+      "expectedPrimarySkill": "executing-plans",
+      "allowedSecondarySkills": ["test-driven-development", "verification-before-completion"],
+      "mustNotDo": ["execute-new-code-path-before-change-necessity", "treat-plan-approval-as-change-necessity", "skip-minimum-boundary-for-new-source-path"],
+      "expectedOutputShape": "plan-review-change-necessity-pre-edit-check-verification-checkpoint",
+      "workspacePolicy": "work-record-required-for-medium-plus-plan-execution",
+      "expectedArtifacts": ["TodoCheckpointDraft", "EvidenceBundleDraft"],
+      "verificationSignal": "executing-plans-honors-change-necessity-any-new-source-code-path-new-branch-not-exempt-minimum-change-boundary-before-edit"
+    },
+    {
       "id": "plain-dead-import-does-not-trigger-anti-entropy",
       "prompt": "Remove one unused import from a small file.",
       "expectedPrimarySkill": null,
@@ -753,13 +832,13 @@
     "goal-framing": ["Goal", "Success evidence", "Stop condition", "Non-goals", "Route", "Next", "Continuation"],
     "brainstorming": ["TaskIntentDraft", "BaselineReadSetHint", "BaselineUsageDraft", "ImpactStatementDraft", "Product Risk Lens", "Existence Check", "Architecture Integrity Lens", "Baseline Role Alignment", "Complexity Budget", "Plan-Time Complexity Check", "Options", "Decision Needed"],
     "writing-plans": ["Plan Basis", "BaselineUsageDraft", "Files", "Compatibility", "Change Necessity", "Existence Check", "Architecture Integrity Lens", "Plan Pressure Test", "Complexity Budget", "Plan-Time Complexity Check", "Tasks", "Risks", "Retirement"],
-    "systematic-debugging": ["Symptom", "Reproduction", "Root Cause", "Layer Stop Card", "Pre-Claim Gate", "Topology Card", "Change Necessity", "Fix Boundary", "Minimality Check", "Pre-Edit Complexity Check", "Verification"],
+    "systematic-debugging": ["Symptom", "Reproduction", "Root Cause", "Layer Stop Card", "Pre-Claim Gate", "Topology Card", "Change Necessity", "Fix Boundary", "Minimality Check", "Existence Check", "Pre-Edit Complexity Check", "Verification"],
     "test-driven-development": ["TDD Route", "Preflight Gate", "Change Necessity", "Complexity Budget", "Pre-Edit Complexity Check", "RED", "GREEN", "REFACTOR", "Regression Scope"],
     "anti-entropy-governance": ["Anti-Entropy Declaration", "Retirement Decision", "Verification Plan", "Gap Closure", "Data Destruction Guard"],
     "requesting-code-review": ["Findings First", "Evidence Review", "Baseline / Current Authority", "Baseline Role Alignment", "Compatibility / Retirement", "Review Readiness"],
     "recording-architecture-decisions": ["Decision Candidate", "ADR Gate", "Retro / Memory Filter", "ADR Action", "Owner Surface", "Baseline Sync", "Boundary"],
-    "verification-before-completion": ["evidence-action", "verification-result", "covered-scope", "uncovered-scope", "residual-risk", "confidence-grade", "Goal status", "Success evidence", "Stop state", "Non-goals respected", "Readiness Summary", "Natural Aegis closeout", "Semantic Slots", "Natural Surface", "Governance Receipt", "Complexity Delta", "Complexity Closure", "Complexity Governance Suggestion", "Major Complexity Alert", "Baseline Alignment", "Architecture Alignment", "ADR Backfill Check", "Retirement Closure", "Anti-Entropy Declaration", "Data Destruction Guard"],
+    "verification-before-completion": ["evidence-action", "verification-result", "covered-scope", "uncovered-scope", "residual-risk", "confidence-grade", "Goal status", "Success evidence", "Stop state", "Non-goals respected", "Readiness Summary", "Natural Aegis closeout", "Semantic Slots", "Natural Surface", "Governance Receipt", "Trace Digest", "Complexity Delta", "Complexity Closure", "Complexity Governance Suggestion", "Major Complexity Alert", "Baseline Alignment", "Architecture Alignment", "ADR Backfill Check", "Retirement Closure", "Anti-Entropy Declaration", "Data Destruction Guard"],
     "long-task-continuation": ["TodoCheckpointDraft", "BaselineUsageDraft", "Slice Card", "Evidence", "DriftCheckDraft", "Risk / Unknown", "Next"],
-    "executing-plans": ["Plan Review", "Todo", "Complexity Budget", "Pre-Edit Complexity Check", "Verification", "Checkpoint"]
+    "executing-plans": ["Plan Review", "Todo", "Change Necessity", "Complexity Budget", "Pre-Edit Complexity Check", "Verification", "Checkpoint"]
   }
 }

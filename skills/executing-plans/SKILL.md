@@ -42,7 +42,24 @@ If the plan has multiple tasks, may span sessions, or includes architecture / co
 For each task:
 1. Mark as in_progress
 2. Follow each step exactly (plan has bite-sized steps)
-3. Before any non-trivial source edit, run the plan's
+3. Before any new source-code path is added by a task, restate the plan's
+   `Change Necessity` or create a compact one if the plan failed to carry it
+   forward. Plan approval is not by itself proof that a new helper, small guard,
+   new branch, fallback, adapter, or owner is necessary.
+
+   ```text
+   Change Necessity:
+   - User-visible need:
+   - No-change / non-code option:
+   - Why code change is necessary:
+   - Minimum change boundary:
+   - Decision: no-change | docs/config-only | code-change | needs-clarification
+   ```
+
+   If the decision is not `code-change`, pause execution and return to plan
+   review instead of editing. If the decision is `code-change`, carry the
+   minimum boundary into the edit and verification scope.
+4. Before any non-trivial source edit, run the plan's
    `Pre-Edit Complexity Check` or create a compact one:
 
    Use `using-aegis/references/complexity-governance.md` for shared artifact
@@ -67,9 +84,9 @@ For each task:
    budget result is `over-budget` and the task does not also govern that
    overrun, stop execution and return to plan review rather than pushing the
    task through as if it were still atomic.
-4. Run verifications as specified
-5. Update `TodoCheckpointDraft` and `DriftCheckDraft` before marking the task completed
-6. Mark as completed
+5. Run verifications as specified
+6. Update `TodoCheckpointDraft` and `DriftCheckDraft` before marking the task completed
+7. Mark as completed
 
 ### Step 3: Complete Development
 

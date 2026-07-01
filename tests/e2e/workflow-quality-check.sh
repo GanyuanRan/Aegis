@@ -56,8 +56,8 @@ complexity_baseline="docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md"
 process_doc="docs/current/AEGIS_PROCESS_BASELINE.md"
 trigger_doc="docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md"
 tdd_mode_doc="docs/current/AEGIS_TDD_MODE.md"
-readme_en="README.en.md"
-readme_zh="README.md"
+readme_en="README.md"
+readme_zh="README.zh-CN.md"
 matrix="tests/e2e/fixtures/workflow-quality-matrix.json"
 
 if [[ -f "$baseline" ]]; then
@@ -218,6 +218,20 @@ assert_contains "$baseline" "why Aegis is shaping" \
     "workflow quality baseline explains why Aegis is shaping the task"
 assert_contains "$baseline" "structured trace.*audit.*debug.*release.*long-task review.*user request|audit.*debug.*release.*long-task review.*user request.*structured trace" \
     "workflow quality baseline reserves structured trace for audit or requested cases"
+assert_contains "$baseline" "Trace Digest" \
+    "workflow quality baseline defines on-demand trace digest"
+assert_contains "$baseline" "execution trace.*evidence chain.*retrieval chain|evidence chain.*retrieval chain.*rule effects" \
+    "workflow quality baseline covers execution, evidence, retrieval, and rule-effect trace"
+assert_contains "$baseline" "measured.*observed.*inferred.*declared.*unknown" \
+    "workflow quality baseline labels trace confidence and truth source"
+assert_contains "$baseline" "Trace Capability Matrix" \
+    "workflow quality baseline defines host trace capability matrix"
+assert_contains "$baseline" "redaction" \
+    "workflow quality baseline requires trace redaction"
+assert_contains "$baseline" "do not expose.*chain-of-thought|raw internal reasoning" \
+    "workflow quality baseline forbids raw chain-of-thought exposure"
+assert_contains "$baseline" "Trace Overhead Budget" \
+    "workflow quality baseline defines trace overhead budget"
 assert_not_contains "$baseline" "Invocation: <skill-name> \| fast-path \| none" \
     "workflow quality baseline avoids invocation tuple as default user-facing shape"
 assert_not_contains "$baseline" "Aegis Usage Trace: used skills, stage handoffs" \
@@ -297,6 +311,10 @@ assert_contains "skills/using-aegis/SKILL.md" "why Aegis is shaping" \
     "using-aegis explains why Aegis is shaping the next step"
 assert_contains "skills/using-aegis/SKILL.md" "structured trace.*audit.*debug.*release.*long-task review.*asked|audit.*debug.*release.*long-task review.*asked.*structured trace" \
     "using-aegis reserves structured trace for audit or requested cases"
+assert_contains "skills/using-aegis/SKILL.md" "Trace Digest" \
+    "using-aegis knows the on-demand trace digest surface"
+assert_contains "skills/using-aegis/SKILL.md" "trace.*does not.*route|route.*not.*trace" \
+    "using-aegis keeps trace from participating in routing"
 assert_not_contains "skills/using-aegis/SKILL.md" "Invocation: <skill-name> \| fast-path \| none" \
     "using-aegis avoids invocation tuple as default user-facing shape"
 assert_not_contains "skills/using-aegis/SKILL.md" "Stage handoff" \
@@ -461,6 +479,12 @@ assert_contains "skills/verification-before-completion/SKILL.md" "Do not default
     "verification skill avoids self-credit heading by default"
 assert_contains "skills/verification-before-completion/SKILL.md" "structured trace.*audit.*debug.*release.*long-task review.*user request|audit.*debug.*release.*long-task review.*user request.*structured trace" \
     "verification skill reserves structured trace for audit or requested cases"
+assert_contains "skills/verification-before-completion/SKILL.md" "Trace Digest" \
+    "verification skill defines on-demand trace digest closeout"
+assert_contains "skills/verification-before-completion/SKILL.md" "measured.*observed.*inferred.*declared.*unknown" \
+    "verification skill labels trace confidence source"
+assert_contains "skills/verification-before-completion/SKILL.md" "redaction" \
+    "verification skill requires trace redaction"
 assert_not_contains "skills/verification-before-completion/SKILL.md" "Used skills" \
     "verification skill avoids stiff used-skills card by default"
 assert_not_contains "skills/verification-before-completion/SKILL.md" "Stage handoffs" \
@@ -647,6 +671,36 @@ assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "does not stop
     "workflow quality baseline keeps bug repairs out of using-aegis-only fast path"
 assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "Change Necessity Before Source Edits" \
     "workflow quality baseline defines change necessity before source edits"
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "behavioral.*not.*prompt|prompt.*names.*Existence Check" \
+    "workflow quality baseline treats addition checks as behavior-triggered"
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "natural code-necessity|Code necessity check" \
+    "workflow quality baseline requires natural code necessity readback"
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "any new source-code path" \
+    "workflow quality baseline applies change necessity to any new source-code path"
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "tiny helper|small guard" \
+    "workflow quality baseline rejects tiny-helper or small-guard exemptions"
+assert_contains "docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md" "Trace Digest" \
+    "agentic benchmark baseline covers trace digest quality"
+assert_contains "docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md" "skill-call-stability|trace-digest-coverage|rule-effect-attribution" \
+    "agentic benchmark baseline includes trace and rule-effect metrics"
+assert_contains "skills/systematic-debugging/SKILL.md" "behavior-triggered.*not prompt-triggered" \
+    "systematic debugging makes change necessity behavior-triggered"
+assert_contains "skills/systematic-debugging/SKILL.md" "any new source-code path" \
+    "systematic debugging applies change necessity to any new source-code path"
+assert_contains "skills/systematic-debugging/SKILL.md" "Existence Check" \
+    "systematic debugging checks requested fallback additions before editing"
+assert_contains "skills/writing-plans/SKILL.md" "behavior-triggered.*not prompt-triggered" \
+    "writing plans makes change necessity behavior-triggered"
+assert_contains "skills/writing-plans/SKILL.md" "any new source-code path" \
+    "writing plans applies change necessity to any new source-code path"
+assert_contains "skills/test-driven-development/SKILL.md" "behavior-triggered.*not prompt-triggered" \
+    "TDD makes change necessity behavior-triggered"
+assert_contains "skills/test-driven-development/SKILL.md" "any new source-code path" \
+    "TDD applies change necessity to any new source-code path"
+assert_contains "skills/executing-plans/SKILL.md" "Change Necessity" \
+    "executing plans carries change necessity during plan execution"
+assert_contains "skills/executing-plans/SKILL.md" "any new source-code path" \
+    "executing plans applies change necessity to any new source-code path"
 
 "${PYTHON_CMD[@]}" tests/helpers/validate_workflow_quality_matrix.py "$matrix"
 if (( failures > 0 )); then

@@ -38,8 +38,8 @@ Workflow hardening must optimize for:
 8. bounded plan/spec artifacts for long tasks that execute many micro-slices
 9. pre-addition minimality so new owners, artifacts, adapters, fallbacks, and
    metrics are justified before they exist
-10. visible change necessity before non-trivial source edits without making
-    `using-aegis` heavier
+10. visible change necessity before any new source-code path and before
+    non-trivial source edits without making `using-aegis` heavier
 
 The stable path is sample-driven hardening:
 
@@ -289,16 +289,18 @@ Pass criteria:
   higher-level owner / contract / source-of-truth simplification
 - `brainstorming` and `writing-plans` can use a compact `Existence Check` when
   an approach or plan would add a new owner, skill, artifact, adapter,
-  fallback, workflow step, or benchmark metric; the check should prefer reuse
-  of an existing owner unless creation has proof, verification, and retirement
-  impact accounted for
+  fallback, workflow step, or benchmark metric; `systematic-debugging` uses the
+  same check when a candidate repair would add a fallback, adapter, branch, or
+  new owner. The trigger is the proposed addition behavior, not whether the
+  prompt names `Existence Check`.
 - `brainstorming` and `writing-plans` can use a compact
   `Plan-Time Complexity Check` to identify target file pressure, add-in-place
   risk, and safer file boundaries before implementation
-- `writing-plans`, `systematic-debugging`, and `test-driven-development` can
-  use a compact `Change Necessity` slot before non-trivial source edits so
-  no-change, docs/config-only, code-change, and needs-clarification decisions
-  are visible before implementation
+- `writing-plans`, `systematic-debugging`, `test-driven-development`, and
+  `executing-plans` can use a compact `Change Necessity` slot before any new
+  source-code path or non-trivial source edit so no-change, docs/config-only,
+  code-change, and needs-clarification decisions are visible before
+  implementation
 - `test-driven-development`, `systematic-debugging`, and `executing-plans` can
   use a compact `Pre-Edit Complexity Check` to avoid stuffing new logic into an
   overloaded or wrong owner
@@ -369,6 +371,20 @@ Pass criteria:
 - no single Aegis closeout phrase is canonical; repeated identical Aegis
   closeout wording across tasks is a quality miss
 - structured trace is reserved for audit, debug, release, long-task review, or user request
+- structured trace uses a `Trace Digest` when the user asks for white-box
+  auditability: execution trace, evidence chain, retrieval chain, rule effects,
+  skill-call stability, tool / command trace, verification trace, and value
+  signals
+- `Trace Digest` entries label their source confidence as `measured`, `observed`, `inferred`, `declared`, or `unknown`;
+  unavailable host fields stay explicitly unavailable instead of being guessed
+- a `Trace Capability Matrix` names which fields the current host can expose
+  directly, which are transcript-observed, and which are unavailable
+- trace output applies redaction and summary-first hygiene for logs, paths,
+  external content, private text, and secret-like values
+- trace may summarize decision rationale, but it must not expose raw chain-of-thought or raw internal reasoning
+- `Trace Overhead Budget`: tiny fast-path work stays implicit; non-trivial
+  inline visibility stays to a natural sentence by default; completion receipts
+  stay compact; full `Trace Digest` is on-demand or audit/release/debug scoped
 - the trace stays advisory method-pack transparency, not runtime authority, not
   a runtime gate, and not completion authority
 
@@ -399,6 +415,29 @@ Aegis Invocation Trace:
 - Stage transition:
 - Next quality gate:
 - Boundary: advisory method-pack trace only
+```
+
+On-demand white-box shape:
+
+```text
+Aegis Trace Digest:
+- traceLevel: inline | receipt | structured
+- hostCapabilities:
+- taskStage:
+- triggeredSkills:
+- skippedRelevantSkills:
+- evidenceChain:
+- retrievalChain:
+- staticRulesEvaluated:
+- ruleEffects:
+- toolCommandTrace:
+- verificationTrace:
+- stabilitySignals:
+- valueSignals:
+- confidenceLabels: measured | observed | inferred | declared | unknown
+- unavailableFields:
+- redactionApplied:
+- boundary: advisory trace, not runtime authority or completion authority
 ```
 
 ### 3.17 Semantic Slots and Natural Surface
@@ -444,6 +483,9 @@ Pass criteria:
 - `brainstorming` and `writing-plans` use `Existence Check` when an approach or
   plan would add a new owner, skill, artifact, host adapter, fallback,
   compatibility path, workflow step, or benchmark metric
+- `systematic-debugging` uses `Existence Check` before accepting a repair shape
+  that would add a fallback, adapter, branch, or new owner; a user-requested
+  fallback does not count as creation proof
 - the check names the proposed new surface and an existing owner / reuse
   candidate
 - creation is justified with proof, not preference for new structure
@@ -458,27 +500,41 @@ Pass criteria:
 
 ### 3.19 Change Necessity Before Source Edits
 
-Aegis should make the reason for code change visible before non-trivial source
-edits, while keeping `using-aegis` compact and route-only.
+Aegis should make the reason for code change visible before any new source-code
+path and before non-trivial source edits, while keeping `using-aegis` compact
+and route-only.
 
 Pass criteria:
 
 - `using-aegis` delegates Change Necessity to the owning workflow instead of
   expanding the hot path
+- the trigger is behavioral: any new source-code path and non-trivial source
+  edits surface a natural code-necessity readback even when the user did not
+  name `Change Necessity`
+- a tiny helper, small guard, new branch, fallback, adapter, or owner is not
+  exempt from Change Necessity merely because the addition looks small
 - bug, failure, regression, or unexpected behavior does not stop at a
   `using-aegis`-only fast path; it routes to `systematic-debugging`
 - `writing-plans` records `Change Necessity` before task decomposition when the
-  plan will endorse source edits
+  plan will endorse a new source-code path or source edits
 - `systematic-debugging` records `Change Necessity` after root cause and before
-  repair code for non-trivial fixes; quick bug lane may use one compact
+  repair code for any new source-code path and non-trivial fixes; quick bug lane may use one compact
   sentence, but it still appears before source edits
 - `test-driven-development` records `Change Necessity` before strict RED/GREEN
-  enters production code edits
+  enters production code edits, including tiny guards or helpers
+- `executing-plans` honors the plan's `Change Necessity` and creates a compact
+  one before editing when the approved plan task would add a new source-code
+  path but did not carry the slot forward
 - the slot distinguishes `no-change`, `docs/config-only`, `code-change`, and
   `needs-clarification`
 - the decision carries a minimum change boundary into files, fix boundary, or
   TDD route
-- tiny fast-path edits may satisfy the slot in natural prose
+- a valid natural surface may say: "Code necessity check: a non-code path is
+  insufficient because <reason>; the minimum change boundary is <owner/files>,
+  so the decision is code-change."
+- tiny fast-path edits that add no new source-code path may satisfy the slot in
+  natural prose or stay implicit when they are purely mechanical; tiny new
+  source-code paths still need at least a natural Change Necessity readback
 - the slot remains advisory method-pack discipline, not a runtime gate,
   authoritative `GateDecision`, or completion authority
 
@@ -622,6 +678,7 @@ Topology Card: explicit causal topology (single-root / single-root-multi-symptom
 Change Necessity: user-visible need, no-change / non-code option, why code change, minimum boundary, decision
 Fix Boundary: canonical owner, compatibility, non-edits
 Minimality Check: smallest textual diff, existing owner / reuse path, correct owner, bug class fixed, new branch/fallback, old path retirement, verdict
+Existence Check: proposed fallback/adapter/branch/new owner, existing owner / reuse candidate, creation proof, entropy / retirement impact, decision
 Pre-Edit Complexity Check: target edit file, pressure signal, safer boundary, decision
 Verification: failing test or reproduction now passing
 Repair Track / Retirement Track: when fallback, owner, or contract risk exists
@@ -714,6 +771,11 @@ Natural Aegis closeout: Aegis stays explicitly visible in non-trivial closeout
 when it materially shaped the task, and is naturally tied to the boundary,
 evidence discipline, or residual risk it influenced; structured trace only for
 audit/debug/release/long-task review or user request
+Trace Digest: on-demand white-box summary for execution trace, evidence chain,
+retrieval chain, static rules evaluated, rule effects, triggered and skipped
+skills, tool/command trace, verification trace, stability signals, value
+signals, confidence labels, host capabilities, unavailable fields, redaction,
+and advisory boundary
 Complexity Closure: planned budget vs actual result, governed now, deferred follow-up, completion impact
 Major Complexity Alert: materially oversized maintained artifact that needs explicit user-visible follow-up
 ```

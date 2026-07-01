@@ -62,6 +62,14 @@ Semantic Slots:
 - Governance Receipt is the compact closeout form for Aegis-shaped non-trivial
   work. It names the boundary held, evidence, covered and uncovered scope,
   residual risk, confidence, and any triggered governance closure.
+- Trace Digest is the on-demand white-box closeout for audit, debug, release,
+  long-task review, or explicit user request. It summarizes execution trace,
+  evidence chain, retrieval chain, static rules evaluated, rule effects,
+  triggered skills, skipped relevant skills, tool / command trace,
+  verification trace, stability signals, value signals, host capability gaps,
+  unavailable fields, and redaction. Confidence labels are `measured`, `observed`, `inferred`, `declared`, or `unknown`.
+- Trace Digest may summarize decision rationale, but it must not expose raw
+  chain-of-thought or turn Aegis output into runtime authority.
 
 TDD Completion Boundary:
 - Judge the completion claim against the highest available explicit boundary.
@@ -166,9 +174,32 @@ TDD Completion Boundary:
    evidence and the applicable Governance Receipt fields.
 
    Use structured trace only for audit, debug, release, long-task review, or user request.
-   The structured form may name skills, stage transitions, quality
-   effect, and boundary, but it should not replace the normal user-facing
-   completion note.
+   The structured form may name task stage, triggered skills, skipped relevant
+   skills, rule effects, quality effect, and boundary, but it should not
+   replace the normal user-facing completion note.
+
+   On request, use this compact shape:
+
+   ```text
+   Aegis Trace Digest:
+   - traceLevel:
+   - hostCapabilities:
+   - taskStage:
+   - triggeredSkills:
+   - skippedRelevantSkills:
+   - evidenceChain:
+   - retrievalChain:
+   - staticRulesEvaluated:
+   - ruleEffects:
+   - toolCommandTrace:
+   - verificationTrace:
+   - stabilitySignals:
+   - valueSignals:
+   - confidenceLabels: measured | observed | inferred | declared | unknown
+   - unavailableFields:
+   - redactionApplied:
+   - boundary: advisory trace, not runtime authority or completion authority
+   ```
 
 11. **User-Language Output**: final response cards must localize user-facing
    section labels, field labels, and explanatory prose to the user's language.

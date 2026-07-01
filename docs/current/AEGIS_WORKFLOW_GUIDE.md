@@ -30,7 +30,8 @@ Its job is to make AI coding agent work more stable, evidence-driven, and
 recoverable:
 
 - classify task type and risk before editing
-- make code-change necessity visible before non-trivial source edits
+- make code-change necessity visible before adding any source-code path and
+  before non-trivial source edits
 - read project baselines and authority sources before acting from session memory
 - split complex work into verifiable slices
 - keep repair, compatibility, retirement, and verification evidence visible
@@ -331,6 +332,13 @@ Before implementation, confirm:
 - code change is necessary versus no-change, docs/config-only, or clarification
 - the task can be split into verifiable slices
 
+This check does not depend on the user naming a keyword. Whenever Aegis is
+about to add any source-code path, or enter a non-trivial source edit, it should
+naturally state why a non-code path is insufficient, what the minimum change
+boundary is, and why the decision is `code-change`. Tiny helpers, small guards,
+new branches, fallbacks, adapters, and owners are not exempt merely because
+they look small.
+
 Test iron law:
 
 - if code is wrong, fix the code
@@ -507,6 +515,18 @@ Extend by task type:
 - Performance: baseline, bottleneck, gains
 - Risk and rollback: trigger conditions, rollback steps, feature flags
 
+When Aegis materially shapes a non-trivial task, it should naturally show the
+governance point it affected: code necessity, existence of a fallback or new
+owner, anti-entropy retirement, baseline alignment, verification boundary, or
+residual risk.
+
+When the user asks for white-box auditability, use an on-demand `Trace Digest`
+instead of a default process log. It may summarize execution trace, evidence
+chain, retrieval chain, static rules evaluated, rule effects, skill-call
+stability, tool / command trace, verification trace, value signals, host
+capability gaps, unavailable fields, and redaction. It must not expose raw
+internal reasoning or claim runtime authority.
+
 ---
 
 ## 15. Boundary Reminder
@@ -525,6 +545,10 @@ Aegis can currently produce:
 - `SubagentContextPacket`
 - `TodoCheckpointDraft`
 - `ResumeStateHint`
+
+It can also produce an on-demand `Trace Digest` as an advisory white-box
+summary. `Trace Digest` is not an authoritative `GateDecision`, `PolicySnapshot`,
+or completion authority.
 - `DriftCheckDraft`
 
 These are drafts, hints, or projection inputs. They can help a future runtime

@@ -31,6 +31,9 @@ Therefore:
 - This repository can generate drafts, templates, checklists, and artifact conventions
 - This repository can require hosts to provide necessary missing information
 - This repository can output advisory, warning-style process guidance
+- This repository can output an on-demand `Trace Digest` as advisory
+  transparency over observed execution, evidence, rule effects, skill routing,
+  verification, and host capability gaps
 - This repository must NOT independently produce authoritative `GateDecision`
 - This repository must NOT independently grant `completion authority`
 
@@ -225,6 +228,8 @@ The following outputs can only be the responsibility of the future `Aegis Runtim
 - Authoritative `GateDecision`
 - Final classification of `architecture_drift / defect / corrosion`
 - Final determination of `evidence sufficiency`
+- Treating `Trace Digest` as an authoritative event log, policy decision, or
+  completion grant
 - `completion authority`
 
 No method-pack skill, host prompt, or projection template may overstep by claiming to already possess these capabilities.

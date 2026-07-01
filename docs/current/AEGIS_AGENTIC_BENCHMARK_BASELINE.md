@@ -49,9 +49,18 @@ metrics:
 - `workspace-laziness`
 - `prompt-bloat-risk`
 - `task-completeness`
+- `trace-digest-coverage`
+- `rule-effect-attribution`
+- `skill-call-stability`
 
 Cost, time, token count, and diff size may be collected as supporting metrics.
 They are not primary success claims for Aegis.
+
+Trace Digest quality is measured only when the scenario asks for auditability or
+when release/debug/long-task review requires it. The benchmark should check
+whether the trace names execution trace, evidence chain, retrieval chain, rule
+effects, skill routing stability, verification coverage, confidence labels,
+host capability gaps, and redaction without exposing raw chain-of-thought.
 
 ## 4. Required Scenario Classes
 
@@ -59,10 +68,14 @@ The minimum benchmark suite should include:
 
 - ambiguous feature shaping before implementation
 - quick bug repair that must surface Change Necessity before source edits
+- tiny helper or small guard addition that must surface Change Necessity before
+  adding a new source-code path
 - shared-owner bug repair instead of caller-side fallback
 - completion claim with missing evidence
 - fallback or compatibility cleanup with retirement trigger
 - fast-path tiny task that must stay cheap
+- requested white-box Trace Digest for a non-trivial task
+- negative fast-path sample that must not emit Trace Digest ceremony
 - destructive or source-of-truth cleanup that must stop for confirmation
 
 Each scenario needs:

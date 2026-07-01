@@ -42,6 +42,11 @@ python <aegis-workspace-helper> bundle --root <target-project-root> --work YYYY-
 That validation is structural only. It does not determine evidence sufficiency,
 produce authoritative `GateDecision`, or grant completion authority.
 
+An on-demand `Trace Digest` may summarize observed execution, evidence chain,
+retrieval chain, rule effects, skill-call stability, verification, and host
+capability gaps. It is an advisory output shape, not a new authoritative
+artifact, event log, `GateDecision`, or completion authority.
+
 ---
 
 ## 3. Artifact Definitions
@@ -272,4 +277,5 @@ Not permitted to be directly written by the method pack as:
 - authoritative `BaselineRef[]`
 - authoritative `PolicySnapshot`
 - authoritative `GateDecision`
+- authoritative `Trace Digest`
 - `completion authority`

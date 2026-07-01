@@ -98,8 +98,17 @@ evidence are already clear.
 ## Change Necessity
 
 Before strict RED/GREEN enters production code edits, make the code-change
-decision visible. This is the "should code change at all?" check; it is not a
-new artifact and does not belong in the `using-aegis` hot path.
+decision visible. Any new source-code path needs this check before RED/GREEN
+normalizes it as work to implement. This is the "should code change at all?"
+check; it is not a new artifact and does not belong in the `using-aegis` hot
+path.
+
+This is behavior-triggered, not prompt-triggered. If strict TDD is about to add
+any new source-code path or enter production source edits, expose a natural
+readback even when the user did not ask for it. A tiny helper, small guard, new
+branch, fallback, adapter, or owner is not exempt. Example: "Code necessity
+check: a non-code path is insufficient because <reason>; the minimum change
+boundary is <owner/files>, so the decision is code-change."
 
 ```text
 Change Necessity:

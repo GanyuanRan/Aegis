@@ -39,7 +39,10 @@ The current process baseline follows these core principles:
 - **Evidence-Driven**: Separate facts, assumptions, and unknowns
 - **Systematic Thinking**: Understand impact scope and dependency relationships from the architecture level
 - **Minimal Necessary Change**: Minimal Necessary Change means the smallest sufficient change at the correct owner and abstraction layer, not the smallest textual diff. Prefer local, shortest-path changes only when they fix the bug class without adding fallback, duplicate owner, or long-term entropy.
-- **Change Necessity Before Source Edits**: Before non-trivial source edits, the owning workflow states why code change is necessary versus no-change, docs/config-only, or clarification. Keep `using-aegis` route-only.
+- **Change Necessity Before Source Edits**: Before any new source-code path is
+  added, and before non-trivial source edits, the owning workflow states why
+  code change is necessary versus no-change, docs/config-only, or
+  clarification. Keep `using-aegis` route-only.
 - **Pre-Addition Minimality**: Before adding a new owner, skill, artifact, adapter, fallback, workflow step, or benchmark metric, prove it needs to exist and check whether an existing owner can carry the behavior.
 - **Backward Compatibility First**: Changes default to preserving externally observable behavior and published contracts. Do not preserve internal old paths, duplicate owners, or historical fallbacks by default.
 - **Phase Verification**: After every significant change, perform regression verification and architecture review
@@ -91,7 +94,9 @@ Root improvement rule:
 - Use workflow-quality fixtures before changing high-frequency skill behavior.
 - Preserve fast-path cheapness for simple Q&A, status checks, and tiny edits.
 - Use `Aegis Reason Note` for non-trivial skill use and stage changes so users
-  can see why Aegis is shaping the next step. Keep structured trace for audit, debug, release, long-task review, or user request.
+  can see why Aegis is shaping the next step. Keep structured trace for audit, debug, release, long-task review, or user request; use `Trace Digest` for the compact white-box summary.
+  Trace summarizes observed execution, evidence, rule effects, and verification
+  with redaction; it does not expose raw internal reasoning or become authority.
 - Scale output depth by task complexity and risk.
 - Prefer compact output contracts over broad template expansion.
 - Apply the Micro-Slice Artifact Budget when long tasks split into many tiny
@@ -163,14 +168,17 @@ Canonical lenses:
   `brainstorming` and `writing-plans`: invariant, canonical owner / contract,
   responsibility overlap, higher-level simplification, retirement / falsifier,
   and verdict before a risky approach or plan decomposition is endorsed
-- `Existence Check` in `brainstorming` and `writing-plans`: proposed new
-  surface, existing owner / reuse candidate, creation proof, entropy /
-  retirement impact, and reuse-or-add decision before adding new owners,
-  artifacts, adapters, fallbacks, workflow steps, or benchmark metrics
-- `Change Necessity` in `writing-plans`, `systematic-debugging`, and
-  `test-driven-development`: user-visible need, no-change / non-code option,
-  why code change is necessary, minimum change boundary, and decision before
-  non-trivial source edits
+- `Existence Check` in `brainstorming` and `writing-plans`, and in
+  `systematic-debugging` when a candidate repair would add a fallback, adapter,
+  branch, or new owner: proposed new surface, existing owner / reuse candidate,
+  creation proof, entropy / retirement impact, and reuse-or-add decision before
+  adding new owners, artifacts, adapters, fallbacks, workflow steps, or
+  benchmark metrics
+- `Change Necessity` in `writing-plans`, `systematic-debugging`,
+  `test-driven-development`, and `executing-plans`: user-visible need,
+  no-change / non-code option, why code change is necessary, minimum change
+  boundary, and decision before any new source-code path or non-trivial source
+  edit
 - `Plan-Time Complexity Check` in `brainstorming` and `writing-plans`: target
   file pressure, owner fit, and better boundary options before implementation
 - `Pre-Edit Complexity Check` in implementation workflows: actual edit-file
@@ -309,7 +317,9 @@ surface should exist before the method pack creates it.
 
 Run an `Existence Check` before design or planning endorses a new owner, skill,
 artifact, host adapter, fallback, compatibility path, workflow step, or
-benchmark metric:
+benchmark metric. In debugging, run the same check before accepting a repair
+shape that would add a fallback, adapter, branch, or new owner; a user asking
+for a fallback is not proof that the fallback should exist.
 
 ```text
 Existence Check:
@@ -351,12 +361,25 @@ unclear verification boundary.
 ### 3.0i Change Necessity Before Source Edits
 
 Change Necessity makes the "should we edit code at all?" judgment visible
-before a non-trivial workflow writes source code. It is a semantic slot for the
-owning workflow, not a new artifact, not a new skill, and not a heavier
-`using-aegis` hot path.
+before a workflow adds a new source-code path or makes a non-trivial source
+edit. It is a semantic slot for the owning workflow, not a new artifact, not a
+new skill, and not a heavier `using-aegis` hot path.
 
-Use this compact shape when a plan, bug repair, or strict TDD slice is about to
-endorse non-trivial source edits:
+The trigger is behavioral, not prompt-word based: if the workflow is about to
+endorse any new source-code path or a non-trivial source edit, the owning
+workflow must expose the code-change necessity even when the user did not ask
+for a "Change Necessity" section. A new helper, small guard, new branch,
+fallback, adapter, or owner is not exempt just because it looks tiny. A natural
+sentence is enough for a tiny new path when it remains auditable, for example:
+
+```text
+Code necessity check: a non-code path is insufficient because <reason>; the
+minimum change boundary is <owner/files>, so the decision is code-change.
+```
+
+Use this compact shape when a plan, bug repair, strict TDD slice, or plan
+execution is about to endorse any new source-code path or non-trivial source
+edit:
 
 ```text
 Change Necessity:

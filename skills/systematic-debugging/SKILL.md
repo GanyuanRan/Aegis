@@ -11,10 +11,13 @@ description: Use when encountering any bug, test failure, or unexpected behavior
      L5 cross-system contract → L6 platform constraint → L7 spec gap.
      Stop when no deeper "why" remains OR terminal unactionable (T1-T4).
   2. Identify owner: compare with working code → locate canonical owner → flag duplicate owners as a finding
-  3. Before fixing, run Patch-Shape Triage and Ripple Signal Triage if the candidate fix touches shared/core/cross-module behavior, contract, source-of-truth, fallback, adapter, duplicate owner, producer+consumer, or consumer-side patching. Surface Change Necessity for non-trivial fixes. Run Minimality Check when the candidate fix adds a new branch, fallback, owner, adapter, or compatibility path. Also run Pre-Edit Complexity Check when the candidate fix touches an overloaded owner or may worsen source complexity.
+  3. Before fixing, run Patch-Shape Triage and Ripple Signal Triage if the candidate fix touches shared/core/cross-module behavior, contract, source-of-truth, fallback, adapter, duplicate owner, producer+consumer, or consumer-side patching. Surface Change Necessity for any new source-code path and non-trivial fixes. Run Minimality Check when the candidate fix adds a new branch, fallback, owner, adapter, or compatibility path. Also run Pre-Edit Complexity Check when the candidate fix touches an overloaded owner or may worsen source complexity.
   4. Prove: one hypothesis → minimal test → iterate. 3+ failed fixes = question architecture, do not attempt another code fix.
      After fix, if any symptom persists → differential diagnosis (Phase 4 Step 4bis).
-  5. Fix: failing test → minimal code at canonical owner → verify → Reflection + architecture review → repair + retirement track
+   5. Fix: failing test → minimal code at canonical owner → verify → Reflection + architecture review → repair + retirement track
+      If the user asks for white-box auditability, include `Trace Digest` after
+      evidence is collected; do not expose raw chain-of-thought or let trace
+      replace root-cause, rule-effect, and verification evidence.
 → Done when: confidence ≥ B, both tracks explicit, DeeperCause answered "no" with evidence, no H-class hard signal still active.
 
 # Systematic Debugging
@@ -37,11 +40,10 @@ Especially under time pressure, when "just one quick fix" seems obvious, after m
 
 For low-risk, single-owner bugs, keep the report compact: `Symptom`,
 `Reproduction`, `Root Cause`, `Change Necessity`, `Fix Boundary`, and
-`Verification`. Still collect root-cause evidence before editing. Quick bug lane must surface Change Necessity before source edits; one compact sentence is enough
-when it names the user-visible need, no-change / non-code option, why code
-change is necessary, minimum change boundary, and an explicit decision token
-such as `Decision: code-change`; minimum-boundary wording is not a substitute
-for the decision. If fallback,
+`Verification`. Quick bug lane must surface Change Necessity before source edits and before any new source-code path. Still collect root-cause evidence before editing; one compact sentence is enough when it names the user-visible
+need, no-change / non-code option, why code change is necessary, minimum change
+boundary, and an explicit decision token such as `Decision: code-change`;
+minimum-boundary wording is not a substitute for the decision. If fallback,
 duplicate owner, consumer-side patching, contract risk, shared logic, or
 cross-module behavior appears, escalate to the full workflow.
 
@@ -151,9 +153,21 @@ cross-module behavior appears, escalate to the full workflow.
 
    `local patch` is a mitigation, not a sufficient repair, unless it is the
    canonical owner and includes a retention reason plus retirement trigger.
-   For candidate additions that are not ordinary repair code, use
-   `docs/current/AEGIS_MINIMALITY_REFERENCE.md` to check whether the new surface
-   needs to exist before editing.
+   For candidate additions that are not ordinary repair code, run an
+   `Existence Check` using `docs/current/AEGIS_MINIMALITY_REFERENCE.md` before
+   editing. This is behavior-triggered: if the candidate repair adds a fallback,
+   adapter, branch, or new owner, the check runs even when the user asked for
+   that fallback directly.
+
+   ```text
+   Existence Check:
+   - Proposed new surface:
+   - Existing owner / reuse candidate:
+   - Why existing surface is insufficient:
+   - Creation proof:
+   - Entropy / retirement impact:
+   - Decision: reuse-existing | add-with-proof | defer | reject | needs-first-principles-review
+   ```
 
    If the repair or retirement boundary depends on deleting old paths,
    retaining compat for a proven external dependency, or stopping on
@@ -166,6 +180,14 @@ cross-module behavior appears, escalate to the full workflow.
    make the code-change decision visible. This is the "should code change at
    all?" check; it is not a new artifact and does not belong in the
    `using-aegis` hot path.
+
+   This is behavior-triggered, not prompt-triggered. If the next step adds any
+   new source-code path or makes a non-trivial source edit, expose a natural
+   readback even when the user did not ask for it. A tiny helper, small guard,
+   new branch, fallback, adapter, or owner is not exempt. Example: "Code
+   necessity check: a non-code path is insufficient because <reason>; the
+   minimum change boundary is <canonical owner/files>, so the decision is
+   code-change."
 
    ```text
    Change Necessity:
