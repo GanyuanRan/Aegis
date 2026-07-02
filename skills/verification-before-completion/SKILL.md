@@ -66,6 +66,13 @@ Semantic Slots:
   evidence discipline added, and residual risk or uncovered scope kept visible.
   If another owner workflow already surfaced visibility earlier, reconcile that
   trail in the closeout instead of replacing it with a used-skills list.
+- For non-trivial Aegis-shaped work, final closeout must include one
+  task-specific sentence about the boundary, evidence, or residual risk; concise
+  final answers still keep one natural Aegis sentence and must not drop this
+  slot. Do not replace it with a used-skills list.
+- If required entry visibility was omitted, final response must include a
+  retrospective visibility recovery line and name the omission as a visibility
+  gap. This recovery does not make the earlier omission compliant.
 - Trace Digest is the on-demand white-box closeout for audit, debug, release,
   long-task review, or explicit user request. It summarizes execution trace,
   evidence chain, retrieval chain, static rules evaluated, rule effects,
@@ -169,6 +176,10 @@ TDD Completion Boundary:
    Keep it advisory method-pack discipline, not completion authority. Keep it
    implicit only for obvious fast-path replies unless the user asked about
    Aegis routing.
+
+   If an Aegis skill was loaded for non-tiny work, closeout is not optional:
+   concise final answers still keep one natural Aegis sentence tied to boundary,
+   evidence, or residual risk.
 
    Natural expression may satisfy the visibility requirement when the semantic
    slots are still explicit. For example, "I will follow the Aegis order here:

@@ -629,6 +629,28 @@
       "verificationSignal": "owner-workflow-aegis-visibility-goal-framing-brainstorming-writing-plans-systematic-debugging-test-driven-development-executing-plans-long-task-continuation-requesting-code-review-recording-architecture-decisions-anti-entropy-governance-verification-before-completion-natural-not-used-skills-log-advisory-not-authority"
     },
     {
+      "id": "loaded-aegis-skill-requires-entry-visibility",
+      "prompt": "A non-trivial debugging task loads an Aegis workflow before reading files or proposing a fix. Keep the first substantive update concise, but make the Aegis shaping reason visible immediately.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": ["first-principles-review", "anti-entropy-governance", "verification-before-completion"],
+      "mustNotDo": ["wait-for-user-to-ask-about-aegis", "hide-entry-aegis-visibility", "replace-visibility-with-used-skills-list", "treat-visibility-as-runtime-authority"],
+      "expectedOutputShape": "entry-aegis-visibility-one-liner-before-substantive-work",
+      "workspacePolicy": "workspace-only-if-medium-risk-or-process-trail-needed",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "loaded-aegis-skill-non-tiny-first-substantive-stage-entry-aegis-visibility-natural-one-liner-quality-risk-advisory-not-authority"
+    },
+    {
+      "id": "compressed-final-keeps-aegis-visibility",
+      "prompt": "Finish a non-trivial Aegis-shaped repair with a short final answer. Keep it concise, but do not drop the Aegis closeout sentence.",
+      "expectedPrimarySkill": "verification-before-completion",
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["drop-visibility-because-final-is-concise", "replace-visibility-with-used-skills-list", "only-explain-aegis-after-user-asks", "treat-closeout-as-completion-authority"],
+      "expectedOutputShape": "concise-final-with-natural-aegis-closeout",
+      "workspacePolicy": "no-new-workspace-records-unless-existing-workstream-needs-evidence",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "non-trivial-aegis-shaped-final-natural-aegis-closeout-boundary-evidence-residual-risk-visible-concise-not-omitted-advisory-not-authority"
+    },
+    {
       "id": "aegis-semantic-slots-natural-surface",
       "prompt": "I want to implement this with Aegis guidance, but say it naturally: first read the owner/baseline and current implementation, then add a failing generator main-path example, then make the minimal repair and verify.",
       "expectedPrimarySkill": "systematic-debugging",

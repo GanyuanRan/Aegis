@@ -102,6 +102,10 @@ Root improvement rule:
   should each expose the task-specific boundary or evidence discipline they add
   instead of hiding all visibility in debugging, verification, or a generic
   used-skills log.
+- Treat non-trivial loaded-skill visibility as non-omittable: the first
+  substantive stage gets one natural visibility sentence, and the final
+  response keeps one task-specific closeout sentence. Concision and
+  natural-surface wording do not authorize dropping the slot.
 - Scale output depth by task complexity and risk.
 - Prefer compact output contracts over broad template expansion.
 - Apply the Micro-Slice Artifact Budget when long tasks split into many tiny

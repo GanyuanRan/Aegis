@@ -325,6 +325,28 @@ class AegisUpdateRegistryTests(unittest.TestCase):
             self.assertEqual(entry["syncMode"], "junction")
             self.assertEqual(entry["discoveryShape"], "direct-child")
 
+    def test_register_installation_defaults_kimi_to_native_direct_child(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-kimi-shape-") as tmp:
+            registry = Path(tmp) / "installations.json"
+            root = Path(tmp) / "aegis"
+            kimi_home = Path(tmp) / "kimi-home"
+
+            with patch.dict(os.environ, {"KIMI_CODE_HOME": kimi_home.as_posix()}):
+                entry = update.register_installation(
+                    registry,
+                    host="Kimi-Code",
+                    method_pack_root=root,
+                    sync_mode="junction",
+                )
+
+            self.assertEqual(entry["host"], "kimi-code")
+            self.assertEqual(entry["syncMode"], "junction")
+            self.assertEqual(entry["discoveryShape"], "direct-child")
+            self.assertEqual(
+                entry["discoveryRoot"],
+                (kimi_home / "skills").resolve().as_posix(),
+            )
+
     def test_sync_skills_creates_direct_child_links_for_zcode_junction(self):
         with tempfile.TemporaryDirectory(prefix="aegis-update-zcode-links-") as tmp:
             method_pack_root = Path(tmp) / "method-pack"
@@ -348,6 +370,30 @@ class AegisUpdateRegistryTests(unittest.TestCase):
                     (discovery_root / skill / "SKILL.md").read_text(encoding="utf-8"),
                     f"# {skill}\n",
                 )
+
+    def test_legacy_kimi_entry_uses_native_default_discovery_root(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-kimi-legacy-") as tmp:
+            method_pack_root = Path(tmp) / "method-pack"
+            kimi_home = Path(tmp) / "kimi-home"
+            self.make_method_pack_with_skills(method_pack_root, ["using-aegis"])
+            sync_mode = "junction" if os.name == "nt" else "symlink"
+            entry = {
+                "id": "kimi:default",
+                "host": "kimi",
+                "methodPackRoot": method_pack_root.as_posix(),
+                "syncMode": sync_mode,
+            }
+
+            with patch.dict(os.environ, {"KIMI_CODE_HOME": kimi_home.as_posix()}):
+                self.assertEqual(
+                    update.doctor_discovery_root(entry),
+                    (kimi_home / "skills").resolve().as_posix(),
+                )
+                update.sync_skills(entry)
+
+            self.assertTrue(
+                (kimi_home / "skills" / "using-aegis" / "SKILL.md").is_file()
+            )
 
     def test_sync_skills_creates_prefixed_direct_child_links(self):
         with tempfile.TemporaryDirectory(prefix="aegis-update-prefixed-links-") as tmp:
@@ -438,6 +484,49 @@ class AegisUpdateRegistryTests(unittest.TestCase):
 
             self.assertEqual(result["status"], "registered")
             self.assertEqual(result["discoveryShape"], "direct-child")
+            self.assertTrue(result["verified"])
+            sync_skills.assert_called_once()
+            run_doctor.assert_called_once()
+
+    def test_command_register_syncs_and_verifies_kimi_installation(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-kimi-register-") as tmp:
+            parser = update.build_parser()
+            registry = Path(tmp) / "installations.json"
+            root = Path(tmp) / "method-pack"
+            kimi_home = Path(tmp) / "kimi-home"
+            args = parser.parse_args(
+                [
+                    "register",
+                    "--registry",
+                    registry.as_posix(),
+                    "--host",
+                    "kimi-code",
+                    "--method-pack-root",
+                    root.as_posix(),
+                    "--sync-mode",
+                    "junction",
+                ]
+            )
+
+            with patch.dict(os.environ, {"KIMI_CODE_HOME": kimi_home.as_posix()}):
+                with patch.object(update, "sync_skills") as sync_skills, patch.object(
+                    update, "run_doctor"
+                ) as run_doctor:
+                    sync_skills.return_value = "junction: direct-child links current"
+                    run_doctor.return_value = {
+                        "ok": True,
+                        "workspaceSupport": "available",
+                        "configStatus": "configured",
+                    }
+                    result = update.command_register(args)
+
+            self.assertEqual(result["status"], "registered")
+            self.assertEqual(result["host"], "kimi-code")
+            self.assertEqual(result["discoveryShape"], "direct-child")
+            self.assertEqual(
+                result["discoveryRoot"],
+                (kimi_home / "skills").resolve().as_posix(),
+            )
             self.assertTrue(result["verified"])
             sync_skills.assert_called_once()
             run_doctor.assert_called_once()

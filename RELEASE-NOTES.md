@@ -1,5 +1,69 @@
 # Aegis Release Notes
 
+## v2.3.2 (2026-07-02)
+
+### Aegis Visibility Non-Omission
+
+- Hardened `using-aegis` so non-trivial loaded Aegis skills must surface one
+  natural visibility sentence at the first substantive user-visible stage.
+- Hardened `verification-before-completion` so concise final answers still keep
+  one task-specific Aegis closeout sentence tied to boundary, evidence, or
+  residual risk.
+- Updated the process and workflow-quality baselines to treat after-the-fact
+  visibility explanations as recovery, not as a substitute for required entry
+  visibility and final closeout.
+- Added workflow-quality fixture coverage for loaded-skill entry visibility and
+  compressed final answers that must preserve Aegis visibility.
+
+### Kimi Code CLI Native Host Support
+
+- Added a dedicated Kimi Code CLI install guide through native Agent Skills
+  discovery at `$KIMI_CODE_HOME/skills/<skill-name>/SKILL.md`, with
+  `~/.kimi-code/skills` as the default when `KIMI_CODE_HOME` is unset.
+- Retired the old Kimi-as-Codex-umbrella assumption as the canonical path;
+  `~/.agents/skills/` remains documented only as Kimi's official shared
+  compatibility fallback.
+- Updated `aegis-update.py` so `kimi`, `kimi-code`, and `kimi-code-cli` default
+  to `direct-child` discovery, infer the native Kimi discovery root, and perform
+  register-time sync plus doctor verification for direct-child sync modes.
+- Added compatibility handling for legacy Kimi registry entries without an
+  explicit `discoveryRoot`, using Kimi's native default root instead of failing
+  the update path.
+- Added a Kimi host boundary e2e check and wired it into the Layer 1 fast check
+  suite.
+
+### Documentation And Host Matrix
+
+- Added `docs/README.kimi-code.md` and linked it from the root READMEs, current
+  authority map, release checklist, install verification policy, activation
+  mode policy, and goal-framing policy.
+- Updated the host compatibility matrix and known limitations so Kimi remains a
+  structural host target until a fresh live Kimi Code CLI smoke proves runtime
+  skill discovery after restart.
+- Updated `update-aegis` skill guidance with the Kimi direct-child registration
+  example.
+
+### Verification
+
+- Fresh checks passed:
+  `bash scripts/bump-version.sh --check`,
+  `python tests/helpers/test_aegis_update.py`,
+  `python -m py_compile scripts/aegis-update.py tests/helpers/test_aegis_update.py`,
+  `python tests/helpers/validate_workflow_quality_matrix.py tests/e2e/fixtures/workflow-quality-matrix.json`,
+  `bash tests/e2e/kimi-code-host-boundary-check.sh`,
+  `bash tests/e2e/workflow-quality-check.sh`,
+  `bash tests/e2e/install-verification-policy-check.sh`,
+  `bash tests/e2e/activation-mode-check.sh`,
+  `bash tests/e2e/goal-framing-check.sh`,
+  `bash tests/e2e/layer1-fast-check.sh --host-profile none`, and
+  `git diff --check`.
+
+### Release Surface
+
+- Bumped declared package and host manifest versions from `2.3.1` to `2.3.2`.
+- This release still ships `Aegis Method Pack (runtime-ready)`. It does not add
+  authoritative `GateDecision`, `PolicySnapshot`, or `completion authority`.
+
 ## v2.3.1 (2026-07-02)
 
 ### Owner-Workflow Aegis Visibility

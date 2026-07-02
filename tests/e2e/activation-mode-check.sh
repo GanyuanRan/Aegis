@@ -194,6 +194,10 @@ assert_contains "docs/README.qoder.md" "AEGIS_ACTIVATION_MODE=explicit" \
     "Qoder guide documents explicit activation caveat"
 assert_contains "docs/README.qoder.md" "does not override Qoder" \
     "Qoder guide clarifies activation mode does not control native matcher"
+assert_contains "docs/README.kimi-code.md" "AEGIS_ACTIVATION_MODE=explicit|activation-mode explicit" \
+    "Kimi Code CLI guide documents explicit activation caveat"
+assert_contains "docs/README.kimi-code.md" "does not override Kimi Code CLI" \
+    "Kimi Code CLI guide clarifies activation mode does not control native matcher"
 assert_contains "docs/README.pi.md" "AEGIS_ACTIVATION_MODE=explicit" \
     "Pi guide documents explicit activation caveat"
 assert_contains "docs/README.pi.md" "does not override Pi" \

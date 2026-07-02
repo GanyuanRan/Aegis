@@ -44,6 +44,7 @@ host_docs=(
     "docs/README.trae.md"
     "docs/README.copilot.md"
     "docs/README.qoder.md"
+    "docs/README.kimi-code.md"
     "docs/README.antigravity.md"
     "docs/README.pi.md"
     "docs/README.openclaw.md"

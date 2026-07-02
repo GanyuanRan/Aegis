@@ -92,11 +92,12 @@ The following host documentation must be re-read before release:
 8. `docs/README.qoder.md`
 9. `docs/README.antigravity.md`
 10. `docs/README.cc-gui.md`
-11. `docs/README.pi.md`
-12. `docs/README.openclaw.md`
-13. `docs/README.hermes-agent.md`
-14. `docs/README.zcode.md`
-15. `docs/testing.md`
+11. `docs/README.kimi-code.md`
+12. `docs/README.pi.md`
+13. `docs/README.openclaw.md`
+14. `docs/README.hermes-agent.md`
+15. `docs/README.zcode.md`
+16. `docs/testing.md`
 
 Confirm:
 
@@ -113,6 +114,10 @@ Confirm:
   owned by Aegis
 - Qoder is still described through native `~/.qoder/skills/`, `.qoder/skills/`,
   `.qoder/rules/`, and `AGENTS.md` surfaces, not as a fresh live smoke closeout
+- Kimi Code CLI is described through native `$KIMI_CODE_HOME/skills/`
+  (`~/.kimi-code/skills/` by default) direct-child skill discovery, while
+  `~/.agents/skills/` remains a fallback rather than the Codex umbrella main
+  path
 - Antigravity CLI is described as the current active closeout target, while
   Antigravity IDE and Antigravity App remain structural target surfaces until
   they have separate fresh evidence

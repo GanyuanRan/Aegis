@@ -357,6 +357,9 @@ Pass criteria:
 
 - non-trivial skill use starts with an `Aegis Reason Note` that explains why
   Aegis is shaping the task and what quality risk it reduces
+- Aegis Visibility Non-Omission Rule: when an Aegis skill is loaded and the task is not an obvious tiny fast-path, the first substantive user-visible stage must include one natural Aegis Visibility sentence naming why Aegis is shaping the task and what quality risk it reduces
+- final closeouts for non-trivial Aegis-shaped work must keep one natural Aegis Visibility sentence; concise final answers are not reasons to drop this slot
+- if the user asks after the fact why Aegis was not visible, the answer is a recovery path and not a substitute for the required entry visibility and final closeout
 - task-owning workflows expose an `Aegis Visibility` semantic slot when Aegis
   materially changes the work: design-first restraint in `brainstorming`,
   owner / contract / verification pressure in `writing-plans`, root-cause and
@@ -466,6 +469,9 @@ Pass criteria:
   required slots auditable
 - natural transition sentences may satisfy Aegis visibility when they name the
   owner / baseline read, failing example, minimum repair, and verification path
+- natural expression may be concise, but it must not erase non-omittable
+  semantic slots; for non-trivial loaded-skill work, entry visibility and final
+  closeout are required even when no fixed heading is used
 - completion output may use a compact `Governance Receipt` that groups evidence,
   covered scope, uncovered scope, residual risk, confidence, and triggered
   governance closure

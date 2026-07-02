@@ -46,6 +46,7 @@ The current snapshot is based on fresh evidence and current docs landed as of
 | `Trae` | Native `SKILL.md` discovery supports manual installation; no current release-level fresh smoke verdict | `docs/README.trae.md` established; evidence from Trae skills docs; real host regression still deferred |
 | `GitHub Copilot` | Supports repository skills, instructions, and hooks; no current release-level fresh smoke verdict | `docs/README.copilot.md` established; evidence from GitHub Copilot agent skills, repository instructions, and hooks docs; Aegis exposes repository skills as `.github/skills/aegis-<skill-name>/SKILL.md`, verified as a prefixed direct-child compatibility view, but real host regression is still deferred |
 | `Qoder` | Native `SKILL.md` discovery and rules surfaces support structural install; no current release-level fresh smoke verdict | `docs/README.qoder.md` established; evidence from Qoder skills and rules docs, but real host regression is still deferred |
+| `Kimi Code CLI` | Native Agent Skills discovery supports Kimi-specific user roots plus shared skill roots; no current release-level fresh smoke verdict | `docs/README.kimi-code.md` established; official Kimi docs list `$KIMI_CODE_HOME/skills/` (`~/.kimi-code/skills/` by default) and `~/.agents/skills/` as user-level roots, plus `.kimi-code/skills/` and `.agents/skills/` as project roots; Aegis now recommends updater-managed direct-child exposure under the Kimi native user root while retaining `~/.agents/skills/` only as a compatibility fallback |
 | `Cursor` | Has `.cursor/INSTALL.md` install guide; no current release-level fresh smoke verdict | Structural goal established; not yet entered the current host regression slice |
 | `Windsurf` | Has `.windsurf/INSTALL.md` install guide; no current release-level fresh smoke verdict | Structural goal established; not yet entered the current host regression slice |
 | `Antigravity CLI` | Active closeout target; no current release-level fresh smoke verdict | Google positions Antigravity CLI as the successor terminal surface with the `agy` executable, plugin/skills management, migration import from Gemini CLI, and documented plugin discovery for skills and agents from installed plugin directories in the public `1.0.1` changelog; the public `1.0.8` changelog also adds dynamic custom-skill discovery improvements. Aegis now has a dedicated `tests/antigravity/run-tests.sh` lane, but the method-pack install / discovery contract still needs fresh local verification |
@@ -66,7 +67,6 @@ The current snapshot is based on fresh evidence and current docs landed as of
 
 | Host | Current Status | Rationale |
 | --- | --- | --- |
-| `Kimi Code CLI` | Minimal install prompt suffices; no independent adapter needed | Kimi Code CLI natively auto-discovers `.agents/skills/` (same path as Codex); Aegis Codex installation is Kimi installation |
 | `Warp` | No independent adapter needed | As a terminal host, Warp runs third-party CLI agents (Claude Code / Codex / OpenCode) and does not provide its own skills system |
 
 ### 3.4 Trigger-Family Vocabulary
@@ -90,7 +90,7 @@ The current snapshot only states:
 
 1. `Codex` and `OpenCode` are the two mainlines with the most fresh evidence
    - `OpenCode` now prefers the configured `method_pack_root` as its canonical Aegis source when available, then generates the host-visible skills view from that source instead of treating the host cache as a second editable owner
-2. `Kimi Code CLI` reuses the Codex path (`.agents/skills/`); Aegis takes effect via a minimal install prompt
+2. `Kimi Code CLI` can expose Aegis through updater-maintained direct-child skill discovery under `$KIMI_CODE_HOME/skills/` (`~/.kimi-code/skills/` by default); `~/.agents/skills/` remains an official shared fallback, but the Codex umbrella `~/.agents/skills/aegis` path is no longer the Kimi canonical Aegis path
 3. `CC GUI (JetBrains IDEA)` can expose Aegis to its OpenAI/GPT provider path through direct `~/.agents/skills/<skill-name>/SKILL.md` directories, but the selected GPT model profile does not by itself change the skill discovery shape, and live IDE plugin behavior, reload behavior, and `Tool: exec_command` rendering remain fresh-smoke pending
 4. `CodeBuddy` can install Aegis via `.codebuddy-plugin/` or native `SKILL.md` discovery, but local CLI live smoke has not yet formed valid evidence
 5. `DeepSeek-TUI` can manually install Aegis skills via native `SKILL.md` discovery, but `/skill install github:GanyuanRan/Aegis` is not the current canonical path
@@ -134,14 +134,15 @@ When reading the current host verdict, follow this order:
 8. `docs/README.trae.md`
 9. `docs/README.copilot.md`
 10. `docs/README.qoder.md`
-11. `docs/README.antigravity.md`
-12. `tests/antigravity/*`
-13. `docs/README.pi.md`
-14. `docs/README.openclaw.md`
-15. `docs/README.hermes-agent.md`
-16. `.windsurf/INSTALL.md`
-17. `.cursor/INSTALL.md`
-18. `docs/README.zcode.md`
+11. `docs/README.kimi-code.md`
+12. `docs/README.antigravity.md`
+13. `tests/antigravity/*`
+14. `docs/README.pi.md`
+15. `docs/README.openclaw.md`
+16. `docs/README.hermes-agent.md`
+17. `.windsurf/INSTALL.md`
+18. `.cursor/INSTALL.md`
+19. `docs/README.zcode.md`
 
 ---
 

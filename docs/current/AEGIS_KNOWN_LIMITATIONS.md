@@ -544,7 +544,47 @@ request.
 
 ---
 
-### 2.22 ZCode Structural Support Is Not Yet Fresh Host Closeout
+### 2.22 Kimi Code CLI Structural Support Is Not Yet Fresh Host Closeout
+
+**Retained Item**
+- Kimi Code CLI is a structural host target, not a release-level fresh smoke
+  verdict
+- The generic `~/.agents/skills/` Kimi scan root is retained only as an
+  official fallback, not as the Aegis Kimi canonical install path
+
+**Retention Reason**
+- Official Kimi Code CLI Agent Skills docs list user-level skill roots as
+  `$KIMI_CODE_HOME/skills/` (`~/.kimi-code/skills/` by default) and
+  `~/.agents/skills/`. They also list project-level `.kimi-code/skills/` and
+  `.agents/skills/`.
+- Kimi's own user-level skill root follows `KIMI_CODE_HOME`, which makes it the
+  correct Kimi-specific Aegis exposure surface when users isolate Kimi data.
+- Aegis is a multi-skill method pack. For Kimi-specific installs, expose
+  individual skills as `$KIMI_CODE_HOME/skills/<skill-name>/SKILL.md` rather
+  than relying on the Codex umbrella symlink
+  `~/.agents/skills/aegis -> ~/.codex/aegis/skills`.
+- The method-pack `skills/` tree remains the canonical source of truth. Kimi
+  skill directories are generated host-visible links, not a second editable
+  skill owner.
+
+**Observation Metric**
+- `docs/README.kimi-code.md`
+- `bash tests/e2e/kimi-code-host-boundary-check.sh`
+- `cd <aegis-method-pack-root> && python scripts/aegis-update.py register --host kimi-code --sync-mode junction --json`
+  uses `$KIMI_CODE_HOME/skills` or `~/.kimi-code/skills` as the default
+  discovery root, performs register-time direct-child link creation, writes the
+  host registry entry, and runs method-pack-side doctor verification
+- Release-level live Kimi Code CLI smoke is still required to prove skill
+  discovery after restart and current hot-path loading inside the running host
+
+**Retirement Trigger**
+- When Kimi Code CLI has a verified install/update path that proves both skill
+  discovery and project workspace support without turning Aegis into an
+  authoritative runtime core
+
+---
+
+### 2.23 ZCode Structural Support Is Not Yet Fresh Host Closeout
 
 **Retained Item**
 - ZCode is a structural host target, not release-level fresh smoke verdict

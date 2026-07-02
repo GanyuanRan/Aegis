@@ -212,12 +212,20 @@ assert_contains "$baseline" "scope: requirements | architecture | both" \
     "workflow quality baseline includes defect drift scope taxonomy"
 assert_contains "$baseline" "Aegis Invocation Visibility" \
     "workflow quality baseline includes Aegis invocation visibility"
+assert_contains "$baseline" "Aegis Visibility Non-Omission Rule" \
+    "workflow quality baseline defines non-omittable Aegis visibility"
 assert_contains "$baseline" "Aegis Reason Note" \
     "workflow quality baseline defines natural Aegis reason note"
 assert_contains "$baseline" "Aegis Visibility" \
     "workflow quality baseline defines owner-workflow Aegis visibility slot"
 assert_contains "$baseline" "why Aegis is shaping" \
     "workflow quality baseline explains why Aegis is shaping the task"
+assert_contains "$baseline" "first substantive.*Aegis Visibility|Aegis Visibility.*first substantive" \
+    "workflow quality baseline requires entry visibility at first substantive stage"
+assert_contains "$baseline" "final.*concise.*not.*drop|concise.*not.*drop.*final|not reasons to drop this slot" \
+    "workflow quality baseline forbids dropping final visibility for concision"
+assert_contains "$baseline" "user asks.*recovery path.*not a substitute|recovery path.*not a substitute" \
+    "workflow quality baseline treats after-the-fact explanation as recovery only"
 assert_contains "$baseline" "structured trace.*audit.*debug.*release.*long-task review.*user request|audit.*debug.*release.*long-task review.*user request.*structured trace" \
     "workflow quality baseline reserves structured trace for audit or requested cases"
 assert_contains "$baseline" "Trace Digest" \
@@ -289,6 +297,8 @@ assert_contains "$process_doc" "dual-baseline.*bootstrap template|Do not regress
     "process baseline distinguishes bootstrap baselines from flat repo inventory"
 assert_contains "$process_doc" "Aegis Reason Note" \
     "process baseline references natural Aegis reason note"
+assert_contains "$process_doc" "non-trivial loaded-skill visibility" \
+    "process baseline protects loaded-skill visibility from compression"
 assert_contains "$process_doc" "structured trace.*audit.*debug.*release.*long-task review.*user request|audit.*debug.*release.*long-task review.*user request.*structured trace" \
     "process baseline reserves structured trace for audit or requested cases"
 
@@ -311,6 +321,10 @@ assert_contains "skills/using-aegis/SKILL.md" "Aegis Reason Note" \
     "using-aegis exposes natural Aegis reason note"
 assert_contains "skills/using-aegis/SKILL.md" "why Aegis is shaping" \
     "using-aegis explains why Aegis is shaping the next step"
+assert_contains "skills/using-aegis/SKILL.md" "first substantive.*user-visible stage|user-visible stage.*first substantive" \
+    "using-aegis requires entry visibility before substantive work"
+assert_contains "skills/using-aegis/SKILL.md" "do not wait.*user.*ask|user.*ask.*where Aegis was used" \
+    "using-aegis forbids delayed visibility readback"
 assert_contains "skills/using-aegis/SKILL.md" "structured trace.*audit.*debug.*release.*long-task review.*asked|audit.*debug.*release.*long-task review.*asked.*structured trace" \
     "using-aegis reserves structured trace for audit or requested cases"
 assert_contains "skills/using-aegis/SKILL.md" "Trace Digest" \
@@ -491,6 +505,10 @@ assert_contains "skills/verification-before-completion/SKILL.md" "Governance Rec
     "verification skill defines governance receipt closeout"
 assert_contains "skills/verification-before-completion/SKILL.md" "natural.*semantic slots|semantic slots.*natural" \
     "verification skill treats natural expression as valid when semantic slots are present"
+assert_contains "skills/verification-before-completion/SKILL.md" "final.*concise.*not.*drop|concise final answers still keep one natural Aegis sentence" \
+    "verification skill keeps Aegis closeout in concise finals"
+assert_contains "skills/verification-before-completion/SKILL.md" "used-skills list" \
+    "verification skill rejects used-skills list as visibility substitute"
 assert_contains "skills/verification-before-completion/SKILL.md" "one sentence" \
     "verification skill keeps Aegis closeout concise by default"
 assert_contains "skills/verification-before-completion/SKILL.md" "hold one boundary steady" \

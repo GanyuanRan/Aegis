@@ -23,6 +23,8 @@ VALID_SYNC_MODES = {"junction", "symlink", "copy-skills", "plugin-managed", "rep
 VALID_UPDATE_MODES = {"manual", "auto", "disabled"}
 VALID_DISCOVERY_SHAPES = {"umbrella-root", "direct-child", "host-managed", "none"}
 COPY_DISCOVERY_KEY_SKILLS = ("using-aegis", "update-aegis", "verification-before-completion")
+KIMI_HOST_ALIASES = {"kimi", "kimi-code", "kimi-code-cli"}
+REGISTER_TIME_SYNC_MODES = {"junction", "symlink", "copy-skills"}
 
 
 class UpdateError(Exception):
@@ -131,9 +133,26 @@ def default_discovery_shape(sync_mode: str) -> str:
     return "umbrella-root"
 
 
+def is_kimi_host(host: str | None) -> bool:
+    return (host or "").strip().lower() in KIMI_HOST_ALIASES
+
+
+def default_kimi_discovery_root() -> Path:
+    kimi_home = os.environ.get("KIMI_CODE_HOME")
+    if kimi_home:
+        return Path(kimi_home).expanduser() / "skills"
+    return Path.home() / ".kimi-code" / "skills"
+
+
+def default_discovery_root_for_host(host: str | None) -> Path | None:
+    if is_kimi_host(host):
+        return default_kimi_discovery_root()
+    return None
+
+
 def default_discovery_shape_for_host(host: str | None, sync_mode: str) -> str:
     normalized_host = host.strip().lower() if host else ""
-    if normalized_host == "zcode":
+    if normalized_host == "zcode" or is_kimi_host(normalized_host):
         return "direct-child"
     return default_discovery_shape(sync_mode)
 
@@ -178,6 +197,26 @@ def entry_discovery_name_prefix(entry: dict[str, Any], shape: str | None = None)
     return prefix
 
 
+def entry_discovery_root(entry: dict[str, Any]) -> str | None:
+    discovery_root = entry.get("discoveryRoot")
+    if discovery_root:
+        return discovery_root
+    default_root = default_discovery_root_for_host(entry.get("host"))
+    if default_root:
+        return default_root.expanduser().resolve().as_posix()
+    return None
+
+
+def should_sync_and_verify_at_register(entry: dict[str, Any]) -> bool:
+    sync_mode = entry.get("syncMode", "repo-only")
+    shape = normalized_discovery_shape(
+        entry.get("discoveryShape"),
+        sync_mode,
+        entry.get("host"),
+    )
+    return shape == "direct-child" and sync_mode in REGISTER_TIME_SYNC_MODES
+
+
 def register_installation(
     registry_path: Path,
     *,
@@ -205,6 +244,9 @@ def register_installation(
     name_prefix = normalize_discovery_name_prefix(discovery_name_prefix)
     if name_prefix and shape != "direct-child":
         raise UpdateError("discovery_name_prefix requires direct-child discovery_shape")
+    effective_discovery_root = discovery_root or default_discovery_root_for_host(
+        normalized_host
+    )
 
     root = Path(method_pack_root).expanduser().resolve()
     helper = (
@@ -225,8 +267,10 @@ def register_installation(
         "reloadHint": reload_hint or default_reload_hint(normalized_host),
         "lastRegisteredAt": utc_now(),
     }
-    if discovery_root:
-        entry["discoveryRoot"] = Path(discovery_root).expanduser().resolve().as_posix()
+    if effective_discovery_root:
+        entry["discoveryRoot"] = (
+            Path(effective_discovery_root).expanduser().resolve().as_posix()
+        )
     if name_prefix:
         entry["discoveryNamePrefix"] = name_prefix
 
@@ -379,7 +423,7 @@ def ensure_direct_child_links(entry: dict[str, Any]) -> str:
     if shape != "direct-child" or sync_mode not in {"junction", "symlink"}:
         return f"{sync_mode}: no direct-child link step required"
 
-    discovery_root = entry.get("discoveryRoot")
+    discovery_root = entry_discovery_root(entry)
     if not discovery_root:
         raise UpdateError("direct-child junction/symlink sync requires discoveryRoot")
 
@@ -445,7 +489,7 @@ def sync_skills(entry: dict[str, Any]) -> str:
     if sync_mode != "copy-skills":
         raise UpdateError(f"Unsupported syncMode: {sync_mode}")
 
-    discovery_root = entry.get("discoveryRoot")
+    discovery_root = entry_discovery_root(entry)
     if not discovery_root:
         raise UpdateError("copy-skills sync requires discoveryRoot")
 
@@ -479,7 +523,7 @@ def sync_skills(entry: dict[str, Any]) -> str:
 
 
 def doctor_discovery_root(entry: dict[str, Any]) -> str | None:
-    discovery_root = entry.get("discoveryRoot")
+    discovery_root = entry_discovery_root(entry)
     if not discovery_root:
         return None
     shape = normalized_discovery_shape(
@@ -508,7 +552,7 @@ def doctor_discovery_name_prefix(entry: dict[str, Any]) -> str | None:
 def verify_copy_discovery_root(entry: dict[str, Any]) -> None:
     if entry.get("syncMode") != "copy-skills":
         return
-    discovery_root = entry.get("discoveryRoot")
+    discovery_root = entry_discovery_root(entry)
     if not discovery_root:
         raise UpdateError("copy-skills sync requires discoveryRoot")
     root = Path(discovery_root)
@@ -827,13 +871,18 @@ def command_register(args: argparse.Namespace) -> Any:
         args.sync_mode,
         normalized_host,
     )
+    effective_discovery_root = args.discovery_root
+    if not effective_discovery_root:
+        default_discovery_root = default_discovery_root_for_host(normalized_host)
+        if default_discovery_root:
+            effective_discovery_root = default_discovery_root.as_posix()
     discovery_name_prefix = normalize_discovery_name_prefix(args.discovery_name_prefix)
     if discovery_name_prefix and requested_shape != "direct-child":
         raise UpdateError("--discovery-name-prefix requires --discovery-shape direct-child")
     if (
         requested_shape == "direct-child"
         and args.sync_mode in {"junction", "symlink", "copy-skills"}
-        and not args.discovery_root
+        and not effective_discovery_root
     ):
         raise UpdateError("direct-child sync registration requires --discovery-root")
 
@@ -842,7 +891,9 @@ def command_register(args: argparse.Namespace) -> Any:
         host=args.host,
         install_id=args.install_id,
         method_pack_root=Path(args.method_pack_root),
-        discovery_root=Path(args.discovery_root) if args.discovery_root else None,
+        discovery_root=(
+            Path(effective_discovery_root) if effective_discovery_root else None
+        ),
         workspace_helper=Path(args.workspace_helper) if args.workspace_helper else None,
         sync_mode=args.sync_mode,
         discovery_shape=args.discovery_shape,
@@ -851,7 +902,7 @@ def command_register(args: argparse.Namespace) -> Any:
         update_mode=args.update_mode,
         reload_hint=args.reload_hint,
     )
-    if entry.get("host") != "zcode":
+    if not should_sync_and_verify_at_register(entry):
         return entry
 
     sync_result = sync_skills(entry)
