@@ -62,6 +62,10 @@ Semantic Slots:
 - Governance Receipt is the compact closeout form for Aegis-shaped non-trivial
   work. It names the boundary held, evidence, covered and uncovered scope,
   residual risk, confidence, and any triggered governance closure.
+- Aegis Visibility in this workflow ties the final claim to the boundary held,
+  evidence discipline added, and residual risk or uncovered scope kept visible.
+  If another owner workflow already surfaced visibility earlier, reconcile that
+  trail in the closeout instead of replacing it with a used-skills list.
 - Trace Digest is the on-demand white-box closeout for audit, debug, release,
   long-task review, or explicit user request. It summarizes execution trace,
   evidence chain, retrieval chain, static rules evaluated, rule effects,

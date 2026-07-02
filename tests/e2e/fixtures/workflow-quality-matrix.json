@@ -618,6 +618,17 @@
       "verificationSignal": "aegis-invocation-visibility-aegis-reason-note-why-aegis-is-shaping-task-natural-stage-transition-natural-boundary-closeout-structured-trace-reserved-advisory-not-authority"
     },
     {
+      "id": "aegis-invocation-visibility-owner-workflows",
+      "prompt": "A non-trivial Aegis-guided workstream passes through goal framing, design, planning, TDD, plan execution, review, ADR consideration, cleanup, resume, and completion. Make each owner workflow show its own Aegis contribution naturally instead of hiding it in debugging or verification.",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": ["goal-framing", "writing-plans", "test-driven-development", "executing-plans", "long-task-continuation", "requesting-code-review", "recording-architecture-decisions", "anti-entropy-governance", "verification-before-completion"],
+      "mustNotDo": ["centralize-visibility-in-debugging-only", "centralize-visibility-in-verification-only", "default-to-used-skills-log", "treat-visibility-as-runtime-authority"],
+      "expectedOutputShape": "owner-workflow-aegis-visibility-with-natural-stage-specific-rationale",
+      "workspacePolicy": "workspace-only-when-owner-workflow-needs-persistent-evidence",
+      "expectedArtifacts": ["TaskIntentDraft", "BaselineReadSetHint", "ImpactStatementDraft", "EvidenceBundleDraft"],
+      "verificationSignal": "owner-workflow-aegis-visibility-goal-framing-brainstorming-writing-plans-systematic-debugging-test-driven-development-executing-plans-long-task-continuation-requesting-code-review-recording-architecture-decisions-anti-entropy-governance-verification-before-completion-natural-not-used-skills-log-advisory-not-authority"
+    },
+    {
       "id": "aegis-semantic-slots-natural-surface",
       "prompt": "I want to implement this with Aegis guidance, but say it naturally: first read the owner/baseline and current implementation, then add a failing generator main-path example, then make the minimal repair and verify.",
       "expectedPrimarySkill": "systematic-debugging",
@@ -829,16 +840,16 @@
   ],
   "compactOutputContracts": {
     "using-aegis": ["Route", "Aegis Reason Note", "ArchitectureReviewRequired", "Why", "Next"],
-    "goal-framing": ["Goal", "Success evidence", "Stop condition", "Non-goals", "Route", "Next", "Continuation"],
-    "brainstorming": ["TaskIntentDraft", "BaselineReadSetHint", "BaselineUsageDraft", "ImpactStatementDraft", "Product Risk Lens", "Existence Check", "Architecture Integrity Lens", "Baseline Role Alignment", "Complexity Budget", "Plan-Time Complexity Check", "Options", "Decision Needed"],
-    "writing-plans": ["Plan Basis", "BaselineUsageDraft", "Files", "Compatibility", "Change Necessity", "Existence Check", "Architecture Integrity Lens", "Plan Pressure Test", "Complexity Budget", "Plan-Time Complexity Check", "Tasks", "Risks", "Retirement"],
-    "systematic-debugging": ["Symptom", "Reproduction", "Root Cause", "Layer Stop Card", "Pre-Claim Gate", "Topology Card", "Change Necessity", "Fix Boundary", "Minimality Check", "Existence Check", "Pre-Edit Complexity Check", "Verification"],
-    "test-driven-development": ["TDD Route", "Preflight Gate", "Change Necessity", "Complexity Budget", "Pre-Edit Complexity Check", "RED", "GREEN", "REFACTOR", "Regression Scope"],
-    "anti-entropy-governance": ["Anti-Entropy Declaration", "Retirement Decision", "Verification Plan", "Gap Closure", "Data Destruction Guard"],
-    "requesting-code-review": ["Findings First", "Evidence Review", "Baseline / Current Authority", "Baseline Role Alignment", "Compatibility / Retirement", "Review Readiness"],
-    "recording-architecture-decisions": ["Decision Candidate", "ADR Gate", "Retro / Memory Filter", "ADR Action", "Owner Surface", "Baseline Sync", "Boundary"],
-    "verification-before-completion": ["evidence-action", "verification-result", "covered-scope", "uncovered-scope", "residual-risk", "confidence-grade", "Goal status", "Success evidence", "Stop state", "Non-goals respected", "Readiness Summary", "Natural Aegis closeout", "Semantic Slots", "Natural Surface", "Governance Receipt", "Trace Digest", "Complexity Delta", "Complexity Closure", "Complexity Governance Suggestion", "Major Complexity Alert", "Baseline Alignment", "Architecture Alignment", "ADR Backfill Check", "Retirement Closure", "Anti-Entropy Declaration", "Data Destruction Guard"],
-    "long-task-continuation": ["TodoCheckpointDraft", "BaselineUsageDraft", "Slice Card", "Evidence", "DriftCheckDraft", "Risk / Unknown", "Next"],
-    "executing-plans": ["Plan Review", "Todo", "Change Necessity", "Complexity Budget", "Pre-Edit Complexity Check", "Verification", "Checkpoint"]
+    "goal-framing": ["Aegis Visibility", "Goal", "Success evidence", "Stop condition", "Non-goals", "Route", "Next", "Continuation"],
+    "brainstorming": ["Aegis Visibility", "TaskIntentDraft", "BaselineReadSetHint", "BaselineUsageDraft", "ImpactStatementDraft", "Product Risk Lens", "Existence Check", "Architecture Integrity Lens", "Baseline Role Alignment", "Complexity Budget", "Plan-Time Complexity Check", "Options", "Decision Needed"],
+    "writing-plans": ["Aegis Visibility", "Plan Basis", "BaselineUsageDraft", "Files", "Compatibility", "Change Necessity", "Existence Check", "Architecture Integrity Lens", "Plan Pressure Test", "Complexity Budget", "Plan-Time Complexity Check", "Tasks", "Risks", "Retirement"],
+    "systematic-debugging": ["Aegis Visibility", "Symptom", "Reproduction", "Root Cause", "Layer Stop Card", "Pre-Claim Gate", "Topology Card", "Change Necessity", "Fix Boundary", "Minimality Check", "Existence Check", "Pre-Edit Complexity Check", "Verification"],
+    "test-driven-development": ["Aegis Visibility", "TDD Route", "Preflight Gate", "Change Necessity", "Complexity Budget", "Pre-Edit Complexity Check", "RED", "GREEN", "REFACTOR", "Regression Scope"],
+    "anti-entropy-governance": ["Aegis Visibility", "Anti-Entropy Declaration", "Retirement Decision", "Verification Plan", "Gap Closure", "Data Destruction Guard"],
+    "requesting-code-review": ["Aegis Visibility", "Findings First", "Evidence Review", "Baseline / Current Authority", "Baseline Role Alignment", "Compatibility / Retirement", "Review Readiness"],
+    "recording-architecture-decisions": ["Aegis Visibility", "Decision Candidate", "ADR Gate", "Retro / Memory Filter", "ADR Action", "Owner Surface", "Baseline Sync", "Boundary"],
+    "verification-before-completion": ["Aegis Visibility", "evidence-action", "verification-result", "covered-scope", "uncovered-scope", "residual-risk", "confidence-grade", "Goal status", "Success evidence", "Stop state", "Non-goals respected", "Readiness Summary", "Natural Aegis closeout", "Semantic Slots", "Natural Surface", "Governance Receipt", "Trace Digest", "Complexity Delta", "Complexity Closure", "Complexity Governance Suggestion", "Major Complexity Alert", "Baseline Alignment", "Architecture Alignment", "ADR Backfill Check", "Retirement Closure", "Anti-Entropy Declaration", "Data Destruction Guard"],
+    "long-task-continuation": ["Aegis Visibility", "TodoCheckpointDraft", "BaselineUsageDraft", "Slice Card", "Evidence", "DriftCheckDraft", "Risk / Unknown", "Next"],
+    "executing-plans": ["Aegis Visibility", "Plan Review", "Todo", "Change Necessity", "Complexity Budget", "Pre-Edit Complexity Check", "Verification", "Checkpoint"]
   }
 }

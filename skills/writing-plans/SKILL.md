@@ -77,12 +77,17 @@ If the input is a Spec Brief, keep the plan scoped to the pinned
 what/why/acceptance and do not expand into a formal design unless new
 architecture, contract, migration, or cross-module uncertainty appears.
 
-Compact output contract before writing the plan: `Plan Basis`,
+Compact output contract before writing the plan: `Aegis Visibility`, `Plan Basis`,
 `BaselineUsageDraft`, `Requirement Ready Check`, `Files`, `Compatibility`,
 `Change Necessity`, `Existence Check`, `Architecture Integrity Lens`,
 `Plan Pressure Test`, `Plan-Time Complexity Check`, `Tasks`, `Risks`, and
 `Retirement`. Expand only where the approved scope, risk, or verification
 surface requires it.
+
+`Aegis Visibility` for this workflow states which owner, contract, retirement,
+compatibility, or verification pressure makes planning useful before execution.
+Use one natural sentence for ordinary plans; reserve structured trace for audit,
+debug, release, long-task review, or explicit user request.
 
 Use a compact `BaselineUsageDraft` whenever the plan depends on specific
 baseline docs or current-authority refs:

@@ -1,5 +1,61 @@
 # Aegis Release Notes
 
+## v2.3.1 (2026-07-02)
+
+### Owner-Workflow Aegis Visibility
+
+- Added an `Aegis Visibility` semantic slot for task-owning workflows so
+  non-trivial Aegis-shaped work can show why Aegis changed the decision path
+  without falling back to a generic used-skills log.
+- Distributed visibility across goal framing, brainstorming, planning,
+  systematic debugging, TDD, plan execution, first-principles review,
+  long-task continuation, code review, ADR recording, anti-entropy governance,
+  and verification.
+- Kept `using-aegis` route-only and preserved `Trace Digest` as an on-demand
+  audit/debug/release/long-task surface rather than default ceremony.
+
+### Workflow Quality Baseline
+
+- Updated `AEGIS_WORKFLOW_QUALITY_BASELINE.md` and
+  `AEGIS_PROCESS_BASELINE.md` so `Aegis Visibility` is owned by the active
+  workflow and remains advisory method-pack discipline.
+- Added an `executing-plans` compact contract to the workflow quality baseline,
+  covering plan review, active todo, change necessity, complexity budget,
+  pre-edit complexity, verification, and checkpoint evidence.
+- Clarified that natural visibility may satisfy the governance surface when it
+  names the task-specific boundary, evidence discipline, or residual risk that
+  Aegis kept visible.
+
+### Skill Coverage
+
+- Updated owner workflow skills to expose task-specific visibility:
+  `goal-framing`, `brainstorming`, `writing-plans`,
+  `systematic-debugging`, `test-driven-development`, `executing-plans`,
+  `first-principles-review`, `long-task-continuation`,
+  `requesting-code-review`, `recording-architecture-decisions`,
+  `anti-entropy-governance`, and `verification-before-completion`.
+- Preserved fast-path cheapness: tiny work can remain implicit unless the user
+  asks why Aegis did or did not shape the task.
+
+### Verification
+
+- Fresh checks passed:
+  `bash scripts/bump-version.sh 2.3.1`,
+  `python tests/helpers/validate_workflow_quality_matrix.py tests/e2e/fixtures/workflow-quality-matrix.json`,
+  `python -m py_compile tests/helpers/validate_workflow_quality_matrix.py`,
+  `python tests/helpers/test_parse_codex_skills.py`,
+  `bash tests/e2e/workflow-quality-check.sh`,
+  `bash tests/e2e/boundary-compliance-check.sh`,
+  `bash tests/e2e/trigger-health-check.sh`,
+  `bash tests/e2e/layer1-fast-check.sh --host-profile none`, and
+  `git diff --check`.
+
+### Release Surface
+
+- Bumped declared package and host manifest versions from `2.3.0` to `2.3.1`.
+- This release still ships `Aegis Method Pack (runtime-ready)`. It does not add
+  authoritative `GateDecision`, `PolicySnapshot`, or `completion authority`.
+
 ## v2.3.0 (2026-07-01)
 
 ### Default English README

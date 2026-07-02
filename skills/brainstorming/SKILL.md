@@ -67,12 +67,17 @@ acknowledged-before-plan refs, cited refs, missing refs, advisory decision),
 and `ImpactStatementDraft` (affected layers, owners, invariants, compat,
 non-goals). Refresh when scope changes.
 
-**Compact output contract:** `TaskIntentDraft`, `BaselineReadSetHint`,
+**Compact output contract:** `Aegis Visibility`, `TaskIntentDraft`, `BaselineReadSetHint`,
 `BaselineUsageDraft`, `Requirement Ready Check`, `ImpactStatementDraft`,
 `Existence Check`, `Product Risk Lens`, `Architecture Integrity Lens`,
 `Baseline Role Alignment`, `Plan-Time Complexity Check`, `Options`, and
 `Decision Needed`. Use this compact shape before expanding into a full design
 structure.
+
+`Aegis Visibility` for this workflow names why design/spec clarification comes
+before implementation and what drift, overbuild, wrong-owner, or missing
+acceptance risk that restraint reduces. Keep it natural and task-specific; do
+not turn it into a fixed skill trace.
 
 Use a compact `BaselineUsageDraft` whenever the design direction depends on
 specific baseline docs or current-authority refs:

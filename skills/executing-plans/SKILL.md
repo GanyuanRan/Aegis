@@ -11,6 +11,12 @@ Load plan, review critically, execute all tasks, report when complete.
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
+For non-trivial plan execution, include `Aegis Visibility` in natural prose:
+name why Aegis is keeping the current slice tied to the approved plan,
+checkpoint, drift check, pre-edit governance, or verification boundary. This
+visibility belongs to the active execution workflow; do not replace it with a
+generic used-skills log.
+
 **Note:** Tell your human partner that Aegis works much better with access to subagents. The quality of its work will be significantly higher if run on a platform with subagent support (such as Claude Code or Codex). If subagents are available, use aegis:subagent-driven-development instead of this skill.
 
 ## The Process

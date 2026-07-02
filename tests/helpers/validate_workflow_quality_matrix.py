@@ -55,6 +55,7 @@ EXPECTED_IDS = {
     "architecture-integrity-higher-level-path",
     "baseline-role-alignment-review",
     "aegis-invocation-visibility-natural",
+    "aegis-invocation-visibility-owner-workflows",
     "aegis-semantic-slots-natural-surface",
     "trace-digest-white-box-requested",
     "completion-governance-receipt-natural",
@@ -116,6 +117,7 @@ REQUIRED_CONTRACTS = {
 
 CONTRACT_REQUIREMENTS = {
     "verification-before-completion": [
+        "Aegis Visibility",
         "evidence-action",
         "verification-result",
         "covered-scope",
@@ -143,6 +145,7 @@ CONTRACT_REQUIREMENTS = {
         "Trace Digest",
     ],
     "systematic-debugging": [
+        "Aegis Visibility",
         "Layer Stop Card",
         "Change Necessity",
         "Existence Check",
@@ -152,20 +155,23 @@ CONTRACT_REQUIREMENTS = {
         "Minimality Check",
     ],
     "test-driven-development": [
+        "Aegis Visibility",
         "Change Necessity",
         "Pre-Edit Complexity Check",
         "TDD Route",
         "Complexity Budget",
     ],
     "anti-entropy-governance": [
+        "Aegis Visibility",
         "Anti-Entropy Declaration",
         "Retirement Decision",
         "Verification Plan",
         "Gap Closure",
         "Data Destruction Guard",
     ],
-    "executing-plans": ["Change Necessity", "Pre-Edit Complexity Check", "Complexity Budget"],
+    "executing-plans": ["Aegis Visibility", "Change Necessity", "Pre-Edit Complexity Check", "Complexity Budget"],
     "brainstorming": [
+        "Aegis Visibility",
         "BaselineUsageDraft",
         "Existence Check",
         "Plan-Time Complexity Check",
@@ -175,6 +181,7 @@ CONTRACT_REQUIREMENTS = {
         "Baseline Role Alignment",
     ],
     "writing-plans": [
+        "Aegis Visibility",
         "Change Necessity",
         "Existence Check",
         "Plan-Time Complexity Check",
@@ -183,6 +190,7 @@ CONTRACT_REQUIREMENTS = {
         "Architecture Integrity Lens",
     ],
     "recording-architecture-decisions": [
+        "Aegis Visibility",
         "Decision Candidate",
         "ADR Gate",
         "ADR Action",
@@ -192,9 +200,9 @@ CONTRACT_REQUIREMENTS = {
         "Retro / Memory Filter",
     ],
     "using-aegis": ["ArchitectureReviewRequired", "Aegis Reason Note"],
-    "goal-framing": ["Stop condition", "Continuation"],
-    "long-task-continuation": ["DriftCheckDraft", "Slice Card"],
-    "requesting-code-review": ["Findings First", "Baseline Role Alignment"],
+    "goal-framing": ["Aegis Visibility", "Stop condition", "Continuation"],
+    "long-task-continuation": ["Aegis Visibility", "DriftCheckDraft", "Slice Card"],
+    "requesting-code-review": ["Aegis Visibility", "Findings First", "Baseline Role Alignment"],
 }
 
 SAMPLE_RULES: dict[str, dict[str, Any]] = {
@@ -567,6 +575,43 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
             "structured-trace-reserved",
             "advisory-not-authority",
         ],
+    },
+    "aegis-invocation-visibility-owner-workflows": {
+        "primary": "brainstorming",
+        "allowed": [
+            "goal-framing",
+            "writing-plans",
+            "test-driven-development",
+            "executing-plans",
+            "long-task-continuation",
+            "requesting-code-review",
+            "recording-architecture-decisions",
+            "anti-entropy-governance",
+            "verification-before-completion",
+        ],
+        "must_not": [
+            "centralize-visibility-in-debugging-only",
+            "centralize-visibility-in-verification-only",
+            "default-to-used-skills-log",
+            "treat-visibility-as-runtime-authority",
+        ],
+        "signals": [
+            "owner-workflow-aegis-visibility",
+            "goal-framing",
+            "brainstorming",
+            "writing-plans",
+            "systematic-debugging",
+            "test-driven-development",
+            "executing-plans",
+            "long-task-continuation",
+            "requesting-code-review",
+            "recording-architecture-decisions",
+            "anti-entropy-governance",
+            "verification-before-completion",
+            "natural-not-used-skills-log",
+            "advisory-not-authority",
+        ],
+        "shapes": ["owner-workflow-aegis-visibility"],
     },
     "aegis-semantic-slots-natural-surface": {
         "primary": "systematic-debugging",

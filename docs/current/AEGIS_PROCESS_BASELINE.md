@@ -97,6 +97,11 @@ Root improvement rule:
   can see why Aegis is shaping the next step. Keep structured trace for audit, debug, release, long-task review, or user request; use `Trace Digest` for the compact white-box summary.
   Trace summarizes observed execution, evidence, rule effects, and verification
   with redaction; it does not expose raw internal reasoning or become authority.
+- Keep `Aegis Visibility` owned by the active workflow: design, planning,
+  debugging, TDD, execution, review, ADR, long-task, and anti-entropy flows
+  should each expose the task-specific boundary or evidence discipline they add
+  instead of hiding all visibility in debugging, verification, or a generic
+  used-skills log.
 - Scale output depth by task complexity and risk.
 - Prefer compact output contracts over broad template expansion.
 - Apply the Micro-Slice Artifact Budget when long tasks split into many tiny

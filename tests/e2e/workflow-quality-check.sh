@@ -214,6 +214,8 @@ assert_contains "$baseline" "Aegis Invocation Visibility" \
     "workflow quality baseline includes Aegis invocation visibility"
 assert_contains "$baseline" "Aegis Reason Note" \
     "workflow quality baseline defines natural Aegis reason note"
+assert_contains "$baseline" "Aegis Visibility" \
+    "workflow quality baseline defines owner-workflow Aegis visibility slot"
 assert_contains "$baseline" "why Aegis is shaping" \
     "workflow quality baseline explains why Aegis is shaping the task"
 assert_contains "$baseline" "structured trace.*audit.*debug.*release.*long-task review.*user request|audit.*debug.*release.*long-task review.*user request.*structured trace" \
@@ -321,6 +323,24 @@ assert_not_contains "skills/using-aegis/SKILL.md" "Stage handoff" \
     "using-aegis avoids stiff stage handoff wording"
 assert_contains "skills/using-aegis/SKILL.md" "ArchitectureReviewRequired" \
     "using-aegis marks architecture review required signal"
+
+for skill_file in \
+    "skills/goal-framing/SKILL.md" \
+    "skills/brainstorming/SKILL.md" \
+    "skills/writing-plans/SKILL.md" \
+    "skills/systematic-debugging/SKILL.md" \
+    "skills/test-driven-development/SKILL.md" \
+    "skills/first-principles-review/SKILL.md" \
+    "skills/executing-plans/SKILL.md" \
+    "skills/long-task-continuation/SKILL.md" \
+    "skills/requesting-code-review/SKILL.md" \
+    "skills/recording-architecture-decisions/SKILL.md" \
+    "skills/anti-entropy-governance/SKILL.md" \
+    "skills/verification-before-completion/SKILL.md"; do
+    assert_contains "$skill_file" "Aegis Visibility" \
+        "$skill_file exposes owner-workflow Aegis visibility"
+done
+
 assert_contains "skills/goal-framing/SKILL.md" "TaskIntentDraft" \
     "goal-framing exposes task intent goal frame"
 assert_contains "skills/brainstorming/SKILL.md" "Compact output contract" \

@@ -357,6 +357,17 @@ Pass criteria:
 
 - non-trivial skill use starts with an `Aegis Reason Note` that explains why
   Aegis is shaping the task and what quality risk it reduces
+- task-owning workflows expose an `Aegis Visibility` semantic slot when Aegis
+  materially changes the work: design-first restraint in `brainstorming`,
+  owner / contract / verification pressure in `writing-plans`, root-cause and
+  canonical-owner discipline in `systematic-debugging`, TDD route and
+  regression boundary in `test-driven-development`, plan checkpoint and drift
+  control in `executing-plans`, directional principle / falsifier clarity in
+  `first-principles-review`, stop-condition and route clarity in
+  `goal-framing`, resume / drift visibility in `long-task-continuation`,
+  findings-first review focus in `requesting-code-review`, executed-decision
+  filtering in `recording-architecture-decisions`, and retirement / deletion
+  safety in `anti-entropy-governance`
 - stage changes use a natural transition sentence when the task moves from
   diagnosis to repair, planning to implementation, implementation to
   verification, review to follow-up, or resume to drift check
@@ -449,6 +460,8 @@ Pass criteria:
 
 - required governance checks are treated as `Semantic Slots`, not rigid English
   headings
+- `Aegis Visibility` is a semantic slot owned by the active workflow, not a
+  mandatory fixed heading, a global skill log, or a replacement for evidence
 - a `Natural Surface` is valid when the user-facing prose still makes the
   required slots auditable
 - natural transition sentences may satisfy Aegis visibility when they name the
@@ -580,6 +593,7 @@ Purpose:
 Compact contract:
 
 ```text
+Aegis Visibility: why design/spec comes before implementation and what drift or overbuild risk this prevents
 TaskIntentDraft: outcome, scope, risk hints
 BaselineReadSetHint: candidate docs, missing authority
 BaselineUsageDraft: required refs, acknowledged refs, cited refs, missing refs, decision
@@ -608,6 +622,7 @@ Compact contract:
 
 ```text
 TaskIntentDraft: requested outcome, goal, success evidence, stop condition, non-goals
+Aegis Visibility: why the goal frame constrains route, stop condition, and non-goals without becoming trace ceremony
 Route: fast-path | <skill-name> | needs-baseline-readback
 Next: next smallest safe action
 Continuation: continue into the routed workflow by default
@@ -642,6 +657,7 @@ Compact contract:
 
 ```text
 Plan Basis: approved requirement/spec refs
+Aegis Visibility: which owner, contract, retirement, or verification pressure makes planning useful before execution
 BaselineUsageDraft: required baseline refs, acknowledged refs, cited refs, missing refs, decision
 Planless Slice Lane: use Slice Card when an existing parent plan/spec already owns the tiny slice
 Files: owners and edit boundaries
@@ -669,6 +685,7 @@ Purpose:
 Compact contract:
 
 ```text
+Aegis Visibility: how root-cause, canonical-owner, patch-shape, and verification discipline changed the repair path
 Symptom: observed failure
 Reproduction: command/input and result
 Root Cause: evidence-backed owner and cause
@@ -708,6 +725,7 @@ Purpose:
 Compact contract:
 
 ```text
+Aegis Visibility: why the route is strict, light, or skipped and what RED/GREEN does and does not prove
 TDD Route: mode, decision, reason, verification
 Preflight Gate: low | route-to-plan | route-to-spec
 Change Necessity: user-visible need, no-change / non-code option, why code change, minimum boundary, decision
@@ -732,6 +750,7 @@ Purpose:
 Compact contract:
 
 ```text
+Aegis Visibility: why findings-first review, evidence sufficiency, baseline alignment, or retirement risk matters for this review
 Findings First: Critical, Important, Minor findings before summary
 Evidence Review: supplied evidence, unsupported claims, missing proof
 Baseline / Current Authority: refs checked, drift or defect distinction
@@ -759,6 +778,7 @@ Required evidence semantic slots:
 - uncovered scope
 - residual risk
 - confidence grade: A | B | C
+Aegis Visibility: boundary held, evidence discipline added, and residual risk or uncovered scope kept visible
 Semantic Slots: required governance fields may appear as localized headings,
 natural prose, or compact cards when they remain explicit and auditable
 Natural Surface: natural user-facing wording is valid when it preserves the
@@ -938,6 +958,7 @@ Purpose:
 Compact contract:
 
 ```text
+Aegis Visibility: why retirement, compatibility retention, or confirmation-first safety shaped the work
 Anti-Entropy Declaration: deletion class, preserved vs retired behavior, source-of-truth risk, confirmation need
 Retirement Decision: delete-first | compat-exception | confirmation-first, why, non-edits
 Verification Plan: main-path, lingering-reference, negative, boundary checks
@@ -960,6 +981,7 @@ Purpose:
 Compact contract:
 
 ```text
+Aegis Visibility: why checkpoint, resume, drift, or handoff discipline is shaping this long task
 TodoCheckpointDraft: current todo, completed todos, active slice, next step
 BaselineUsageDraft: required refs, acknowledged refs, cited refs, missing refs, decision
 Slice Card: goal, parent plan/spec, files, boundary, verification, stop
@@ -973,6 +995,31 @@ Low-complexity tasks skip `work/`. Micro-slices reuse the parent plan/spec and
 update the existing long-task checkpoint/evidence trail instead of creating
 per-slice plan or spec files.
 
+### 4.7a `executing-plans`
+
+Purpose:
+
+- execute an approved plan while preserving checkpoint, drift, pre-edit, and
+  verification discipline
+
+Compact contract:
+
+```text
+Aegis Visibility: why the active slice is constrained by the approved plan, checkpoint, drift check, pre-edit governance, or verification boundary
+Plan Review: concerns, blockers, or proceed decision
+Todo: active task, completed tasks, next task
+Change Necessity: inherited from plan or compactly recreated before new source-code paths
+Complexity Budget: planned pressure and governance for the active edit
+Pre-Edit Complexity Check: safer edit boundary and pause condition
+Verification: commands, scope, and result for the slice
+Checkpoint: TodoCheckpointDraft, DriftCheckDraft, evidence refs
+```
+
+This workflow executes a plan; it does not redesign without cause and does not
+grant completion authority. If the active slice contradicts the plan's owner,
+complexity, or verification boundary, return to plan review instead of pushing
+through.
+
 ### 4.8 `recording-architecture-decisions`
 
 Purpose:
@@ -983,6 +1030,7 @@ Purpose:
 Compact contract:
 
 ```text
+Aegis Visibility: why executed-decision filtering, ADR gate, owner surface, or baseline sync matters now
 Decision Candidate: summary and evidence source
 ADR Gate: hard to reverse / surprising without context / real trade-off
 Retro / Memory Filter: executed durable decision | unexecuted idea | process note

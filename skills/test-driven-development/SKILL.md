@@ -53,6 +53,11 @@ Exceptions (ask your human partner): throwaway prototypes, generated code, confi
 Before source edits, decide:
 
 ```text
+Aegis Visibility:
+- Why this TDD route is strict, light, or skipped:
+- What RED/GREEN proves:
+- What still needs verification:
+
 TDD Route:
 - Mode: auto | off
 - Decision: strict | light | skipped
@@ -72,6 +77,9 @@ still apply, and risky work may still justify recommending strict TDD.
 If this skill was loaded anyway without an explicit TDD request or a visible
 `TDD Route: strict` marker, exit instead of improvising an automatic strict
 route from risk words alone.
+
+Keep `Aegis Visibility` task-specific: explain the route decision and the
+regression boundary, not a generic claim that TDD was used.
 
 ## Preflight Gate
 

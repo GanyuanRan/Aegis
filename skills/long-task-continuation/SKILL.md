@@ -251,6 +251,8 @@ Method Pack output is verified evidence and advisory judgment only. It is not au
 
 Use this shape for long-task updates:
 
+- `Aegis Visibility`: why checkpoint, resume, drift, handoff, or parent-plan
+  discipline is shaping the next step
 - `TodoCheckpointDraft`: current todo, completed todos, active slice, next step
 - `BaselineUsageDraft`: required refs, acknowledged refs, cited refs, missing refs, decision
 - `Evidence`: commands, files, logs, or manual checks
