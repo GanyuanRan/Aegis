@@ -491,15 +491,24 @@ or handoff-prone work.
 
 ---
 
-## 14. Final Output Shape
+## 14. Final Output Ordering
 
-Aegis user-facing output should prioritize:
+Aegis user-facing output should usually present evidence-backed facts before
+interpretation, and interpretation before recommendations, decisions, or
+completion claims:
 
 ```text
 Facts -> Inferences -> Conclusions
 ```
 
-The minimum output includes:
+This is an ordering principle, not a mandatory top-level template. It must not
+override workflow-owned semantic slots or task-specific output contracts such
+as findings-first code review, verification evidence slots, readiness summaries,
+governance closure, `Execution Readiness View`, `Aegis Visibility`, or
+on-demand `Trace Digest`.
+
+For non-trivial tasks, keep the attention anchors that make the relevant logic
+auditable:
 
 - Facts
 - Evidence

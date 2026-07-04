@@ -468,6 +468,11 @@ answer look like an internal process log.
 
 Pass criteria:
 
+- `Facts -> Inferences -> Conclusions` is an ordering principle, not a
+  mandatory top-level response template
+- required output content acts as an attention anchor for the code, contract,
+  evidence, or governance logic it names; preserve that attention without
+  stealing structural ownership from the active workflow
 - required governance checks are treated as `Semantic Slots`, not rigid English
   headings
 - `Aegis Visibility` is a semantic slot owned by the active workflow, not a

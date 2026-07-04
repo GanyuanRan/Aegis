@@ -166,6 +166,18 @@ assert_contains "$baseline" "Complexity Governance Suggestion" \
     "workflow quality baseline includes complexity governance suggestion"
 assert_contains "$baseline" "AEGIS_COMPLEXITY_GOVERNANCE_BASELINE" \
     "workflow quality baseline points to complexity governance baseline"
+assert_contains "docs/current/AEGIS_WORKFLOW_GUIDE.md" "Final Output Ordering" \
+    "English workflow guide frames final output as ordering"
+assert_contains "docs/current/AEGIS_WORKFLOW_GUIDE.md" "ordering principle, not a mandatory top-level template" \
+    "English workflow guide does not make facts-inferences-conclusions a rigid template"
+assert_contains "docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md" "最终输出排序" \
+    "Chinese workflow guide frames final output as ordering"
+assert_contains "docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md" "信息排序原则，不是强制顶层模板" \
+    "Chinese workflow guide does not make facts-inferences-conclusions a rigid template"
+assert_contains "$baseline" "attention anchor" \
+    "workflow quality baseline treats required output content as attention anchors"
+assert_contains "$baseline" "stealing structural ownership from the active workflow" \
+    "workflow quality baseline preserves active workflow output ownership"
 assert_contains "$baseline" "Retirement Closure" \
     "workflow quality baseline includes retirement closure"
 assert_contains "$baseline" "Anti-Entropy Declaration" \

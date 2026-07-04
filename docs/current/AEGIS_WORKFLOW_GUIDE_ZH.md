@@ -460,15 +460,21 @@ baseline 记录当前架构状态。
 
 ---
 
-## 14. 最终输出形态
+## 14. 最终输出排序
 
-Aegis 面向用户的输出优先使用中文，并遵循：
+Aegis 面向用户的输出优先使用中文。通常应先给出有证据支撑的事实，再给出
+解释性推论，最后给出建议、决策或完成结论：
 
 ```text
 事实 -> 推论 -> 结论
 ```
 
-最小输出应包含：
+这是信息排序原则，不是强制顶层模板。它不得覆盖 workflow 自己拥有的
+semantic slots 或任务专属输出契约，例如 findings-first code review、验证证据
+槽、readiness summary、governance closure、`Execution Readiness View`、
+`Aegis Visibility` 或按需 `Trace Digest`。
+
+对于非平凡任务，应保留能迫使 agent 关注相关逻辑的注意力锚点：
 
 - Facts
 - Evidence

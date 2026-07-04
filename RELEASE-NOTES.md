@@ -1,5 +1,56 @@
 # Aegis Release Notes
 
+## v2.3.4 (2026-07-04)
+
+### Final Output Ordering
+
+- Reframed `Facts -> Inferences -> Conclusions` as a user-facing ordering
+  principle instead of a mandatory top-level response template.
+- Updated the English and Chinese workflow guides so final answers present
+  evidence-backed facts before interpretation, and interpretation before
+  recommendations, decisions, or completion claims.
+- Clarified that the ordering principle must not override workflow-owned
+  semantic slots or task-specific output contracts such as findings-first code
+  review, verification evidence slots, readiness summaries, governance closure,
+  `Execution Readiness View`, `Aegis Visibility`, or on-demand `Trace Digest`.
+
+### Attention Anchors
+
+- Added workflow-quality baseline language explaining that required output
+  content acts as an attention anchor for the code, contract, evidence, or
+  governance logic it names.
+- Preserved the useful pressure created by required output content while
+  preventing generic response structure from stealing structural ownership from
+  the active workflow.
+
+### Regression Coverage
+
+- Added workflow-quality e2e assertions that protect the new ordering language
+  in both workflow guides.
+- Added baseline checks that ensure required output content remains an
+  attention anchor and does not replace active workflow ownership.
+
+### Verification
+
+- Fresh checks passed:
+  `bash scripts/bump-version.sh --check`,
+  `bash tests/e2e/workflow-quality-check.sh`,
+  `bash tests/e2e/boundary-compliance-check.sh`,
+  `bash tests/e2e/artifact-schema-check.sh`,
+  `bash tests/e2e/governance-completion-contract-check.sh`,
+  `bash tests/e2e/context-budget-check.sh`,
+  `bash tests/e2e/layer1-fast-check.sh --host-profile none`,
+  `bash tests/e2e/run-all.sh --full --host-profile fast`,
+  `python tests/helpers/test_parse_codex_skills.py`,
+  `python -m pytest tests/helpers -q`, and
+  `git diff --check`.
+
+### Release Surface
+
+- Bumped declared package and host manifest versions from `2.3.3` to `2.3.4`.
+- This release still ships `Aegis Method Pack (runtime-ready)`. It does not add
+  authoritative `GateDecision`, `PolicySnapshot`, or `completion authority`.
+
 ## v2.3.3 (2026-07-04)
 
 ### Execution Readiness View
