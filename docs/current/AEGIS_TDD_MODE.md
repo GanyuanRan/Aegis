@@ -15,6 +15,18 @@ core.
 The default mode is:
 
 ```toml
+tdd_mode = "off"
+```
+
+`off` disables automatic TDD routing by default. It does not delete tests,
+prevent explicit user or project TDD requests, or weaken
+`verification-before-completion`. Users can still manually request TDD in the
+query with explicit markers such as `TDD Route: strict`, `strict TDD`,
+`test-first`, or `RED / GREEN / REFACTOR`.
+
+Users can enable automatic TDD routing when they want it:
+
+```toml
 tdd_mode = "auto"
 ```
 
@@ -29,15 +41,6 @@ Route decisions are `strict`, `light`, and `skipped`.
 - `skipped`: do not use TDD because the task is read-only, docs-only,
   generated, throwaway exploratory work, or otherwise not a code behavior
   implementation.
-
-The optional mode is:
-
-```toml
-tdd_mode = "off"
-```
-
-`off` disables automatic TDD routing. It does not delete tests, prevent explicit
-user or project TDD requests, or weaken `verification-before-completion`.
 
 On hosts that rely on native skill discovery rather than an Aegis bootstrap
 router, `off` does not by itself override the host's own semantic matcher.
@@ -94,14 +97,16 @@ python scripts/aegis-doctor.py tdd-mode off
 Temporary environment override:
 
 ```bash
+AEGIS_TDD_MODE=auto opencode
+AEGIS_TDD_MODE=auto claude
+# or explicitly keep the default disabled state:
 AEGIS_TDD_MODE=off opencode
-AEGIS_TDD_MODE=off claude
 ```
 
 PowerShell:
 
 ```powershell
-$env:AEGIS_TDD_MODE = "off"
+$env:AEGIS_TDD_MODE = "auto"
 opencode
 # or: claude
 ```
@@ -110,7 +115,7 @@ Read priority:
 
 1. `AEGIS_TDD_MODE`
 2. `~/.config/aegis/config.toml`
-3. Default `auto`
+3. Default `off`
 
 Restart, reload, or open a new host session after changing the mode. Existing
 host sessions usually do not inherit changed environment variables or config.

@@ -129,7 +129,7 @@ def normalized_activation_mode(value: str | None) -> str:
 
 
 def normalized_tdd_mode(value: str | None) -> str:
-    return value if value in {"auto", "off"} else "auto"
+    return value if value in {"auto", "off"} else "off"
 
 
 def existing_activation_mode(path: Path) -> str:

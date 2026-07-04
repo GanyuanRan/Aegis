@@ -246,10 +246,10 @@
       "expectedPrimarySkill": "test-driven-development",
       "allowedSecondarySkills": ["writing-plans", "verification-before-completion"],
       "mustNotDo": ["write-production-code-before-pre-edit-complexity-check", "stuff-logic-into-overloaded-file", "skip-owner-fit-readback"],
-      "expectedOutputShape": "tdd-preflight-plus-pre-edit-complexity-check-red-green-refactor",
+      "expectedOutputShape": "tdd-preflight-plus-pre-edit-complexity-check-owner-fit-red-green-refactor",
       "workspacePolicy": "no-workspace-unless-complexity-escalates-to-plan-update",
       "expectedArtifacts": [],
-      "verificationSignal": "pre-edit-complexity-check-target-edit-file-existing-pressure-signal-owner-fit-safer-edit-boundary-decision"
+      "verificationSignal": "pre-edit-complexity-check-target-edit-file-existing-pressure-signal-pre-edit-owner-fit-decision-edit-intent-new-responsibility-boundary-owner-fit-safer-edit-boundary-decision"
     },
     {
       "id": "pre-edit-complexity-check-debugging-fix",
@@ -257,10 +257,10 @@
       "expectedPrimarySkill": "systematic-debugging",
       "allowedSecondarySkills": ["test-driven-development", "writing-plans", "verification-before-completion"],
       "mustNotDo": ["apply-fix-before-pre-edit-complexity-check", "add-guard-to-bloated-handler-without-boundary-check", "skip-plan-update-when-owner-pressure-changes"],
-      "expectedOutputShape": "root-cause-fix-boundary-pre-edit-complexity-check-and-verification",
+      "expectedOutputShape": "root-cause-fix-boundary-pre-edit-complexity-check-owner-fit-and-verification",
       "workspacePolicy": "workspace-if-medium-risk-or-plan-update-needed",
       "expectedArtifacts": ["EvidenceBundleDraft"],
-      "verificationSignal": "pre-edit-complexity-check-canonical-owner-existing-pressure-signal-safer-edit-boundary-decision"
+      "verificationSignal": "pre-edit-complexity-check-canonical-owner-existing-pressure-signal-pre-edit-owner-fit-decision-edit-intent-new-responsibility-boundary-safer-edit-boundary-decision"
     },
     {
       "id": "tdd-auto-small-task-light-verification",
@@ -286,14 +286,14 @@
     },
     {
       "id": "tdd-off-no-automatic-tdd",
-      "prompt": "TDD mode is off. Make a small implementation edit and verify it, but do not automatically force TDD unless I explicitly ask for it.",
+      "prompt": "TDD mode defaults to off. Make a small implementation edit and verify it, but do not automatically force TDD unless I explicitly ask for it.",
       "expectedPrimarySkill": null,
       "allowedSecondarySkills": ["verification-before-completion"],
       "mustNotDo": ["auto-trigger-tdd", "treat-off-as-skip-verification", "skip-verification-before-completion", "delete-tests-because-tdd-is-off"],
       "expectedOutputShape": "implementation-with-tdd-route-off-and-evidence-slots",
       "workspacePolicy": "no-workspace-unless-risk-escalates",
       "expectedArtifacts": [],
-      "verificationSignal": "tdd-route-off-no-automatic-tdd-fresh-completion-evidence"
+      "verificationSignal": "tdd-default-off-no-automatic-tdd-fresh-completion-evidence"
     },
     {
       "id": "tdd-off-native-host-risky-code-no-explicit-tdd",
@@ -367,10 +367,10 @@
       "expectedPrimarySkill": "verification-before-completion",
       "allowedSecondarySkills": ["requesting-code-review"],
       "mustNotDo": ["treat-maintained-test-file-as-cheap-exception", "skip-major-complexity-alert", "claim-complete-with-exceeded-unresolved-budget"],
-      "expectedOutputShape": "evidence-slots-plus-complexity-delta-complexity-closure-and-major-complexity-alert",
+      "expectedOutputShape": "evidence-slots-plus-complexity-delta-complexity-closure-completion-time-complexity-repair-decision-and-major-complexity-alert",
       "workspacePolicy": "check-workspace-if-docs-aegis-was-touched",
       "expectedArtifacts": ["EvidenceBundleDraft"],
-      "verificationSignal": "maintained-test-file-complexity-delta-complexity-closure-major-complexity-alert-not-complete-or-needs-follow-up"
+      "verificationSignal": "maintained-test-file-complexity-delta-complexity-closure-completion-time-complexity-repair-decision-major-complexity-alert-not-complete-or-needs-follow-up"
     },
     {
       "id": "artifact-complexity-budget-plan-sprawl",
@@ -865,13 +865,13 @@
     "goal-framing": ["Aegis Visibility", "Goal", "Success evidence", "Stop condition", "Non-goals", "Route", "Next", "Continuation"],
     "brainstorming": ["Aegis Visibility", "TaskIntentDraft", "BaselineReadSetHint", "BaselineUsageDraft", "ImpactStatementDraft", "Product Risk Lens", "Existence Check", "Architecture Integrity Lens", "Baseline Role Alignment", "Complexity Budget", "Plan-Time Complexity Check", "Options", "Decision Needed"],
     "writing-plans": ["Aegis Visibility", "Plan Basis", "BaselineUsageDraft", "Files", "Compatibility", "Change Necessity", "Existence Check", "Architecture Integrity Lens", "Plan Pressure Test", "Complexity Budget", "Plan-Time Complexity Check", "Execution Readiness View", "Tasks", "Risks", "Retirement"],
-    "systematic-debugging": ["Aegis Visibility", "Symptom", "Reproduction", "Root Cause", "Layer Stop Card", "Pre-Claim Gate", "Topology Card", "Change Necessity", "Fix Boundary", "Minimality Check", "Existence Check", "Pre-Edit Complexity Check", "Verification"],
-    "test-driven-development": ["Aegis Visibility", "TDD Route", "Preflight Gate", "Change Necessity", "Complexity Budget", "Pre-Edit Complexity Check", "RED", "GREEN", "REFACTOR", "Regression Scope"],
+    "systematic-debugging": ["Aegis Visibility", "Symptom", "Reproduction", "Root Cause", "Layer Stop Card", "Pre-Claim Gate", "Topology Card", "Change Necessity", "Fix Boundary", "Minimality Check", "Existence Check", "Pre-Edit Complexity Check", "Pre-Edit Owner-Fit Decision", "Verification"],
+    "test-driven-development": ["Aegis Visibility", "TDD Route", "Preflight Gate", "Change Necessity", "Complexity Budget", "Pre-Edit Complexity Check", "Pre-Edit Owner-Fit Decision", "RED", "GREEN", "REFACTOR", "Regression Scope"],
     "anti-entropy-governance": ["Aegis Visibility", "Anti-Entropy Declaration", "Retirement Decision", "Verification Plan", "Gap Closure", "Data Destruction Guard"],
     "requesting-code-review": ["Aegis Visibility", "Findings First", "Evidence Review", "Baseline / Current Authority", "Baseline Role Alignment", "Compatibility / Retirement", "Review Readiness"],
     "recording-architecture-decisions": ["Aegis Visibility", "Decision Candidate", "ADR Gate", "Retro / Memory Filter", "ADR Action", "Owner Surface", "Baseline Sync", "Boundary"],
-    "verification-before-completion": ["Aegis Visibility", "evidence-action", "verification-result", "covered-scope", "uncovered-scope", "residual-risk", "confidence-grade", "Goal status", "Success evidence", "Stop state", "Non-goals respected", "Readiness Summary", "Execution Readiness View", "Natural Aegis closeout", "Semantic Slots", "Natural Surface", "Governance Receipt", "Trace Digest", "Complexity Delta", "Complexity Closure", "Complexity Governance Suggestion", "Major Complexity Alert", "Baseline Alignment", "Architecture Alignment", "ADR Backfill Check", "Retirement Closure", "Anti-Entropy Declaration", "Data Destruction Guard"],
+    "verification-before-completion": ["Aegis Visibility", "evidence-action", "verification-result", "covered-scope", "uncovered-scope", "residual-risk", "confidence-grade", "Goal status", "Success evidence", "Stop state", "Non-goals respected", "Readiness Summary", "Execution Readiness View", "Natural Aegis closeout", "Semantic Slots", "Natural Surface", "Governance Receipt", "Trace Digest", "Complexity Delta", "Complexity Closure", "Completion-Time Complexity Repair Decision", "Complexity Governance Suggestion", "Major Complexity Alert", "Baseline Alignment", "Architecture Alignment", "ADR Backfill Check", "Retirement Closure", "Anti-Entropy Declaration", "Data Destruction Guard"],
     "long-task-continuation": ["Aegis Visibility", "TodoCheckpointDraft", "BaselineUsageDraft", "Slice Card", "Execution Readiness View", "Evidence", "DriftCheckDraft", "Risk / Unknown", "Next"],
-    "executing-plans": ["Aegis Visibility", "Plan Review", "Todo", "Change Necessity", "Complexity Budget", "Pre-Edit Complexity Check", "Execution Readiness View", "Verification", "Checkpoint"]
+    "executing-plans": ["Aegis Visibility", "Plan Review", "Todo", "Change Necessity", "Complexity Budget", "Pre-Edit Complexity Check", "Pre-Edit Owner-Fit Decision", "Execution Readiness View", "Verification", "Checkpoint"]
   }
 }

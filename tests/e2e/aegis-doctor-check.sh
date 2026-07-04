@@ -63,7 +63,7 @@ assert_contains "$TEXT_OUT" "using-aegis-hot-path-current: ok" "doctor verifies 
 assert_contains "$TEXT_OUT" "Trigger health baseline:" "doctor text mode reports trigger health baseline"
 assert_contains "$TEXT_OUT" "Trigger health layers:" "doctor text mode reports trigger health layers"
 assert_contains "$CONFIG_PATH" "activation_mode = \"auto\"" "doctor writes activation mode"
-assert_contains "$CONFIG_PATH" "tdd_mode = \"auto\"" "doctor writes TDD mode"
+assert_contains "$CONFIG_PATH" "tdd_mode = \"off\"" "doctor writes default off TDD mode"
 assert_contains "$CONFIG_PATH" "method_pack_root =" "doctor writes method-pack root"
 assert_contains "$CONFIG_PATH" "workspace_helper =" "doctor writes workspace support path"
 
@@ -85,7 +85,7 @@ assert_contains "$PRESERVE_CONFIG_PATH" "tdd_mode = \"off\"" \
 assert_contains "$JSON_OUT" '"ok": true' "doctor JSON mode reports ok"
 assert_contains "$JSON_OUT" '"workspaceSupport": "available"' "doctor JSON mode reports workspace support"
 assert_contains "$JSON_OUT" '"configStatus": "configured"' "doctor JSON mode reports configured status"
-assert_contains "$JSON_OUT" '"tddMode": "auto"' "doctor JSON mode reports TDD mode"
+assert_contains "$JSON_OUT" '"tddMode": "off"' "doctor JSON mode reports default off TDD mode"
 assert_contains "$JSON_OUT" '"triggerHealth": {' "doctor JSON mode reports trigger health block"
 assert_contains "$JSON_OUT" '"host discovery"' "doctor JSON mode reports host discovery trigger layer"
 assert_contains "$JSON_OUT" '"context pressure and re-entry"' "doctor JSON mode reports context-pressure trigger layer"
@@ -159,8 +159,8 @@ assert_contains "$ACTIVATION_JSON_OUT" '"activationMode": "auto"' "activation-mo
 assert_contains "$ACTIVATION_JSON_OUT" '"restartRequired": true' "activation-mode JSON reports restart boundary"
 assert_contains "$CONFIG_PATH" "activation_mode = \"auto\"" \
     "activation-mode command writes auto mode"
-assert_contains "$CONFIG_PATH" "tdd_mode = \"auto\"" \
-    "activation-mode command preserves TDD mode"
+assert_contains "$CONFIG_PATH" "tdd_mode = \"off\"" \
+    "activation-mode command preserves default off TDD mode"
 
 "${PYTHON_CMD[@]}" "$DOCTOR" tdd-mode off --config "$CONFIG_PATH" >"$TDD_TEXT_OUT"
 assert_contains "$TDD_TEXT_OUT" "Aegis TDD mode set to off" \

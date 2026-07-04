@@ -51,7 +51,7 @@ function Write-CopilotFallbackBootstrap {
         return
     }
 
-    $tddMode = Get-AegisConfigValue -Key "tdd_mode" -AllowedValues @("auto", "off") -DefaultValue "auto"
+    $tddMode = Get-AegisConfigValue -Key "tdd_mode" -AllowedValues @("auto", "off") -DefaultValue "off"
     try {
         $usingAegisContent = Get-Content -LiteralPath $usingAegisPath -Raw
     } catch {
@@ -68,7 +68,7 @@ function Write-CopilotFallbackBootstrap {
 <EXTREMELY_IMPORTANT>
 You have Aegis.
 
-Aegis TDD mode: $tddMode. auto routes strict TDD only when risk warrants; off disables automatic TDD, but verification-before-completion still applies.
+Aegis TDD mode: $tddMode. off is the default and disables automatic TDD while verification-before-completion still applies; auto routes strict TDD only when risk warrants.
 
 **Below is the compact 'aegis:using-aegis' hot path. For task-specific workflows, use the Skill tool to load only the relevant skill or reference:**
 

@@ -267,6 +267,26 @@ TDD Completion Boundary:
    - Completion impact: complete | needs-follow-up | not-complete
    ```
 
+   If completion-time complexity is over budget, classify whether the overrun
+   can be governed inside the current authorized slice before doing additional
+   owner extraction or scope expansion:
+
+   ```text
+   Completion-Time Complexity Repair Decision:
+   - Overrun:
+   - Authorized slice boundary:
+   - Decision: govern-now | follow-up-required | not-complete
+   - Why:
+   - Verification:
+   ```
+
+   `govern-now` may continue with owner extraction, helper extraction, or old
+   path deletion only when the repair is inside the current authorized scope,
+   reduces or stabilizes complexity, and has a clear verification boundary.
+   `follow-up-required` reports residual risk and suggested scope without
+   expanding the current task. `not-complete` means the overrun blocks the
+   requested completion claim.
+
    If a maintained artifact is materially oversized or crosses a major pressure
    boundary, make the follow-up explicit:
 

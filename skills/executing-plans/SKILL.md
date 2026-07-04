@@ -88,6 +88,14 @@ For each task:
    - Planned governance:
 
    Pre-Edit Complexity Check:
+   - Target edit file:
+   - Existing pressure signal:
+   - Safer edit boundary:
+   - Decision: edit-in-place | extract helper | add owner file | split task | pause for plan update
+
+   Pre-Edit Owner-Fit Decision:
+   - Edit intent: wiring-only | move-out / extract-first | local-fix-without-new-responsibility | new-responsibility | emergency / compatibility patch
+   - Owner fit:
    - Safer edit boundary:
    - Decision: edit-in-place | extract helper | add owner file | split task | pause for plan update
    ```
@@ -97,6 +105,12 @@ For each task:
    budget result is `over-budget` and the task does not also govern that
    overrun, stop execution and return to plan review rather than pushing the
    task through as if it were still atomic.
+   When the target edit file is over-budget or mixed-purpose,
+   `new-responsibility` must not be added in place by default. `wiring-only`,
+   `move-out / extract-first`, and `local-fix-without-new-responsibility` may
+   proceed only when they do not add a new responsibility and the verification
+   boundary is clear. `emergency / compatibility patch` requires residual risk
+   and a retirement trigger.
 5. Run verifications as specified
 6. Update `TodoCheckpointDraft` and `DriftCheckDraft` before marking the task completed.
    When an `Execution Readiness View` exists, the drift check must explicitly

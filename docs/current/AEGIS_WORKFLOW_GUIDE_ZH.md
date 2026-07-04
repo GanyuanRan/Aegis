@@ -302,10 +302,10 @@ Anti-Entropy 默认原则：
 
 TDD 是实施阶段的纪律，不是所有复杂任务的第一入口。
 
-TDD Mode 只有两个值：
+TDD Mode 默认是 `off`，只有两个值：
 
-- `auto`：按任务风险自动选择 TDD Route `strict`、`light` 或 `skipped`
 - `off`：不自动要求 TDD；用户或项目显式要求 TDD 时仍然适用
+- `auto`：按任务风险自动选择 TDD Route `strict`、`light` 或 `skipped`
 
 TDD Mode 控制 test-first 纪律，不控制完成证据。两种模式下
 `verification-before-completion` 仍然适用。

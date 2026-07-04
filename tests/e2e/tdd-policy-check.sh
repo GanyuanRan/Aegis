@@ -86,14 +86,18 @@ assert_contains "$tdd_mode_doc" "verification-before-completion" \
     "TDD mode doc states verification-before-completion still applies"
 assert_contains "$tdd_mode_doc" "native skill discovery|semantic matcher" \
     "TDD mode doc records native skill discovery boundary"
-assert_contains "$codex_guide" "AEGIS_TDD_MODE=off" \
-    "Codex guide documents TDD mode caveat"
+assert_contains "$codex_guide" "TDD mode defaults to.*off|default.*off" \
+    "Codex guide documents default off TDD mode"
+assert_contains "$codex_guide" "AEGIS_TDD_MODE=auto|tdd-mode auto" \
+    "Codex guide documents auto TDD opt-in"
 assert_contains "$codex_guide" "does not directly control Codex's native matcher|does not override Codex's own semantic matcher" \
     "Codex guide explains TDD mode does not control native matcher"
 assert_contains "$codex_guide" "TDD Route: strict|strict TDD|test-first|RED / GREEN / REFACTOR" \
     "Codex guide narrows TDD trigger wording to literal markers"
-assert_contains "$codex_install" "AEGIS_TDD_MODE=off" \
-    "Codex install surface documents TDD mode caveat"
+assert_contains "$codex_install" "TDD mode defaults to.*off|default.*off" \
+    "Codex install surface documents default off TDD mode"
+assert_contains "$codex_install" "AEGIS_TDD_MODE=auto|tdd-mode auto" \
+    "Codex install surface documents auto TDD opt-in"
 assert_contains "$codex_install" "TDD Route: strict|strict TDD|test-first|RED / GREEN / REFACTOR" \
     "Codex install surface narrows TDD trigger wording to literal markers"
 

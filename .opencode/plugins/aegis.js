@@ -259,12 +259,12 @@ const activationMode = (homeDir) => process.env.AEGIS_ACTIVATION_MODE || readCon
 
 const readConfigTddMode = (homeDir) => {
   const configured = readConfigValue(homeDir, 'tdd_mode');
-  return configured === 'off' || configured === 'auto' ? configured : 'auto';
+  return configured === 'off' || configured === 'auto' ? configured : 'off';
 };
 
 const tddMode = (homeDir) => {
   const configured = process.env.AEGIS_TDD_MODE || readConfigTddMode(homeDir);
-  return configured === 'off' || configured === 'auto' ? configured : 'auto';
+  return configured === 'off' || configured === 'auto' ? configured : 'off';
 };
 
 const resolveConfiguredMethodPackRoot = (homeDir) => {
@@ -334,7 +334,7 @@ Use OpenCode's native \`skill\` tool to list and load skills.`;
     return `<EXTREMELY_IMPORTANT>
 You have Aegis.
 
-Aegis TDD mode: ${tddMode(homeDir)}. auto routes strict TDD only when risk warrants; off disables automatic TDD, but verification-before-completion still applies.
+Aegis TDD mode: ${tddMode(homeDir)}. off is the default and disables automatic TDD while verification-before-completion still applies; auto routes strict TDD only when risk warrants.
 
 **IMPORTANT: The compact using-aegis hot path is included below. For task-specific workflows, use OpenCode's native \`skill\` tool to load only the relevant skill or reference.**
 

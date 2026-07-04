@@ -316,10 +316,10 @@ not treat generic assent as confirmation.
 TDD is the implementation discipline. It is not the first entry point for every
 complex task.
 
-TDD Mode has two values:
+TDD Mode defaults to `off` and has two values:
 
-- `auto`: choose TDD Route `strict`, `light`, or `skipped` by task risk
 - `off`: do not automatically require TDD; explicit TDD requests still apply
+- `auto`: choose TDD Route `strict`, `light`, or `skipped` by task risk
 
 TDD Mode controls test-first discipline, not completion evidence.
 `verification-before-completion` still applies in both modes.

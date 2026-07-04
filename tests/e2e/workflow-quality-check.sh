@@ -135,8 +135,12 @@ assert_contains "$tdd_mode_doc" 'tdd_mode = "auto"' \
     "TDD mode doc defines auto config"
 assert_contains "$tdd_mode_doc" 'tdd_mode = "off"' \
     "TDD mode doc defines off config"
+assert_contains "$tdd_mode_doc" "default mode is|default.*off|Default \`off\`" \
+    "TDD mode doc states default off mode"
 assert_contains "$tdd_mode_doc" "strict.*light.*skipped|strict.*skipped.*light|strict.*\`light\`.*skipped" \
     "TDD mode doc defines strict light skipped route"
+assert_contains "$tdd_mode_doc" "TDD Route: strict|strict TDD|test-first|RED / GREEN / REFACTOR" \
+    "TDD mode doc documents explicit query markers"
 assert_contains "$tdd_mode_doc" "verification-before-completion" \
     "TDD mode doc preserves completion verification"
 assert_contains "$tdd_mode_doc" "AEGIS_TDD_MODE" \
@@ -156,12 +160,16 @@ assert_contains "$process_doc" "AEGIS_MINIMALITY_REFERENCE" \
     "process baseline points to minimality reference"
 assert_contains "$baseline" "TDD Route" \
     "workflow quality baseline includes TDD route"
+assert_contains "$baseline" "default.*off|off.*default" \
+    "workflow quality baseline defines default off TDD mode"
 assert_contains "$baseline" "auto.*strict.*light.*skipped|strict.*light.*skipped" \
     "workflow quality baseline includes auto TDD routing"
 assert_contains "$baseline" "off.*verification-before-completion|verification-before-completion.*off" \
     "workflow quality baseline keeps completion verification on when TDD mode is off"
 assert_contains "$baseline" "Pre-Edit Complexity Check" \
     "workflow quality baseline includes pre-edit complexity check"
+assert_contains "$baseline" "Pre-Edit Owner-Fit Decision" \
+    "workflow quality baseline includes pre-edit owner-fit decision"
 assert_contains "$baseline" "Complexity Governance Suggestion" \
     "workflow quality baseline includes complexity governance suggestion"
 assert_contains "$baseline" "AEGIS_COMPLEXITY_GOVERNANCE_BASELINE" \
@@ -174,6 +182,20 @@ assert_contains "docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md" "最终输出排序" \
     "Chinese workflow guide frames final output as ordering"
 assert_contains "docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md" "信息排序原则，不是强制顶层模板" \
     "Chinese workflow guide does not make facts-inferences-conclusions a rigid template"
+assert_contains "$process_doc" "Facts.*Inferences.*Conclusions.*information-ordering principle|information-ordering principle.*Facts.*Inferences.*Conclusions" \
+    "process baseline frames facts-inferences-conclusions as ordering principle"
+assert_contains "$process_doc" "mandatory top-level response template" \
+    "process baseline does not make facts-inferences-conclusions a rigid template"
+assert_contains "$process_doc" "Final Output Semantic Slots / Attention Anchors" \
+    "process baseline names final output semantic slots and attention anchors"
+assert_contains "$process_doc" "findings-first" \
+    "process baseline preserves workflow-owned final output structures"
+assert_contains "GLOBAL_USER_RULES_TEMPLATE.zh-CN.md" "事实 -> 推论 -> 结论.*信息排序原则|信息排序原则.*事实 -> 推论 -> 结论" \
+    "global user rules template frames facts-inferences-conclusions as ordering principle"
+assert_contains "GLOBAL_USER_RULES_TEMPLATE.zh-CN.md" "不是固定顶层模板" \
+    "global user rules template prevents rigid final output templates"
+assert_contains "GLOBAL_USER_RULES_TEMPLATE.zh-CN.md" "active workflow.*semantic slots|semantic slots.*任务专属输出结构" \
+    "global user rules template preserves active workflow output ownership"
 assert_contains "$baseline" "attention anchor" \
     "workflow quality baseline treats required output content as attention anchors"
 assert_contains "$baseline" "stealing structural ownership from the active workflow" \
@@ -305,6 +327,18 @@ assert_contains "$complexity_baseline" "Complexity Budget" \
     "complexity baseline defines complexity budget"
 assert_contains "$complexity_baseline" "Complexity Closure" \
     "complexity baseline defines complexity closure"
+assert_contains "$complexity_baseline" "Pre-Edit Owner-Fit Decision" \
+    "complexity baseline defines pre-edit owner-fit decision"
+assert_contains "$complexity_baseline" "soft pressure signal" \
+    "complexity baseline treats 800 line files as soft pressure"
+assert_contains "$complexity_baseline" "1200\\+ line maintained artifact|largest[[:space:]]+5-10%" \
+    "complexity baseline defines strong pressure signal"
+assert_contains "$complexity_baseline" "new-responsibility" \
+    "complexity baseline blocks default in-place new responsibility"
+assert_contains "$complexity_baseline" "Completion-Time Complexity Repair Decision" \
+    "complexity baseline defines completion-time repair decision"
+assert_contains "$complexity_baseline" "govern-now.*follow-up-required.*not-complete|follow-up-required.*not-complete" \
+    "complexity baseline defines completion-time repair outcomes"
 assert_contains "$complexity_baseline" "Major Complexity Alert" \
     "complexity baseline defines major complexity alert"
 assert_contains "$complexity_baseline" "Files newly crossing 800 lines" \
@@ -467,6 +501,8 @@ assert_contains "skills/first-principles-review/SKILL.md" "Higher-level simplifi
     "first-principles review checks higher-level simplification"
 assert_contains "skills/test-driven-development/SKILL.md" "Pre-Edit Complexity Check" \
     "test-driven-development includes pre-edit complexity check"
+assert_contains "skills/test-driven-development/SKILL.md" "Pre-Edit Owner-Fit Decision" \
+    "test-driven-development includes pre-edit owner-fit decision"
 assert_contains "skills/test-driven-development/SKILL.md" "Complexity Budget" \
     "test-driven-development includes complexity budget"
 assert_contains "skills/test-driven-development/SKILL.md" "TDD Mode" \
@@ -485,6 +521,8 @@ assert_contains "skills/systematic-debugging/SKILL.md" "Quick bug lane" \
     "systematic debugging defines quick bug lane"
 assert_contains "skills/systematic-debugging/SKILL.md" "Pre-Edit Complexity Check" \
     "systematic debugging includes pre-edit complexity check"
+assert_contains "skills/systematic-debugging/SKILL.md" "Pre-Edit Owner-Fit Decision" \
+    "systematic debugging includes pre-edit owner-fit decision"
 assert_contains "skills/systematic-debugging/SKILL.md" "Minimality Check" \
     "systematic debugging includes minimality check"
 assert_contains "skills/systematic-debugging/SKILL.md" "Change Necessity" \
@@ -605,6 +643,8 @@ assert_contains "skills/verification-before-completion/SKILL.md" "Complexity Del
     "verification skill defines complexity delta check"
 assert_contains "skills/verification-before-completion/SKILL.md" "Complexity Closure" \
     "verification skill defines complexity closure"
+assert_contains "skills/verification-before-completion/SKILL.md" "Completion-Time Complexity Repair Decision" \
+    "verification skill defines completion-time complexity repair decision"
 assert_contains "skills/verification-before-completion/SKILL.md" "Complexity Governance Suggestion" \
     "verification skill defines complexity governance suggestion"
 assert_contains "skills/verification-before-completion/SKILL.md" "Major Complexity Alert" \
@@ -643,6 +683,8 @@ assert_contains "skills/long-task-continuation/SKILL.md" "Minimal Reporting Shap
     "long-task continuation keeps minimal reporting shape"
 assert_contains "skills/executing-plans/SKILL.md" "Pre-Edit Complexity Check" \
     "executing-plans re-checks complexity before source edits"
+assert_contains "skills/executing-plans/SKILL.md" "Pre-Edit Owner-Fit Decision" \
+    "executing-plans re-checks owner fit before source edits"
 assert_contains "skills/executing-plans/SKILL.md" "Complexity Budget" \
     "executing-plans re-checks complexity budget before source edits"
 assert_contains "skills/executing-plans/SKILL.md" "Execution Readiness View" \

@@ -90,14 +90,18 @@ python scripts/aegis-doctor.py activation-mode explicit
 Restart the host after changing activation mode. Details and host caveats live
 in [docs/current/AEGIS_ACTIVATION_MODE.md](docs/current/AEGIS_ACTIVATION_MODE.md).
 
-TDD mode defaults to `auto`: Aegis chooses strict TDD only when risk warrants,
-uses light verification for tiny edits, and skips TDD where it does not fit. To
-disable automatic TDD routing without disabling completion verification:
+TDD mode defaults to `off`: Aegis does not automatically require TDD, and
+completion verification still applies. To enable automatic TDD routing when you
+want Aegis to choose strict, light, or skipped by task risk:
 
 ```bash
 cd <aegis-method-pack-root>
-python scripts/aegis-doctor.py tdd-mode off
+python scripts/aegis-doctor.py tdd-mode auto
 ```
+
+You can also request strict TDD directly in a query with explicit markers such
+as `TDD Route: strict`, `strict TDD`, `test-first`, or
+`RED / GREEN / REFACTOR`.
 
 Details live in [docs/current/AEGIS_TDD_MODE.md](docs/current/AEGIS_TDD_MODE.md).
 

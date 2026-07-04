@@ -1,5 +1,77 @@
 # Aegis Release Notes
 
+## v2.3.5 (2026-07-04)
+
+### TDD Default Mode
+
+- Changed Aegis TDD mode to default to `off` across `aegis-doctor`, host
+  bootstrap hooks, OpenCode integration, and public documentation.
+- Kept automatic TDD routing available as an explicit opt-in through
+  `tdd-mode auto`, `AEGIS_TDD_MODE=auto`, or direct query markers such as
+  `TDD Route: strict`, `strict TDD`, `test-first`, and
+  `RED / GREEN / REFACTOR`.
+- Preserved `verification-before-completion` in both `off` and `auto` modes so
+  turning off automatic TDD never weakens completion evidence.
+
+### Complexity Governance
+
+- Recalibrated 800+ line maintained artifacts as soft pressure signals rather
+  than automatic edit bans.
+- Added stronger pressure signals for 1200+ line maintained artifacts and files
+  in the largest 5-10% of a target project.
+- Added `Pre-Edit Owner-Fit Decision` to implementation workflows so overloaded
+  or mixed-purpose owners classify edit intent before non-trivial source edits.
+- Clarified that `new-responsibility` should not be added in place to an
+  over-budget or mixed-purpose owner by default.
+- Added `Completion-Time Complexity Repair Decision` so completion-time
+  complexity overruns are classified as `govern-now`, `follow-up-required`, or
+  `not-complete` before additional owner extraction or scope expansion.
+
+### Final Output Semantics
+
+- Updated the process baseline to treat `Facts -> Inferences -> Conclusions` as
+  an information-ordering principle instead of a fixed top-level response
+  template.
+- Renamed `Final Output Contract` to `Final Output Semantic Slots / Attention
+  Anchors` and clarified that these anchors must not override workflow-owned
+  output structures such as findings-first code review, verification evidence
+  slots, repair/retirement closure, complexity closure, `Aegis Visibility`,
+  `Execution Readiness View`, or requested `Trace Digest`.
+- Updated the global user rules template shipped by Aegis with the same
+  anti-template guidance for future host configuration.
+
+### Regression Coverage
+
+- Expanded workflow-quality checks for default-off TDD mode, explicit TDD query
+  markers, pre-edit owner-fit decisions, completion-time complexity repair
+  decisions, and final-output semantic slots.
+- Updated the workflow-quality matrix and validator so owner-fit and
+  completion-time complexity decisions remain part of the expected workflow
+  contracts.
+- Updated activation-mode, TDD-policy, doctor, and workspace helper tests for
+  the default-off TDD configuration.
+
+### Verification
+
+- Fresh checks passed:
+  `bash scripts/bump-version.sh 2.3.5`,
+  `bash scripts/bump-version.sh --check`,
+  `python tests/helpers/test_parse_codex_skills.py`,
+  `python -m pytest tests/helpers -q`,
+  `bash tests/e2e/workflow-quality-check.sh`,
+  `bash tests/e2e/tdd-policy-check.sh`,
+  `bash tests/e2e/activation-mode-check.sh`,
+  `bash tests/e2e/aegis-doctor-check.sh`,
+  `bash tests/e2e/context-budget-check.sh`,
+  `bash tests/e2e/boundary-compliance-check.sh`, and
+  `git diff --check`.
+
+### Release Surface
+
+- Bumped declared package and host manifest versions from `2.3.4` to `2.3.5`.
+- This release still ships `Aegis Method Pack (runtime-ready)`. It does not add
+  authoritative `GateDecision`, `PolicySnapshot`, or `completion authority`.
+
 ## v2.3.4 (2026-07-04)
 
 ### Final Output Ordering

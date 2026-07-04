@@ -172,8 +172,16 @@ Pass criteria:
 - plan-time checks appear in `brainstorming` and `writing-plans`
 - pre-edit checks appear in implementation workflows before risky source edits
 - completion keeps `Complexity Delta`, `Complexity Closure`, and adds a useful `Complexity Governance Suggestion`
+- 800+ line files are soft pressure signals, not automatic edit bans
+- 1200+ line files or touched artifacts in the largest 5-10% of the project are
+  strong pressure signals
 - checks stay advisory, cheap for low-risk work, and do not treat new files as
   automatically better
+- implementation workflows classify edit intent before adding non-trivial logic
+  to an over-budget or mixed-purpose owner
+- `new-responsibility` does not go in place by default on an over-budget or
+  mixed-purpose owner; use an existing owner, extract a clearer owner, split the
+  task, or pause for plan review
 - maintained test source files are governed like maintained source code, not as
   blanket low-risk exceptions
 - plan/spec/baseline/ADR/work-record artifacts use artifact-aware complexity
@@ -204,16 +212,25 @@ Pass criteria:
   useful
 - completion distinguishes `within-budget`, `exceeded-and-governed`, and
   `exceeded-unresolved`
+- completion-time overrun is classified as `govern-now`,
+  `follow-up-required`, or `not-complete` before any additional owner extraction
+  or scope expansion
+- `govern-now` stays inside the current authorized slice and has a clear
+  verification boundary
 - if the result is `exceeded-unresolved`, Aegis does not claim the task is
   complete
 
 ### 3.11 TDD Route Mode
 
-TDD Mode should make test-first discipline adaptive without weakening
+TDD Mode should keep test-first discipline opt-in by default without weakening
 completion evidence.
 
 Pass criteria:
 
+- default `off` mode disables automatic TDD routing while preserving
+  `verification-before-completion`
+- users may enable `auto` mode through config, environment override, or a host
+  command, or request TDD directly with explicit query markers
 - `auto` mode chooses a `TDD Route`: `strict`, `light`, or `skipped`
 - `strict` is used for behavior, bugfix, contract, shared/core, producer /
   consumer, persistence, permission, migration, or meaningful regression risk
@@ -224,8 +241,6 @@ Pass criteria:
   parent-task acceptance or final completion
 - when business behavior, success evidence, or acceptance is unclear, the
   workflow routes to `brainstorming` or `writing-plans` before strict TDD
-- `off` disables automatic TDD routing, but does not disable
-  `verification-before-completion`
 - explicit user/project TDD requests still apply in `off` mode
 
 ### 3.12 Micro-Slice Artifact Budget
@@ -306,8 +321,8 @@ Pass criteria:
   code-change, and needs-clarification decisions are visible before
   implementation
 - `test-driven-development`, `systematic-debugging`, and `executing-plans` can
-  use a compact `Pre-Edit Complexity Check` to avoid stuffing new logic into an
-  overloaded or wrong owner
+  use a compact `Pre-Edit Complexity Check` plus `Pre-Edit Owner-Fit Decision`
+  to avoid stuffing new logic into an overloaded or wrong owner
 - `requesting-code-review` uses `Findings First` and prioritizes bugs first,
   risk first, tests first
 - `verification-before-completion` can emit a `Readiness Summary` for tests,
@@ -721,6 +736,7 @@ Fix Boundary: canonical owner, compatibility, non-edits
 Minimality Check: smallest textual diff, existing owner / reuse path, correct owner, bug class fixed, new branch/fallback, old path retirement, verdict
 Existence Check: proposed fallback/adapter/branch/new owner, existing owner / reuse candidate, creation proof, entropy / retirement impact, decision
 Pre-Edit Complexity Check: target edit file, pressure signal, safer boundary, decision
+Pre-Edit Owner-Fit Decision: edit intent, owner fit, safer boundary, decision
 Verification: failing test or reproduction now passing
 Repair Track / Retirement Track: when fallback, owner, or contract risk exists
 ```
@@ -755,6 +771,7 @@ Preflight Gate: low | route-to-plan | route-to-spec
 Change Necessity: user-visible need, no-change / non-code option, why code change, minimum boundary, decision
 Complexity Budget: artifact class, current pressure, projected post-change pressure, planned governance
 Pre-Edit Complexity Check: target edit file, pressure signal, safer boundary, decision
+Pre-Edit Owner-Fit Decision: edit intent, owner fit, safer boundary, decision
 RED: failing test or reason strict TDD does not fit
 GREEN: minimal code and passing target test
 REFACTOR: cleanup with tests still green
@@ -932,8 +949,9 @@ Non-goals respected: yes | no | unknown
 Goal Closure is advisory and evidence-focused. It does not grant completion
 authority or decide final evidence sufficiency.
 
-For the shared `Complexity Delta`, `Complexity Closure`, and
-`Major Complexity Alert` shapes, see
+For the shared `Complexity Delta`, `Complexity Closure`,
+`Completion-Time Complexity Repair Decision`, and `Major Complexity Alert`
+shapes, see
 `docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md`.
 
 For governance, compatibility, cleanup, or retirement work that adds, replaces,
@@ -1041,6 +1059,7 @@ Todo: active task, completed tasks, next task
 Change Necessity: inherited from plan or compactly recreated before new source-code paths
 Complexity Budget: planned pressure and governance for the active edit
 Pre-Edit Complexity Check: safer edit boundary and pause condition
+Pre-Edit Owner-Fit Decision: edit intent, owner fit, safer boundary, decision
 Execution Readiness View: read before implementation when provided by the plan or long-task checkpoint
 Verification: commands, scope, and result for the slice
 Checkpoint: TodoCheckpointDraft, DriftCheckDraft, evidence refs

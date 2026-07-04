@@ -55,7 +55,10 @@ Complexity Budget:
 
 Typical pressure signals:
 
-- 800+ line maintained source or maintained test file
+- 800+ line maintained source or maintained test file as a soft pressure signal,
+  not an automatic edit ban
+- 1200+ line maintained artifact, or a touched artifact in the largest
+  5-10% of the target project, as a strong pressure signal
 - touched cohesive block over roughly 80 lines
 - deep nesting or mixed reasons to change
 - generic owner receiving another responsibility
@@ -72,16 +75,51 @@ the reason is explicit.
 A new file is not automatically better. Prefer a new file only when owner,
 contract, call path, and retirement story are clearer than add-in-place growth.
 
+## 4.1 Pre-Edit Owner-Fit Decision
+
+When the target edit file is already over-budget or mixed-purpose, the
+implementation workflow must classify edit intent before non-trivial source
+edits:
+
+```text
+Pre-Edit Owner-Fit Decision:
+- Target edit file:
+- Existing pressure signal:
+- Edit intent: wiring-only | move-out / extract-first | local-fix-without-new-responsibility | new-responsibility | emergency / compatibility patch
+- Owner fit:
+- Safer edit boundary:
+- Decision: edit-in-place | extract helper | add owner file | split task | pause for plan update
+```
+
+Default interpretation:
+
+- `wiring-only` may edit in place when it only adjusts references, calls, or
+  composition and does not add a responsibility.
+- `move-out / extract-first` may touch an overloaded file only when the slice
+  makes that owner thinner or clearer.
+- `local-fix-without-new-responsibility` may edit in place when the fix stays
+  inside the existing owner contract and does not add branches, routing,
+  fallback, adapter, or state responsibilities.
+- `new-responsibility` must not be added in place to an over-budget or
+  mixed-purpose owner by default. Reuse or extract the correct owner, split the
+  task, or pause for plan review.
+- `emergency / compatibility patch` requires residual risk and a retirement
+  trigger; do not present it as clean complexity closure.
+
+If the edit intent is unclear, pause before source edits and return to plan
+review instead of normalizing add-in-place growth.
+
 ## 5. Three-Stage Governance
 
 1. **Plan-Time Complexity Check**: `brainstorming` and `writing-plans` inspect
    likely owner files and artifacts, estimate post-change pressure, and choose
    edit-in-place, extract helper, add owner file, split task, defer refactor,
    or revise the plan before code is written.
-2. **Pre-Edit Complexity Check**: `test-driven-development`,
-   `systematic-debugging`, and `executing-plans` re-check the actual edit file
-   or artifact and pause for a plan update if the safest boundary differs from
-   the plan.
+2. **Pre-Edit Complexity Check + Owner-Fit Decision**:
+   `test-driven-development`, `systematic-debugging`, and `executing-plans`
+   re-check the actual edit file or artifact, classify edit intent when an
+   overloaded or mixed-purpose owner is involved, and pause for a plan update if
+   the safest boundary differs from the plan.
 3. **Complexity Delta + Complexity Governance Suggestion +
    Complexity Closure**: `verification-before-completion` compares the final
    diff against the planned budget and reports whether the slice is
@@ -111,6 +149,25 @@ Complexity Closure:
 
 If `Complexity Closure` is `exceeded-unresolved`, Aegis must not claim the task
 is complete.
+
+When completion-time complexity is over budget, classify whether the overrun
+can be governed inside the current authorized slice:
+
+```text
+Completion-Time Complexity Repair Decision:
+- Overrun:
+- Authorized slice boundary:
+- Decision: govern-now | follow-up-required | not-complete
+- Why:
+- Verification:
+```
+
+- `govern-now` may continue with owner extraction, helper extraction, or old
+  path deletion only when the repair is inside the current authorized scope,
+  reduces or stabilizes complexity, and has a clear verification boundary.
+- `follow-up-required` reports residual risk and suggested scope without
+  expanding the current task.
+- `not-complete` means the overrun blocks the requested completion claim.
 
 ## 7. Major Complexity Follow-up
 

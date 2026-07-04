@@ -86,13 +86,16 @@ python scripts/aegis-doctor.py activation-mode explicit
 修改后需要重启宿主。长期设置方式和宿主注意事项见
 [docs/current/AEGIS_ACTIVATION_MODE.md](docs/current/AEGIS_ACTIVATION_MODE.md)。
 
-TDD mode 默认是 `auto`：Aegis 会按风险自动选择严格 TDD、轻量验证，或在
-不适合 TDD 的任务中跳过 TDD。若只想关闭自动 TDD 路由，但仍保留完成前验证：
+TDD mode 默认是 `off`：Aegis 不会自动要求 TDD，但完成前验证仍然适用。若希望
+Aegis 按任务风险自动选择严格、轻量或跳过 TDD，可以手动开启：
 
 ```bash
 cd <aegis-method-pack-root>
-python scripts/aegis-doctor.py tdd-mode off
+python scripts/aegis-doctor.py tdd-mode auto
 ```
+
+也可以在 query 中用 `TDD Route: strict`、`strict TDD`、`test-first` 或
+`RED / GREEN / REFACTOR` 显式要求严格 TDD。
 
 详细语义见 [docs/current/AEGIS_TDD_MODE.md](docs/current/AEGIS_TDD_MODE.md)。
 

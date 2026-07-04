@@ -34,7 +34,7 @@ read_config_activation_mode() {
 read_config_tdd_mode() {
     local config_file="${HOME}/.config/aegis/config.toml"
     if [ ! -f "$config_file" ]; then
-        printf 'auto'
+        printf 'off'
         return
     fi
 
@@ -50,7 +50,7 @@ read_config_tdd_mode() {
             printf '%s' "$configured"
             ;;
         *)
-            printf 'auto'
+            printf 'off'
             ;;
     esac
 }
@@ -59,7 +59,7 @@ activation_mode="${AEGIS_ACTIVATION_MODE:-$(read_config_activation_mode)}"
 tdd_mode="${AEGIS_TDD_MODE:-$(read_config_tdd_mode)}"
 case "$tdd_mode" in
     auto|off) ;;
-    *) tdd_mode="auto" ;;
+    *) tdd_mode="off" ;;
 esac
 
 if [ "$activation_mode" = "explicit" ]; then
@@ -92,7 +92,7 @@ escape_for_json() {
 
 using_aegis_escaped=$(escape_for_json "$using_aegis_content")
 warning_escaped=$(escape_for_json "$warning_message")
-tdd_mode_context="Aegis TDD mode: ${tdd_mode}. auto routes strict TDD only when risk warrants; off disables automatic TDD, but verification-before-completion still applies."
+tdd_mode_context="Aegis TDD mode: ${tdd_mode}. off is the default and disables automatic TDD while verification-before-completion still applies; auto routes strict TDD only when risk warrants."
 session_context="<EXTREMELY_IMPORTANT>\nYou have Aegis.\n\n${tdd_mode_context}\n\n**Below is the compact 'aegis:using-aegis' hot path. For task-specific workflows, use the Skill tool to load only the relevant skill or reference:**\n\n${using_aegis_escaped}\n\n${warning_escaped}\n</EXTREMELY_IMPORTANT>"
 
 # Output context injection as JSON.

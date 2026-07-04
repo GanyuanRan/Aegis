@@ -28,7 +28,10 @@ This document does NOT answer:
 - Internal reasoning and identifiers use English
 - User-facing communication and explanations use Chinese
 - Deliver a direct verdict first, then expand with evidence and reasoning
-- Output follows the order: Facts → Inferences → Conclusions
+- Facts → Inferences → Conclusions is an information-ordering principle, not a
+  mandatory top-level response template
+- Active workflow semantic slots and task-specific output contracts own the
+  final surface
 
 ---
 
@@ -135,10 +138,11 @@ This process baseline keeps the workflow-stage responsibilities:
    likely owner files and artifacts, estimate post-change pressure, and choose
    edit-in-place, extract helper, add owner file, split task, defer refactor,
    or revise the plan before code is written.
-2. **Pre-Edit Complexity Check**: `test-driven-development`,
-   `systematic-debugging`, and `executing-plans` re-check the actual edit file
-   or artifact and pause for a plan update if the safest boundary differs from
-   the plan.
+2. **Pre-Edit Complexity Check + Owner-Fit Decision**:
+   `test-driven-development`, `systematic-debugging`, and `executing-plans`
+   re-check the actual edit file or artifact, classify edit intent when the
+   target owner is over-budget or mixed-purpose, and pause for a plan update if
+   the safest boundary differs from the plan.
 3. **Complexity Delta + Complexity Governance Suggestion +
    Complexity Closure**: `verification-before-completion` compares the final
    diff against the planned budget, reports actual entropy movement, and states
@@ -153,16 +157,17 @@ artifact shape.
 
 ### 3.0c TDD Mode
 
-TDD Mode controls test-first discipline, not completion evidence.
+TDD Mode controls test-first discipline, not completion evidence. The default
+mode is `off`.
 
 The two supported values are:
 
-- `auto`: Aegis chooses a `TDD Route` before implementation. The route is
-  `strict` for risky behavior work, `light` for tiny low-risk edits, and
-  `skipped` when TDD does not fit the task shape.
 - `off`: Aegis does not automatically require
   `test-driven-development`. Explicit user/project TDD requests still apply,
   and completion still requires `verification-before-completion`.
+- `auto`: Aegis chooses a `TDD Route` before implementation. The route is
+  `strict` for risky behavior work, `light` for tiny low-risk edits, and
+  `skipped` when TDD does not fit the task shape.
 
 TDD Mode is method-pack guidance only. It does not grant runtime authority,
 final completion authority, or permission to skip verification.
@@ -202,7 +207,8 @@ Canonical lenses:
 - `Plan-Time Complexity Check` in `brainstorming` and `writing-plans`: target
   file pressure, owner fit, and better boundary options before implementation
 - `Pre-Edit Complexity Check` in implementation workflows: actual edit-file
-  pressure and whether to pause for a plan update before source edits
+  pressure, edit intent, owner fit, and whether to pause for a plan update
+  before source edits
 - `Findings First` in `requesting-code-review`: bugs first, risk first, tests
   first, with findings before summary
 - `Readiness Summary` in `verification-before-completion`: tests, docs,
@@ -643,11 +649,16 @@ The enforced principle is:
 
 ---
 
-## 11. Final Output Contract
+## 11. Final Output Semantic Slots / Attention Anchors
 
-The current minimum `Aegis` output must include:
+`Aegis` final output uses semantic slots and attention anchors, not fixed global
+headings. These anchors keep evidence, impact, and recommendation visible while
+preserving active workflow-owned output contracts.
 
-- `Facts`
+Default anchors, satisfied by natural prose or by the active workflow's own
+fields, are:
+
+- `Facts` / evidence-backed observations
 - `Evidence`
 - `Recommendation/Approach`
 - `Impact Scope`
@@ -660,6 +671,11 @@ Extended by task type:
 - Refactoring: hotspots, test safety net, complexity changes
 - Performance: baseline, bottleneck, gains
 - Risk and rollback: trigger conditions, rollback steps, feature flags
+
+These anchors must not override task-specific structures such as findings-first
+code review, verification evidence slots, readiness summaries,
+repair/retirement closure, complexity closure, Aegis Visibility, Execution
+Readiness View, or requested Trace Digest.
 
 ---
 
@@ -776,9 +792,9 @@ Mid-stream complexity escalation: pause implementation, initialize workspace if
 missing, backfill required artifacts, then continue.
 
 TDD is the implementation discipline, not the first entry point for medium- or
-high-complexity tasks. In `auto` mode, TDD Route decides strict, light, or
-skipped. In `off` mode, automatic TDD is disabled, but completion verification
-remains mandatory.
+high-complexity tasks. The default `off` mode disables automatic TDD while
+keeping completion verification mandatory. In `auto` mode, TDD Route decides
+strict, light, or skipped by task risk.
 
 ### 12.6 Workspace Integrity Checks
 
@@ -863,7 +879,7 @@ This process baseline should be projected into the following skills as a priorit
     Implementation Drift checks, and missing ADR / baseline sync findings for
     durable architecture decisions
 - `verification-before-completion`
-  - Align with reflection, QA, final output contract, and ADR Auto Backfill for
+  - Align with reflection, QA, final output semantic slots, and ADR Auto Backfill for
     completed medium/high work that touched architecture surfaces
 
 ---

@@ -18,7 +18,7 @@ otherwise proceed normally.
    Create baselines only with evidence.
 3. `/aegis-goal` or `Aegis goal:` loads `goal-framing` before routing.
 4. Bug, failure, regression, or unexpected behavior routes to `systematic-debugging`; quick bug lane owns Change Necessity before source edits.
-5. Classify before implementation/start/resume/compaction. Low: intent + baseline check + TDD Route + verification. Medium/high: baseline read-set + plan. TDD Route auto=strict/light/skipped; off=no auto, verification stays.
+5. Classify before implementation/start/resume/compaction. Low: intent + baseline check + TDD Route + verification. Medium/high: baseline read-set + plan. TDD default off; auto/explicit => strict/light/skipped; off=no auto, verify.
    Spec Brief or Design Spec only for complexity, ambiguity, contracts, or
    cross-module impact. Contract/shared/core/cross-module changes are never low
    without evidence. Source edits/any new source-code path: owner workflow surfaces Change Necessity.
