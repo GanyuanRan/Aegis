@@ -23,9 +23,16 @@ generic used-skills log.
 
 ### Step 1: Load and Review Plan
 1. Read plan file
-2. Review critically - identify any questions or concerns about the plan
-3. If concerns: Raise them with your human partner before starting
-4. If no concerns: Create TodoWrite and proceed
+2. If the plan or active checkpoint includes an `Execution Readiness View`,
+   read it before implementation and compare the plan against its intent lock,
+   scope fence, baseline lock, owner / contract constraints, compatibility
+   boundary, retirement boundary, test obligations, review gates, drift /
+   rewind rules, and evidence required before completion.
+3. Review critically - identify any questions or concerns about the plan
+4. If the view contradicts the plan, baseline, or current worktree evidence,
+   return to plan review or refresh the advisory handoff before editing.
+5. If concerns: Raise them with your human partner before starting
+6. If no concerns: Create TodoWrite and proceed
 
 ### Step 1.5: Long-Task Checkpoint Setup
 
@@ -91,7 +98,11 @@ For each task:
    overrun, stop execution and return to plan review rather than pushing the
    task through as if it were still atomic.
 5. Run verifications as specified
-6. Update `TodoCheckpointDraft` and `DriftCheckDraft` before marking the task completed
+6. Update `TodoCheckpointDraft` and `DriftCheckDraft` before marking the task completed.
+   When an `Execution Readiness View` exists, the drift check must explicitly
+   compare the active slice against the view's intent lock, scope fence,
+   baseline lock, compatibility boundary, retirement boundary, test
+   obligations, and review gates.
 7. Mark as completed
 
 ### Step 3: Complete Development

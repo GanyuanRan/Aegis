@@ -86,6 +86,10 @@ TDD Completion Boundary:
 - Judge the completion claim against the highest available explicit boundary.
 - Parent plan/spec acceptance decides whole-task completion; `TaskIntentDraft`
   decides current-task completion; `Slice Card` decides slice completion only.
+- `Execution Readiness View`, when present, constrains the implementation /
+  verification readback for intent, scope, baseline, compatibility, retirement,
+  test obligations, review gates, drift / rewind rules, and required evidence.
+  It does not decide completion by itself.
 - Match the boundary to the claim being made, and keep any higher open boundary
   explicit.
 - If only slice-level evidence exists, do not claim whole-task `done`.
@@ -150,6 +154,9 @@ TDD Completion Boundary:
    ```
 
    Advisory only. It does not authorize commit, tag, publish, merge, or release, and it does not provide completion authority.
+   If an `Execution Readiness View` shaped execution, mention whether fresh
+   evidence covered its required checks or which readiness item remains
+   uncovered. Do not treat the view itself as verification evidence.
 10. **Natural Aegis closeout**: when Aegis skills materially shaped a
    non-trivial task, keep Aegis explicitly visible in the final completion
    closeout.

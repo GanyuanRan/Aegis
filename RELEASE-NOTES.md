@@ -1,5 +1,62 @@
 # Aegis Release Notes
 
+## v2.3.3 (2026-07-04)
+
+### Execution Readiness View
+
+- Added an advisory `Execution Readiness View` so medium/high-risk plans,
+  subagent handoffs, long-running work, and contract-sensitive changes can make
+  execution expectations explicit before implementation.
+- Rendered the view from existing drafts, plans, checkpoints, and baseline docs
+  instead of introducing a new authoritative artifact owner.
+- Documented the view shape in the runtime-ready boundary: intent lock, scope
+  fence, baseline lock, approved behavior, owner and contract constraints,
+  compatibility boundary, retirement boundary, task batches, test obligations,
+  review gates, drift and rewind rules, evidence required before completion,
+  and advisory boundary.
+
+### Workflow Integration
+
+- Updated `writing-plans` to decide when the view is required and render it
+  before execution handoff for architecture, contract, compatibility,
+  retirement-sensitive, subagent, and long-running plans.
+- Updated `executing-plans` and `long-task-continuation` so active slices are
+  compared against the view during resume, implementation, and drift handling.
+- Updated `verification-before-completion` so the view constrains readback and
+  verification coverage without becoming verification evidence by itself.
+
+### Boundary And Schema Discipline
+
+- Updated the artifact schema, process baseline, workflow guide, and workflow
+  quality baseline to keep `Execution Readiness View` human-readable and
+  advisory.
+- Explicitly rejected `Execution Readiness View` as a new JSON artifact type,
+  authoritative `GateDecision`, authoritative `PolicySnapshot`, or final
+  completion authority.
+- Preserved the Aegis visibility behavior introduced in `v2.3.2`; this release
+  does not weaken loaded-skill entry visibility or final closeout visibility.
+
+### Verification
+
+- Fresh checks passed:
+  `bash scripts/bump-version.sh --check`,
+  `python tests/helpers/test_parse_codex_skills.py`,
+  `python -m pytest tests/helpers -q`,
+  `bash tests/e2e/workflow-quality-check.sh`,
+  `bash tests/e2e/long-task-continuation-check.sh`,
+  `bash tests/e2e/artifact-schema-check.sh`,
+  `bash tests/e2e/boundary-compliance-check.sh`,
+  `bash tests/e2e/governance-completion-contract-check.sh`,
+  `bash tests/e2e/context-budget-check.sh`,
+  `bash tests/e2e/layer1-fast-check.sh --host-profile none`, and
+  `git diff --check`.
+
+### Release Surface
+
+- Bumped declared package and host manifest versions from `2.3.2` to `2.3.3`.
+- This release still ships `Aegis Method Pack (runtime-ready)`. It does not add
+  authoritative `GateDecision`, `PolicySnapshot`, or `completion authority`.
+
 ## v2.3.2 (2026-07-02)
 
 ### Aegis Visibility Non-Omission

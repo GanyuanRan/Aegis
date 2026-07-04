@@ -142,6 +142,13 @@ Minimum fields:
 Purpose:
 
 - Serve as the minimum input package for the future runtime core
+- May be rendered as a human-readable `Execution Readiness View` before
+  implementation begins. That view compresses the current intent, scope fence,
+  baseline refs, owner / contract constraints, compatibility boundary,
+  retirement boundary, task batches, test obligations, review gates, drift /
+  rewind rules, and evidence required before completion.
+- The rendered view is advisory method-pack execution guidance only. It is not
+  an authoritative `GateDecision`, `PolicySnapshot`, or completion authority.
 
 ### 3.7 `TodoCheckpointDraft`
 
@@ -191,6 +198,12 @@ Minimum fields:
 Purpose:
 
 - Explicitly check whether goals, baselines, compatibility boundaries, and retirement tracks have drifted during long task execution
+- When an `Execution Readiness View` exists, compare the active slice against
+  that view before continuing after resume, compaction, handoff, or meaningful
+  scope change. If intent, scope fence, baseline refs, compatibility boundary,
+  retirement boundary, test obligations, or review gates no longer align,
+  return to planning or refresh the advisory handoff instead of improvising new
+  behavior.
 
 ### 3.10 `SubagentContextPacket`
 
@@ -215,6 +228,52 @@ Purpose:
   conversation context
 - Require critical facts to stay tied to bounded evidence excerpts that the
   subagent may verify directly
+
+### 3.11 `Execution Readiness View`
+
+`Execution Readiness View` is a human-readable rendering of existing
+runtime-ready drafts, not a new authoritative artifact type.
+
+Minimum source inputs:
+
+- `TaskIntentDraft`
+- `BaselineUsageDraft`
+- `ImpactStatementDraft`
+- `GateInputPack`
+- task plan or `Slice Card`
+- expected verification / evidence refs
+
+Minimum view shape:
+
+- `Intent Lock`
+- `Scope Fence`
+- `Baseline Lock`
+- `Approved Behavior`
+- `Owner / Contract Constraints`
+- `Compatibility Boundary`
+- `Retirement Boundary`
+- `Task Batches`
+- `Test Obligations`
+- `Review Gates`
+- `Drift / Rewind Rules`
+- `Evidence Required Before Completion`
+- `Advisory Boundary`
+
+Purpose:
+
+- Give executors and subagents a compact plan-to-execution handoff that does
+  not rely on chat memory.
+- Make drift checks concrete before implementation, resume, or handoff.
+- Keep `GateInputPack` consumable by a future runtime core while giving humans
+  and current hosts a readable advisory projection.
+
+Boundary:
+
+- It is method-pack execution guidance only.
+- It must not use final adjudication language such as `gate-passed`,
+  `completion-granted`, `authoritatively-safe`, or `approved by Aegis`.
+- It does not grant permission to commit, merge, publish, release, or perform
+  destructive actions.
 
 ---
 

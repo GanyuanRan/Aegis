@@ -192,6 +192,16 @@ assert_contains "$baseline" "Findings First" \
     "workflow quality baseline includes findings-first review lens"
 assert_contains "$baseline" "Readiness Summary" \
     "workflow quality baseline includes readiness summary"
+assert_contains "$baseline" "Execution Readiness View" \
+    "workflow quality baseline includes execution readiness view"
+assert_contains "$baseline" "gate-passed.*completion-granted.*authoritatively-safe|completion-granted.*gate-passed.*authoritatively-safe" \
+    "workflow quality baseline forbids authoritative execution readiness language"
+assert_contains "docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md" "Execution Readiness View" \
+    "runtime-ready boundary defines execution readiness view"
+assert_contains "docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md" "not a new JSON.*artifact type|not a new.*artifact type" \
+    "artifact schema baseline keeps execution readiness view out of schema artifacts"
+assert_not_contains "docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md" "ExecutionContractDraft" \
+    "artifact schema baseline does not add an execution contract artifact"
 assert_contains "$baseline" "Retro / Memory Filter" \
     "workflow quality baseline includes retro memory filter"
 assert_contains "$baseline" "role persona.*review lens|review lens.*role persona" \
@@ -429,6 +439,12 @@ assert_contains "skills/writing-plans/SKILL.md" "Planless Slice Lane" \
     "writing-plans includes planless slice lane"
 assert_contains "skills/writing-plans/SKILL.md" "Slice Card" \
     "writing-plans includes slice card"
+assert_contains "skills/writing-plans/SKILL.md" "Execution Readiness View" \
+    "writing-plans renders execution readiness view for handoff"
+assert_contains "skills/writing-plans/SKILL.md" "Intent Lock.*Scope Fence.*Baseline Lock|Baseline Lock.*Scope Fence.*Intent Lock" \
+    "writing-plans execution readiness view locks intent scope and baseline"
+assert_contains "skills/writing-plans/SKILL.md" "not.*GateDecision.*PolicySnapshot.*completion authority|GateDecision.*PolicySnapshot.*completion authority" \
+    "writing-plans keeps execution readiness advisory"
 assert_contains "skills/writing-plans/SKILL.md" "do not save a new plan|Do not save a new plan" \
     "writing-plans prevents micro-slice plan files"
 assert_contains "skills/writing-plans/SKILL.md" "new owner.*contract.*schema.*public API|public API.*schema.*contract.*owner" \
@@ -489,12 +505,20 @@ assert_contains "skills/long-task-continuation/SKILL.md" "parent plan" \
     "long-task continuation reuses parent plan for micro-slices"
 assert_contains "skills/long-task-continuation/SKILL.md" "do not create.*plan.*spec|Do not create.*plan.*spec" \
     "long-task continuation prevents per-slice plan/spec files"
+assert_contains "skills/long-task-continuation/SKILL.md" "Execution Readiness View" \
+    "long-task continuation reads execution readiness view when present"
+assert_contains "skills/long-task-continuation/SKILL.md" "intent lock.*scope fence.*baseline lock|baseline lock.*scope fence.*intent lock" \
+    "long-task continuation compares resume state against readiness locks"
 assert_contains "skills/verification-before-completion/SKILL.md" "Required evidence slots" \
     "verification skill defines required evidence semantic slots"
 assert_not_contains "skills/verification-before-completion/SKILL.md" "Command / Check|Exit Status" \
     "verification skill does not require legacy fixed English evidence fields"
 assert_contains "skills/verification-before-completion/SKILL.md" "Readiness Summary" \
     "verification skill defines readiness summary"
+assert_contains "skills/verification-before-completion/SKILL.md" "Execution Readiness View" \
+    "verification skill accounts for execution readiness view"
+assert_contains "skills/verification-before-completion/SKILL.md" "Do not treat the view itself as verification evidence" \
+    "verification skill does not treat execution readiness as evidence"
 assert_contains "skills/verification-before-completion/SKILL.md" "Natural Aegis closeout" \
     "verification skill summarizes natural Aegis closeout"
 assert_contains "skills/verification-before-completion/SKILL.md" "Semantic Slots" \
@@ -609,6 +633,8 @@ assert_contains "skills/executing-plans/SKILL.md" "Pre-Edit Complexity Check" \
     "executing-plans re-checks complexity before source edits"
 assert_contains "skills/executing-plans/SKILL.md" "Complexity Budget" \
     "executing-plans re-checks complexity budget before source edits"
+assert_contains "skills/executing-plans/SKILL.md" "Execution Readiness View" \
+    "executing-plans reads execution readiness view before implementation"
 assert_contains "skills/brainstorming/SKILL.md" "ADR signals" \
     "brainstorming marks ADR signals without creating accepted memory"
 assert_contains "skills/brainstorming/SKILL.md" "unexecuted ideas" \

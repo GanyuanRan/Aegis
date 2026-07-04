@@ -545,11 +545,15 @@ Aegis can currently produce:
 - `SubagentContextPacket`
 - `TodoCheckpointDraft`
 - `ResumeStateHint`
+- `DriftCheckDraft`
 
 It can also produce an on-demand `Trace Digest` as an advisory white-box
 summary. `Trace Digest` is not an authoritative `GateDecision`, `PolicySnapshot`,
 or completion authority.
-- `DriftCheckDraft`
+
+It may also render an `Execution Readiness View` from existing drafts and plans
+as a human-readable execution handoff. This view is not a new authoritative
+artifact type, `GateDecision`, `PolicySnapshot`, or completion authority.
 
 These are drafts, hints, or projection inputs. They can help a future runtime
 core make decisions, but they must not be written as final authority already

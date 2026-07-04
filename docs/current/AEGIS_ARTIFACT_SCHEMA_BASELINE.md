@@ -47,6 +47,13 @@ retrieval chain, rule effects, skill-call stability, verification, and host
 capability gaps. It is an advisory output shape, not a new authoritative
 artifact, event log, `GateDecision`, or completion authority.
 
+`Execution Readiness View` is also a human-readable output shape, not a new JSON artifact type.
+It renders existing drafts such as `TaskIntentDraft`,
+`BaselineUsageDraft`, `ImpactStatementDraft`, `GateInputPack`, task plans,
+`Slice Card`, and expected verification refs into a compact execution handoff.
+It therefore has no separate `validate-artifact` type unless a future runtime
+core or adapter creates an explicit schema for it.
+
 ---
 
 ## 3. Artifact Definitions
@@ -173,6 +180,15 @@ Current owner:
 - method pack assembles
 - future runtime core consumes
 
+Human-readable projection:
+
+- `Execution Readiness View` may render this pack with intent lock, scope
+  fence, baseline lock, owner / contract constraints, compatibility boundary,
+  retirement boundary, task batches, test obligations, review gates, drift /
+  rewind rules, and evidence required before completion.
+- The projection remains advisory method-pack guidance. It is not an
+  authoritative `GateDecision`, `PolicySnapshot`, or completion authority.
+
 ### 3.7 `TodoCheckpointDraft`
 
 Required fields:
@@ -278,4 +294,5 @@ Not permitted to be directly written by the method pack as:
 - authoritative `PolicySnapshot`
 - authoritative `GateDecision`
 - authoritative `Trace Digest`
+- authoritative `Execution Readiness View`
 - `completion authority`

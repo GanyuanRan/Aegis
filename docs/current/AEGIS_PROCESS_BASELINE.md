@@ -111,6 +111,12 @@ Root improvement rule:
 - Apply the Micro-Slice Artifact Budget when long tasks split into many tiny
   slices: reuse the parent spec/plan, use a compact Slice Card, and avoid
   per-slice plan/spec files unless a new durable boundary appears.
+- Use an `Execution Readiness View` for medium/high, subagent, handoff-prone,
+  or long-running execution handoffs when a compact plan-to-execution readback
+  would reduce drift. Render it from existing runtime-ready drafts such as
+  `TaskIntentDraft`, `BaselineUsageDraft`, `ImpactStatementDraft`,
+  `GateInputPack`, `DriftCheckDraft`, and expected evidence refs; do not create
+  a new authoritative artifact owner.
 - Keep runtime-ready artifacts as drafts, hints, projections, and evidence
   bundles only.
 
@@ -173,6 +179,11 @@ Canonical lenses:
   decision-needed, and whether the idea deserves implementation
 - `Plan Pressure Test` in `writing-plans`: owner / contract / retirement risk,
   verification scope, and task executability
+- `Execution Readiness View` in `writing-plans` and execution workflows:
+  advisory plan-to-execution handoff with intent lock, scope fence, baseline
+  lock, compatibility boundary, retirement boundary, task batches, test
+  obligations, review gates, drift / rewind rules, and evidence required before
+  completion
 - `Architecture Integrity Lens` in `first-principles-review`, composed by
   `brainstorming` and `writing-plans`: invariant, canonical owner / contract,
   responsibility overlap, higher-level simplification, retirement / falsifier,

@@ -510,10 +510,14 @@ Aegis 可以让宿主工作得更像一个治理严谨的工程代理，但当�
 - `SubagentContextPacket`
 - `TodoCheckpointDraft`
 - `ResumeStateHint`
+- `DriftCheckDraft`
 
 Aegis 也可以按需产出 advisory 的 `Trace Digest` 白盒摘要。`Trace Digest`
 不是权威 `GateDecision`、`PolicySnapshot` 或 completion authority。
-- `DriftCheckDraft`
+
+Aegis 也可以从现有 draft 和 plan 渲染 `Execution Readiness View`，作为人类
+可读的执行 handoff。这个 view 不是新的权威 artifact type，也不是
+`GateDecision`、`PolicySnapshot` 或 completion authority。
 
 这些都是 draft、hint 或 projection input。它们可以帮助未来 runtime core
 做判断，但不能被写成当前仓库已经拥有的最终权威。

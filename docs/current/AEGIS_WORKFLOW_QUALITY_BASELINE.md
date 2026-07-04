@@ -283,6 +283,10 @@ Pass criteria:
   non-goals, trade-offs, and decision-needed clarity
 - `writing-plans` can use a compact `Plan Pressure Test` for owner / contract /
   retirement risk, verification scope, and task executability
+- `writing-plans` can render an `Execution Readiness View` from existing
+  runtime-ready drafts and the task plan for medium/high, subagent,
+  handoff-prone, or long-running execution handoffs. This is a human-readable
+  view, not a new artifact owner or approval gate.
 - `brainstorming` and `writing-plans` can use a compact `Architecture Integrity
   Lens` when an executable direction may still encode responsibility overlap,
   a wrong canonical owner, caller-side fallback, stale path, or missed
@@ -316,6 +320,9 @@ Pass criteria:
 - readiness, review, retro, and plan pressure outputs remain advisory
   method-pack guidance, not merge approval, publish authorization,
   authoritative `GateDecision`, or completion authority
+- `Execution Readiness View` follows the same boundary: it may make
+  implementation start conditions visible, but it must not claim
+  `gate-passed`, `completion-granted`, or `authoritatively-safe`
 
 ### 3.15 Baseline Role Alignment
 
@@ -677,7 +684,13 @@ Plan-Time Complexity Check: target files, add-in-place risk, better boundary, re
 Tasks: bite-sized steps with verification
 Risks: residual unknowns and rollback surface
 Retirement: old owner/fallback handling when applicable
+Execution Readiness View: optional human-readable rendering of intent lock, scope fence, baseline lock, owner / contract constraints, compatibility boundary, retirement boundary, task batches, test obligations, review gates, drift / rewind rules, and evidence required before completion
 ```
+
+Use `Execution Readiness View` when a plan is about to cross into subagent,
+handoff-prone, long-running, medium/high, architecture, contract, compatibility,
+or retirement-sensitive execution. Skip it for tiny fast-path tasks unless the
+user asks for an execution handoff readback.
 
 Do not redesign without cause. Do not create a new durable plan when a compact
 Slice Card inside the parent workstream is enough.
@@ -991,6 +1004,7 @@ Aegis Visibility: why checkpoint, resume, drift, or handoff discipline is shapin
 TodoCheckpointDraft: current todo, completed todos, active slice, next step
 BaselineUsageDraft: required refs, acknowledged refs, cited refs, missing refs, decision
 Slice Card: goal, parent plan/spec, files, boundary, verification, stop
+Execution Readiness View: re-read or refresh when resuming a medium/high parent plan or handoff-prone workstream
 Evidence: command/file/log refs
 DriftCheckDraft: scope, compatibility, retirement, decision
 Risk / Unknown: blockers or missing evidence
@@ -1000,6 +1014,11 @@ Next: next smallest safe action
 Low-complexity tasks skip `work/`. Micro-slices reuse the parent plan/spec and
 update the existing long-task checkpoint/evidence trail instead of creating
 per-slice plan or spec files.
+When an `Execution Readiness View` exists, resume and checkpoint updates compare
+the active slice against its intent lock, scope fence, baseline lock,
+compatibility boundary, retirement boundary, test obligations, and review gates.
+Drift routes back to planning or a refreshed advisory handoff instead of
+continuing from chat memory alone.
 
 ### 4.7a `executing-plans`
 
@@ -1017,6 +1036,7 @@ Todo: active task, completed tasks, next task
 Change Necessity: inherited from plan or compactly recreated before new source-code paths
 Complexity Budget: planned pressure and governance for the active edit
 Pre-Edit Complexity Check: safer edit boundary and pause condition
+Execution Readiness View: read before implementation when provided by the plan or long-task checkpoint
 Verification: commands, scope, and result for the slice
 Checkpoint: TodoCheckpointDraft, DriftCheckDraft, evidence refs
 ```
@@ -1024,7 +1044,9 @@ Checkpoint: TodoCheckpointDraft, DriftCheckDraft, evidence refs
 This workflow executes a plan; it does not redesign without cause and does not
 grant completion authority. If the active slice contradicts the plan's owner,
 complexity, or verification boundary, return to plan review instead of pushing
-through.
+through. If an `Execution Readiness View` contradicts the current plan, baseline,
+or worktree evidence, refresh the advisory handoff or return to planning before
+editing.
 
 ### 4.8 `recording-architecture-decisions`
 
