@@ -380,7 +380,10 @@ Pass criteria:
 - non-trivial skill use starts with an `Aegis Reason Note` that explains why
   Aegis is shaping the task and what quality risk it reduces
 - Aegis Visibility Non-Omission Rule: when an Aegis skill is loaded and the task is not an obvious tiny fast-path, the first substantive user-visible stage must include one natural Aegis Visibility sentence naming why Aegis is shaping the task and what quality risk it reduces
-- final closeouts for non-trivial Aegis-shaped work must keep one natural Aegis Visibility sentence; concise final answers are not reasons to drop this slot
+- final closeouts for non-trivial Aegis-shaped work default to a compact
+  `Aegis Impact and Safety Receipt`; a single natural Aegis sentence is only a
+  minimum fallback for obvious low-risk work, and concise final answers are not
+  reasons to drop the safety fields
 - if the user asks after the fact why Aegis was not visible, the answer is a recovery path and not a substitute for the required entry visibility and final closeout
 - task-owning workflows expose an `Aegis Visibility` semantic slot when Aegis
   materially changes the work: design-first restraint in `brainstorming`,
@@ -399,8 +402,9 @@ Pass criteria:
 - obvious tiny fast-path work can keep the trace implicit unless the user asks
   why Aegis did or did not trigger
 - completion output keeps Aegis user-visible for non-trivial Aegis-shaped work
-  and naturally shows how Aegis influenced boundary judgment, evidence
-  discipline, or residual risk visibility
+  and shows how Aegis changed the decision path, avoided likely misfixes, held
+  boundaries, checked baseline/complexity safety, required evidence, and kept
+  residual risk visible
 - Aegis may appear more than once in the closeout when it materially shaped
   multiple parts of the judgment, but each mention should carry task-specific
   information rather than repeated slogan wording
@@ -419,8 +423,9 @@ Pass criteria:
   external content, private text, and secret-like values
 - trace may summarize decision rationale, but it must not expose raw chain-of-thought or raw internal reasoning
 - `Trace Overhead Budget`: tiny fast-path work stays implicit; non-trivial
-  inline visibility stays to a natural sentence by default; completion receipts
-  stay compact; full `Trace Digest` is on-demand or audit/release/debug scoped
+  entry visibility stays to a natural sentence by default; completion output
+  uses the compact impact/safety receipt by default; full `Trace Digest` is
+  on-demand or audit/release/debug scoped
 - the trace stays advisory method-pack transparency, not runtime authority, not
   a runtime gate, and not completion authority
 
@@ -433,13 +438,16 @@ Aegis Reason Note: <why Aegis is shaping the next step and what quality risk it 
 Completion shape:
 
 ```text
-Aegis is explicitly visible somewhere in the closeout and is naturally tied to:
-- boundary held steady, or
-- evidence / verification discipline added, or
-- residual risk / uncovered scope kept visible
-
-If Aegis materially shaped more than one of those areas, it may appear more
-than once, but the wording should stay task-specific rather than formulaic.
+Aegis Impact and Safety Receipt:
+- Key judgment:
+- Avoided misfix:
+- Boundary held:
+- Baseline alignment:
+- Complexity control:
+- Evidence strength:
+- Uncovered risk:
+- Next most valuable verification:
+- Aegis path:
 ```
 
 Structured trace, only when audit/debug/release/long-task review or user request needs it:
@@ -499,9 +507,16 @@ Pass criteria:
 - natural expression may be concise, but it must not erase non-omittable
   semantic slots; for non-trivial loaded-skill work, entry visibility and final
   closeout are required even when no fixed heading is used
-- completion output may use a compact `Governance Receipt` that groups evidence,
-  covered scope, uncovered scope, residual risk, confidence, and triggered
-  governance closure
+- completion output for non-trivial Aegis-shaped work uses a compact
+  `Aegis Impact and Safety Receipt` by default. It groups value and safety:
+  key judgment, avoided misfix, boundary held, baseline alignment, complexity
+  control, evidence strength, uncovered risk, next most valuable verification,
+  and optional Aegis path
+- `Governance Receipt`, `Baseline Alignment`, `Complexity Delta`,
+  `Complexity Closure`, `Readiness Summary`, `Goal Closure`,
+  `Retirement Closure`, and `ADR Backfill Check` remain semantic slots or
+  expanded detail cards, but they should flow through the unified receipt by
+  default instead of becoming separate user-visible report formats
 - fixed skill traces, used-skill lists, and stage handoff logs stay reserved for
   audit, debug, release, long-task review, or explicit user request
 - natural expression does not relax evidence freshness, dual-track governance,
@@ -819,19 +834,21 @@ Required evidence semantic slots:
 - uncovered scope
 - residual risk
 - confidence grade: A | B | C
-Aegis Visibility: boundary held, evidence discipline added, and residual risk or uncovered scope kept visible
+Aegis Visibility: decision boundary, evidence discipline, baseline/complexity safety, and residual risk kept visible
 Semantic Slots: required governance fields may appear as localized headings,
 natural prose, or compact cards when they remain explicit and auditable
 Natural Surface: natural user-facing wording is valid when it preserves the
 semantic slots
-Governance Receipt: compact closeout for Aegis-shaped non-trivial work, naming
-the boundary held, evidence, covered and uncovered scope, residual risk, and
-confidence
+Aegis Impact and Safety Receipt: default compact closeout for Aegis-shaped
+non-trivial work, naming key judgment, avoided misfix, boundary held, baseline
+alignment, complexity control, evidence strength, uncovered risk, next most
+valuable verification, and optional Aegis path
+Governance Receipt: compatibility name for the completion closeout slot; its
+user-facing rendering should flow through the impact/safety receipt by default
 Readiness Summary: tests, docs, version, host compatibility, residual risk
-Natural Aegis closeout: Aegis stays explicitly visible in non-trivial closeout
-when it materially shaped the task, and is naturally tied to the boundary,
-evidence discipline, or residual risk it influenced; structured trace only for
-audit/debug/release/long-task review or user request
+Natural Aegis closeout: the receipt stays localized and natural; a single
+sentence is only the minimum fallback for low-risk work, not the default
+non-trivial closeout
 Trace Digest: on-demand white-box summary for execution trace, evidence chain,
 retrieval chain, static rules evaluated, rule effects, triggered and skipped
 skills, tool/command trace, verification trace, stability signals, value
@@ -842,14 +859,18 @@ Major Complexity Alert: materially oversized maintained artifact that needs expl
 ```
 
 Localize completion card labels and explanatory prose to the user's language.
-Keep commands, paths, code identifiers, stable enum values, and exact product
-names unchanged. For important Aegis product terms, include the stable English
-identifier only when it prevents ambiguity, usually beside a user-language
-explanation on first use.
+Do not default to bilingual labels or mixed-language explanations. Keep
+commands, paths, code identifiers, test names, error codes, config keys, stable
+enum values, raw evidence strings, and exact product names unchanged. For
+important Aegis product terms, include the stable English identifier only when
+auditability or exact doc cross-reference requires it.
 
 When project instructions require baseline reporting, or completed medium/high
 work touched requirement, product, or architecture surfaces, include an advisory
-`Baseline Alignment` result before the final completion claim:
+`Baseline Alignment` result before the final completion claim. By default,
+render its user-facing conclusion in the receipt's baseline alignment field and
+use the expanded card only for audit, release, architecture, or user-requested
+detail:
 
 ```text
 Baseline Alignment:
@@ -952,7 +973,9 @@ authority or decide final evidence sufficiency.
 For the shared `Complexity Delta`, `Complexity Closure`,
 `Completion-Time Complexity Repair Decision`, and `Major Complexity Alert`
 shapes, see
-`docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md`.
+`docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md`. By default, render the
+user-facing conclusion in the receipt's complexity control field; expand the
+cards when meaningful pressure exists or the task is audit/release/high-risk.
 
 For governance, compatibility, cleanup, or retirement work that adds, replaces,
 or retains old logic, include `Retirement Closure`:

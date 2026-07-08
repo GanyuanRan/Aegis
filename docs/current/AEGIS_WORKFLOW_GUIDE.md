@@ -503,9 +503,9 @@ Facts -> Inferences -> Conclusions
 
 This is an ordering principle, not a mandatory top-level template. It must not
 override workflow-owned semantic slots or task-specific output contracts such
-as findings-first code review, verification evidence slots, readiness summaries,
-governance closure, `Execution Readiness View`, `Aegis Visibility`, or
-on-demand `Trace Digest`.
+as findings-first code review, verification evidence slots, the unified
+`Aegis Impact and Safety Receipt`, governance closure,
+`Execution Readiness View`, `Aegis Visibility`, or on-demand `Trace Digest`.
 
 For non-trivial tasks, keep the attention anchors that make the relevant logic
 auditable:
@@ -524,10 +524,15 @@ Extend by task type:
 - Performance: baseline, bottleneck, gains
 - Risk and rollback: trigger conditions, rollback steps, feature flags
 
-When Aegis materially shapes a non-trivial task, it should naturally show the
-governance point it affected: code necessity, existence of a fallback or new
-owner, anti-entropy retirement, baseline alignment, verification boundary, or
-residual risk.
+When Aegis materially shapes a non-trivial task, final completion should use a
+compact impact/safety receipt by default. The receipt should show the decision
+Aegis changed, likely misfixes it avoided, boundaries it held, baseline
+alignment, complexity control, evidence strength, uncovered risk, and the next
+most valuable verification. Individual cards such as Baseline Alignment,
+Complexity Delta, Readiness Summary, Goal Closure, Retirement Closure, and ADR
+Backfill Check remain available as expanded details for risk, release, audit,
+or user request; they should not each become separate default completion
+formats.
 
 When the user asks for white-box auditability, use an on-demand `Trace Digest`
 instead of a default process log. It may summarize execution trace, evidence

@@ -124,6 +124,10 @@ review instead of normalizing add-in-place growth.
    Complexity Closure**: `verification-before-completion` compares the final
    diff against the planned budget and reports whether the slice is
    `within-budget`, `exceeded-and-governed`, or `exceeded-unresolved`.
+   User-facing completion should summarize this in the unified Aegis impact /
+   safety receipt's complexity-control field by default, and expand the cards
+   below when meaningful pressure, release risk, audit needs, or user request
+   requires detail.
 
 ## 6. Completion-Time Closure
 

@@ -266,8 +266,12 @@ assert_contains "$baseline" "why Aegis is shaping" \
     "workflow quality baseline explains why Aegis is shaping the task"
 assert_contains "$baseline" "first substantive.*Aegis Visibility|Aegis Visibility.*first substantive" \
     "workflow quality baseline requires entry visibility at first substantive stage"
-assert_contains "$baseline" "final.*concise.*not.*drop|concise.*not.*drop.*final|not reasons to drop this slot" \
-    "workflow quality baseline forbids dropping final visibility for concision"
+assert_contains "$baseline" "Aegis Impact and Safety Receipt" \
+    "workflow quality baseline defines unified impact and safety receipt"
+assert_contains "$baseline" "key judgment.*avoided misfix.*boundary held|avoided misfix.*baseline alignment.*complexity control" \
+    "workflow quality baseline defines impact and safety receipt fields"
+assert_contains "$baseline" "concise.*not.*drop.*safety fields|reasons to drop the safety fields" \
+    "workflow quality baseline forbids dropping receipt safety fields for concision"
 assert_contains "$baseline" "user asks.*recovery path.*not a substitute|recovery path.*not a substitute" \
     "workflow quality baseline treats after-the-fact explanation as recovery only"
 assert_contains "$baseline" "structured trace.*audit.*debug.*release.*long-task review.*user request|audit.*debug.*release.*long-task review.*user request.*structured trace" \
@@ -577,15 +581,27 @@ assert_contains "skills/verification-before-completion/SKILL.md" "Natural Surfac
     "verification skill allows natural user-facing expression"
 assert_contains "skills/verification-before-completion/SKILL.md" "Governance Receipt" \
     "verification skill defines governance receipt closeout"
+assert_contains "skills/verification-before-completion/SKILL.md" "Aegis Impact and Safety Receipt" \
+    "verification skill defines unified impact and safety receipt"
+assert_contains "skills/verification-before-completion/SKILL.md" "Key judgment" \
+    "verification skill reports key judgment in the unified receipt"
+assert_contains "skills/verification-before-completion/SKILL.md" "Avoided misfix" \
+    "verification skill reports avoided misfix in the unified receipt"
+assert_contains "skills/verification-before-completion/SKILL.md" "Baseline alignment" \
+    "verification skill reports baseline safety in the unified receipt"
+assert_contains "skills/verification-before-completion/SKILL.md" "Complexity control" \
+    "verification skill reports complexity safety in the unified receipt"
+assert_contains "skills/verification-before-completion/SKILL.md" "Next most valuable verification" \
+    "verification skill reports next highest-value verification in the unified receipt"
 assert_contains "skills/verification-before-completion/SKILL.md" "natural.*semantic slots|semantic slots.*natural" \
     "verification skill treats natural expression as valid when semantic slots are present"
-assert_contains "skills/verification-before-completion/SKILL.md" "final.*concise.*not.*drop|concise final answers still keep one natural Aegis sentence" \
-    "verification skill keeps Aegis closeout in concise finals"
+assert_contains "skills/verification-before-completion/SKILL.md" "single natural Aegis sentence.*minimum fallback|minimum fallback.*single natural Aegis sentence" \
+    "verification skill treats one-sentence closeout as a minimum fallback, not the default non-trivial closeout"
 assert_contains "skills/verification-before-completion/SKILL.md" "used-skills list" \
     "verification skill rejects used-skills list as visibility substitute"
 assert_contains "skills/verification-before-completion/SKILL.md" "one sentence" \
-    "verification skill keeps Aegis closeout concise by default"
-assert_contains "skills/verification-before-completion/SKILL.md" "hold one boundary steady" \
+    "verification skill still allows tiny low-risk one-sentence fallback"
+assert_contains "skills/verification-before-completion/SKILL.md" "held one narrow boundary steady|Boundary held" \
     "verification skill frames Aegis visibility as boundary discipline"
 assert_contains "skills/verification-before-completion/SKILL.md" "Do not default to a visible.*Aegis Contribution Note" \
     "verification skill avoids self-credit heading by default"
@@ -609,6 +625,8 @@ assert_contains "skills/verification-before-completion/SKILL.md" "User-Language 
     "verification skill defines user-language output rule"
 assert_contains "skills/verification-before-completion/SKILL.md" "section labels, field labels, and explanatory prose" \
     "verification skill localizes user-facing completion cards"
+assert_contains "skills/verification-before-completion/SKILL.md" "Do not.*bilingual labels|mixed-language explanations" \
+    "verification skill avoids bilingual/mixed-language receipt labels by default"
 assert_contains "skills/verification-before-completion/SKILL.md" "Architecture Alignment" \
     "verification skill defines architecture alignment check"
 assert_contains "skills/verification-before-completion/SKILL.md" "Baseline Alignment" \

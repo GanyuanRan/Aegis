@@ -107,8 +107,10 @@ Root improvement rule:
   used-skills log.
 - Treat non-trivial loaded-skill visibility as non-omittable: the first
   substantive stage gets one natural visibility sentence, and the final
-  response keeps one task-specific closeout sentence. Concision and
-  natural-surface wording do not authorize dropping the slot.
+  response uses a compact `Aegis Impact and Safety Receipt` by default.
+  A single closeout sentence is only the minimum fallback for obvious low-risk
+  work. Concision and natural-surface wording do not authorize dropping the
+  safety fields.
 - Scale output depth by task complexity and risk.
 - Prefer compact output contracts over broad template expansion.
 - Apply the Micro-Slice Artifact Budget when long tasks split into many tiny
@@ -213,6 +215,11 @@ Canonical lenses:
   first, with findings before summary
 - `Readiness Summary` in `verification-before-completion`: tests, docs,
   version, host compatibility, uncovered scope, and residual risk
+- `Aegis Impact and Safety Receipt` in `verification-before-completion`: the
+  unified user-facing completion surface for non-trivial Aegis-shaped work,
+  consolidating key judgment, avoided misfix, boundary held, baseline
+  alignment, complexity control, evidence strength, uncovered risk, next
+  verification, and optional Aegis path
 - `Complexity Governance Suggestion` in `verification-before-completion`:
   none, monitor, schedule-refactor, extract helper, split owner, or open
   follow-up based on the actual diff
@@ -673,9 +680,12 @@ Extended by task type:
 - Risk and rollback: trigger conditions, rollback steps, feature flags
 
 These anchors must not override task-specific structures such as findings-first
-code review, verification evidence slots, readiness summaries,
-repair/retirement closure, complexity closure, Aegis Visibility, Execution
-Readiness View, or requested Trace Digest.
+code review, verification evidence slots, the unified Aegis Impact and Safety
+Receipt, repair/retirement closure, complexity closure, Aegis Visibility,
+Execution Readiness View, or requested Trace Digest. When final-output anchors
+and completion governance both apply, render the user-facing completion through
+the unified receipt and expand individual cards only when risk, release, audit,
+or user request requires it.
 
 ---
 

@@ -168,22 +168,22 @@
       "prompt": "Before we call this done, verify whether the work is complete and tell me the evidence.",
       "expectedPrimarySkill": "verification-before-completion",
       "allowedSecondarySkills": [],
-      "mustNotDo": ["claim-complete-without-evidence", "hide-residual-risk"],
-      "expectedOutputShape": "evidence-slots",
+      "mustNotDo": ["claim-complete-without-evidence", "hide-residual-risk", "skip-impact-safety-receipt"],
+      "expectedOutputShape": "impact-safety-receipt-with-evidence-slots",
       "workspacePolicy": "check-workspace-if-docs-aegis-was-touched",
       "expectedArtifacts": ["EvidenceBundleDraft"],
-      "verificationSignal": "fresh-command-exit-status-and-covered-scope"
+      "verificationSignal": "impact-safety-receipt-key-judgment-boundary-baseline-or-risk-evidence-strength-uncovered-risk-fresh-command-exit-status-covered-scope"
     },
     {
       "id": "completion-governance-receipt-natural",
       "prompt": "Before calling this done, give me a natural completion note that still exposes what was verified, what was not covered, the residual risk, and confidence.",
       "expectedPrimarySkill": "verification-before-completion",
       "allowedSecondarySkills": [],
-      "mustNotDo": ["skip-governance-receipt", "drop-covered-scope", "drop-uncovered-scope", "drop-confidence", "replace-evidence-slots-with-skill-trace"],
-      "expectedOutputShape": "natural-evidence-slots-plus-governance-receipt",
+      "mustNotDo": ["skip-impact-safety-receipt", "skip-governance-receipt", "drop-covered-scope", "drop-uncovered-scope", "drop-confidence", "replace-evidence-slots-with-skill-trace"],
+      "expectedOutputShape": "natural-impact-safety-receipt-with-evidence-slots",
       "workspacePolicy": "check-workspace-if-docs-aegis-was-touched",
       "expectedArtifacts": ["EvidenceBundleDraft"],
-      "verificationSignal": "governance-receipt-command-exit-status-covered-scope-uncovered-scope-residual-risk-confidence"
+      "verificationSignal": "impact-safety-receipt-key-judgment-avoided-misfix-boundary-baseline-alignment-complexity-control-command-exit-status-covered-scope-uncovered-scope-residual-risk-confidence"
     },
     {
       "id": "architecture-completion-adr-backfill-check",
@@ -641,14 +641,14 @@
     },
     {
       "id": "compressed-final-keeps-aegis-visibility",
-      "prompt": "Finish a non-trivial Aegis-shaped repair with a short final answer. Keep it concise, but do not drop the Aegis closeout sentence.",
+      "prompt": "Finish a non-trivial Aegis-shaped repair with a short final answer. Keep it concise, but do not drop the impact and safety receipt.",
       "expectedPrimarySkill": "verification-before-completion",
       "allowedSecondarySkills": [],
-      "mustNotDo": ["drop-visibility-because-final-is-concise", "replace-visibility-with-used-skills-list", "only-explain-aegis-after-user-asks", "treat-closeout-as-completion-authority"],
-      "expectedOutputShape": "concise-final-with-natural-aegis-closeout",
+      "mustNotDo": ["drop-receipt-because-final-is-concise", "drop-visibility-because-final-is-concise", "replace-visibility-with-used-skills-list", "only-explain-aegis-after-user-asks", "treat-closeout-as-completion-authority"],
+      "expectedOutputShape": "concise-final-with-impact-safety-receipt",
       "workspacePolicy": "no-new-workspace-records-unless-existing-workstream-needs-evidence",
       "expectedArtifacts": ["EvidenceBundleDraft"],
-      "verificationSignal": "non-trivial-aegis-shaped-final-natural-aegis-closeout-boundary-evidence-residual-risk-visible-concise-not-omitted-advisory-not-authority"
+      "verificationSignal": "non-trivial-aegis-shaped-final-impact-safety-receipt-key-judgment-boundary-baseline-or-complexity-evidence-uncovered-risk-visible-concise-not-omitted-advisory-not-authority"
     },
     {
       "id": "aegis-semantic-slots-natural-surface",
@@ -870,7 +870,7 @@
     "anti-entropy-governance": ["Aegis Visibility", "Anti-Entropy Declaration", "Retirement Decision", "Verification Plan", "Gap Closure", "Data Destruction Guard"],
     "requesting-code-review": ["Aegis Visibility", "Findings First", "Evidence Review", "Baseline / Current Authority", "Baseline Role Alignment", "Compatibility / Retirement", "Review Readiness"],
     "recording-architecture-decisions": ["Aegis Visibility", "Decision Candidate", "ADR Gate", "Retro / Memory Filter", "ADR Action", "Owner Surface", "Baseline Sync", "Boundary"],
-    "verification-before-completion": ["Aegis Visibility", "evidence-action", "verification-result", "covered-scope", "uncovered-scope", "residual-risk", "confidence-grade", "Goal status", "Success evidence", "Stop state", "Non-goals respected", "Readiness Summary", "Execution Readiness View", "Natural Aegis closeout", "Semantic Slots", "Natural Surface", "Governance Receipt", "Trace Digest", "Complexity Delta", "Complexity Closure", "Completion-Time Complexity Repair Decision", "Complexity Governance Suggestion", "Major Complexity Alert", "Baseline Alignment", "Architecture Alignment", "ADR Backfill Check", "Retirement Closure", "Anti-Entropy Declaration", "Data Destruction Guard"],
+    "verification-before-completion": ["Aegis Visibility", "Aegis Impact and Safety Receipt", "Key judgment", "Avoided misfix", "Boundary held", "Baseline alignment", "Complexity control", "Evidence strength", "Uncovered risk", "Next most valuable verification", "Aegis path", "evidence-action", "verification-result", "covered-scope", "uncovered-scope", "residual-risk", "confidence-grade", "Goal status", "Success evidence", "Stop state", "Non-goals respected", "Readiness Summary", "Execution Readiness View", "Natural Aegis closeout", "Semantic Slots", "Natural Surface", "Governance Receipt", "Trace Digest", "Complexity Delta", "Complexity Closure", "Completion-Time Complexity Repair Decision", "Complexity Governance Suggestion", "Major Complexity Alert", "Baseline Alignment", "Architecture Alignment", "ADR Backfill Check", "Retirement Closure", "Anti-Entropy Declaration", "Data Destruction Guard"],
     "long-task-continuation": ["Aegis Visibility", "TodoCheckpointDraft", "BaselineUsageDraft", "Slice Card", "Execution Readiness View", "Evidence", "DriftCheckDraft", "Risk / Unknown", "Next"],
     "executing-plans": ["Aegis Visibility", "Plan Review", "Todo", "Change Necessity", "Complexity Budget", "Pre-Edit Complexity Check", "Pre-Edit Owner-Fit Decision", "Execution Readiness View", "Verification", "Checkpoint"]
   }

@@ -471,8 +471,8 @@ Aegis 面向用户的输出优先使用中文。通常应先给出有证据支�
 
 这是信息排序原则，不是强制顶层模板。它不得覆盖 workflow 自己拥有的
 semantic slots 或任务专属输出契约，例如 findings-first code review、验证证据
-槽、readiness summary、governance closure、`Execution Readiness View`、
-`Aegis Visibility` 或按需 `Trace Digest`。
+槽、统一的 Aegis 影响与安全回执、governance closure、
+`Execution Readiness View`、`Aegis Visibility` 或按需 `Trace Digest`。
 
 对于非平凡任务，应保留能迫使 agent 关注相关逻辑的注意力锚点：
 
@@ -490,8 +490,13 @@ semantic slots 或任务专属输出契约，例如 findings-first code review�
 - 性能：基线、瓶颈、收益
 - 风险与回滚：触发条件、回滚步骤、feature flag
 
-当 Aegis 实质影响一个非平凡任务时，应自然露出它影响的治理点：代码必要性、
-fallback 或新 owner 是否必要、反熵退役、baseline alignment、验证边界或剩余风险。
+当 Aegis 实质影响一个非平凡任务时，最终完成回复默认使用紧凑的影响与安全
+回执。回执应说明 Aegis 改变了什么关键判断、避免了什么错修、守住了什么
+边界、基线是否对齐、复杂度是否受控、证据强度如何、还有哪些未覆盖风险，
+以及下一步最值钱的验证是什么。Baseline Alignment、Complexity Delta、
+Readiness Summary、Goal Closure、Retirement Closure 和 ADR Backfill Check
+仍可作为高风险、发布、审计或用户要求时的展开详情，但不应各自变成默认
+完成回复格式。
 
 当用户要求白盒审计时，使用按需 `Trace Digest`，而不是默认流程日志。它可以
 总结执行轨迹、证据链、检索链、内置静态规则效果、skill 调用稳定性、tool /

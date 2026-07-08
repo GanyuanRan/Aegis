@@ -1,5 +1,53 @@
 # Aegis Release Notes
 
+## v2.3.6 (2026-07-08)
+
+### Aegis Impact and Safety Receipt
+
+- Added `verification-before-completion` as the canonical owner of the unified
+  `Aegis Impact and Safety Receipt` for non-trivial Aegis-shaped completion.
+- Standardized the compact closeout around key judgment, avoided misfix,
+  boundary held, baseline alignment, complexity control, evidence strength,
+  uncovered risk, next verification, and Aegis path.
+- Localized receipt titles, labels, and prose to the user's language while
+  keeping commands, paths, code identifiers, enum values, and evidence strings
+  in their original form.
+
+### Workflow Closeout Consolidation
+
+- Updated anti-entropy governance, execution, long-task continuation, and
+  systematic debugging workflows so they feed completion evidence into the
+  unified receipt instead of inventing independent final-response shapes.
+- Retained expanded semantic slots such as `Governance Receipt`, `Baseline
+  Alignment`, `Complexity Delta`, `Complexity Closure`, `Readiness Summary`,
+  `Goal Closure`, `Retirement Closure`, and `ADR Backfill Check` for audit,
+  release, architecture, and high-risk work.
+- Clarified that the receipt remains advisory method-pack output and does not
+  grant `GateDecision`, `PolicySnapshot`, or final `completion authority`.
+
+### User Confidence Signals
+
+- Added explicit safety-oriented closeout language for baseline alignment,
+  implementation drift, design-defect visibility, complexity control, evidence
+  strength, and residual risk.
+- Strengthened workflow-quality fixtures and validator coverage so completion
+  responses must preserve value, safety, localization, and auditability signals.
+
+### Verification
+
+- Fresh checks passed:
+  `bash scripts/bump-version.sh 2.3.6`,
+  `bash scripts/bump-version.sh --check`,
+  `bash tests/e2e/run-all.sh --full --host-profile fast`,
+  `python -m json.tool tests/e2e/fixtures/workflow-quality-matrix.json`, and
+  `git diff --check`.
+
+### Release Surface
+
+- Bumped declared package and host manifest versions from `2.3.5` to `2.3.6`.
+- This release still ships `Aegis Method Pack (runtime-ready)`. It does not add
+  authoritative `GateDecision`, `PolicySnapshot`, or `completion authority`.
+
 ## v2.3.5 (2026-07-04)
 
 ### TDD Default Mode

@@ -648,6 +648,7 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
     "compressed-final-keeps-aegis-visibility": {
         "primary": "verification-before-completion",
         "must_not": [
+            "drop-receipt-because-final-is-concise",
             "drop-visibility-because-final-is-concise",
             "replace-visibility-with-used-skills-list",
             "only-explain-aegis-after-user-asks",
@@ -655,15 +656,17 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
         ],
         "signals": [
             "non-trivial-aegis-shaped-final",
-            "natural-aegis-closeout",
+            "impact-safety-receipt",
+            "key-judgment",
             "boundary",
+            "baseline-or-complexity",
             "evidence",
-            "residual-risk",
+            "uncovered-risk",
             "visible",
             "concise-not-omitted",
             "advisory-not-authority",
         ],
-        "shapes": ["concise-final-with-natural-aegis-closeout"],
+        "shapes": ["concise-final-with-impact-safety-receipt"],
     },
     "aegis-semantic-slots-natural-surface": {
         "primary": "systematic-debugging",
@@ -716,6 +719,7 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
     "completion-governance-receipt-natural": {
         "primary": "verification-before-completion",
         "must_not": [
+            "skip-impact-safety-receipt",
             "skip-governance-receipt",
             "drop-covered-scope",
             "drop-uncovered-scope",
@@ -723,14 +727,19 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
             "replace-evidence-slots-with-skill-trace",
         ],
         "signals": [
-            "governance-receipt",
+            "impact-safety-receipt",
+            "key-judgment",
+            "avoided-misfix",
+            "boundary",
+            "baseline-alignment",
+            "complexity-control",
             "command-exit-status",
             "covered-scope",
             "uncovered-scope",
             "residual-risk",
             "confidence",
         ],
-        "shapes": ["natural-evidence-slots"],
+        "shapes": ["natural-impact-safety-receipt-with-evidence-slots"],
     },
     "strong-opinion-review-findings-first": {
         "primary": "requesting-code-review",
