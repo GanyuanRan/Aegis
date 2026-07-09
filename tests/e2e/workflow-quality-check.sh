@@ -575,8 +575,16 @@ assert_contains "skills/verification-before-completion/SKILL.md" "Required evide
     "verification skill defines required evidence semantic slots"
 assert_not_contains "skills/verification-before-completion/SKILL.md" "Command / Check|Exit Status" \
     "verification skill does not require legacy fixed English evidence fields"
+assert_contains "skills/verification-before-completion/SKILL.md" "L0 fast-path" \
+    "verification skill defines tiny fast-path closeout"
+assert_contains "skills/verification-before-completion/SKILL.md" "L1 default|L1 Default" \
+    "verification skill defines default non-trivial receipt closeout"
+assert_contains "skills/verification-before-completion/SKILL.md" "L2 expanded|L2 Expanded" \
+    "verification skill defines triggered expanded closeout"
+assert_contains "skills/verification-before-completion/SKILL.md" "Do not output parallel final reports|one completion surface" \
+    "verification skill prevents parallel closeout contracts"
 assert_contains "skills/verification-before-completion/SKILL.md" "Readiness Summary" \
-    "verification skill defines readiness summary"
+    "verification skill preserves readiness summary as triggered detail"
 assert_contains "skills/verification-before-completion/SKILL.md" "Execution Readiness View" \
     "verification skill accounts for execution readiness view"
 assert_contains "skills/verification-before-completion/SKILL.md" "Do not treat the view itself as verification evidence" \
@@ -595,8 +603,8 @@ assert_contains "skills/verification-before-completion/SKILL.md" "single complet
     "verification skill owns the single completion closeout aggregator"
 assert_contains "skills/verification-before-completion/SKILL.md" "must not replace the receipt|competing final report owner" \
     "verification skill prevents adjacent structures from replacing the receipt"
-assert_contains "skills/verification-before-completion/SKILL.md" "output conformance, not a routing trigger" \
-    "verification skill does not turn receipt aggregation into a routing trigger"
+assert_contains "skills/verification-before-completion/SKILL.md" "Expanded structures.*inputs.*optional detail cards|optional detail cards.*not competing final report owners" \
+    "verification skill treats expanded cards as conditional inputs"
 assert_contains "skills/verification-before-completion/SKILL.md" "Key judgment" \
     "verification skill reports key judgment in the unified receipt"
 assert_contains "skills/verification-before-completion/SKILL.md" "Avoided misfix" \
@@ -607,22 +615,22 @@ assert_contains "skills/verification-before-completion/SKILL.md" "Complexity con
     "verification skill reports complexity safety in the unified receipt"
 assert_contains "skills/verification-before-completion/SKILL.md" "Next most valuable verification" \
     "verification skill reports next highest-value verification in the unified receipt"
+assert_contains "skills/verification-before-completion/SKILL.md" "Evidence slots fold into.*Evidence strength.*Uncovered risk|Evidence strength.*Uncovered risk" \
+    "verification skill folds evidence slots into the compact receipt"
 assert_contains "skills/verification-before-completion/SKILL.md" "natural.*semantic slots|semantic slots.*natural" \
     "verification skill treats natural expression as valid when semantic slots are present"
-assert_contains "skills/verification-before-completion/SKILL.md" "single natural Aegis sentence.*minimum fallback|minimum fallback.*single natural Aegis sentence" \
-    "verification skill treats one-sentence closeout as a minimum fallback, not the default non-trivial closeout"
+assert_contains "skills/verification-before-completion/SKILL.md" "One natural sentence is enough|one evidence sentence" \
+    "verification skill still allows tiny low-risk one-sentence fallback"
 assert_contains "skills/verification-before-completion/SKILL.md" "used-skills list" \
     "verification skill rejects used-skills list as visibility substitute"
-assert_contains "skills/verification-before-completion/SKILL.md" "one sentence" \
-    "verification skill still allows tiny low-risk one-sentence fallback"
 assert_contains "skills/verification-before-completion/SKILL.md" "held one narrow boundary steady|Boundary held" \
     "verification skill frames Aegis visibility as boundary discipline"
-assert_contains "skills/verification-before-completion/SKILL.md" "Do not default to a visible.*Aegis Contribution Note" \
+assert_contains "skills/verification-before-completion/SKILL.md" "Aegis Contribution Note" \
     "verification skill avoids self-credit heading by default"
 assert_contains "skills/verification-before-completion/SKILL.md" "structured trace.*audit.*debug.*release.*long-task review.*user request|audit.*debug.*release.*long-task review.*user request.*structured trace" \
     "verification skill reserves structured trace for audit or requested cases"
 assert_contains "skills/verification-before-completion/SKILL.md" "Trace Digest" \
-    "verification skill defines on-demand trace digest closeout"
+    "verification skill preserves trace digest as triggered detail"
 assert_contains "skills/verification-before-completion/SKILL.md" "measured.*observed.*inferred.*declared.*unknown" \
     "verification skill labels trace confidence source"
 assert_contains "skills/verification-before-completion/SKILL.md" "redaction" \
@@ -642,19 +650,15 @@ assert_contains "skills/verification-before-completion/SKILL.md" "section labels
 assert_contains "skills/verification-before-completion/SKILL.md" "Do not.*bilingual labels|mixed-language explanations" \
     "verification skill avoids bilingual/mixed-language receipt labels by default"
 assert_contains "skills/verification-before-completion/SKILL.md" "Architecture Alignment" \
-    "verification skill defines architecture alignment check"
+    "verification skill preserves architecture alignment as a compatibility alias"
+assert_contains "skills/verification-before-completion/SKILL.md" "Architecture Alignment.*compatibility alias|architecture-scoped compatibility alias" \
+    "verification skill does not make architecture alignment a second default card"
 assert_contains "skills/verification-before-completion/SKILL.md" "Baseline Alignment" \
-    "verification skill defines baseline alignment check"
-assert_contains "skills/verification-before-completion/SKILL.md" "Requirement / acceptance alignment" \
-    "verification skill checks requirement acceptance alignment"
-assert_contains "skills/verification-before-completion/SKILL.md" "Requirement Ready Check" \
-    "verification skill reports requirement ready check"
-assert_contains "skills/verification-before-completion/SKILL.md" "Requirement acceptance boundary" \
+    "verification skill preserves baseline alignment trigger"
+assert_contains "skills/verification-before-completion/SKILL.md" "Requirement accepted" \
     "verification skill distinguishes task or slice completion from requirement acceptance"
 assert_contains "skills/verification-before-completion/SKILL.md" "task or slice completion.*accepted requirement satisfaction|accepted requirement satisfaction.*task or slice completion" \
     "verification skill prevents overstating task or slice completion as requirement acceptance"
-assert_contains "skills/verification-before-completion/SKILL.md" "Architecture / owner / contract alignment" \
-    "verification skill checks architecture owner contract alignment"
 assert_contains "skills/verification-before-completion/SKILL.md" "Product / Requirement Baseline" \
     "verification skill names product requirement baseline role"
 assert_contains "skills/verification-before-completion/SKILL.md" "Architecture / Runtime Boundary Baseline" \
@@ -665,39 +669,41 @@ assert_contains "skills/verification-before-completion/SKILL.md" "Implementation
     "verification skill includes implementation drift result"
 assert_contains "skills/verification-before-completion/SKILL.md" "scope: requirements | architecture | both" \
     "verification skill includes defect drift scope taxonomy"
-assert_contains "skills/verification-before-completion/SKILL.md" "Integrity Residual Risk" \
-    "verification skill reports architecture integrity residual risk when triggered"
 assert_contains "skills/verification-before-completion/SKILL.md" "ADR Backfill Check" \
-    "verification skill defines ADR backfill check"
+    "verification skill preserves ADR backfill as triggered detail"
 assert_contains "skills/verification-before-completion/SKILL.md" "recording-architecture-decisions" \
     "verification skill routes ADR lifecycle closure to the dedicated skill when needed"
 assert_contains "skills/verification-before-completion/SKILL.md" "Complexity Delta" \
-    "verification skill defines complexity delta check"
+    "verification skill preserves complexity delta trigger"
 assert_contains "skills/verification-before-completion/SKILL.md" "Complexity Closure" \
-    "verification skill defines complexity closure"
+    "verification skill preserves complexity closure trigger"
 assert_contains "skills/verification-before-completion/SKILL.md" "Completion-Time Complexity Repair Decision" \
-    "verification skill defines completion-time complexity repair decision"
+    "verification skill references completion-time complexity repair decision"
 assert_contains "skills/verification-before-completion/SKILL.md" "Complexity Governance Suggestion" \
-    "verification skill defines complexity governance suggestion"
+    "verification skill references complexity governance suggestion"
 assert_contains "skills/verification-before-completion/SKILL.md" "Major Complexity Alert" \
-    "verification skill defines major complexity alert"
-assert_contains "skills/verification-before-completion/SKILL.md" "Files newly crossing 800 lines" \
-    "verification skill checks file threshold crossings"
-assert_contains "skills/verification-before-completion/SKILL.md" "Largest touched function/block" \
-    "verification skill checks block-level complexity"
+    "verification skill references major complexity alert"
+assert_contains "skills/verification-before-completion/SKILL.md" "using-aegis/references/complexity-governance.md" \
+    "verification skill points to shared complexity reference"
+assert_contains "skills/verification-before-completion/SKILL.md" "AEGIS_COMPLEXITY_GOVERNANCE_BASELINE" \
+    "verification skill points to complexity baseline owner"
+assert_not_contains "skills/verification-before-completion/SKILL.md" "Files newly crossing 800 lines|Largest touched function/block" \
+    "verification skill does not inline the full complexity expanded card"
 assert_contains "skills/verification-before-completion/SKILL.md" "Retirement Closure" \
-    "verification skill defines retirement closure"
+    "verification skill preserves retirement closure as triggered detail"
 assert_contains "skills/verification-before-completion/SKILL.md" "Anti-Entropy Declaration" \
-    "verification skill defines anti-entropy declaration"
+    "verification skill preserves anti-entropy declaration as triggered detail"
 assert_contains "skills/verification-before-completion/SKILL.md" "Data Destruction Guard" \
-    "verification skill defines data destruction guard"
+    "verification skill preserves data destruction guard as triggered detail"
+assert_contains "skills/verification-before-completion/SKILL.md" "anti-entropy-governance" \
+    "verification skill delegates anti-entropy decision surface"
 assert_contains "skills/verification-before-completion/SKILL.md" "assent such as" \
     "verification skill rejects broad assent as destructive confirmation"
 assert_contains "skills/verification-before-completion/SKILL.md" "report the task as not" \
     "verification skill blocks completion after unconfirmed persistent-state deletion"
-assert_contains "skills/verification-before-completion/SKILL.md" "Retention reason" \
+assert_contains "skills/verification-before-completion/SKILL.md" "retention reason" \
     "verification skill requires retention reason"
-assert_contains "skills/verification-before-completion/SKILL.md" "Retirement trigger" \
+assert_contains "skills/verification-before-completion/SKILL.md" "retirement trigger" \
     "verification skill requires retirement trigger"
 assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" "Requirement Ready Check" \
     "process baseline defines requirement ready check"
@@ -771,20 +777,17 @@ assert_contains "skills/requesting-code-review/code-reviewer.md" "requirements/p
     "code reviewer template checks requirements product alignment"
 assert_contains "skills/requesting-code-review/code-reviewer.md" "Design Defect / Implementation Drift" \
     "code reviewer template uses aligned defect drift terminology"
-assert_contains "agents/code-reviewer.md" "skills/requesting-code-review/code-reviewer.md" \
-    "named code reviewer points to canonical skill template path"
-assert_contains "agents/code-reviewer.md" "canonical Aegis code" \
-    "named code reviewer identifies canonical Aegis review checklist"
-assert_contains "agents/code-reviewer.md" "host compatibility projection" \
-    "named code reviewer is marked as compatibility projection"
-assert_contains "agents/code-reviewer.md" "Map legacy phrasing" \
-    "named code reviewer mirrors legacy defect drift alias handling"
-assert_contains "agents/code-reviewer.md" "requirements/product alignment" \
-    "named code reviewer mirrors requirements product alignment"
-assert_contains "agents/code-reviewer.md" "Design Defect / Implementation Drift" \
-    "named code reviewer mirrors aligned defect drift terminology"
-assert_contains "agents/code-reviewer.md" "ADR Auto Backfill or baseline sync" \
-    "named code reviewer mirrors ADR and baseline sync checks"
+if [[ -e "agents/code-reviewer.md" ]]; then
+    fail "retired root code reviewer agent stays deleted"
+else
+    pass "retired root code reviewer agent stays deleted"
+fi
+assert_not_contains "skills/requesting-code-review/SKILL.md" "aegis:code-reviewer" \
+    "requesting code review no longer depends on retired named agent type"
+assert_contains "skills/requesting-code-review/SKILL.md" "requesting-code-review/code-reviewer.md" \
+    "requesting code review uses canonical reviewer template"
+assert_contains "skills/subagent-driven-development/code-quality-reviewer-prompt.md" "general-purpose reviewer" \
+    "subagent-driven code quality review uses generic reviewer subagent"
 
 assert_contains "skills/recording-architecture-decisions/SKILL.md" "name: recording-architecture-decisions" \
     "recording architecture decisions skill exists"

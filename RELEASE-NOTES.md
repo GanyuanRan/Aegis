@@ -1,5 +1,67 @@
 # Aegis Release Notes
 
+## v2.4.0 (2026-07-09)
+
+### Reviewer Agent Retirement
+
+- Retired the root `agents/code-reviewer.md` prompt so Aegis no longer carries
+  a second reviewer checklist outside the canonical skill-local template.
+- Updated code-review dispatch guidance to use a general-purpose reviewer
+  subagent with `skills/requesting-code-review/code-reviewer.md`.
+- Removed root `agents/` exposure from the Cursor, Claude Code, and CodeBuddy
+  public surfaces where it was still presented as part of the plugin skeleton.
+
+### Compact Verification Closeout
+
+- Reworked `verification-before-completion` around three closeout levels:
+  `L0 fast-path`, `L1 compact receipt`, and `L2 triggered expansions`.
+- Kept the `Aegis Impact and Safety Receipt` as the unified completion surface
+  for non-trivial Aegis-shaped work while treating readiness, trace, baseline,
+  ADR, complexity, and retirement details as conditional expansions.
+- Moved detailed complexity governance fields back to the shared complexity
+  reference and current baseline instead of inlining the full expanded card in
+  the completion hot path.
+
+### Workflow Quality Regression Coverage
+
+- Updated workflow-quality fixtures and validators so the compact closeout
+  contract remains auditable without reviving parallel final report owners.
+- Added regression coverage that the retired root reviewer agent stays deleted
+  and review dispatch no longer depends on the retired `aegis:code-reviewer`
+  named-agent type.
+- Updated host-adapter smoke validation so the Cursor manifest explicitly does
+  not expose retired root agents.
+
+### Verification
+
+- Fresh checks passed:
+  `bash scripts/bump-version.sh 2.4.0`,
+  `bash scripts/bump-version.sh --check`,
+  `python tests/helpers/validate_workflow_quality_matrix.py tests/e2e/fixtures/workflow-quality-matrix.json`,
+  `python tests/helpers/validate_host_adapter_smoke.py .`,
+  `python tests/helpers/test_parse_codex_skills.py`,
+  `bash tests/e2e/workflow-quality-check.sh`,
+  `bash tests/e2e/governance-completion-contract-check.sh`,
+  `bash tests/e2e/boundary-compliance-check.sh`,
+  `bash tests/e2e/artifact-schema-check.sh`,
+  `bash tests/e2e/context-budget-check.sh`,
+  `bash tests/e2e/run-all.sh --full --host-profile none`, and
+  `git diff --check`.
+- `bash tests/e2e/run-all.sh --full --host-profile fast` was attempted, but
+  the Codex representative live smoke checks were environment-blocked by local
+  Codex CLI authentication: `401 Unauthorized` / missing bearer or basic
+  authentication. The non-live method-pack, fixture, boundary, workflow, and
+  scenario checks passed under `--host-profile none`.
+- Release checklist readback confirmed that the release still ships
+  `Aegis Method Pack (runtime-ready)` and does not add authoritative
+  `GateDecision`, `PolicySnapshot`, or `completion authority`.
+
+### Release Surface
+
+- Bumped declared package and host manifest versions from `2.3.7` to `2.4.0`.
+- This release preserves plugin-installable method-pack distribution and does
+  not claim full-platform or full-host production rollout readiness.
+
 ## v2.3.7 (2026-07-09)
 
 ### Completion Receipt Boundary Hardening

@@ -2,7 +2,7 @@
   "name": "aegis",
   "displayName": "Aegis",
   "description": "Core skills library: TDD, debugging, collaboration patterns, and proven techniques",
-  "version": "2.3.7",
+  "version": "2.4.0",
   "author": {
     "name": "Aegis Maintainers"
   },
@@ -18,7 +18,6 @@
     "workflows"
   ],
   "skills": "./skills/",
-  "agents": "./agents/",
   "commands": "./commands/",
   "hooks": "./hooks/hooks-cursor.json"
 }

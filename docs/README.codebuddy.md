@@ -18,7 +18,7 @@ CodeBuddy is structurally compatible with Aegis because it supports:
 
 - `SKILL.md` skills
 - user and project skill directories
-- plugin bundles that can include `skills/`, `commands/`, `agents/`, and `hooks/`
+- plugin bundles that can include `skills/`, `commands/`, and `hooks/`
 - a CodeBuddy plugin metadata directory
 - compatibility with Claude Code plugin metadata
 
@@ -27,7 +27,6 @@ Aegis now ships a CodeBuddy plugin skeleton:
 - `.codebuddy-plugin/plugin.json`
 - `.codebuddy-plugin/marketplace.json`
 - `skills/`
-- `agents/`
 - `commands/`
 - `hooks/`
 

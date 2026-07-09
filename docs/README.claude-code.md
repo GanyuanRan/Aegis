@@ -18,7 +18,6 @@ Aegis has a Claude Code plugin distribution skeleton:
 - `.claude-plugin/plugin.json`
 - `.claude-plugin/marketplace.json`
 - `skills/`
-- `agents/`
 - `commands/`
 - `hooks/`
 
