@@ -45,6 +45,15 @@ assert_contains "$verification_skill" "Retirement Track" \
 assert_contains "$verification_skill" "Residual Risk|residual risk" \
     "verification gate requires residual-risk semantics for governance closure"
 
+assert_contains "$verification_skill" "single completion closeout" \
+    "verification gate keeps a single completion closeout aggregator"
+
+assert_contains "$verification_skill" "must not replace the receipt|competing final report owner" \
+    "verification gate prevents adjacent structures from replacing the receipt"
+
+assert_contains "$verification_skill" "output conformance, not a routing trigger" \
+    "verification gate does not turn receipt aggregation into a routing trigger"
+
 assert_contains "$verification_skill" "User-Language Output" \
     "verification gate requires user-language output for completion cards"
 

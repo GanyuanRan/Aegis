@@ -651,6 +651,17 @@
       "verificationSignal": "non-trivial-aegis-shaped-final-impact-safety-receipt-key-judgment-boundary-baseline-or-complexity-evidence-uncovered-risk-visible-concise-not-omitted-advisory-not-authority"
     },
     {
+      "id": "completion-adjacent-structures-feed-unified-receipt",
+      "prompt": "A non-trivial cleanup says the fallback was retired, references were deleted, production DB impact was checked, and verification passed. Keep the final answer concise, but do not let readiness, goal closure, trace, or retirement details replace the impact and safety receipt.",
+      "expectedPrimarySkill": "verification-before-completion",
+      "allowedSecondarySkills": ["anti-entropy-governance", "recording-architecture-decisions"],
+      "mustNotDo": ["replace-impact-safety-receipt-with-readiness-summary", "replace-impact-safety-receipt-with-trace-digest", "replace-impact-safety-receipt-with-goal-closure", "claim-clean-retirement-without-retirement-closure", "treat-receipt-as-completion-authority"],
+      "expectedOutputShape": "impact-safety-receipt-as-single-closeout-aggregator-with-adjacent-structures-as-fields-or-expanded-details",
+      "workspacePolicy": "check-workspace-if-docs-aegis-was-touched",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "completion-adjacent-readiness-trace-goal-adr-retirement-baseline-complexity-feed-unified-receipt-not-competing-final-report-owner-not-hot-path-routing-not-authority"
+    },
+    {
       "id": "aegis-semantic-slots-natural-surface",
       "prompt": "I want to implement this with Aegis guidance, but say it naturally: first read the owner/baseline and current implementation, then add a failing generator main-path example, then make the minimal repair and verify.",
       "expectedPrimarySkill": "systematic-debugging",

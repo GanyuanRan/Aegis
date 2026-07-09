@@ -512,11 +512,21 @@ Pass criteria:
   key judgment, avoided misfix, boundary held, baseline alignment, complexity
   control, evidence strength, uncovered risk, next most valuable verification,
   and optional Aegis path
+- `verification-before-completion` is the single completion closeout
+  aggregator for non-trivial Aegis-shaped work. Completion-adjacent structures
+  such as `Readiness Summary`, `Trace Digest`, `Goal Closure`,
+  `ADR Backfill Check`, `Retirement Closure`, `Baseline Alignment`, and
+  `Complexity Delta` can feed the receipt or appear as optional expanded
+  detail, but they must not replace the unified receipt or become competing
+  final report owners
 - `Governance Receipt`, `Baseline Alignment`, `Complexity Delta`,
   `Complexity Closure`, `Readiness Summary`, `Goal Closure`,
   `Retirement Closure`, and `ADR Backfill Check` remain semantic slots or
   expanded detail cards, but they should flow through the unified receipt by
   default instead of becoming separate user-visible report formats
+- This owner contract is output conformance, not a new hot-path routing rule,
+  runtime gate, or completion authority. It must not make `using-aegis`
+  heavier or force Trace Digest ceremony when the task did not ask for audit
 - fixed skill traces, used-skill lists, and stage handoff logs stay reserved for
   audit, debug, release, long-task review, or explicit user request
 - natural expression does not relax evidence freshness, dual-track governance,

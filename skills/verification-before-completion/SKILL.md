@@ -65,6 +65,13 @@ Semantic Slots:
   Goal Closure, Retirement Closure, ADR Backfill Check, and residual-risk
   reporting into one user-facing receipt instead of letting each workflow
   invent a separate final report format.
+- `verification-before-completion` is the single completion closeout
+  aggregator for Aegis-shaped non-trivial work. Completion-adjacent structures
+  such as Readiness Summary, Trace Digest, Goal Closure, ADR Backfill Check,
+  Retirement Closure, Baseline Alignment, and Complexity Delta are receipt
+  inputs or optional expansions; they must not replace the receipt, satisfy the
+  final completion surface by themselves, or become a competing final report
+  owner.
 - The receipt should show what Aegis changed in the agent's decisions and what
   safety checks were satisfied or left open: key judgment, avoided misfix,
   boundary held, baseline alignment, complexity control, evidence strength,
@@ -89,6 +96,10 @@ Semantic Slots:
   unavailable fields, and redaction. Confidence labels are `measured`, `observed`, `inferred`, `declared`, or `unknown`.
 - Trace Digest may summarize decision rationale, but it must not expose raw
   chain-of-thought or turn Aegis output into runtime authority.
+- This aggregator rule is output conformance, not a routing trigger. Do not
+  load extra skills, emit a Trace Digest, or expand final ceremony just to
+  satisfy it; use the highest applicable owner workflow and preserve the fresh
+  evidence slots inside the unified receipt.
 
 TDD Completion Boundary:
 - Judge the completion claim against the highest available explicit boundary.

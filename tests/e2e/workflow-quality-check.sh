@@ -270,6 +270,14 @@ assert_contains "$baseline" "Aegis Impact and Safety Receipt" \
     "workflow quality baseline defines unified impact and safety receipt"
 assert_contains "$baseline" "key judgment.*avoided misfix.*boundary held|avoided misfix.*baseline alignment.*complexity control" \
     "workflow quality baseline defines impact and safety receipt fields"
+assert_contains "$baseline" "single completion closeout" \
+    "workflow quality baseline keeps verification as the completion closeout aggregator"
+assert_contains "$baseline" "Readiness Summary.*Trace Digest.*Goal Closure|Trace Digest.*Goal Closure.*ADR Backfill Check" \
+    "workflow quality baseline names adjacent completion structures"
+assert_contains "$baseline" "must not replace the unified receipt|competing final report owners" \
+    "workflow quality baseline prevents adjacent structures from replacing the receipt"
+assert_contains "$baseline" "not a new hot-path routing rule|must not make.*using-aegis.*heavier" \
+    "workflow quality baseline keeps receipt owner contract out of the hot path"
 assert_contains "$baseline" "concise.*not.*drop.*safety fields|reasons to drop the safety fields" \
     "workflow quality baseline forbids dropping receipt safety fields for concision"
 assert_contains "$baseline" "user asks.*recovery path.*not a substitute|recovery path.*not a substitute" \
@@ -583,6 +591,12 @@ assert_contains "skills/verification-before-completion/SKILL.md" "Governance Rec
     "verification skill defines governance receipt closeout"
 assert_contains "skills/verification-before-completion/SKILL.md" "Aegis Impact and Safety Receipt" \
     "verification skill defines unified impact and safety receipt"
+assert_contains "skills/verification-before-completion/SKILL.md" "single completion closeout" \
+    "verification skill owns the single completion closeout aggregator"
+assert_contains "skills/verification-before-completion/SKILL.md" "must not replace the receipt|competing final report owner" \
+    "verification skill prevents adjacent structures from replacing the receipt"
+assert_contains "skills/verification-before-completion/SKILL.md" "output conformance, not a routing trigger" \
+    "verification skill does not turn receipt aggregation into a routing trigger"
 assert_contains "skills/verification-before-completion/SKILL.md" "Key judgment" \
     "verification skill reports key judgment in the unified receipt"
 assert_contains "skills/verification-before-completion/SKILL.md" "Avoided misfix" \

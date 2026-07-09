@@ -1,5 +1,54 @@
 # Aegis Release Notes
 
+## v2.3.7 (2026-07-09)
+
+### Completion Receipt Boundary Hardening
+
+- Clarified that `verification-before-completion` is the single completion
+  closeout aggregator for non-trivial Aegis-shaped work.
+- Defined completion-adjacent structures such as `Readiness Summary`,
+  `Trace Digest`, `Goal Closure`, `ADR Backfill Check`, `Retirement Closure`,
+  `Baseline Alignment`, and `Complexity Delta` as receipt inputs or optional
+  expansions rather than competing final report owners.
+- Preserved the method-pack boundary: the receipt owner contract is output
+  conformance, not a new hot-path routing rule, runtime gate, or completion
+  authority.
+
+### Workflow Quality Regression Coverage
+
+- Added a representative workflow-quality sample for real cleanup closeouts
+  where fallback retirement, reference deletion, production DB impact checks,
+  and verification evidence could otherwise be summarized without the unified
+  impact/safety receipt.
+- Expanded workflow-quality and governance-completion checks so adjacent
+  completion structures cannot replace the `Aegis Impact and Safety Receipt`.
+- Kept `using-aegis` out of the new closeout contract so trigger stability and
+  context-budget discipline remain unchanged.
+
+### Verification
+
+- Fresh checks passed:
+  `bash scripts/bump-version.sh 2.3.7`,
+  `bash scripts/bump-version.sh --check`,
+  `python tests/helpers/validate_workflow_quality_matrix.py tests/e2e/fixtures/workflow-quality-matrix.json`,
+  `python tests/helpers/test_parse_codex_skills.py`,
+  `bash tests/e2e/workflow-quality-check.sh`,
+  `bash tests/e2e/governance-completion-contract-check.sh`,
+  `bash tests/e2e/trigger-health-check.sh`,
+  `bash tests/e2e/boundary-compliance-check.sh`,
+  `bash tests/e2e/context-budget-check.sh`,
+  `bash tests/e2e/run-all.sh --full --host-profile fast`, and
+  `git diff --check`.
+- On this Windows host, `bash` resolves to the WSL launcher by default; release
+  verification used Git Bash at `C:\Program Files\Git\bin\bash.exe`, matching
+  the known release-checklist environment note.
+
+### Release Surface
+
+- Bumped declared package and host manifest versions from `2.3.6` to `2.3.7`.
+- This release still ships `Aegis Method Pack (runtime-ready)`. It does not add
+  authoritative `GateDecision`, `PolicySnapshot`, or `completion authority`.
+
 ## v2.3.6 (2026-07-08)
 
 ### Aegis Impact and Safety Receipt
