@@ -73,6 +73,18 @@ bash tests/antigravity/run-tests.sh
 bash tests/antigravity/run-tests.sh --integration
 ```
 
+If this release explicitly includes Grok Build host-surface changes, supplement
+with:
+
+```bash
+bash tests/e2e/grok-build-host-boundary-check.sh
+python tests/helpers/test_aegis_update.py -k grok
+```
+
+When Grok Build is installed locally, also capture `grok inspect --json` as an
+environment-bound discovery readback. Do not treat enumeration alone as a
+clean-install or live-trigger closeout.
+
 If the current machine's default `bash` points to the WSL launcher rather than a usable Git Bash, or if known smoke latency still exists under Git Bash,
 record it in `AEGIS_KNOWN_LIMITATIONS.md`; do not misdiagnose environment and latency blockers as method-pack boundary regressions.
 
@@ -97,7 +109,8 @@ The following host documentation must be re-read before release:
 13. `docs/README.openclaw.md`
 14. `docs/README.hermes-agent.md`
 15. `docs/README.zcode.md`
-16. `docs/testing.md`
+16. `docs/README.grok-build.md`
+17. `docs/testing.md`
 
 Confirm:
 
@@ -138,6 +151,10 @@ Confirm:
   `.claude-plugin/marketplace.json` (Claude Code plugin format), so the
   existing Claude Code plugin skeleton works with zero code changes, not as
   fresh live smoke closeout
+- Grok Build is described through one canonical Aegis exposure route at a
+  time: updater-managed `$GROK_HOME/skills` direct-child entries, explicit
+  `[skills] paths`, or a Claude-compatible plugin. `grok inspect --json`
+  enumeration is not misrepresented as clean-install and live-trigger closeout
 - Gemini CLI is described as a transitional compatibility surface with the
   `2026-05-19` Google transition announcement and `2026-06-18` consumer
   service-stop boundary, while preserving enterprise and paid API key caveats

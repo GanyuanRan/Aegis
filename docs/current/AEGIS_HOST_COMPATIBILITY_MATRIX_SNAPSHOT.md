@@ -22,7 +22,7 @@ It does not answer:
 ## 2. Snapshot Date
 
 The current snapshot is based on fresh evidence and current docs landed as of
-`2026-06-13`.
+`2026-07-12`.
 
 ---
 
@@ -47,6 +47,7 @@ The current snapshot is based on fresh evidence and current docs landed as of
 | `GitHub Copilot` | Supports repository skills, instructions, and hooks; no current release-level fresh smoke verdict | `docs/README.copilot.md` established; evidence from GitHub Copilot agent skills, repository instructions, and hooks docs; Aegis exposes repository skills as `.github/skills/aegis-<skill-name>/SKILL.md`, verified as a prefixed direct-child compatibility view, but real host regression is still deferred |
 | `Qoder` | Native `SKILL.md` discovery and rules surfaces support structural install; no current release-level fresh smoke verdict | `docs/README.qoder.md` established; evidence from Qoder skills and rules docs, but real host regression is still deferred |
 | `Kimi Code CLI` | Native Agent Skills discovery supports Kimi-specific user roots plus shared skill roots; no current release-level fresh smoke verdict | `docs/README.kimi-code.md` established; official Kimi docs list `$KIMI_CODE_HOME/skills/` (`~/.kimi-code/skills/` by default) and `~/.agents/skills/` as user-level roots, plus `.kimi-code/skills/` and `.agents/skills/` as project roots; Aegis now recommends updater-managed direct-child exposure under the Kimi native user root while retaining `~/.agents/skills/` only as a compatibility fallback |
+| `Grok Build` | Native Agent Skills, `AGENTS.md`, extra `[skills] paths`, and Claude-compatible plugin discovery support structural install; no current release-level fresh smoke verdict | `docs/README.grok-build.md` established; updater-managed direct-child exposure defaults to `$GROK_HOME/skills/` (`~/.grok/skills/` by default), while config-path and Claude-plugin discovery remain alternatives that must not be enabled as duplicate Aegis owners; local `grok inspect --json` evidence confirms enumeration but not clean-install or live-trigger closeout |
 | `Cursor` | Has `.cursor/INSTALL.md` install guide; no current release-level fresh smoke verdict | Structural goal established; not yet entered the current host regression slice |
 | `Windsurf` | Has `.windsurf/INSTALL.md` install guide; no current release-level fresh smoke verdict | Structural goal established; not yet entered the current host regression slice |
 | `Antigravity CLI` | Active closeout target; no current release-level fresh smoke verdict | Google positions Antigravity CLI as the successor terminal surface with the `agy` executable, plugin/skills management, migration import from Gemini CLI, and documented plugin discovery for skills and agents from installed plugin directories in the public `1.0.1` changelog; the public `1.0.8` changelog also adds dynamic custom-skill discovery improvements. Aegis now has a dedicated `tests/antigravity/run-tests.sh` lane, but the method-pack install / discovery contract still needs fresh local verification |
@@ -117,6 +118,12 @@ The current snapshot only states:
     `method_pack_root`; when it does, new host registrations should prefer that
     root and treat host-specific discovery roots, plugin caches, or copied skill
     trees as generated or host-managed views into the same Aegis body
+22. `Grok Build` can expose Aegis through updater-maintained direct-child
+    skills under `$GROK_HOME/skills/` (`~/.grok/skills/` by default), an
+    explicit `[skills] paths` entry, or Claude-compatible plugin discovery;
+    these are alternative exposure routes, not three simultaneous owners, and
+    support remains structural until clean-install and live-trigger smoke is
+    fresh for the current release
 
 ---
 
@@ -143,6 +150,7 @@ When reading the current host verdict, follow this order:
 17. `.windsurf/INSTALL.md`
 18. `.cursor/INSTALL.md`
 19. `docs/README.zcode.md`
+20. `docs/README.grok-build.md`
 
 ---
 

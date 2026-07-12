@@ -347,6 +347,28 @@ class AegisUpdateRegistryTests(unittest.TestCase):
                 (kimi_home / "skills").resolve().as_posix(),
             )
 
+    def test_register_installation_defaults_grok_to_native_direct_child(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-grok-shape-") as tmp:
+            registry = Path(tmp) / "installations.json"
+            root = Path(tmp) / "aegis"
+            grok_home = Path(tmp) / "grok-home"
+
+            with patch.dict(os.environ, {"GROK_HOME": grok_home.as_posix()}):
+                entry = update.register_installation(
+                    registry,
+                    host="Grok-Build",
+                    method_pack_root=root,
+                    sync_mode="junction",
+                )
+
+            self.assertEqual(entry["host"], "grok-build")
+            self.assertEqual(entry["syncMode"], "junction")
+            self.assertEqual(entry["discoveryShape"], "direct-child")
+            self.assertEqual(
+                entry["discoveryRoot"],
+                (grok_home / "skills").resolve().as_posix(),
+            )
+
     def test_sync_skills_creates_direct_child_links_for_zcode_junction(self):
         with tempfile.TemporaryDirectory(prefix="aegis-update-zcode-links-") as tmp:
             method_pack_root = Path(tmp) / "method-pack"
@@ -393,6 +415,30 @@ class AegisUpdateRegistryTests(unittest.TestCase):
 
             self.assertTrue(
                 (kimi_home / "skills" / "using-aegis" / "SKILL.md").is_file()
+            )
+
+    def test_legacy_grok_entry_uses_native_default_discovery_root(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-grok-legacy-") as tmp:
+            method_pack_root = Path(tmp) / "method-pack"
+            grok_home = Path(tmp) / "grok-home"
+            self.make_method_pack_with_skills(method_pack_root, ["using-aegis"])
+            sync_mode = "junction" if os.name == "nt" else "symlink"
+            entry = {
+                "id": "grok:default",
+                "host": "grok",
+                "methodPackRoot": method_pack_root.as_posix(),
+                "syncMode": sync_mode,
+            }
+
+            with patch.dict(os.environ, {"GROK_HOME": grok_home.as_posix()}):
+                self.assertEqual(
+                    update.doctor_discovery_root(entry),
+                    (grok_home / "skills").resolve().as_posix(),
+                )
+                update.sync_skills(entry)
+
+            self.assertTrue(
+                (grok_home / "skills" / "using-aegis" / "SKILL.md").is_file()
             )
 
     def test_sync_skills_creates_prefixed_direct_child_links(self):

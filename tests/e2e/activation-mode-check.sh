@@ -231,6 +231,10 @@ assert_contains "docs/README.zcode.md" "AEGIS_ACTIVATION_MODE=explicit" \
     "ZCode guide documents explicit activation caveat"
 assert_contains "docs/README.zcode.md" "does not override ZCode" \
     "ZCode guide clarifies activation mode does not control native matcher"
+assert_contains "docs/README.grok-build.md" "AEGIS_ACTIVATION_MODE=explicit|activation-mode explicit" \
+    "Grok Build guide documents explicit activation caveat"
+assert_contains "docs/README.grok-build.md" "does not override Grok Build" \
+    "Grok Build guide clarifies activation mode does not control native matcher"
 assert_contains "README.md" 'aegis-doctor\.py activation-mode explicit' \
     "English README gives concise doctor activation command"
 assert_contains "README.md" 'aegis-doctor\.py activation-mode explicit' \

@@ -9,14 +9,19 @@ import sys
 from typing import Iterable, Iterator
 
 
-SKILL_LOAD_COMMAND_RE = re.compile(
+POWERSHELL_COMMAND_PREFIX_RE = re.compile(
     r"""^\s*"
     [^"\r\n]*?(?:pwsh|powershell)\.exe"
-    \s+-Command\s+
-    ["']
-    Get-Content\b
-    .*?
-    (?:[^'"\r\n]*[\\/])?skills(?:[\\/]+[A-Za-z0-9._-]+)*[\\/]+(?P<skill>[A-Za-z0-9._-]+)[\\/]+SKILL\.md
+    \s+-Command\s+["']
+    """,
+    re.IGNORECASE | re.VERBOSE,
+)
+
+SKILL_PATH_RE = re.compile(
+    r"""(?<![A-Za-z0-9._-])skills
+    (?:[\\/]+[A-Za-z0-9._-]+)*
+    [\\/]+(?P<skill>[A-Za-z0-9._-]+)
+    [\\/]+SKILL\.md
     """,
     re.IGNORECASE | re.VERBOSE,
 )
@@ -27,31 +32,45 @@ SKILL_PATH_LINE_RE = re.compile(
 )
 
 
-def extract_skill_from_line(line: str) -> str | None:
-    command_match = SKILL_LOAD_COMMAND_RE.search(line)
-    if command_match:
-        return command_match.group("skill")
+def extract_skills_from_line(line: str) -> list[str]:
+    command_prefix = POWERSHELL_COMMAND_PREFIX_RE.search(line)
+    if command_prefix:
+        command_text = line[command_prefix.end() :]
+        skills: list[str] = []
+        for segment in command_text.split(";"):
+            invocation = segment.lstrip(" \t\"'")
+            if not re.match(r"Get-Content\b", invocation, re.IGNORECASE):
+                continue
+            direct_invocation = invocation.split("|", 1)[0]
+            skills.extend(
+                match.group("skill") for match in SKILL_PATH_RE.finditer(direct_invocation)
+            )
+        return skills
 
     path_match = SKILL_PATH_LINE_RE.search(line)
     if path_match:
-        return path_match.group("skill")
+        return [path_match.group("skill")]
 
-    return None
+    return []
+
+
+def extract_skill_from_line(line: str) -> str | None:
+    skills = extract_skills_from_line(line)
+    return skills[0] if skills else None
 
 
 def iter_loaded_skills(lines: Iterable[str]) -> Iterator[str]:
     seen: set[str] = set()
     for line in lines:
-        skill = extract_skill_from_line(line)
-        if skill and skill not in seen:
-            seen.add(skill)
-            yield skill
+        for skill in extract_skills_from_line(line):
+            if skill not in seen:
+                seen.add(skill)
+                yield skill
 
 
 def first_skill_load_line(lines: Iterable[str], skill_name: str) -> int | None:
     for line_number, line in enumerate(lines, start=1):
-        skill = extract_skill_from_line(line)
-        if skill == skill_name:
+        if skill_name in extract_skills_from_line(line):
             return line_number
     return None
 

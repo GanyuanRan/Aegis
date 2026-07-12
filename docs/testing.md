@@ -125,6 +125,31 @@ Notes:
   remain structural target surfaces until they have their own fresh host smoke
   slice.
 
+### Grok Build Structural Host Tests
+
+The Grok Build boundary check validates the native skill root, updater
+defaults, config example, duplicate-exposure guard, public compatibility
+wording, and release-surface links without changing the current user's Grok
+profile:
+
+```bash
+bash tests/e2e/grok-build-host-boundary-check.sh
+python tests/helpers/test_aegis_update.py -k grok
+```
+
+For an environment-bound discovery readback on a machine with Grok Build:
+
+```bash
+grok --version
+grok inspect --json
+```
+
+`grok inspect --json` proves what the current Grok profile can enumerate. It
+does not by itself prove a clean install, live skill triggering, or
+release-level host closeout. Check that every Aegis skill name has one
+canonical source; native Grok skills, `[skills] paths`, shared Agent Skills,
+and Claude-compatible plugins can otherwise expose duplicate Aegis copies.
+
 ### Workspace Helper ADR Lifecycle Tests
 
 The workspace helper ADR lifecycle is covered by the existing target-project

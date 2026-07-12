@@ -619,6 +619,47 @@ request.
   discovery and project workspace support without turning Aegis into an
   authoritative runtime core
 
+---
+
+### 2.24 Grok Build Structural Support Is Not Yet Fresh Host Closeout
+
+**Retained Item**
+- Grok Build is a structural host target, not a release-level fresh smoke
+  verdict
+- Grok's native skills, extra `[skills] paths`, shared Agent Skills, and
+  Claude-compatible plugin scanners can expose duplicate Aegis skill names
+
+**Retention Reason**
+- Grok documents native user skills under `$GROK_HOME/skills/`
+  (`~/.grok/skills/` by default), project `.grok/skills/`, extra skill paths in
+  `~/.grok/config.toml`, `~/.agents/skills/`, `AGENTS.md`, and Claude Code
+  compatibility surfaces.
+- Aegis now recommends updater-managed direct-child skill exposure under the
+  Grok native user root. The method-pack `skills/` tree remains canonical; the
+  Grok-visible entries are generated links, not a second editable owner.
+- An explicit `[skills] paths` entry or Claude-compatible Aegis plugin remains
+  a valid alternative. Enabling more than one Aegis exposure route can produce
+  duplicate skill names with different freshness.
+- Local `grok inspect --json` evidence confirms that Grok Build can enumerate
+  Aegis skills and project instructions, but it is not a clean-install,
+  restart/reload, automatic-trigger, and update closeout for the release.
+
+**Observation Metric**
+- `docs/README.grok-build.md`
+- `bash tests/e2e/grok-build-host-boundary-check.sh`
+- `python tests/helpers/test_aegis_update.py -k grok`
+- `cd <aegis-method-pack-root> && python scripts/aegis-update.py register --host grok-build --sync-mode junction --json`
+  uses `$GROK_HOME/skills` or `~/.grok/skills` as the default discovery root,
+  performs register-time direct-child link creation, writes the host registry
+  entry, and runs method-pack-side doctor verification
+- `grok inspect --json` reports one canonical source for each Aegis skill name
+
+**Retirement Trigger**
+- When a clean Grok Build install has a verified install/update path that
+  proves current Aegis skill discovery, representative live triggering after
+  restart, no duplicate Aegis exposure, and project workspace support
+  without turning Aegis into an authoritative runtime core
+
 ## 3. Default Reading Rule
 
 If a limitation appears simultaneously in README, host docs, or test descriptions, use this document as the current reading entry point.

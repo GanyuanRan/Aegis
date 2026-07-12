@@ -46,7 +46,7 @@ When public docs conflict, use this order:
    `docs/README.qoder.md`, `docs/README.kimi-code.md`,
    `docs/README.pi.md`,
    `docs/README.openclaw.md`, `docs/README.hermes-agent.md`,
-   and `docs/README.zcode.md`
+   `docs/README.zcode.md`, and `docs/README.grok-build.md`
 6. tests and fixtures
 
 ## 4. Public Current Baseline

@@ -1,5 +1,68 @@
 # Aegis Release Notes
 
+## v2.4.1 (2026-07-12)
+
+### Grok Build Host Support
+
+- Added a dedicated Grok Build installation and verification guide covering
+  native `$GROK_HOME/skills` discovery, `[skills] paths` configuration, and
+  Claude-compatible plugin discovery.
+- Added updater defaults for the `grok` and `grok-build` host aliases. The
+  updater now exposes Aegis skills as generated direct-child entries under
+  `$GROK_HOME/skills` or `~/.grok/skills` while keeping the method-pack
+  checkout as the canonical source.
+- Documented that native skills, extra skill paths, shared Agent Skills, and
+  Claude-compatible plugins are alternative exposure routes. Enabling more
+  than one route can create duplicate Aegis skill names with different
+  freshness.
+
+### Compatibility And Regression Coverage
+
+- Added a Grok Build host-boundary check and included it in the Layer 1 release
+  verification path.
+- Added updater regression tests for Grok-native discovery defaults,
+  `GROK_HOME`, host aliases, direct-child registration, and legacy registry
+  normalization.
+- Hardened Codex smoke-log parsing so one PowerShell command that reads
+  multiple `SKILL.md` files records every loaded skill instead of only the
+  first path.
+- Updated the compatibility snapshot, known limitations, release checklist,
+  root documentation, and testing guide to include the Grok Build surface.
+- Preserved the Aegis Method Pack boundary: Grok owns host discovery, native
+  routing, plugins, permissions, sessions, and reload behavior; Aegis does not
+  provide authoritative `GateDecision`, `PolicySnapshot`, or completion
+  authority.
+
+### Verification
+
+- Fresh checks passed:
+  `bash scripts/bump-version.sh 2.4.1`,
+  `bash scripts/bump-version.sh --check`,
+  `bash tests/e2e/run-all.sh --full --host-profile fast`,
+  `bash tests/e2e/grok-build-host-boundary-check.sh`,
+  `python tests/helpers/test_aegis_update.py -k grok`,
+  `python tests/helpers/test_parse_codex_skills.py`,
+  `grok plugin validate .`, and
+  `git diff --check`.
+- The full fast profile passed after using the documented `CODEX_CMD` override
+  with a working local Codex executable and bypassing a missing local Windows
+  sandbox helper. The initial failures were environment-bound CLI launch and
+  sandbox errors, not Aegis workflow regressions.
+- Local Grok Build `0.2.93` headless smoke passed both an explicit
+  `using-aegis` route and an automatic debugging route. The current local
+  profile also exposed Aegis through both shared Agent Skills and an older
+  Claude plugin cache, so this release records structural and representative
+  live-smoke evidence without claiming clean-install or release-level Grok
+  closeout.
+
+### Release Surface
+
+- Bumped all declared package and host manifest versions from `2.4.0` to
+  `2.4.1`.
+- This release remains `Aegis Method Pack (runtime-ready)` and preserves
+  plugin-installable distribution without claiming full-platform or full-host
+  production rollout readiness.
+
 ## v2.4.0 (2026-07-09)
 
 ### Reviewer Agent Retirement

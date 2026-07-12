@@ -95,9 +95,8 @@ It uses:
 - `bash` on macOS and Linux
 - `powershell` on Windows
 
-The hook reuses [hooks/session-start](/E:/Aegis/hooks/session-start:1) as the
-canonical bootstrap owner and forces compact single-line JSON output for
-Copilot's command-hook contract.
+The hook reuses `hooks/session-start` as the canonical bootstrap owner and
+forces compact single-line JSON output for Copilot's command-hook contract.
 
 If you want the same bootstrap in another repository, copy:
 

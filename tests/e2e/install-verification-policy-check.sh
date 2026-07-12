@@ -50,6 +50,7 @@ host_docs=(
     "docs/README.openclaw.md"
     "docs/README.hermes-agent.md"
     "docs/README.zcode.md"
+    "docs/README.grok-build.md"
 )
 
 for file in "${root_docs[@]}"; do

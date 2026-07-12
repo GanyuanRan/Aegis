@@ -42,6 +42,7 @@ Bootstrap entrypoints:
 - `goal-framing-check.sh`
 - `first-principles-review-check.sh`
 - `long-task-continuation-check.sh`
+- `grok-build-host-boundary-check.sh`
 - `analyze-transcript.sh`
 
 Layer 1 host profiles:
@@ -115,6 +116,9 @@ Workspace helper coverage:
 - `first-principles-review-check.sh` verifies that first-principles review is
   available as a lightweight compositional skill without entering the
   always-loaded hot path or claiming authority.
+- `grok-build-host-boundary-check.sh` verifies Grok Build's native
+  direct-child discovery defaults, explicit config alternative, duplicate
+  exposure guard, updater registration, and structural support wording.
 - The Aegis method-pack repository must not ship a live `docs/aegis/`
   workspace. The helper initializes and checks that workspace only in the
   target project root passed by the caller.
