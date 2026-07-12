@@ -18,12 +18,84 @@
       "failureLayer": "routing-or-depth"
     },
     {
+      "id": "tdd-off-risky-debugging",
+      "prompt": "TDD mode is off. Diagnose and repair this risky producer/consumer regression with focused verification, but do not start a test-first cycle unless I explicitly request it.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": ["verification-before-completion"],
+      "mustNotDo": ["auto-trigger-tdd", "force-red-green-refactor", "skip-regression-verification"],
+      "failureLayer": "routing-or-depth"
+    },
+    {
       "id": "ambiguous-feature",
       "prompt": "I want to add a new capability, but the scope and acceptance criteria are not clear yet. Help me shape it before implementation.",
       "expectedPrimarySkill": "brainstorming",
       "allowedSecondarySkills": ["writing-plans"],
       "mustNotDo": ["start-implementation-immediately"],
       "failureLayer": "routing"
+    },
+    {
+      "id": "explicit-grilling-mode",
+      "prompt": "Grill me about my plan for adding team workspaces. Ask one decision question at a time, give your recommendation, and do not implement anything.",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": ["first-principles-review"],
+      "mustNotDo": ["start-implementation-immediately", "ask-multiple-decision-questions", "treat-shared-understanding-as-completion-authority"],
+      "failureLayer": "routing-or-depth"
+    },
+    {
+      "id": "grill-this-plan",
+      "prompt": "Grill this plan for team workspaces. Ask one decision question at a time, give your recommendation, and do not implement anything.",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": ["first-principles-review"],
+      "mustNotDo": ["start-implementation-immediately", "ask-multiple-decision-questions"],
+      "failureLayer": "routing"
+    },
+    {
+      "id": "interrogate-me-chinese",
+      "prompt": "请盘问我这个团队工作区方案；每轮只问一个决策问题，给出推荐，但不要实施。",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": ["first-principles-review"],
+      "mustNotDo": ["start-implementation-immediately", "ask-multiple-decision-questions"],
+      "failureLayer": "routing"
+    },
+    {
+      "id": "cross-examine-me-chinese",
+      "prompt": "请拷问我这个团队工作区方案；每轮只问一个决策问题，给出推荐，但不要实施。",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": ["first-principles-review"],
+      "mustNotDo": ["start-implementation-immediately", "ask-multiple-decision-questions"],
+      "failureLayer": "routing"
+    },
+    {
+      "id": "soft-grilling-intent",
+      "prompt": "Do not just agree with me; pressure-test this identity-login design and challenge its weak assumptions.",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": ["first-principles-review"],
+      "mustNotDo": ["enter-grilling-without-confirmation", "start-implementation-immediately"],
+      "failureLayer": "routing-or-depth"
+    },
+    {
+      "id": "fast-grilling-mode",
+      "prompt": "快速审问我的付费墙方案；一次问最多三个互不依赖的问题，并先不要实施。",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": ["first-principles-review"],
+      "mustNotDo": ["ask-dependent-questions-in-one-batch", "ask-more-than-three-questions", "start-implementation-immediately"],
+      "failureLayer": "routing-or-depth"
+    },
+    {
+      "id": "existing-pr-red-team",
+      "prompt": "Red-team the current pull request before merge and identify the highest-risk implementation problems.",
+      "expectedPrimarySkill": "requesting-code-review",
+      "allowedSecondarySkills": ["verification-before-completion"],
+      "mustNotDo": ["enter-grilling-mode", "treat-review-as-completion-authority"],
+      "failureLayer": "routing"
+    },
+    {
+      "id": "grilling-phrase-explanation",
+      "prompt": "What does the English phrase \"grill me\" mean in this article?",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": ["using-aegis"],
+      "mustNotDo": ["enter-grilling-mode", "force-full-workflow"],
+      "failureLayer": "false-positive"
     },
     {
       "id": "explicit-aegis-goal",

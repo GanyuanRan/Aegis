@@ -59,8 +59,8 @@ assert_contains "$using_aegis" "contract|cross-module|shared module|core logic" 
     "using-aegis routes contract and cross-module changes into TDD"
 assert_contains "$using_aegis" "Classify before implementation" \
     "using-aegis classifies task complexity before implementation"
-assert_contains "$using_aegis" "TDD Route" \
-    "using-aegis routes implementation through TDD Route instead of unconditional TDD"
+assert_contains "$using_aegis" "TDD: off=no auto route/load; auto=strict/light/skipped; explicit request applies" \
+    "using-aegis makes TDD routing mode-specific instead of unconditional"
 assert_contains "$using_aegis" "Medium/high: baseline read-set[[:space:]]*\\+ plan" \
     "using-aegis prevents medium/high-complexity work from entering TDD first"
 assert_contains "$using_aegis" "Spec Brief or Design Spec only" \

@@ -227,7 +227,8 @@ completion evidence.
 
 Pass criteria:
 
-- default `off` mode disables automatic TDD routing while preserving
+- default `off` mode disables automatic TDD routing, TDD-skill loading, and
+  forced RED / GREEN while preserving proportional regression and
   `verification-before-completion`
 - users may enable `auto` mode through config, environment override, or a host
   command, or request TDD directly with explicit query markers

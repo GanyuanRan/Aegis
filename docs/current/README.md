@@ -57,6 +57,8 @@ The public current set is:
 - `docs/current/AEGIS_PRODUCT_BASELINE.md`
 - `docs/current/AEGIS_PROCESS_BASELINE.md`
 - `docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md`
+- `docs/current/AEGIS_FAST_TRACK_PLAYBOOK.md`
+- `docs/current/AEGIS_FAST_TRACK_PLAYBOOK_ZH.md`
 - `docs/current/AEGIS_WORKFLOW_GUIDE.md`
 - `docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md`
 - `docs/current/AEGIS_ACTIVATION_MODE.md`
@@ -92,6 +94,14 @@ The public current set is:
 `AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md`
 : Shared current baseline for complexity governance across source, test,
   plan/decision, and process artifacts.
+
+`AEGIS_FAST_TRACK_PLAYBOOK.md`
+: English user-facing quick-start guide for natural entry phrases, capability
+  selection, mode controls, boundaries, and deeper reading.
+
+`AEGIS_FAST_TRACK_PLAYBOOK_ZH.md`
+: Chinese user-facing quick-start guide for natural entry phrases, capability
+  selection, mode controls, boundaries, and deeper reading.
 
 `AEGIS_WORKFLOW_GUIDE.md`
 : English workflow guide for users and contributors. It explains the current

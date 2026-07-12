@@ -22,11 +22,16 @@ description: Use when you have a spec or requirements for a multi-step task, bef
 
 ## Overview
 
-Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
+Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. Chosen TDD route. Frequent commits.
 
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
 This skill is the canonical planning workflow for multi-step implementation work. Use it to convert approved specs or requirements into plans that are executable, testable, impact-aware, and bounded by compatibility and authority constraints.
+
+Strict RED / GREEN steps belong only to an explicit user/project TDD request or
+`TDD Route: strict`. With TDD mode `off` and no strict route, plan the minimum
+implementation and proportional regression/verification steps; do not prescribe
+a TDD cycle from risk alone.
 
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
 
@@ -331,11 +336,9 @@ Before you leave this workflow, the written plan must make these items answerabl
 ## Bite-Sized Task Granularity
 
 **Each step is one action (2-5 minutes):**
-- "Write the failing test" - step
-- "Run it to make sure it fails" - step
-- "Implement the minimal code to make the test pass" - step
-- "Run the tests and make sure they pass" - step
-- "Commit" - step
+- Under `TDD Route: strict`: write the failing test → verify RED → implement minimal code → verify GREEN.
+- Otherwise: make the minimum change → run the focused regression or verification that proves it.
+- Commit.
 
 ## Plan Document Header
 
@@ -343,7 +346,7 @@ Every plan MUST start with: Goal, Architecture, Tech Stack, Baseline/Authority R
 
 ## Task Structure
 
-Each task: Files (create/modify/test paths), Why (user/business value), Change Necessity (why source edits are needed and the minimum boundary), Impact/Compatibility, Verification (exact commands), then 5 checkbox steps: Write test → Verify RED → Minimal code → Verify GREEN → Commit. Every step must include complete code and exact commands.
+Each task: Files (create/modify/test paths), Why (user/business value), Change Necessity (why source edits are needed and the minimum boundary), Impact/Compatibility, Verification (exact commands), then steps matching the TDD route. Strict routes use Write test → Verify RED → Minimal code → Verify GREEN → Commit; `off`, light, and skipped routes use the minimum change plus proportional regression/verification → Commit. Every step must include complete code and exact commands.
 
 For bug fixes, refactors, contract changes, or governance cleanup, add Repair
 Track (root cause, canonical owner, minimal sufficient stable repair, compat

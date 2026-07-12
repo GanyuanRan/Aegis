@@ -26,9 +26,9 @@
     ·
     <a href="README.zh-CN.md"><strong>中文</strong></a>
     ·
-    <a href="docs/current/AEGIS_WORKFLOW_GUIDE.md">Workflow Guide</a>
+    <a href="docs/current/AEGIS_FAST_TRACK_PLAYBOOK.md">Fast-Track Playbook</a>
     ·
-    <a href="docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md">工作流程说明</a>
+    <a href="docs/current/AEGIS_FAST_TRACK_PLAYBOOK_ZH.md">速通秘籍</a>
 </p>
 
 ## Why Aegis
@@ -123,63 +123,46 @@ Read the current host verdict before making support claims:
 - [Host compatibility matrix](docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md)
 - [Known limitations](docs/current/AEGIS_KNOWN_LIMITATIONS.md)
 
-## How To Use
+## Start Fast With Aegis
 
-After installation and host restart, use normal development requests. Aegis
-skills should be selected when the task matches the method.
-
-Use a portable goal frame before risky work. It frames the goal, then continues
-into the routed workflow by default:
+After installation and host restart, use normal language. Aegis matches the
+method to the work; name a mode directly when you want less ambiguity.
 
 ```text
+Why does this login failure happen? Diagnose it before changing code.
+Grill me on whether we should ship a hosted version first.
 Aegis goal: Fix the auth refresh bug without rewriting the auth system.
+Review this diff independently before I merge it.
 ```
 
-Use explicit skills when you want a specific method:
+Read the [Fast-Track Playbook](docs/current/AEGIS_FAST_TRACK_PLAYBOOK.md) for
+Aegis's lightweight operating model, how it differs from standalone skill
+packs, its five engineering moats, project workspace lifecycle, natural trigger
+phrases, controls, and troubleshooting. The Chinese version is
+[Aegis 速通秘籍](docs/current/AEGIS_FAST_TRACK_PLAYBOOK_ZH.md).
 
-- `aegis:brainstorming`
-- `aegis:systematic-debugging`
-- `aegis:writing-plans`
-- `aegis:first-principles-review`
-- `aegis:requesting-code-review`
-- `aegis:verification-before-completion`
+Use these explicit requests when you need tighter control:
 
-If an expected skill does not trigger, treat it as trigger-chain diagnosis:
-verify install/version visibility, host skill discovery, activation mode,
-`using-aegis` routing, task-to-skill routing, and context pressure. Read
-[docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md](docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md).
+- `Aegis goal: ...` frames scope, success evidence, and boundaries.
+- `Grill me ...` or `审问我 ...` starts a decision interview; it asks one
+  decision question at a time and does not plan or implement.
+- `TDD Route: strict`, `strict TDD`, or `test-first` explicitly requests
+  strict test-first work. TDD is otherwise `off` by default.
+- `aegis:first-principles-review` or `review this from first principles`
+  pressure-tests a complex direction before implementation.
+- `aegis:update` updates the installed method pack through its host-aware path.
 
-## Workflow Shape
+Aegis preserves Workflow Quality by keeping simple work light and expanding
+only when risk warrants it. For deeper method detail, read the
+[Workflow Guide](docs/current/AEGIS_WORKFLOW_GUIDE.md),
+[Workflow Quality Baseline](docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md),
+[Complexity Governance Baseline](docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md),
+and [TDD mode](docs/current/AEGIS_TDD_MODE.md).
 
-Aegis routes work by complexity:
-
-- Low-complexity: concise intent, baseline check, TDD Route, verification.
-- Medium-complexity: baseline read set, Spec Brief or stable requirements,
-  writing plan, atomic tasks, verification.
-- High-complexity: Design Spec, plan, user review when required, then execution.
-
-The core discipline is:
-
-- **Baseline first**: read current project authority before substantial changes.
-- **Code necessity before edits**: before adding any source-code path, Aegis
-  naturally states why a non-code path is insufficient, what the minimum change
-  boundary is, and then enters `code-change`; non-trivial source edits use the
-  fuller `Change Necessity` slot.
-- **Visible governance, on-demand trace**: Aegis naturally exposes the risk it
-  helped control at key governance points. When auditability is requested, it
-  can output a `Trace Digest` summarizing execution trace, evidence chain, rule
-  effects, skill stability, and verification chain without exposing raw internal
-  reasoning.
-- **Evidence before claims**: no completion claim without fresh verification.
-- **Repair plus retirement**: fix the owner and state what old path remains or retires.
-- **Workflow Quality**: keep simple tasks cheap and expand only when risk demands it.
-
-For the full workflow, read:
-
-- [Workflow Guide](docs/current/AEGIS_WORKFLOW_GUIDE.md)
-- [Workflow Quality Baseline](docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md)
-- [Runtime-ready boundary](docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md)
-- [Artifact schema baseline](docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md)
+If a capability does not trigger as expected, use trigger-chain diagnosis:
+install/version visibility, host skill discovery, activation mode,
+`using-aegis` routing, task-to-skill matching, and context pressure. Read the
+[Trigger Health Baseline](docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md).
 
 ## For Maintainers
 

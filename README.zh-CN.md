@@ -26,9 +26,9 @@
     ·
     <a href="README.md"><strong>English</strong></a>
     ·
-    <a href="docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md">工作流程说明</a>
+    <a href="docs/current/AEGIS_FAST_TRACK_PLAYBOOK_ZH.md">速通秘籍</a>
     ·
-    <a href="docs/current/AEGIS_WORKFLOW_GUIDE.md">Workflow Guide</a>
+    <a href="docs/current/AEGIS_FAST_TRACK_PLAYBOOK.md">Fast-Track Playbook</a>
 </p>
 
 ## 为什么需要 Aegis
@@ -117,60 +117,43 @@ Aegis 保留多宿主、plugin-installable 的分发目标。
 - [宿主兼容性矩阵](docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md)
 - [已知限制](docs/current/AEGIS_KNOWN_LIMITATIONS.md)
 
-## 如何使用
+## 快速上手 Aegis
 
-安装并重启宿主后，直接自然描述开发任务即可。任务匹配时，agent 应选择对应
-Aegis 方法。
-
-高风险任务前可以先用轻量目标框定；它会先框定目标，然后默认继续进入已选
-workflow：
+安装并重启宿主后，直接用自然语言描述工作即可。Aegis 会按任务匹配方法；需要
+更确定的行为时，再直接点名模式。
 
 ```text
+这个登录失败的根因是什么？先诊断，不要立刻改代码。
+审问我：我们是否应该先发布托管版？
 Aegis goal: 修复登录后偶发跳回登录页，不重写 auth 系统。
+在我合并前，独立审查这个 diff。
 ```
 
-当你想强制指定方法时，可以显式点名 skill：
+先阅读 [Aegis 速通秘籍](docs/current/AEGIS_FAST_TRACK_PLAYBOOK_ZH.md)：其中说明
+Aegis 为什么轻量、它与独立 skill pack 的区别、五道工程护城河、项目工作区生命周期、
+自然触发语句、activation/TDD 控制和常见排障。英文版见
+[Fast-Track Playbook](docs/current/AEGIS_FAST_TRACK_PLAYBOOK.md)。
 
-- `aegis:brainstorming`
-- `aegis:systematic-debugging`
-- `aegis:writing-plans`
-- `aegis:first-principles-review`
-- `aegis:requesting-code-review`
-- `aegis:verification-before-completion`
+当你需要更强控制时，可以这样说：
 
-如果预期 skill 没有触发，不要先当成提示词措辞问题。按触发链路诊断：
-安装/版本可见性、宿主 skill discovery、activation mode、`using-aegis` 路由、
-任务到 skill 的匹配、以及上下文压力。阅读
-[docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md](docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md)。
+- `Aegis goal: ...`：框定范围、成功证据与边界。
+- `Grill me ...`、`审问我 ...`：进入决策访谈；每轮只问一个决策问题，不写计划、
+  不实施。
+- `TDD Route: strict`、`strict TDD` 或 `test-first`：显式要求严格 test-first；
+  TDD 默认保持 `off`。
+- `aegis:first-principles-review` 或“用第一性原理审查”：在实施前挑战复杂方向。
+- `aegis:update`：按当前宿主的本地路径更新已安装的 method pack。
 
-## 工作流形态
+Aegis 用 Workflow Quality 让简单任务保持轻量，只在风险需要时展开。想深入了解
+方法时，阅读 [工作流程说明](docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md)、
+[工作流质量基线](docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md)、
+[复杂度治理基线](docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md) 和
+[TDD 模式](docs/current/AEGIS_TDD_MODE.md)。
 
-Aegis 在实施前按复杂度路由：
-
-- 低复杂度：简短 intent、baseline check、TDD Route、验证。
-- 中复杂度：baseline read set、Spec Brief 或稳定需求、writing plan、atomic tasks、验证。
-- 高复杂度：Design Spec、plan、必要时用户确认，然后执行。
-
-核心纪律是：
-
-- **Baseline first**：重大改动前先读当前项目 authority。
-- **Code necessity before edits**：新增任何源码路径前，Aegis 会自然说明为什么
-  非代码路径不足、最小改动边界在哪里，再进入 `code-change`；非平凡源码改动
-  使用更完整的 `Change Necessity`。
-- **Visible governance, on demand trace**：Aegis 会在关键治理点自然露出它帮你
-  控制了什么风险；需要审计时可输出 `Trace Digest`，总结执行轨迹、证据链、
-  规则效果、skill 稳定性和验证链，但不暴露原始内部推理链。
-- **Evidence before claims**：没有 fresh verification evidence，不声明完成。
-- **Repair plus retirement**：修复 owner，同时说明旧路径保留或退役。
-- **Workflow Quality**：简单任务保持轻量，风险升高才展开。
-
-完整说明见：
-
-- [工作流程说明](docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md)
-- [工作流质量基线](docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md)
-- [复杂度治理基线](docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md)
-- [Runtime-ready 边界](docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md)
-- [Artifact schema baseline](docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md)
+如果预期能力没有触发，不要先当成措辞问题。按触发链路诊断：安装/版本可见性、
+宿主 skill discovery、activation mode、`using-aegis` 路由、任务到 skill 的匹配和
+上下文压力。阅读
+[触发健康基线](docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md)。
 
 ## 维护者入口
 

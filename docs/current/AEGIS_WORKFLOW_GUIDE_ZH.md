@@ -432,7 +432,13 @@ baseline 记录当前架构状态。
 : 判断是否需要进入 Aegis workflow，并选择合适 skill。
 
 `brainstorming`
-: 用于新功能、产品行为、UI、架构、contract 或中高复杂度方向澄清。
+: 用于新功能、产品行为、UI、架构、contract 或中高复杂度方向澄清。其可选
+`Grilling Mode` 会在用户要求审问或压力测试某个想法、计划或设计时启动（例如
+`grill me`、`grill this plan`、`审问我`、`盘问我`、`拷问我`）。对于较弱的挑战
+性措辞，会先确认进入 Grill 还是常规 brainstorming；PR、diff 与当前
+代码审查仍属于 code review。一次性启动卡会展示目标、审问路径与节奏。深挖模式
+每轮推进一个有依赖关系的决策；用户明确要求快问时，最多可批量提出三个相互独立
+的问题。在用户结束审问并完成正常设计 gate 前，不会进入计划或实施。
 
 `writing-plans`
 : 在已有 spec 或需求后，把工作拆成可验证、可执行的小任务。

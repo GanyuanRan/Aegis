@@ -132,6 +132,28 @@ assert_contains "$doctor" "context pressure and re-entry" \
 
 assert_contains "$baseline" "does not grant authoritative" \
     "baseline explicitly avoids authority escalation in trigger health"
+assert_contains "skills/using-aegis/SKILL.md" "off=no auto route/load" \
+    "router prevents automatic TDD routing and loading when off"
+assert_contains "skills/systematic-debugging/SKILL.md" "TDD Mode: off.*do not require a failing test first" \
+    "debugging keeps off mode out of a forced test-first cycle"
+assert_contains "skills/using-aegis/SKILL.md" "grill me.*brainstorming|brainstorming.*grill me" \
+    "router sends explicit grilling requests to brainstorming"
+assert_contains "skills/using-aegis/SKILL.md" "grill this plan.*审问我.*盘问我.*拷问我" \
+    "router retains the direct grilling aliases"
+assert_contains "skills/brainstorming/SKILL.md" "## Grilling Mode" \
+    "brainstorming defines the explicit grilling mode"
+assert_contains "skills/brainstorming/SKILL.md" "overrides the normal brainstorming execution" \
+    "grilling mode overrides the normal brainstorming checklist"
+assert_contains "skills/brainstorming/SKILL.md" 'Suspend `Checklist`, `The Process`, the `Compact output contract`' \
+    "grilling mode suspends conflicting normal-flow artifacts"
+assert_contains "skills/brainstorming/SKILL.md" "exactly one decision question" \
+    "grilling mode limits each turn to one decision question"
+assert_contains "skills/brainstorming/SKILL.md" "### Grilling Entry Signals" \
+    "grilling mode distinguishes direct and soft entry signals"
+assert_contains "skills/brainstorming/SKILL.md" "at most three independent decision questions" \
+    "fast grilling mode limits batched questions to independent decisions"
+assert_contains "skills/brainstorming/SKILL.md" "PR, diff, or current-code review" \
+    "grilling mode keeps implementation review out of the interview"
 
 "${PYTHON_CMD[@]}" - <<'PY'
 from pathlib import Path
@@ -178,7 +200,16 @@ samples = data.get("samples", [])
 expected_ids = {
     "quick-shared-module-bug",
     "failing-test-diagnosis",
+    "tdd-off-risky-debugging",
     "ambiguous-feature",
+    "explicit-grilling-mode",
+    "grill-this-plan",
+    "interrogate-me-chinese",
+    "cross-examine-me-chinese",
+    "soft-grilling-intent",
+    "fast-grilling-mode",
+    "existing-pr-red-team",
+    "grilling-phrase-explanation",
     "explicit-aegis-goal",
     "approved-plan",
     "completion-claim",

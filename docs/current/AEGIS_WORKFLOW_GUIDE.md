@@ -453,7 +453,15 @@ See `docs/current/AEGIS_ADR_AUTO_BACKFILL.md`.
 
 `brainstorming`
 : Clarify new features, product behavior, UI, architecture, contract, or
-medium/high-complexity direction.
+medium/high-complexity direction. Its optional `Grilling Mode` starts only
+when the user asks to grill or pressure-test an idea, plan, or design (for
+example, `grill me`, `grill this plan`, `审问我`, `盘问我`, or `拷问我`). Softer
+challenge language first asks whether to enter Grill or use normal
+brainstorming; PRs, diffs, and current-code reviews remain code-review work.
+The one-time opening card makes the target, question path, and pace visible.
+Deep pace asks one dependent decision at a time; user-requested fast pace may
+batch up to three independent questions. It does not plan or implement until
+the user leaves the interview and completes the normal design gate.
 
 `writing-plans`
 : Convert an existing spec or requirement into verifiable executable tasks.

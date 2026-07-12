@@ -20,9 +20,11 @@ tdd_mode = "off"
 
 `off` disables automatic TDD routing by default. It does not delete tests,
 prevent explicit user or project TDD requests, or weaken
-`verification-before-completion`. Users can still manually request TDD in the
-query with explicit markers such as `TDD Route: strict`, `strict TDD`,
-`test-first`, or `RED / GREEN / REFACTOR`.
+`verification-before-completion`. In `off`, owner workflows must not emit a
+TDD route, load `test-driven-development`, or require RED / GREEN solely from
+risk wording; they still choose proportional regression and verification.
+Users can still manually request TDD in the query with explicit markers such as
+`TDD Route: strict`, `strict TDD`, `test-first`, or `RED / GREEN / REFACTOR`.
 
 Users can enable automatic TDD routing when they want it:
 
@@ -66,8 +68,8 @@ pure explanation, comment-only edits, generated or vendored files, throwaway
 spikes, or environment-bound checks where automated tests cannot be written in
 the current slice.
 
-When implementation risk is clear and behavior needs regression protection,
-choose `strict`.
+In `auto`, when implementation risk is clear and behavior needs regression
+protection, choose `strict`.
 
 When business behavior, acceptance, success evidence, or user-visible
 completion is unclear, route to `brainstorming` or `writing-plans` before TDD.

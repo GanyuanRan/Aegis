@@ -109,6 +109,94 @@
       "verificationSignal": "user-approved-brief-or-design-before-plan"
     },
     {
+      "id": "explicit-grilling-mode",
+      "prompt": "请审问我这个团队工作区方案；每次只问一个决策问题，给出你的推荐，但先不要实施。",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": ["first-principles-review"],
+      "mustNotDo": ["start-implementation-immediately", "ask-multiple-decision-questions", "emit-full-design-ceremony-before-first-question", "treat-shared-understanding-as-completion-authority"],
+      "expectedOutputShape": "grilling-mode-single-decision-question-recommendation-and-wait",
+      "workspacePolicy": "no-workspace-unless-persistent-requirements-need-spec",
+      "expectedArtifacts": [],
+      "verificationSignal": "explicit-interview-request-routes-to-brainstorming-one-question-recommendation-user-decision-no-implementation-authority"
+    },
+    {
+      "id": "grill-this-plan",
+      "prompt": "Grill this plan for team workspaces. Ask one decision question at a time, give your recommendation, and do not implement anything.",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": ["first-principles-review"],
+      "mustNotDo": ["start-implementation-immediately", "ask-multiple-decision-questions", "emit-full-design-ceremony-before-first-question"],
+      "expectedOutputShape": "grilling-mode-single-decision-question-recommendation-and-wait",
+      "workspacePolicy": "no-workspace-unless-persistent-requirements-need-spec",
+      "expectedArtifacts": [],
+      "verificationSignal": "grill-this-plan-routes-directly-to-brainstorming-without-normal-design-artifacts"
+    },
+    {
+      "id": "interrogate-me-chinese",
+      "prompt": "请盘问我这个团队工作区方案；每轮只问一个决策问题，给出推荐，但不要实施。",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": ["first-principles-review"],
+      "mustNotDo": ["start-implementation-immediately", "ask-multiple-decision-questions", "emit-full-design-ceremony-before-first-question"],
+      "expectedOutputShape": "grilling-mode-single-decision-question-recommendation-and-wait",
+      "workspacePolicy": "no-workspace-unless-persistent-requirements-need-spec",
+      "expectedArtifacts": [],
+      "verificationSignal": "盘问我-routes-directly-to-brainstorming-without-normal-design-artifacts"
+    },
+    {
+      "id": "cross-examine-me-chinese",
+      "prompt": "请拷问我这个团队工作区方案；每轮只问一个决策问题，给出推荐，但不要实施。",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": ["first-principles-review"],
+      "mustNotDo": ["start-implementation-immediately", "ask-multiple-decision-questions", "emit-full-design-ceremony-before-first-question"],
+      "expectedOutputShape": "grilling-mode-single-decision-question-recommendation-and-wait",
+      "workspacePolicy": "no-workspace-unless-persistent-requirements-need-spec",
+      "expectedArtifacts": [],
+      "verificationSignal": "拷问我-routes-directly-to-brainstorming-without-normal-design-artifacts"
+    },
+    {
+      "id": "soft-grilling-intent",
+      "prompt": "别顺着我，压力测试这个身份登录设计，并挑战我的薄弱假设。",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": ["first-principles-review"],
+      "mustNotDo": ["enter-grilling-without-confirmation", "start-implementation-immediately", "emit-full-design-ceremony-before-confirmation"],
+      "expectedOutputShape": "soft-grilling-intent-confirmation-before-interview",
+      "workspacePolicy": "no-workspace-unless-persistent-requirements-need-spec",
+      "expectedArtifacts": [],
+      "verificationSignal": "pressure-test-intent-asks-grill-or-normal-brainstorming-before-interview"
+    },
+    {
+      "id": "fast-grilling-mode",
+      "prompt": "快速审问我的付费墙方案；一次问最多三个互不依赖的问题，并先不要实施。",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": ["first-principles-review"],
+      "mustNotDo": ["ask-dependent-questions-in-one-batch", "ask-more-than-three-questions", "start-implementation-immediately"],
+      "expectedOutputShape": "fast-grilling-opening-card-and-at-most-three-independent-questions",
+      "workspacePolicy": "no-workspace-unless-persistent-requirements-need-spec",
+      "expectedArtifacts": [],
+      "verificationSignal": "explicit-fast-pace-allows-at-most-three-independent-decision-questions-with-recommendations"
+    },
+    {
+      "id": "existing-pr-red-team",
+      "prompt": "Red-team the current pull request before merge and identify the highest-risk implementation problems.",
+      "expectedPrimarySkill": "requesting-code-review",
+      "allowedSecondarySkills": ["verification-before-completion"],
+      "mustNotDo": ["enter-grilling-mode", "treat-review-as-completion-authority"],
+      "expectedOutputShape": "findings-first-implementation-review",
+      "workspacePolicy": "workspace-only-when-review-needs-persistent-evidence",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "existing-pr-red-team-routes-to-requesting-code-review-not-grilling"
+    },
+    {
+      "id": "grilling-phrase-explanation",
+      "prompt": "解释文章里 \"grill me\" 这句话的含义。",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": ["using-aegis"],
+      "mustNotDo": ["enter-grilling-mode", "force-full-workflow"],
+      "expectedOutputShape": "concise-language-explanation",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "literal-phrase-reference-does-not-activate-grilling"
+    },
+    {
       "id": "explicit-aegis-goal",
       "prompt": "/aegis-goal Fix the auth refresh bug without rewriting the auth system.",
       "expectedPrimarySkill": "goal-framing",
@@ -296,15 +384,26 @@
       "verificationSignal": "tdd-default-off-no-automatic-tdd-fresh-completion-evidence"
     },
     {
+      "id": "tdd-off-debugging-no-strict-cycle",
+      "prompt": "TDD mode is off. Diagnose and repair this risky producer/consumer regression with focused verification, but do not start a test-first cycle unless I explicitly request it.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": ["verification-before-completion"],
+      "mustNotDo": ["auto-trigger-tdd", "force-red-green-refactor", "require-failing-test-first", "skip-regression-verification"],
+      "expectedOutputShape": "systematic-debugging-root-cause-proportional-verification-no-tdd-route",
+      "workspacePolicy": "workspace-if-medium-risk-or-plan-update-needed",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "tdd-off-debugging-no-auto-tdd-proportional-regression-verification"
+    },
+    {
       "id": "tdd-off-native-host-risky-code-no-explicit-tdd",
       "prompt": "TDD mode is off. On a native-skill host, plan this risky producer/consumer contract slice, but do not enter TDD unless the conversation explicitly records `TDD Route: strict` or I explicitly ask for test-first development.",
       "expectedPrimarySkill": "writing-plans",
       "allowedSecondarySkills": ["verification-before-completion"],
-      "mustNotDo": ["auto-trigger-tdd", "infer-strict-route-from-risk-alone", "treat-off-as-skip-verification"],
-      "expectedOutputShape": "plan-basis-files-compat-tasks-risks-retirement",
+      "mustNotDo": ["auto-trigger-tdd", "infer-strict-route-from-risk-alone", "force-red-green-plan-template", "treat-off-as-skip-verification"],
+      "expectedOutputShape": "plan-basis-files-compat-tasks-risks-retirement-tdd-off-plan-proportional-verification",
       "workspacePolicy": "plan-record-under-docs-aegis-plans",
       "expectedArtifacts": ["BaselineReadSetHint", "ImpactStatementDraft"],
-      "verificationSignal": "tdd-off-native-host-literal-marker-boundary"
+      "verificationSignal": "tdd-off-native-host-literal-marker-boundary-tdd-off-plan-proportional-verification"
     },
     {
       "id": "tdd-green-local-not-final-completion",

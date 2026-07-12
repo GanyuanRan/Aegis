@@ -71,9 +71,10 @@ Use `light` for tiny low-risk edits with an obvious readback or command check.
 Use `skipped` for read-only, docs-only, generated, throwaway, comment-only, or
 environment-bound work where TDD does not fit.
 
-In `off`, do not automatically require TDD. Explicit user/project TDD requests
-still apply, and risky work may still justify recommending strict TDD.
-`verification-before-completion` still applies before any completion claim.
+In `off`, do not automatically require TDD, create a strict route, or infer one
+from risk alone. Explicit user/project TDD requests still apply; risky work may
+still need regression coverage and `verification-before-completion` before any
+completion claim.
 If this skill was loaded anyway without an explicit TDD request or a visible
 `TDD Route: strict` marker, exit instead of improvising an automatic strict
 route from risk words alone.

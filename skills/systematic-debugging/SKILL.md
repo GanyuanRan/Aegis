@@ -12,9 +12,9 @@ description: Use when encountering any bug, test failure, or unexpected behavior
      Stop when no deeper "why" remains OR terminal unactionable (T1-T4).
   2. Identify owner: compare with working code → locate canonical owner → flag duplicate owners as a finding
   3. Before fixing, run Patch-Shape Triage and Ripple Signal Triage if the candidate fix touches shared/core/cross-module behavior, contract, source-of-truth, fallback, adapter, duplicate owner, producer+consumer, or consumer-side patching. Surface Change Necessity for any new source-code path and non-trivial fixes. Run Minimality Check when the candidate fix adds a new branch, fallback, owner, adapter, or compatibility path. Also run Pre-Edit Complexity Check when the candidate fix touches an overloaded owner or may worsen source complexity.
-  4. Prove: one hypothesis → minimal test → iterate. 3+ failed fixes = question architecture, do not attempt another code fix.
+  4. Prove: one hypothesis → smallest reproduction or verification → iterate. A failing test first is required only under explicit `TDD Route: strict`. 3+ failed fixes = question architecture, do not attempt another code fix.
      After fix, if any symptom persists → differential diagnosis (Phase 4 Step 4bis).
-   5. Fix: failing test → minimal code at canonical owner → verify → Reflection + architecture review → repair + retirement track
+   5. Fix: minimal code at canonical owner → targeted verification → Reflection + architecture review → repair + retirement track
       If the user asks for white-box auditability, include `Trace Digest` after
       evidence is collected; do not expose raw chain-of-thought or let trace
       replace root-cause, rule-effect, and verification evidence.
@@ -323,9 +323,9 @@ canonical owner.
 
 **Fix the root cause, not the symptom:**
 
-1. **Create Failing Test Case**
-   - Simplest possible reproduction. One-off test script if no framework.
-   - MUST have before fixing.
+1. **Choose Reproduction and Verification**
+   - Under explicit `TDD Route: strict`, create the smallest failing test before production code.
+   - With `TDD Mode: off` and no strict route, do not require a failing test first or RED / GREEN. Keep the smallest reproducible regression proof and targeted verification that fit the fix.
 
 2. **Implement Single Fix**
    - Address the root cause identified. ONE change at a time.
@@ -337,7 +337,7 @@ canonical owner.
      verification findings into the fix boundary before editing code.
 
 3. **Verify Fix**
-   - Test passes now? No other tests broken? Issue actually resolved?
+   - Does the selected verification pass? No other relevant tests broken? Issue actually resolved?
    - Verify the intended compatibility boundary still holds.
    - Verify you did not silently move authority to the wrong layer.
 
@@ -452,7 +452,7 @@ Before you claim debugging is complete:
 
    Must continue upward drilling (H-class — ANY hit = NOT done):
    - **H1** — fix added a conditional branch (`if` / `switch` / `catch` / `try`)
-   - **H2** — fix touched multiple sites but only 1 covered by failing test
+   - **H2** — fix touched multiple sites but only 1 covered by the selected regression proof
    - **H3** — fix is at consumer/caller, not canonical owner
    - **H4** — same bug pattern exists elsewhere in repo (grep for it)
    - **H5** — original reproduction still produces any anomaly

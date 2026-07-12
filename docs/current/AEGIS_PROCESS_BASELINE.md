@@ -165,8 +165,9 @@ mode is `off`.
 The two supported values are:
 
 - `off`: Aegis does not automatically require
-  `test-driven-development`. Explicit user/project TDD requests still apply,
-  and completion still requires `verification-before-completion`.
+  `test-driven-development`, emit a TDD route, or force a failing test first.
+  Explicit user/project TDD requests still apply; proportional regression and
+  `verification-before-completion` remain required.
 - `auto`: Aegis chooses a `TDD Route` before implementation. The route is
   `strict` for risky behavior work, `light` for tiny low-risk edits, and
   `skipped` when TDD does not fit the task shape.

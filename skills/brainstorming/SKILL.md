@@ -1,10 +1,11 @@
 ---
 name: brainstorming
-description: "Use when defining new features, product behavior, UI/component design, architecture choices, contract changes, or ambiguous medium/high-complexity work before implementation."
+description: "Use when defining new features, product behavior, UI/component design, architecture choices, contract changes, or ambiguous medium/high-complexity work before implementation, or when the user asks to grill or pressure-test a plan or design."
 ---
 
 # Execute
 
+→ Direct grilling or plan/design pressure-test? → Enter `Grilling Mode` below. Soft challenge intent? → Use its one-line mode confirmation. Do not start normal design artifacts, document writing, task planning, or implementation during the interview.
 → New feature, product behavior, UI/component design, architecture/contract change, or ambiguous medium/high-complexity work? → **Design first. No implementation until the needed design/spec is approved.**
   1. Explore project context → read authority docs, check for existing patterns
   2. Ask clarifying questions one at a time (prefer multiple choice)
@@ -22,6 +23,43 @@ Start by understanding the current project context and authority boundary, then 
 <HARD-GATE>
 Do NOT invoke any implementation skill, write any code, scaffold any project, or take implementation action for work that matches this skill until you have presented the required design/spec and the user has approved it where this workflow requires approval.
 </HARD-GATE>
+
+## Grilling Mode
+
+### Mode Precedence
+
+While Grilling Mode is active, it overrides the normal brainstorming execution
+flow. Suspend `Checklist`, `The Process`, the `Compact output contract`, and
+all documentation or design-transition requirements until the user exits the
+interview; retain the no-implementation hard gates.
+
+### Grilling Entry Signals
+
+- **Direct:** The user asks to grill or interrogate an idea, plan, or design, or explicitly requests a pressure-test. Direct phrases include `grill me`, `grill this plan`, `审问我`, `盘问我`, and `拷问我`. Enter the mode immediately.
+- **Soft:** The user asks to challenge assumptions, find holes, red-team, or "别顺着我" about a draft idea, plan, or design. Ask only: `Grill or normal brainstorming?` Enter the mode only after confirmation.
+- **Not grilling:** A bare/literal phrase reference, or a PR, diff, or current-code review. Explain literal phrases normally; route implementation review to `requesting-code-review`.
+
+### Opening Card
+
+After the user has entered the mode, emit this once in the user's language, then begin the interview:
+
+```text
+◆ Grilling Session
+Target: <idea / plan / design>
+Question path: value -> boundaries -> failure modes -> acceptance
+Pace: deep (default) | fast (user-requested)
+```
+
+### Pace
+
+- **Deep:** Ask exactly one decision question per turn when it is blocking or depends on the previous answer. State the recommended answer and the most relevant trade-off before waiting.
+- **Fast:** Only when the user explicitly asks for a fast or batched interview (for example, `fast`, `batch`, `快问`, or `一次问几个`), ask at most three independent decision questions. Give each question its recommendation and trade-off, then wait for the user's responses. Return to deep pace for dependent follow-ups.
+
+1. Explore the codebase and current authority docs for facts before asking. Do not ask the user for facts that can be found locally.
+2. The user owns the decision. Do not treat a recommendation, a tentative answer, or a shared-understanding checkpoint as final approval.
+3. Aside from the one-time opening card, keep the turn to the observation, recommendation, and the selected pace's questions. Do not emit a full design ceremony, write docs, create a plan, or implement while the interview is active.
+4. End when the user says to stop, defer, or that the questions are sufficient. Summarize confirmed decisions, assumptions, unresolved questions, and the next optional step. That summary does not grant completion authority.
+5. If the user asks to proceed after the interview, return to the normal brainstorming design gate. A design/spec still needs the required approval before planning or implementation.
 
 ## Route Away When It Is Small
 

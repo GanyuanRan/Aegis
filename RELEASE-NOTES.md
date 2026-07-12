@@ -1,5 +1,76 @@
 # Aegis Release Notes
 
+## v2.4.4 (2026-07-12)
+
+### Grilling Mode
+
+- Added a focused Grilling Mode inside `brainstorming` for decision interviews
+  triggered by direct phrases such as `grill me`, `grill this plan`, `审问我`,
+  `盘问我`, and `拷问我`.
+- Added a one-time opening card, recommendation and trade-off framing, and one
+  decision question per turn by default. Fast grilling can batch at most three
+  independent decision questions.
+- Kept grilling intentionally separate from implementation: it does not write
+  plans, docs, or code, and PR/diff/current-code review still routes to the
+  independent code-review workflow.
+- Expanded trigger-health fixtures and regression checks for direct, soft,
+  fast, Chinese-language, and negative grilling scenarios.
+
+### TDD Off-Mode Enforcement
+
+- Hardened the default `off` mode so risk wording alone cannot automatically
+  route into or load strict TDD.
+- Aligned `using-aegis`, systematic debugging, writing plans,
+  subagent-driven development, and skill authoring with the same rule:
+  explicit `strict TDD`, `test-first`, `TDD Route: strict`, or an enabled
+  automatic mode is required for RED / GREEN routing.
+- Preserved proportional regression tests and
+  `verification-before-completion` when automatic TDD is off.
+- Added policy and workflow-quality regression coverage that prevents owner
+  workflows from reintroducing mandatory test-first behavior.
+
+### Fast-Track Playbooks And Workspace Guidance
+
+- Added English and Chinese user-facing quick-start guides:
+  `Aegis Fast-Track Playbook` and `Aegis 速通秘籍`.
+- Reworked the root README entrypoints around Aegis's lightweight operating
+  model, natural trigger phrases, and progressive workflow depth.
+- Highlighted five engineering moats: seven-layer root-cause analysis,
+  first-principles decision review, the anti-entropy code-change loop,
+  workspace-backed long-task continuity, and evidence-based closeout.
+- Documented how the project-local `docs/aegis/` workspace initializes intent,
+  baseline, checkpoint, evidence, drift, resume, proof-bundle, and optional ADR
+  records without turning method-pack artifacts into project authority.
+- Added a category-level comparison with standalone skill packs while avoiding
+  fixed cost, time, token, or diff-size claims across arbitrary projects.
+
+### Verification
+
+- Fresh checks passed:
+  `bash scripts/bump-version.sh 2.4.4`,
+  `bash scripts/bump-version.sh --check`,
+  `bash scripts/bump-version.sh --audit`,
+  `bash tests/e2e/workflow-quality-check.sh`,
+  `bash tests/e2e/trigger-health-check.sh`,
+  `bash tests/e2e/run-all.sh --full --host-profile fast`, and
+  `git diff --check`.
+- The final full/fast run passed all four suites. Layer 1 passed `39/39`,
+  including representative Codex automatic and explicit skill-triggering
+  smoke, OpenCode base coverage, and Codex plugin-sync regression.
+- The first full/fast attempt was environment-blocked because the current
+  Codex Desktop install provides `codex.exe` but not `codex.cmd`. Re-running
+  with `CODEX_CMD` pointed at the working `codex.exe` passed both targeted
+  Codex smoke tests and the complete release gate; no Aegis routing regression
+  was found.
+
+### Release Surface
+
+- Bumped all declared package and host manifest versions directly from
+  `2.4.1` to `2.4.4`; no `v2.4.2` or `v2.4.3` tags are created by this release.
+- This release remains `Aegis Method Pack (runtime-ready)`, preserves
+  multi-host plugin-installable distribution, and does not add authoritative
+  `GateDecision`, `PolicySnapshot`, or completion authority.
+
 ## v2.4.1 (2026-07-12)
 
 ### Grok Build Host Support

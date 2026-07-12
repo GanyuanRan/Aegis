@@ -137,7 +137,7 @@ After spec compliance and code quality review pass, update the consolidated chec
 - **aegis:finishing-a-development-branch** - Complete development after all tasks
 
 **Subagents should use:**
-- **aegis:test-driven-development** - Subagents follow TDD for each task
+- Inherit the parent TDD decision. With `off`, do not auto-load `aegis:test-driven-development` or force RED / GREEN; use the task's proportional verification. Load it only for `TDD Route: strict` or an explicit user/project TDD request.
 
 **Alternative workflow:**
 - **aegis:executing-plans** - Use for parallel session instead of same-session execution

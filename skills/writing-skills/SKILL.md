@@ -7,7 +7,7 @@ description: Use when creating new skills, editing existing skills, or verifying
 
 ## Overview
 
-**Writing skills IS Test-Driven Development applied to process documentation.**
+**Writing skills uses pressure-scenario validation, not a code TDD route.**
 
 **Personal skills live in agent-specific directories (`~/.claude/skills` for Claude Code, `~/.agents/skills/` for Codex)**
 
@@ -15,7 +15,9 @@ You write test cases (pressure scenarios with subagents), watch them fail (basel
 
 **Core principle:** If you didn't watch an agent fail without the skill, you don't know if the skill teaches the right thing.
 
-**REQUIRED BACKGROUND:** You MUST understand aegis:test-driven-development before using this skill. That skill defines the fundamental RED-GREEN-REFACTOR cycle. This skill adapts TDD to documentation.
+**Validation requirement:** Skill changes need a baseline pressure scenario and
+post-change validation even when TDD mode is `off`; this does not require
+loading `aegis:test-driven-development`.
 
 **Official guidance:** For Anthropic's official skill authoring best practices, see anthropic-best-practices.md. This document provides additional patterns and guidelines that complement the TDD-focused approach in this skill.
 
@@ -30,9 +32,9 @@ A **skill** is a reference guide for proven techniques, patterns, or tools. Skil
 
 **Skills are NOT:** Narratives about how you solved a problem once
 
-## TDD Mapping for Skills
+## Validation Mapping for Skills
 
-| TDD Concept | Skill Creation |
+| Validation step | Skill Creation |
 |-------------|----------------|
 | **Test case** | Pressure scenario with subagent |
 | **Production code** | Skill document (SKILL.md) |
@@ -384,10 +386,10 @@ pptx/
 ```
 When: Reference material too large for inline
 
-## The Iron Law (Same as TDD)
+## The Validation Rule
 
 ```
-NO SKILL WITHOUT A FAILING TEST FIRST
+NO SKILL CHANGE WITHOUT A BASELINE BEHAVIOR SCENARIO
 ```
 
 This applies to NEW skills AND EDITS to existing skills.
@@ -403,7 +405,7 @@ Edit skill without testing? Same violation.
 - Don't "adapt" while running tests
 - Delete means delete
 
-**REQUIRED BACKGROUND:** The aegis:test-driven-development skill explains why this matters. Same principles apply to documentation.
+This rule protects skill quality independently of `aegis:test-driven-development`.
 
 ## Testing All Skill Types
 

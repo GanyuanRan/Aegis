@@ -56,6 +56,8 @@ complexity_baseline="docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md"
 process_doc="docs/current/AEGIS_PROCESS_BASELINE.md"
 trigger_doc="docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md"
 tdd_mode_doc="docs/current/AEGIS_TDD_MODE.md"
+fast_track_en="docs/current/AEGIS_FAST_TRACK_PLAYBOOK.md"
+fast_track_zh="docs/current/AEGIS_FAST_TRACK_PLAYBOOK_ZH.md"
 readme_en="README.md"
 readme_zh="README.zh-CN.md"
 matrix="tests/e2e/fixtures/workflow-quality-matrix.json"
@@ -78,6 +80,10 @@ assert_contains "$current_index" "AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md" \
     "current docs index lists complexity governance baseline"
 assert_contains "$current_index" "AEGIS_TDD_MODE.md" \
     "current docs index lists TDD mode baseline"
+assert_contains "$current_index" "AEGIS_FAST_TRACK_PLAYBOOK.md" \
+    "current docs index lists English fast-track playbook"
+assert_contains "$current_index" "AEGIS_FAST_TRACK_PLAYBOOK_ZH.md" \
+    "current docs index lists Chinese fast-track playbook"
 if [[ -f "$complexity_baseline" ]]; then
     pass "complexity governance baseline exists"
 else
@@ -87,6 +93,16 @@ if [[ -f "$tdd_mode_doc" ]]; then
     pass "TDD mode baseline exists"
 else
     fail "TDD mode baseline exists"
+fi
+if [[ -f "$fast_track_en" ]]; then
+    pass "English fast-track playbook exists"
+else
+    fail "English fast-track playbook exists"
+fi
+if [[ -f "$fast_track_zh" ]]; then
+    pass "Chinese fast-track playbook exists"
+else
+    fail "Chinese fast-track playbook exists"
 fi
 assert_contains "$process_doc" "Workflow Quality" \
     "process baseline references workflow quality"
@@ -110,6 +126,50 @@ assert_contains "$readme_zh" "Workflow Quality" \
     "Chinese README mentions workflow quality"
 assert_contains "$readme_zh" "AEGIS_COMPLEXITY_GOVERNANCE_BASELINE" \
     "Chinese README mentions complexity governance baseline"
+assert_contains "$readme_en" "AEGIS_FAST_TRACK_PLAYBOOK.md" \
+    "English README links English fast-track playbook"
+assert_contains "$readme_zh" "AEGIS_FAST_TRACK_PLAYBOOK_ZH.md" \
+    "Chinese README links Chinese fast-track playbook"
+assert_contains "$fast_track_en" "Grill me" \
+    "English fast-track playbook documents grilling trigger"
+assert_contains "$fast_track_zh" "审问我" \
+    "Chinese fast-track playbook documents grilling trigger"
+assert_contains "$fast_track_en" "TDD defaults to" \
+    "English fast-track playbook documents default TDD mode"
+assert_contains "$fast_track_zh" "TDD 默认" \
+    "Chinese fast-track playbook documents default TDD mode"
+assert_contains "$fast_track_en" "Lightweight By Design" \
+    "English fast-track playbook leads with lightweight progressive depth"
+assert_contains "$fast_track_zh" "轻量，但把力量集中在高风险处" \
+    "Chinese fast-track playbook leads with lightweight progressive depth"
+assert_contains "$fast_track_en" "Typical Standalone Skill Pack" \
+    "English fast-track playbook explains category-level differentiation"
+assert_contains "$fast_track_zh" "典型独立 Skill Pack" \
+    "Chinese fast-track playbook explains category-level differentiation"
+assert_contains "$fast_track_en" "Five Engineering Moats" \
+    "English fast-track playbook highlights engineering moats"
+assert_contains "$fast_track_zh" "五道工程护城河" \
+    "Chinese fast-track playbook highlights engineering moats"
+assert_contains "$fast_track_en" "L1 Symptom" \
+    "English fast-track playbook documents seven-layer diagnosis"
+assert_contains "$fast_track_zh" "L7 规格缺口" \
+    "Chinese fast-track playbook documents seven-layer diagnosis"
+assert_contains "$fast_track_en" "Change Necessity" \
+    "English fast-track playbook documents pre-edit change necessity"
+assert_contains "$fast_track_zh" "Complexity Delta" \
+    "Chinese fast-track playbook documents post-change complexity closure"
+assert_contains "$fast_track_en" "Aegis Project Workspace" \
+    "English fast-track playbook explains project workspace"
+assert_contains "$fast_track_zh" "Aegis 项目工作区" \
+    "Chinese fast-track playbook explains project workspace"
+assert_contains "$fast_track_en" "ResumeStateHint" \
+    "English fast-track playbook explains resumable long-task state"
+assert_contains "$fast_track_zh" "docs/aegis/" \
+    "Chinese fast-track playbook names the workspace root"
+assert_contains "$readme_en" "lightweight operating model" \
+    "English README previews lightweight Aegis positioning"
+assert_contains "$readme_zh" "为什么轻量" \
+    "Chinese README previews lightweight Aegis positioning"
 
 for dimension in \
     "Trigger Accuracy" \
@@ -143,6 +203,8 @@ assert_contains "$tdd_mode_doc" "TDD Route: strict|strict TDD|test-first|RED / G
     "TDD mode doc documents explicit query markers"
 assert_contains "$tdd_mode_doc" "verification-before-completion" \
     "TDD mode doc preserves completion verification"
+assert_contains "$tdd_mode_doc" "owner workflows must not emit a" \
+    "TDD mode doc keeps off mode out of automatic owner workflow routing"
 assert_contains "$tdd_mode_doc" "AEGIS_TDD_MODE" \
     "TDD mode doc names environment override"
 assert_contains "$tdd_mode_doc" 'aegis-doctor\.py tdd-mode off' \
@@ -427,6 +489,30 @@ assert_contains "skills/goal-framing/SKILL.md" "TaskIntentDraft" \
     "goal-framing exposes task intent goal frame"
 assert_contains "skills/brainstorming/SKILL.md" "Compact output contract" \
     "brainstorming exposes compact output contract"
+assert_contains "skills/brainstorming/SKILL.md" "## Grilling Mode" \
+    "brainstorming provides an explicit grilling mode"
+assert_contains "skills/brainstorming/SKILL.md" "overrides the normal brainstorming execution" \
+    "grilling mode overrides the normal brainstorming checklist"
+assert_contains "skills/brainstorming/SKILL.md" 'Suspend `Checklist`, `The Process`, the `Compact output contract`' \
+    "grilling mode suspends conflicting normal-flow artifacts"
+assert_contains "skills/brainstorming/SKILL.md" "exactly one decision question" \
+    "grilling mode asks one decision question per turn"
+assert_contains "skills/brainstorming/SKILL.md" "### Grilling Entry Signals" \
+    "grilling mode distinguishes direct and soft entry signals"
+assert_contains "skills/brainstorming/SKILL.md" "Grill or normal brainstorming" \
+    "soft grilling intent asks the user to confirm the mode"
+assert_contains "skills/brainstorming/SKILL.md" "at most three independent decision questions" \
+    "fast grilling mode batches only independent questions"
+assert_contains "skills/brainstorming/SKILL.md" "◆ Grilling Session" \
+    "grilling mode has a one-time opening card"
+assert_contains "skills/brainstorming/SKILL.md" "PR, diff, or current-code review" \
+    "grilling mode routes implementation review to code review"
+assert_contains "skills/brainstorming/SKILL.md" "does not grant completion authority" \
+    "grilling mode preserves the completion authority boundary"
+assert_contains "skills/using-aegis/SKILL.md" "grill me.*brainstorming|brainstorming.*grill me" \
+    "using-aegis routes explicit grilling requests without a new skill"
+assert_contains "skills/using-aegis/SKILL.md" "grill this plan.*审问我.*盘问我.*拷问我" \
+    "using-aegis retains direct grilling aliases"
 assert_contains "skills/brainstorming/SKILL.md" "Product Risk Lens" \
     "brainstorming includes product risk lens"
 assert_contains "skills/brainstorming/SKILL.md" "Plan-Time Complexity Check" \
@@ -529,6 +615,16 @@ assert_contains "skills/test-driven-development/SKILL.md" "verification-before-c
     "test-driven-development keeps completion verification independent of TDD mode"
 assert_contains "skills/test-driven-development/SKILL.md" "pause for plan update" \
     "test-driven-development can pause for plan update when complexity risk appears"
+assert_contains "skills/using-aegis/SKILL.md" "off=no auto route/load" \
+    "using-aegis keeps off mode out of automatic TDD routing and loading"
+assert_contains "skills/systematic-debugging/SKILL.md" "TDD Mode: off.*do not require a failing test first" \
+    "systematic debugging does not force a test-first cycle when off"
+assert_contains "skills/writing-plans/SKILL.md" "Strict RED / GREEN steps belong only" \
+    "writing plans makes strict TDD steps explicit-route only"
+assert_contains "skills/subagent-driven-development/SKILL.md" "Inherit the parent TDD decision" \
+    "subagents inherit rather than force TDD"
+assert_contains "skills/writing-skills/SKILL.md" "loading.*test-driven-development" \
+    "writing skills does not force-load the TDD skill"
 assert_contains "skills/systematic-debugging/SKILL.md" "Quick bug lane" \
     "systematic debugging defines quick bug lane"
 assert_contains "skills/systematic-debugging/SKILL.md" "Pre-Edit Complexity Check" \
