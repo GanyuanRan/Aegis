@@ -1,5 +1,63 @@
 # Aegis Release Notes
 
+## v2.4.5 (2026-07-12)
+
+### Quick Install In The Fast-Track Playbooks
+
+- Promoted installation to the first section of both the English
+  `Aegis Fast-Track Playbook` and the Chinese `Aegis 速通秘籍`.
+- Added one copy-and-paste prompt that asks the user's AI coding agent to
+  identify the current host, follow the correct global installation guide,
+  restart or reload the host when needed, and run complete-install
+  verification from the installed method-pack root.
+- Defined the complete-install evidence explicitly: the doctor JSON must report
+  `"ok": true`, `"workspaceSupport": "available"`, and
+  `"configStatus": "configured"`, with discovery-root and skill-name-prefix
+  checks when the host guide requires them.
+- Clarified that copy-only or skills-only discovery can expose Aegis methods
+  without proving complete project workspace support.
+- Added direct manual-install entrypoints for Codex, OpenCode, Claude Code, and
+  the full host compatibility matrix, plus the normal `update Aegis` /
+  `aegis:update` follow-up path.
+
+### Documentation Contract Coverage
+
+- Renumbered both playbooks so installation precedes the first-use guide,
+  lightweight operating model, engineering moats, project workspace,
+  capability map, controls, trigger diagnosis, and deeper references.
+- Updated the internal workspace anchor after the section move.
+- Added workflow-quality regression checks that keep quick install first,
+  preserve the complete-install JSON evidence, and distinguish skills-only
+  discovery from complete installation.
+
+### Verification
+
+- Fresh checks passed:
+  `bash scripts/bump-version.sh 2.4.5`,
+  `bash scripts/bump-version.sh --check`,
+  `bash scripts/bump-version.sh --audit`,
+  `bash tests/e2e/workflow-quality-check.sh`,
+  `bash tests/e2e/layer1-fast-check.sh --host-profile none`,
+  `bash tests/e2e/run-all.sh --full --host-profile fast`, and
+  `git diff --check`.
+- The final full/fast run passed all four suites. Layer 1 passed `39/39`,
+  including Codex automatic and explicit skill-triggering smoke, OpenCode base
+  coverage, and Codex plugin-sync regression.
+- The current Codex Desktop installation does not include
+  `codex-windows-sandbox-setup.exe`. A workspace-write smoke attempt therefore
+  reached the correct `brainstorming` route but could not read the skill file.
+  The final release run used the working `codex.exe` with
+  `-s danger-full-access`; log readback confirmed successful reads of both
+  `using-aegis` and `brainstorming`, not parser-only load markers.
+
+### Release Surface
+
+- Bumped all declared package and host manifest versions from `2.4.4` to
+  `2.4.5`.
+- This release remains `Aegis Method Pack (runtime-ready)`, preserves
+  multi-host plugin-installable distribution, and does not add authoritative
+  `GateDecision`, `PolicySnapshot`, or completion authority.
+
 ## v2.4.4 (2026-07-12)
 
 ### Grilling Mode

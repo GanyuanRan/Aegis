@@ -5,7 +5,33 @@
 > Aegis 让 AI 编程 Agent 在正确层级提出正确问题、修改正确 owner、保存长任务状态，
 > 并证明真正完成了什么；同时不让小任务背上沉重流程。
 
-## 1. 30 秒上手
+## 1. 极简安装：把一段话交给 Agent
+
+最快、最推荐的方式，是把下面这段话交给你的 AI 编程 Agent：
+
+```text
+请阅读 https://github.com/GanyuanRan/Aegis，识别我当前使用的 AI 编程宿主，并按对应宿主说明全局安装 Aegis。如果需要重启或重新加载宿主，请明确告诉我；然后从已安装的 Aegis method-pack 根目录运行完整安装验证。不要在目标项目目录中运行 doctor 命令。先定位 `<aegis-method-pack-root>`，再运行 `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`。只有当 JSON 输出包含 `"ok": true`、`"workspaceSupport": "available"` 和 `"configStatus": "configured"` 时，才把安装视为完成；如果宿主有单独的 skill discovery 目录，也要额外用 `--discovery-root <path>` 验证它指向当前版本；如果宿主说明声明了 skill 目录名前缀，也同时传 `--discovery-name-prefix <prefix>`。
+```
+
+### 怎样才算真正安装完成
+
+1. Agent 识别了你实际使用的宿主，并采用对应宿主安装说明。
+2. Aegis 已完成全局安装，并在需要时重启或 reload 宿主。
+3. `aegis-doctor.py` 从已安装的 method-pack 根目录运行，而不是从目标项目运行。
+4. JSON 结果包含 `"ok": true`、`"workspaceSupport": "available"` 和
+   `"configStatus": "configured"`。
+5. 有独立 discovery 目录或 skill 名称前缀要求的宿主，也通过了对应检查。
+
+这个区别很重要：只复制 skills 可能让宿主看见 Aegis 方法，却不能证明项目工作区
+支持完整可用。
+
+如果希望手动安装，从 [Codex](../README.codex.md)、
+[OpenCode](../README.opencode.md)、[Claude Code](../README.claude-code.md) 或完整
+[宿主兼容性矩阵](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md) 开始。
+
+完成安装后，后续通常可以直接说 `更新 Aegis` 或 `aegis:update`。
+
+## 2. 30 秒开始使用 Aegis
 
 正常描述工作即可。只有想让方法更确定时，才直接点名模式。
 
@@ -24,7 +50,7 @@
 自然语言是默认入口。宿主支持时，也可以显式写
 `aegis:systematic-debugging` 这类名称来消除歧义。
 
-## 2. 轻量，但把力量集中在高风险处
+## 3. 轻量，但把力量集中在高风险处
 
 Aegis 不是每次请求都完整展开的重型 workflow。它采用渐进式成本结构：
 
@@ -65,7 +91,7 @@ Aegis 的出色表现用工程行为衡量：路由正确性、fast-path 轻量�
 工作区懒加载、artifact 稳定性与 authority 安全。成本、耗时、token 和 diff 大小可以
 作为辅助指标，但 Aegis 不宣称在任意项目上固定节省某个百分比。
 
-## 3. Aegis 的五道工程护城河
+## 4. Aegis 的五道工程护城河
 
 | 工程护城河 | Aegis 改变了什么 | 降低什么风险 |
 | --- | --- | --- |
@@ -78,7 +104,7 @@ Aegis 的出色表现用工程行为衡量：路由正确性、fast-path 轻量�
 这些方法按压力触发。清晰的小任务保持轻量；只有不确定性或工程风险增加时，
 Aegis 才展开更完整的纪律。
 
-### 3.1 七层根因穿透
+### 4.1 七层根因穿透
 
 当 bug 不明显是局部问题时，Aegis 可以沿七个诊断层向上追因：
 
@@ -104,7 +130,7 @@ L1 症状
 按 Aegis 七层诊断模型分析这个问题，并说明因果链停在哪一层。
 ```
 
-### 3.2 第一性原理决策审查
+### 4.2 第一性原理决策审查
 
 接受复杂方向前，Aegis 会追问：
 
@@ -123,7 +149,7 @@ L1 症状
 选择方案前，用第一性原理审查这个方向。
 ```
 
-### 3.3 代码反熵增闭环
+### 4.3 代码反熵增闭环
 
 Aegis 把代码变更视为完整生命周期，而不是一次编辑：
 
@@ -158,15 +184,15 @@ Aegis 把代码变更视为完整生命周期，而不是一次编辑：
 修改后报告复杂度增量，并说明是否需要拆分或退役旧路径。
 ```
 
-### 3.4 工作区驱动的长任务续接
+### 4.4 工作区驱动的长任务续接
 
 长任务不能只依赖聊天记忆。Aegis 可以把任务意图、baseline 使用情况、checkpoint、
 证据、drift 状态和恢复提示持久化到目标项目。后续会话或 Agent 先回读这些状态，
 再与当前 worktree 比较后继续。
 
-完整机制见 [Aegis 项目工作区](#4-aegis-项目工作区)。
+完整机制见 [Aegis 项目工作区](#5-aegis-项目工作区)。
 
-### 3.5 证据式收尾
+### 4.5 证据式收尾
 
 在说“完成”前，Aegis 会要求新鲜证据，并说明：
 
@@ -178,7 +204,7 @@ Aegis 把代码变更视为完整生命周期，而不是一次编辑：
 
 这些是 advisory 工程证据，不授予合并、发布、策略或用户验收 authority。
 
-## 4. Aegis 项目工作区
+## 5. Aegis 项目工作区
 
 Aegis 项目工作区是目标项目下 `docs/aegis/` 中的本地记忆与证据面。只有中高
 复杂度、长任务或确实需要持久记录时才按需创建；快速问答和微小编辑默认不写
@@ -244,7 +270,7 @@ helper-backed 生命周期提供 `init`、`new-work`、`add-checkpoint`、
 工作区记录是 method-pack draft、hint 与 evidence，不是 authoritative
 `GateDecision`、`PolicySnapshot`、项目事实 source of truth 或 completion authority。
 
-## 5. 能力地图：直接说你要什么
+## 6. 能力地图：直接说你要什么
 
 ### 思考与决策
 
@@ -280,7 +306,7 @@ helper-backed 生命周期提供 `init`、`new-work`、`add-checkpoint`、
 | 记录长期决策 | `这个已验证变更需要成为 ADR 吗？` | 选择 create、amend、supersede 或 skip，并检查 baseline 同步。 |
 | 更新 Aegis | `aegis:update` / `Aegis 是最新的吗？` | 使用 host-scoped 本地更新路径并验证结果。 |
 
-## 6. 你可能需要的开关
+## 7. 你可能需要的开关
 
 ### Activation Mode
 
@@ -301,7 +327,7 @@ TDD 默认是 `off`：
 
 `off` 与 `auto` 配置见 [TDD Mode](AEGIS_TDD_MODE.md)。
 
-## 7. 能力没有触发时怎么办
+## 8. 能力没有触发时怎么办
 
 不要先堆关键词。按触发链路检查：
 
@@ -314,7 +340,7 @@ TDD 默认是 `off`：
 
 完整诊断路径见 [Trigger Health](AEGIS_TRIGGER_HEALTH_BASELINE.md) 和对应宿主说明。
 
-## 8. 需要时再深入
+## 9. 需要时再深入
 
 - [工作流程说明](AEGIS_WORKFLOW_GUIDE_ZH.md)：完整 workflow 与边界模型。
 - [工作流质量基线](AEGIS_WORKFLOW_QUALITY_BASELINE.md)：轻量、证据、复杂度与收尾契约。
@@ -323,7 +349,7 @@ TDD 默认是 `off`：
 - [Codex](../README.codex.md)、[OpenCode](../README.opencode.md)、
   [Claude Code](../README.claude-code.md)：宿主安装与使用说明。
 
-## 9. 重要边界
+## 10. 重要边界
 
 Aegis 是 method pack，提供 workflow discipline、advisory judgment、项目内证据与
 runtime-ready draft；它不是 authoritative runtime core，也不拥有最终完成、策略、

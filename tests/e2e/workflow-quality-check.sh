@@ -138,6 +138,18 @@ assert_contains "$fast_track_en" "TDD defaults to" \
     "English fast-track playbook documents default TDD mode"
 assert_contains "$fast_track_zh" "TDD 默认" \
     "Chinese fast-track playbook documents default TDD mode"
+assert_contains "$fast_track_en" "Quick Install: Give Your Agent One Prompt" \
+    "English fast-track playbook puts quick install first"
+assert_contains "$fast_track_zh" "极简安装：把一段话交给 Agent" \
+    "Chinese fast-track playbook puts quick install first"
+assert_contains "$fast_track_en" '"workspaceSupport": "available"' \
+    "English fast-track playbook defines complete-install workspace evidence"
+assert_contains "$fast_track_zh" '"configStatus": "configured"' \
+    "Chinese fast-track playbook defines complete-install config evidence"
+assert_contains "$fast_track_en" "copy-only or skills-only install" \
+    "English fast-track playbook distinguishes discovery from complete install"
+assert_contains "$fast_track_zh" "只复制 skills" \
+    "Chinese fast-track playbook distinguishes discovery from complete install"
 assert_contains "$fast_track_en" "Lightweight By Design" \
     "English fast-track playbook leads with lightweight progressive depth"
 assert_contains "$fast_track_zh" "轻量，但把力量集中在高风险处" \

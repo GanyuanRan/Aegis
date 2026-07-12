@@ -6,7 +6,40 @@ Status: `Approved`
 > change the right owner, preserve long-task state, and prove what is actually
 > complete—without making small work ceremonial.
 
-## 1. Start In 30 Seconds
+## 1. Quick Install: Give Your Agent One Prompt
+
+The fastest recommended installation path is to give this prompt to your AI
+coding agent:
+
+```text
+Read https://github.com/GanyuanRan/Aegis, identify my current AI coding host, and install Aegis globally using the correct host guide. Restart or reload the host if needed, then run complete-install verification from the installed Aegis method-pack root. Do not run the doctor command from the target project directory. First locate `<aegis-method-pack-root>`, then run `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`. Treat the install as complete only if the JSON includes `"ok": true`, `"workspaceSupport": "available"`, and `"configStatus": "configured"`; if the host uses a separate skill discovery directory, also verify it with `--discovery-root <path>`; if the host guide declares a skill directory name prefix, also pass `--discovery-name-prefix <prefix>`.
+```
+
+### How To Know Installation Is Complete
+
+1. The agent identified your actual host and used that host's installation
+   guide.
+2. Aegis was installed globally and the host was restarted or reloaded when
+   required.
+3. `aegis-doctor.py` ran from the installed method-pack root, not from the
+   target project.
+4. The JSON result reported `"ok": true`,
+   `"workspaceSupport": "available"`, and
+   `"configStatus": "configured"`.
+5. Hosts with a separate discovery directory or required skill-name prefix
+   also passed the corresponding discovery check.
+
+This distinction matters: a copy-only or skills-only install may expose Aegis
+methods while leaving project workspace support unavailable.
+
+For manual installation, start with [Codex](../README.codex.md),
+[OpenCode](../README.opencode.md), [Claude Code](../README.claude-code.md), or
+the full [Host Compatibility Matrix](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md).
+
+After a complete install, future updates can usually be requested with
+`update Aegis` or `aegis:update`.
+
+## 2. Start Using Aegis In 30 Seconds
 
 Describe the work normally. Add a direct mode phrase only when you want to make
 the method unambiguous.
@@ -27,7 +60,7 @@ Natural language is the normal entry point. Explicit names such as
 `aegis:systematic-debugging` are useful when the host supports them and you
 want to remove ambiguity.
 
-## 2. Lightweight By Design, Strong Where Risk Concentrates
+## 3. Lightweight By Design, Strong Where Risk Concentrates
 
 Aegis is not a heavyweight workflow that runs in full on every request. Its
 cost shape is deliberately progressive:
@@ -71,7 +104,7 @@ and authority safety. Cost, time, token count, and diff size can be supporting
 metrics, but Aegis does not claim a fixed saving percentage across arbitrary
 projects.
 
-## 3. The Five Engineering Moats
+## 4. The Five Engineering Moats
 
 | Engineering moat | What Aegis changes | Risk it reduces |
 | --- | --- | --- |
@@ -84,7 +117,7 @@ projects.
 These methods are pressure-sensitive. Aegis keeps a small, clear task small and
 expands only when the work carries meaningful uncertainty or engineering risk.
 
-### 3.1 Seven-Layer Root-Cause Analysis
+### 4.1 Seven-Layer Root-Cause Analysis
 
 When a bug is not obviously local, Aegis can drill upward through seven
 diagnostic layers:
@@ -112,7 +145,7 @@ Try:
 Diagnose this through the Aegis seven-layer model. Show where the causal chain stops.
 ```
 
-### 3.2 First-Principles Decision Review
+### 4.2 First-Principles Decision Review
 
 Before accepting a complex direction, Aegis asks questions such as:
 
@@ -131,7 +164,7 @@ Try:
 Review this from first principles before we choose an approach.
 ```
 
-### 3.3 Anti-Entropy Code Change Loop
+### 4.3 Anti-Entropy Code Change Loop
 
 Aegis treats code change as a lifecycle, not just an edit:
 
@@ -169,16 +202,16 @@ Before editing, check whether code is necessary and whether this is the right ow
 After the change, report the complexity delta and any split or retirement needed.
 ```
 
-### 3.4 Workspace-Backed Long-Task Continuity
+### 4.4 Workspace-Backed Long-Task Continuity
 
 Long work should not depend on chat memory. Aegis can persist the task's intent,
 baseline use, checkpoints, evidence, drift state, and resume hints in the
 target project. A later session or agent re-reads that state and compares it
 with the current worktree before continuing.
 
-This is explained in detail in [Aegis Project Workspace](#4-aegis-project-workspace).
+This is explained in detail in [Aegis Project Workspace](#5-aegis-project-workspace).
 
-### 3.5 Evidence-Based Closeout
+### 4.5 Evidence-Based Closeout
 
 Before saying a task is complete, Aegis asks for fresh evidence and reports:
 
@@ -191,7 +224,7 @@ Before saying a task is complete, Aegis asks for fresh evidence and reports:
 This is advisory engineering evidence. It does not grant merge, release,
 policy, or user-acceptance authority.
 
-## 4. Aegis Project Workspace
+## 5. Aegis Project Workspace
 
 The Aegis Project Workspace is the project-local memory and evidence surface
 under `docs/aegis/`. It is created lazily when a medium/high-complexity or
@@ -263,7 +296,7 @@ Workspace records are method-pack drafts, hints, and evidence. They are not an
 authoritative `GateDecision`, `PolicySnapshot`, source of project truth, or
 completion authority.
 
-## 5. Capability Map: Say What You Need
+## 6. Capability Map: Say What You Need
 
 ### Think And Decide
 
@@ -299,7 +332,7 @@ completion authority.
 | Record a durable decision | `Should this verified change become an ADR?` | Chooses create, amend, supersede, or skip and checks baseline sync. |
 | Update Aegis | `aegis:update` / `Is Aegis current?` | Uses the host-scoped installed update path and verifies the result. |
 
-## 6. Controls You May Want To Set
+## 7. Controls You May Want To Set
 
 ### Activation Mode
 
@@ -321,7 +354,7 @@ TDD defaults to `off`:
 
 Read [TDD Mode](AEGIS_TDD_MODE.md) for `off` and `auto` configuration.
 
-## 7. When A Capability Does Not Trigger
+## 8. When A Capability Does Not Trigger
 
 Do not begin by adding more keywords. Check the trigger chain:
 
@@ -335,7 +368,7 @@ Do not begin by adding more keywords. Check the trigger chain:
 Use [Trigger Health](AEGIS_TRIGGER_HEALTH_BASELINE.md) and the relevant host
 guide for the full diagnostic path.
 
-## 8. Go Deeper Only When Needed
+## 9. Go Deeper Only When Needed
 
 - [Workflow Guide](AEGIS_WORKFLOW_GUIDE.md) — full workflow and boundary model.
 - [Workflow Quality Baseline](AEGIS_WORKFLOW_QUALITY_BASELINE.md) — compactness,
@@ -347,7 +380,7 @@ guide for the full diagnostic path.
 - [Codex](../README.codex.md), [OpenCode](../README.opencode.md), and
   [Claude Code](../README.claude-code.md) — host installation and usage notes.
 
-## 9. Important Boundary
+## 10. Important Boundary
 
 Aegis is a method pack. It supplies workflow discipline, advisory judgment,
 project-local evidence, and runtime-ready drafts. It is not an authoritative
