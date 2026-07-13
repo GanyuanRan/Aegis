@@ -33,6 +33,33 @@ Strict RED / GREEN steps belong only to an explicit user/project TDD request or
 implementation and proportional regression/verification steps; do not prescribe
 a TDD cycle from risk alone.
 
+### TDD Route Guard
+
+Before task decomposition, every plan that includes implementation work must
+record:
+
+```text
+TDD Route:
+- Mode: off | auto
+- Decision: strict | light | skipped
+- Strict authority: explicit user/project request | recorded auto decision | not applicable
+- Test posture: diagnostic reproduction | post-change regression | strict RED test
+- Reason:
+- Verification:
+```
+
+In `off`, record `Decision: skipped` unless an explicit user/project strict
+request overrides it. The record makes the boundary reviewable; it does not
+load `test-driven-development`. An approved plan, bug label, architecture risk,
+contract risk, or shared-module label is not strict authority.
+
+Only `Decision: strict` with stated strict authority may prescribe `Write
+failing test`, `Verify RED`, `GREEN`, or `REFACTOR` as task steps. Otherwise,
+write the minimum change plus diagnostic reproduction or post-change regression
+as appropriate. In `auto`, if the plan lacks a recorded decision, return to
+route selection before writing implementation tasks; never infer `strict`
+during decomposition.
+
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
 
 **Context:** This should be run in a dedicated worktree (created by brainstorming skill).
@@ -342,7 +369,7 @@ Before you leave this workflow, the written plan must make these items answerabl
 
 ## Plan Document Header
 
-Every plan MUST start with: Goal, Architecture, Tech Stack, Baseline/Authority Refs, Compatibility Boundary, Verification. See template in this directory.
+Every plan MUST start with: Goal, Architecture, Tech Stack, Baseline/Authority Refs, Compatibility Boundary, TDD Route, Verification. See template in this directory.
 
 ## Task Structure
 

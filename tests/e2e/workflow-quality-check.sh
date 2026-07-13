@@ -215,8 +215,12 @@ assert_contains "$tdd_mode_doc" "TDD Route: strict|strict TDD|test-first|RED / G
     "TDD mode doc documents explicit query markers"
 assert_contains "$tdd_mode_doc" "verification-before-completion" \
     "TDD mode doc preserves completion verification"
-assert_contains "$tdd_mode_doc" "owner workflows must not emit a" \
-    "TDD mode doc keeps off mode out of automatic owner workflow routing"
+assert_contains "$tdd_mode_doc" "Decision: skipped" \
+    "TDD mode doc records off mode without automatic strict routing"
+assert_contains "$tdd_mode_doc" "diagnostic reproduction" \
+    "TDD mode doc distinguishes diagnostic reproduction from strict RED"
+assert_contains "$tdd_mode_doc" "strict RED test" \
+    "TDD mode doc reserves production-edit gating for strict RED"
 assert_contains "$tdd_mode_doc" "AEGIS_TDD_MODE" \
     "TDD mode doc names environment override"
 assert_contains "$tdd_mode_doc" 'aegis-doctor\.py tdd-mode off' \
@@ -629,10 +633,16 @@ assert_contains "skills/test-driven-development/SKILL.md" "pause for plan update
     "test-driven-development can pause for plan update when complexity risk appears"
 assert_contains "skills/using-aegis/SKILL.md" "off=no auto route/load" \
     "using-aegis keeps off mode out of automatic TDD routing and loading"
-assert_contains "skills/systematic-debugging/SKILL.md" "TDD Mode: off.*do not require a failing test first" \
+assert_contains "skills/systematic-debugging/SKILL.md" "TDD Mode: off" \
+    "systematic debugging names the off-mode boundary"
+assert_contains "skills/systematic-debugging/SKILL.md" "do not require a failing test" \
     "systematic debugging does not force a test-first cycle when off"
 assert_contains "skills/writing-plans/SKILL.md" "Strict RED / GREEN steps belong only" \
     "writing plans makes strict TDD steps explicit-route only"
+assert_contains "skills/writing-plans/SKILL.md" "TDD Route Guard" \
+    "writing plans record route authority before task decomposition"
+assert_contains "skills/executing-plans/SKILL.md" "TDD Route Guard" \
+    "executing plans verify route authority before task execution"
 assert_contains "skills/subagent-driven-development/SKILL.md" "Inherit the parent TDD decision" \
     "subagents inherit rather than force TDD"
 assert_contains "skills/writing-skills/SKILL.md" "loading.*test-driven-development" \

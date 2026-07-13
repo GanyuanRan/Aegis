@@ -792,21 +792,25 @@ Compact contract:
 
 ```text
 Aegis Visibility: why the route is strict, light, or skipped and what RED/GREEN does and does not prove
-TDD Route: mode, decision, reason, verification
+TDD Route: mode, decision, strict authority when decision is strict, test posture, reason, verification
+Test Posture: diagnostic reproduction | post-change regression | strict RED test
 Preflight Gate: low | route-to-plan | route-to-spec
 Change Necessity: user-visible need, no-change / non-code option, why code change, minimum boundary, decision
 Complexity Budget: artifact class, current pressure, projected post-change pressure, planned governance
 Pre-Edit Complexity Check: target edit file, pressure signal, safer boundary, decision
 Pre-Edit Owner-Fit Decision: edit intent, owner fit, safer boundary, decision
-RED: failing test or reason strict TDD does not fit
-GREEN: minimal code and passing target test
-REFACTOR: cleanup with tests still green
+RED: failing test only when decision is strict; otherwise state why strict TDD is skipped
+GREEN: minimal code and passing target test only for strict TDD
+REFACTOR: cleanup with tests still green only for strict TDD
 Regression Scope: target, related, producer/consumer, manual fallback
 ```
 
 In `auto` mode, strict/light/skipped route decisions scale with risk. In `off`
-mode, do not automatically require TDD, but `verification-before-completion`
-still requires fresh completion evidence.
+mode, record `Decision: skipped` for plan/execution review unless an explicit
+user/project strict request overrides it; do not automatically require TDD.
+Diagnostic reproduction and post-change regression remain available evidence,
+while only a recorded strict route makes a failing test a RED gate.
+`verification-before-completion` still requires fresh completion evidence.
 
 ### 4.5 `requesting-code-review`
 

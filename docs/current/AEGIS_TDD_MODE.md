@@ -20,11 +20,14 @@ tdd_mode = "off"
 
 `off` disables automatic TDD routing by default. It does not delete tests,
 prevent explicit user or project TDD requests, or weaken
-`verification-before-completion`. In `off`, owner workflows must not emit a
-TDD route, load `test-driven-development`, or require RED / GREEN solely from
-risk wording; they still choose proportional regression and verification.
-Users can still manually request TDD in the query with explicit markers such as
-`TDD Route: strict`, `strict TDD`, `test-first`, or `RED / GREEN / REFACTOR`.
+`verification-before-completion`. In `off`, owner workflows must not
+automatically select `TDD Route: strict`, load `test-driven-development`, or
+require RED / GREEN from risk wording. A plan or execution review may record
+`TDD Route: Mode: off / Decision: skipped` to make that non-strict boundary
+auditable; the record is not TDD activation. Those workflows still choose
+proportional reproduction, regression, and verification. An explicit
+user/project request for `TDD Route: strict`, `strict TDD`, `test-first`, or
+`RED / GREEN / REFACTOR` remains sufficient to authorize strict TDD.
 
 Users can enable automatic TDD routing when they want it:
 
@@ -43,6 +46,19 @@ Route decisions are `strict`, `light`, and `skipped`.
 - `skipped`: do not use TDD because the task is read-only, docs-only,
   generated, throwaway exploratory work, or otherwise not a code behavior
   implementation.
+
+`skipped` means “skip strict TDD,” not “skip testing.” Test evidence has three
+different roles:
+
+- **diagnostic reproduction** establishes or isolates a failure and may be a
+  failing test, an existing test, instrumentation, or a manual reproduction;
+  it is evidence, not a RED gate;
+- **post-change regression** proves the selected repair after the minimum
+  change and remains appropriate with `off` mode;
+- **strict RED test** is the failing test that blocks production-code edits and
+  is required only when `TDD Route: strict` is explicitly recorded.
+
+An approved implementation plan does not itself authorize the third role.
 
 On hosts that rely on native skill discovery rather than an Aegis bootstrap
 router, `off` does not by itself override the host's own semantic matcher.
@@ -67,6 +83,10 @@ Use `skipped` when TDD does not fit the task shape: read-only diagnosis,
 pure explanation, comment-only edits, generated or vendored files, throwaway
 spikes, or environment-bound checks where automated tests cannot be written in
 the current slice.
+
+In `off`, use `Decision: skipped` for normal plan and execution readbacks
+unless an explicit user/project strict request overrides it. Do not infer
+`strict` from bug, architecture, contract, shared-module, or risk wording.
 
 In `auto`, when implementation risk is clear and behavior needs regression
 protection, choose `strict`.

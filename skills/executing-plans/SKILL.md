@@ -36,8 +36,21 @@ user-facing closeout uses the unified Aegis impact/safety receipt.
 3. Review critically - identify any questions or concerns about the plan
 4. If the view contradicts the plan, baseline, or current worktree evidence,
    return to plan review or refresh the advisory handoff before editing.
-5. If concerns: Raise them with your human partner before starting
-6. If no concerns: Create TodoWrite and proceed
+5. Run the TDD Route Guard before implementation:
+   - confirm the plan records `Mode`, `Decision`, `Strict authority`, `Test
+     posture`, and verification;
+   - treat plan approval, a bug label, architecture risk, contract risk, and
+     shared-module wording as non-authoritative for strict TDD;
+   - allow `Write failing test`, `Verify RED`, `GREEN`, or `REFACTOR` task
+     steps only when `Decision: strict` and its strict authority are both
+     recorded;
+   - in `off`, a missing record may be repaired only as `Mode: off / Decision:
+     skipped` unless an explicit user/project strict request is present; this
+     record does not load `test-driven-development`;
+   - in `auto`, a missing decision or a strict-looking task without strict
+     authority returns to plan review. Do not infer `strict` during execution.
+6. If concerns: Raise them with your human partner before starting
+7. If no concerns: Create TodoWrite and proceed
 
 ### Step 1.5: Long-Task Checkpoint Setup
 

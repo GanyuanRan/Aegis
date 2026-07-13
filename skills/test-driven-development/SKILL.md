@@ -23,7 +23,8 @@ description: Use when the user explicitly requests strict or test-first TDD, or 
 
 ## Overview
 
-Write the test first. Watch it fail. Write minimal code to pass.
+Under `TDD Route: strict`, write the test first. Watch it fail. Write minimal
+code to pass.
 
 If you didn't watch the test fail, you don't know if it tests the right thing.
 
@@ -61,6 +62,8 @@ Aegis Visibility:
 TDD Route:
 - Mode: auto | off
 - Decision: strict | light | skipped
+- Strict authority: explicit user/project request | recorded auto decision | not applicable
+- Test posture: diagnostic reproduction | post-change regression | strict RED test
 - Reason:
 - Verification:
 ```
@@ -75,6 +78,10 @@ In `off`, do not automatically require TDD, create a strict route, or infer one
 from risk alone. Explicit user/project TDD requests still apply; risky work may
 still need regression coverage and `verification-before-completion` before any
 completion claim.
+For plan or execution review, `Mode: off / Decision: skipped` is the normal
+record unless an explicit user/project strict request overrides it. That record
+does not load this skill or turn a diagnostic reproduction into RED. An
+approved plan does not supply strict authority by itself.
 If this skill was loaded anyway without an explicit TDD request or a visible
 `TDD Route: strict` marker, exit instead of improvising an automatic strict
 route from risk words alone.
@@ -377,7 +384,11 @@ If the current environment cannot run automated tests, state the blocker and pro
 | **Clear** | Name describes behavior | `test('test1')` |
 | **Shows intent** | Demonstrates desired API | Obscures what code should do |
 
-## Red Flags - STOP and Start Over
+## Strict-Route Red Flags - STOP and Start Over
+
+These red flags apply only after this skill has validly entered under
+`TDD Route: strict`. Do not project them onto debugging or regression work
+whose route is `light` or `skipped`.
 
 - Code before test
 - Test after implementation
@@ -432,7 +443,7 @@ PASS
 **REFACTOR**
 Extract validation for multiple fields if needed.
 
-## Verification Checklist
+## Strict-Route Verification Checklist
 
 - [ ] Defined input, output, boundaries, compatibility, acceptance criteria
 - [ ] Every new function/method has a test that failed first
@@ -460,4 +471,9 @@ Don't know how to test → write wished-for API first. Test too complicated → 
 
 ## Debugging Integration
 
-Bug found? Write failing test reproducing it. Follow TDD cycle. Never fix bugs without a test.
+Bug found? Start with `systematic-debugging`: reproduce, trace the owner, and
+choose the smallest proof that supports the diagnosis. Under recorded
+`TDD Route: strict`, the reproduction becomes the required failing test before
+production edits. With `TDD Mode: off` and no strict route, use diagnostic
+reproduction and targeted post-change regression as fit the repair; do not
+start RED / GREEN by inference.

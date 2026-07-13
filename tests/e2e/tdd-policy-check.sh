@@ -47,6 +47,7 @@ using_aegis="skills/using-aegis/SKILL.md"
 verification_skill="skills/verification-before-completion/SKILL.md"
 brainstorming_skill="skills/brainstorming/SKILL.md"
 writing_plans_skill="skills/writing-plans/SKILL.md"
+executing_plans_skill="skills/executing-plans/SKILL.md"
 discipline_ref="skills/using-aegis/references/skill-discipline.md"
 process_baseline="docs/current/AEGIS_PROCESS_BASELINE.md"
 tdd_mode_doc="docs/current/AEGIS_TDD_MODE.md"
@@ -84,6 +85,16 @@ assert_contains "$tdd_mode_doc" 'strict.*light.*skipped|strict.*skipped.*light|s
     "TDD mode doc defines strict, light, and skipped routing"
 assert_contains "$tdd_mode_doc" "verification-before-completion" \
     "TDD mode doc states verification-before-completion still applies"
+assert_contains "$tdd_mode_doc" "Mode: off / Decision: skipped" \
+    "TDD mode doc makes off mode reviewable without activating TDD"
+assert_contains "$tdd_mode_doc" "diagnostic reproduction" \
+    "TDD mode doc distinguishes diagnostic reproduction from strict TDD"
+assert_contains "$tdd_mode_doc" "post-change regression" \
+    "TDD mode doc preserves post-change regression outside strict TDD"
+assert_contains "$tdd_mode_doc" "strict RED test" \
+    "TDD mode doc names strict RED as the only production-edit gate"
+assert_contains "$tdd_mode_doc" "approved implementation plan does not itself authorize" \
+    "TDD mode doc rejects plan approval as strict authority"
 assert_contains "$tdd_mode_doc" "native skill discovery|semantic matcher" \
     "TDD mode doc records native skill discovery boundary"
 assert_contains "$codex_guide" "TDD mode defaults to.*off|default.*off" \
@@ -119,6 +130,14 @@ assert_contains "$tdd_skill" "auto.*strict.*light.*skipped|strict.*light.*skippe
     "TDD skill defines AUTO route decisions"
 assert_contains "$tdd_skill" "off.*automatic TDD|automatic TDD.*off" \
     "TDD skill defines OFF as disabling automatic TDD"
+assert_contains "$tdd_skill" "Strict authority" \
+    "TDD skill records why strict TDD is authorized"
+assert_contains "$tdd_skill" "Test posture" \
+    "TDD skill distinguishes reproduction, regression, and strict RED"
+assert_not_contains "$tdd_skill" "Never fix bugs without a test\\." \
+    "TDD skill does not force every bug into test-first work"
+assert_contains "$tdd_skill" "targeted post-change regression as fit the repair" \
+    "TDD skill sends non-strict bugs to proportional proof"
 assert_contains "$tdd_skill" "verification-before-completion" \
     "TDD skill preserves completion verification when TDD is off"
 assert_contains "$tdd_skill" "Preflight Gate" \
@@ -143,6 +162,8 @@ assert_contains "$process_baseline" "Ripple Signal Triage" \
     "process baseline defines Ripple Signal Triage"
 assert_contains "$systematic_debugging_skill" "Before fixing, run Patch-Shape Triage and Ripple Signal Triage" \
     "systematic debugging triggers patch-shape and ripple triage before risky fixes"
+assert_contains "$systematic_debugging_skill" "not a RED gate or a prerequisite for production edits" \
+    "systematic debugging keeps a failing reproduction out of implicit strict TDD"
 assert_contains "$tdd_skill" "Ripple Signal Triage fired|Ripple signal hit" \
     "TDD broadens verification when Ripple Signal Triage fires"
 assert_contains "$scenario_b_behavior" "assistantMustContain" \
@@ -161,6 +182,16 @@ assert_contains "$writing_plans_skill" "Aegis Project Workspace" \
     "writing-plans defines the Aegis workspace structure"
 assert_contains "$writing_plans_skill" "INDEX.md" \
     "writing-plans records workspace initialization steps"
+assert_contains "$writing_plans_skill" "TDD Route Guard" \
+    "writing plans require a TDD route review before decomposition"
+assert_contains "$writing_plans_skill" "An approved plan, bug label, architecture risk" \
+    "writing plans reject plan approval and risk labels as strict authority"
+assert_contains "$executing_plans_skill" "Run the TDD Route Guard before implementation" \
+    "plan execution checks route authority before following task steps"
+assert_contains "$executing_plans_skill" "Do not infer.*strict.*during execution" \
+    "plan execution returns missing strict authority to review"
+assert_contains "$executing_plans_skill" "missing record may be repaired only as" \
+    "plan execution maps an off-mode omission only to skipped"
 assert_contains "$process_baseline" "TDD is the implementation discipline.*not the first entry" \
     "process baseline states TDD is the implementation discipline, not the first entrypoint"
 assert_contains "$process_baseline" "TDD Mode" \

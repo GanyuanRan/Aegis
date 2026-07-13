@@ -165,12 +165,20 @@ mode is `off`.
 The two supported values are:
 
 - `off`: Aegis does not automatically require
-  `test-driven-development`, emit a TDD route, or force a failing test first.
-  Explicit user/project TDD requests still apply; proportional regression and
-  `verification-before-completion` remain required.
+  `test-driven-development`, select `TDD Route: strict`, or force a failing
+  test first. A plan or execution review may record `Mode: off / Decision:
+  skipped`; that record is not an automatic TDD route. Explicit user/project
+  strict requests still apply; diagnostic reproduction, proportional
+  regression, and `verification-before-completion` remain required as fit the
+  work.
 - `auto`: Aegis chooses a `TDD Route` before implementation. The route is
   `strict` for risky behavior work, `light` for tiny low-risk edits, and
   `skipped` when TDD does not fit the task shape.
+
+Only recorded `strict` makes a failing test a production-edit gate. A failing
+diagnostic reproduction and a post-change regression remain evidence forms,
+not implicit RED/GREEN authorization. Plan approval never supplies strict
+authority.
 
 TDD Mode is method-pack guidance only. It does not grant runtime authority,
 final completion authority, or permission to skip verification.

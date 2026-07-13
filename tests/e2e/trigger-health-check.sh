@@ -134,7 +134,9 @@ assert_contains "$baseline" "does not grant authoritative" \
     "baseline explicitly avoids authority escalation in trigger health"
 assert_contains "skills/using-aegis/SKILL.md" "off=no auto route/load" \
     "router prevents automatic TDD routing and loading when off"
-assert_contains "skills/systematic-debugging/SKILL.md" "TDD Mode: off.*do not require a failing test first" \
+assert_contains "skills/systematic-debugging/SKILL.md" "TDD Mode: off" \
+    "debugging names the off-mode boundary"
+assert_contains "skills/systematic-debugging/SKILL.md" "do not require a failing test" \
     "debugging keeps off mode out of a forced test-first cycle"
 assert_contains "skills/using-aegis/SKILL.md" "grill me.*brainstorming|brainstorming.*grill me" \
     "router sends explicit grilling requests to brainstorming"
