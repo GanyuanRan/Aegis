@@ -28,3 +28,28 @@
 - docs/aegis/work/2026-07-14-directional-reset-governance/evidence-bundle-draft-current-skill-pressure-readback.json
 - Blocked on: User approval of the written Design Spec.
 - Next step: After approval, invoke writing-plans and create the implementation plan.
+
+## Checkpoint Update
+
+- Current todo: Await user review of the self-reviewed Design Spec.
+- Active slice: Revised design review gate; no skill, helper, schema baseline, or test implementation is authorized yet.
+- Completed todos:
+- Read authority baseline and current workflow contracts.
+- Run current-version read-only pressure scenario.
+- Write the Directional Reset Governance Design Spec.
+- Complete second-pass first-principles self-review and tighten the state model.
+- Evidence refs:
+- docs/aegis/specs/2026-07-14-directional-reset-governance-design.md
+- docs/aegis/work/2026-07-14-directional-reset-governance/evidence-bundle-draft-current-skill-pressure-readback.json
+- docs/aegis/work/2026-07-14-directional-reset-governance/evidence-bundle-draft-design-self-review.json
+- Blocked on: User approval of the revised Design Spec.
+- Next step: After approval, invoke writing-plans and create an implementation plan that preserves the bounded state model.
+
+## DriftCheckDraft
+
+- Scope status: self-review completed within design-only scope
+- Compatibility status: proposal remains backward compatible; no implementation or host distribution change
+- Retirement status: no new workflow owner introduced; revised design awaits user approval
+- New risk signals:
+- user-review-pending
+- Advisory decision: pause-for-user

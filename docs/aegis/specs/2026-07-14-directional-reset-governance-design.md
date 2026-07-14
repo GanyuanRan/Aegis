@@ -6,17 +6,18 @@ Date: `2026-07-14`
 
 ## 1. Decision Summary
 
-Aegis should prevent repeated same-class local repairs from being treated as
-unrelated new bugs when their causal paths converge on the same owner or
-contract boundary.
+The Aegis workflow should make repeated same-class local repairs a mandatory
+advisory stop transition before another edit when their causal paths converge
+on the same owner or contract boundary.
 
 The design will not add a new skill, artifact type, global router gate, or
 authoritative runtime decision. It will reuse:
 
 - `systematic-debugging` as the canonical repair-direction owner
 - `executing-plans` as the plan-slice pause and rewind point
-- `long-task-continuation` and `DriftCheckDraft.newRiskSignals` as the
-  longitudinal state carrier
+- `long-task-continuation` and an optional, bounded
+  `DriftCheckDraft.repairDirectionSummary` as the longitudinal history carrier
+- `DriftCheckDraft.newRiskSignals` as the active unresolved-risk surface
 - `first-principles-review` as the compositional architecture lens
 - the workspace helper as a structural consistency validator only
 
@@ -104,7 +105,9 @@ fixture only.
 - Next action: repair the longitudinal execution contract and verify it with a
   stateful pressure scenario.
 
-## 6. Existence Check
+## 6. Existence Checks
+
+### 6.1 New Workflow Owner Or Artifact
 
 - Proposed new surface: a separate directional-reset skill, gate, or artifact
   was considered.
@@ -117,6 +120,25 @@ fixture only.
 - Entropy / retirement impact: a new owner would duplicate debugging and drift
   responsibilities.
 - Decision: `reuse-existing`.
+
+### 6.2 Bounded Direction Summary Field
+
+- Proposed new surface: optional `repairDirectionSummary` inside the existing
+  `DriftCheckDraft`.
+- Existing owner / reuse candidate: `newRiskSignals`, checkpoint prose, and
+  `TodoCheckpointDraft.evidenceRefs`.
+- Why existing surface is insufficient: a free-text risk label cannot preserve
+  stable direction identity, completed-attempt count, locally green outcome, or
+  evidence needed to recognize the same direction after compaction or resume.
+- Creation proof: the real task failed during longitudinal execution while the
+  current-version pressure readback stopped correctly once the same history
+  was explicitly summarized.
+- Entropy / retirement impact: the field is optional, triggered only after a
+  relevant repair candidate or completed attempt, bounded to one current
+  direction summary and three recent evidence refs, and remains inside an
+  existing artifact owner.
+- Decision: `add-with-proof` for the optional field; still `reuse-existing` for
+  skills, artifacts, and authority owners.
 
 ## 7. Architecture Integrity Lens
 
@@ -137,14 +159,100 @@ fixture only.
 
 ## 8. Directional Reset Semantics
 
-### 8.1 Repair Attempt
+### 8.1 Completed Attempt And Candidate
 
-A repair attempt is one edit-and-verification cycle associated with the same
-user-visible failure, owner seam, source-of-truth boundary, or contract family.
+A completed repair attempt is one edit-and-verification cycle. A repair
+candidate is a proposed next edit considered before source mutation.
 
-It remains part of the history even when its targeted test passes.
+A completed attempt or new candidate belongs to the current repair direction
+only when `systematic-debugging` judges that it shares the invariant, owner or
+contract seam, and patch-shape family. A similar user-visible symptom alone is
+insufficient. A completed attempt remains part of the history even when its
+targeted test passes.
 
-### 8.2 Directional Risk Signals
+### 8.2 Repair Direction Summary
+
+`DriftCheckDraft` may contain one optional, bounded
+`repairDirectionSummary`:
+
+```json
+{
+  "directionKey": "one-admission-owner@context-to-answering/consumer-filter",
+  "invariant": "one admitted evidence publication owner",
+  "ownerSeam": "context-admission -> answering",
+  "patchShapeFamily": "consumer-semantic-filter",
+  "completedAttemptCount": 1,
+  "latestOutcome": "targeted-pass",
+  "status": "reset-required",
+  "evidenceRefs": ["first-pass-ref", "second-candidate-ref"],
+  "resolutionRef": null
+}
+```
+
+Semantic comparison uses the tuple:
+
+```text
+(invariant, ownerSeam, patchShapeFamily)
+```
+
+Carrier names, sample strings, test filenames, and individual payload shapes
+must not change the key when they exercise the same invariant at the same
+owner seam through the same patch family.
+
+`directionKey` is the compact persisted identity for that tuple. It is created
+when the first relevant direction is tracked and must be carried forward
+verbatim. A later agent must either reuse it or record evidence that the new
+candidate differs in invariant, owner seam, or patch-shape family. Merely
+rephrasing a component or naming a different carrier does not establish a new
+direction.
+
+Field constraints:
+
+- `directionKey`, `invariant`, `ownerSeam`, and `patchShapeFamily` are non-empty,
+  compact descriptors; they must not contain raw payloads, logs, or test output
+- `completedAttemptCount` is non-negative and counts completed
+  edit-and-verification cycles; it does not reset after `targeted-pass`
+- `latestOutcome` is `targeted-pass | residual-persists | incomplete | unknown`
+- `completedAttemptCount: 0` requires `latestOutcome: unknown`
+- `status` is `active | reset-required | resolved`
+- `evidenceRefs` contains at most the three most recent bounded evidence refs;
+  older attempts remain represented by `completedAttemptCount`
+- `resolutionRef` is required when `status` is `resolved`; otherwise it is null
+- ordinary tasks and legacy drafts may omit `repairDirectionSummary`
+
+Schema-optional is not workflow-optional after a direction-tracking trigger.
+Create or update the summary:
+
+- before an H-class consumer, caller, fallback, or downstream re-inference
+  candidate is allowed to proceed after patch-shape triage
+- when a residual makes a repeated same-direction repair plausible
+- whenever any reset condition below is active
+
+Ordinary single-owner fixes that do not meet these triggers do not create the
+field.
+
+The next proposed matching edit has candidate ordinal
+`completedAttemptCount + 1`. It is not counted as completed before source
+editing. Therefore a second candidate can set `status: reset-required` while
+`completedAttemptCount` remains `1`; the candidate itself is referenced in
+`evidenceRefs`.
+
+State lifecycle:
+
+- `active`: one relevant direction is being tracked and no reset condition is
+  yet proven
+- `reset-required`: a reset condition is proven; source edits stop
+- `resolved`: architecture/plan review supplied resolution evidence; history
+  remains visible in the resolution checkpoint, but active reserved risks are
+  removed
+
+Only one direction summary is active for an implementation slice. It cannot be
+overwritten by a second key while `active` or `reset-required`. A proven
+independent candidate does not increment or re-key the current summary. A later
+direction may replace a `resolved` summary only after the final resolved
+summary has been bundled in the task-local artifact named by `resolutionRef`.
+
+### 8.3 Directional Risk Signals
 
 Use these reserved advisory labels inside
 `DriftCheckDraft.newRiskSignals` when evidence supports them:
@@ -157,7 +265,11 @@ Use these reserved advisory labels inside
 These labels report observed method-workflow risk. They do not prove an
 authoritative architecture decision.
 
-### 8.3 Reset Conditions
+`newRiskSignals` contains active unresolved risks, not append-only history.
+Resolved history stays in `repairDirectionSummary` with a non-null
+`resolutionRef`.
+
+### 8.4 Reset Conditions
 
 Pause source edits and return to diagnostic/plan review when any of these is
 true:
@@ -165,29 +277,52 @@ true:
 1. a proposed edit would keep two semantic owners active
 2. a plan that forbids new semantic branches now requires a consumer-side
    semantic branch
-3. a second repair attempt hits the same patch-shape family and the causal
-   paths converge on the same upstream owner or contract seam
+3. a proposed candidate would be the second matching repair attempt and the
+   causal paths converge on the same upstream owner or contract seam
 4. an earlier local repair reduced one symptom but residual behavior still
    requires another consumer-side interpretation of the same semantic input
+
+The second-attempt rule is a backstop, not permission for the first local
+consumer patch. The existing H-class patch-shape triage still applies before
+the first edit. A first consumer-side semantic patch may proceed only when it
+is proven to be at the canonical owner or is an explicitly bounded
+compatibility mitigation with retention reason and retirement trigger.
 
 Do not trigger solely because two fixes exist. Independent compound roots may
 need two independent repairs. Use the existing causal topology and
 anti-disguise checks to distinguish them.
 
-### 8.4 Required Transition
+### 8.5 Required Transition
 
 When a reset condition is active:
 
 1. stop new source edits
-2. record the repair attempts and reserved risk label in the active checkpoint
-3. set the Drift Check decision to `pause-for-user`; do not use `continue`
-4. re-enter `systematic-debugging` for differential diagnosis
-5. compose the `Architecture Integrity Lens`
-6. classify `Design Defect` or `Implementation Drift`
-7. return to design/plan review before implementation resumes
+2. set `repairDirectionSummary.status` to `reset-required`
+3. record the reserved active risk label and bounded evidence refs
+4. set the Drift Check decision to `pause-for-user`; do not use `continue`
+5. re-enter `systematic-debugging` for differential diagnosis
+6. compose the `Architecture Integrity Lens`
+7. classify `Design Defect` or `Implementation Drift`
+8. return to design/plan review before implementation resumes
 
 `pause-for-user` is reused because an owner/contract correction changes the
 approved implementation direction. No new decision enum is required.
+
+After user/plan review, continuing requires a new checkpoint that:
+
+- sets the summary to `resolved`
+- supplies `resolutionRef`
+- removes all reserved directional labels for the resolved direction from
+  active `newRiskSignals`
+- records the new or reaffirmed owner/contract boundary
+
+`resolutionRef` must resolve to an existing task-local evidence bundle that
+contains the final direction key, completed-attempt count, disposition, and the
+approved design/plan reference. A non-empty but unresolvable label is not
+resolution evidence.
+
+The summary must not be silently omitted or replaced while its status is
+`active` or `reset-required`.
 
 ## 9. Workflow Changes
 
@@ -198,6 +333,11 @@ smallest clarification needed:
 
 - a locally passing test does not remove an attempt from repeated-repair
   analysis
+- create or update the direction summary at the defined trigger; do not treat
+  its schema optionality as permission to omit triggered state
+- derive the repair-direction comparison key from the invariant, owner/contract
+  seam, and patch-shape family; do not use carrier or sample identity as the
+  key
 - a second same-class, convergent consumer patch is an earlier architecture
   reset signal; it does not need to wait for a fourth failed fix
 
@@ -209,6 +349,9 @@ Before an unplanned repair caused by verification output:
 
 - compare the candidate edit with the plan's owner, contract, branch,
   compatibility, and retirement boundaries
+- reuse `PatchShape`, `CanonicalOwner`, and `UpwardDrillSignal` to compare the
+  candidate with any active `repairDirectionSummary`; do not add another
+  repair-check artifact
 - route patch-shape candidates through `systematic-debugging`
 - if a reset condition is active, freeze the task and return to plan review
   instead of treating the repair as an implementation detail
@@ -217,7 +360,9 @@ Before an unplanned repair caused by verification output:
 
 Extend the existing Drift Check contract to:
 
-- preserve repair-attempt summaries across slices and resumes
+- preserve the optional bounded `repairDirectionSummary` across slices,
+  compaction, handoff, and resume
+- keep `newRiskSignals` limited to active unresolved risks
 - use the reserved risk labels when supported by evidence
 - forbid `continue` while a reserved directional risk remains unresolved
 - carry the reset and rewind state into the next checkpoint
@@ -228,12 +373,23 @@ Add structural validation only:
 
 - a `DriftCheckDraft` containing a reserved directional risk label cannot use
   `decision: continue`
-- the same draft may use `pause-for-user`, `needs-baseline-readback`,
-  `needs-verification`, or `blocked` as appropriate
+- `repairDirectionSummary.status: reset-required` requires
+  `decision: pause-for-user` and at least one reserved directional risk label
+- `repairDirectionSummary.status: resolved` requires a non-empty
+  `resolutionRef`, a resolvable referenced artifact, and no reserved
+  directional label in active `newRiskSignals`
+- the same `directionKey` cannot lower `completedAttemptCount`
+- an existing `active` or `reset-required` summary is preserved when an
+  `add-drift-check` update does not explicitly replace or resolve it
+- an `active` or `reset-required` summary cannot be replaced by a different
+  `directionKey`
+- legacy drafts without the optional summary remain valid
 
 The helper validates internal consistency of an agent-authored draft. It does
 not detect the risk itself and does not decide whether the architecture is
-correct.
+correct. In particular, it cannot prove that two differently named keys are
+semantically independent; that judgment remains in `systematic-debugging` and
+is exercised by the behavioral pressure scenario.
 
 ## 10. Verification Design
 
@@ -251,7 +407,8 @@ The difference is the behavior the change must close.
 
 Model at least three slices:
 
-1. first consumer filter; targeted verification passes
+1. a pre-existing or explicitly bounded first consumer filter is recorded with
+   `completedAttemptCount: 1`; targeted verification passes
 2. second carrier exposes the same semantic leak; candidate second filter
 3. checkpoint/plan execution must stop before the second same-root consumer
    interpretation is implemented
@@ -259,6 +416,11 @@ Model at least three slices:
 Expected behavior:
 
 - repair history survives the locally green result
+- carrier identity does not change the repair-direction comparison key
+- the persisted `directionKey` is reused; the second candidate has derived
+  ordinal `2`
+- the bounded summary keeps `completedAttemptCount: 1` and reaches
+  `status: reset-required` before the candidate is implemented
 - causal convergence is checked
 - a reserved risk label is recorded
 - decision is not `continue`
@@ -269,6 +431,11 @@ Expected behavior:
 - an ordinary single-owner bug stays on the quick path
 - two genuinely independent compound roots may receive two repairs after
   topology proof
+- two similar symptoms with different invariants or owner seams do not share a
+  direction key merely because their presentation looks alike
+- rephrasing a matching invariant or naming a different carrier does not create
+  a fresh direction key or reset the completed-attempt count
+- a legacy `DriftCheckDraft` without `repairDirectionSummary` remains valid
 - an informational risk that is not a reserved directional signal may still
   use `continue`
 
@@ -276,18 +443,51 @@ Expected behavior:
 
 Add or update:
 
-- workspace helper tests for reserved risk/decision consistency
+- workspace helper tests for optional-summary compatibility, bounded fields,
+  preserved active state, stable direction identity, non-decreasing completed
+  count, resolvable resolution evidence, and reserved risk/decision consistency
 - trigger-health or workflow-quality fixtures for the stateful sequence and
   negative controls
-- static contract checks for the owning workflow language
-- existing workflow quality, trigger health, context budget, boundary, parser,
-  and layer-one fast checks as required by the final touched surface
+- the existing artifact-schema fixture with both legacy and optional-summary
+  coverage
+- static contract checks only for indispensable owner/transition anchors; do
+  not treat additional string assertions as behavioral proof
+- these repository checks, adjusted only if the final touched surface proves a
+  smaller set is sufficient:
+
+  ```bash
+  git diff --check
+  python tests/helpers/test_parse_codex_skills.py
+  bash tests/e2e/aegis-workspace-check.sh
+  bash tests/e2e/artifact-schema-check.sh
+  bash tests/e2e/long-task-continuation-check.sh
+  bash tests/e2e/debugging-patch-shape-gate-check.sh
+  bash tests/e2e/workflow-quality-check.sh
+  bash tests/e2e/trigger-health-check.sh
+  bash tests/e2e/context-budget-check.sh
+  bash tests/e2e/boundary-compliance-check.sh
+  bash tests/e2e/governance-completion-contract-check.sh
+  bash tests/e2e/layer1-fast-check.sh --host-profile none
+  bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh
+  ```
+
+- run `tests/skill-triggering/run-all.sh` and
+  `tests/explicit-skill-requests/run-all.sh` when their required local host and
+  account environment is available; otherwise report them as environment-bound
 
 ### 10.5 Forward Validation
 
-Before changing skills, capture the current response to the pressure scenario.
-After changing each skill, re-run a minimal-context forward test without
-leaking the intended answer. Compare behavior, not keyword presence.
+Before changing skills, run a multi-turn baseline pressure scenario in which
+the first targeted verification passes and the next carrier appears only in a
+later turn. Do not provide the final cumulative summary in the initial prompt.
+
+After changing each skill, replay the same turn sequence with minimal context
+and without leaking the intended answer. Compare whether checkpoint state and
+the stop transition survive between turns; keyword presence is not behavioral
+proof.
+
+Bound all forward-test context to the direction summary and evidence refs. Do
+not replay raw logs, full diffs, or unbounded repair history.
 
 ## 11. Compatibility and Retirement
 
@@ -295,6 +495,7 @@ leaking the intended answer. Compare behavior, not keyword presence.
 
 - Repair the missing cross-slice signal carriage.
 - Keep `systematic-debugging` as canonical owner.
+- Add only an optional bounded field to the existing Drift Check artifact.
 - Preserve ordinary debugging and plan execution behavior.
 
 ### Retirement Track
@@ -311,20 +512,48 @@ leaking the intended answer. Compare behavior, not keyword presence.
 - no strict TDD route implied by this design
 - no automatic stop for independent compound roots solely because two edits
   exist
+- existing `aegis.schema.v0` Drift Check artifacts without the optional field
+  continue to validate
+- the current schema contract is a minimum-field baseline and the validator
+  already tolerates additive optional fields, so this addition does not require
+  a schema-version cutover; that decision must be revisited if unknown fields
+  later become invalid
+- active state is compacted to one comparison key, a count, and at most three
+  evidence refs; raw logs and full patch history do not enter checkpoints
 
 ## 12. Plan-Time Complexity Check
 
-- Artifact class: method workflow skills, current docs, helper validation, and
-  regression fixtures
+- Artifact class: method workflow skills, one backward-compatible optional
+  Drift Check field, current docs, helper validation, and regression fixtures
 - Likely target files: existing skill bodies and existing verification owners
 - Current pressure: `systematic-debugging` is already large; adding another
   full workflow section would increase context and duplication
 - Projected pressure: at risk if the reset contract is copied into every skill
+  or if repair history becomes an unbounded ledger; free-text key aliases would
+  recreate the original escape hatch
 - Planned governance: keep judgment in `systematic-debugging`; use compact
-  transition clauses elsewhere; prefer shared baseline wording over duplicated
-  prose
+  transition clauses elsewhere; bound the summary; prefer shared baseline
+  wording over duplicated prose
 - Recommendation: edit existing owners with compact clauses; do not add a new
   skill or artifact file type
+
+### 12.1 Residual Risks And Limits
+
+- Structural validation cannot prove that two free-text semantic descriptions
+  are actually independent. Exact `directionKey` carry and behavioral pressure
+  tests reduce aliasing, while `systematic-debugging` retains semantic judgment.
+- Backward compatibility means the helper must accept a legacy draft with no
+  summary. It therefore cannot infer that a first required summary was omitted;
+  workflow trigger tests must cover creation, not only update validation.
+- An agent or host that ignores the loaded workflow can still bypass an
+  advisory stop. This design improves method discipline and draft consistency;
+  it does not create a runtime enforcement gate.
+- Over-triggering remains possible for superficially similar compound roots.
+  Causal topology and the independent-root negative controls are required to
+  keep ordinary debugging usable.
+- The one-summary bound intentionally sacrifices an in-place historical ledger.
+  Resolved summaries must be bundled before replacement so compaction does not
+  become silent deletion.
 
 ## 13. ADR and Baseline Sync Signals
 
@@ -342,15 +571,28 @@ At completion:
 ## 14. Acceptance Criteria
 
 1. No new skill, artifact type, runtime gate, or completion owner is created.
-2. A locally green test does not erase relevant same-root repair history.
-3. A second same-class convergent consumer repair pauses before source editing.
-4. Duplicate-owner and plan-owner contradictions cannot coexist with
+2. Legacy Drift Check artifacts remain valid; the optional summary is used only
+   when repair-direction history matters.
+3. Once a direction-tracking trigger is met, the summary is created or updated
+   before the candidate source edit; schema optionality cannot bypass this.
+4. A locally green test does not erase relevant same-root repair history or
+   reduce its completed-attempt count.
+5. Different carriers exercising the same invariant, owner seam, and patch
+   family retain the same persisted direction key; rewording alone cannot
+   create a new key.
+6. A second same-class convergent consumer repair pauses before source editing;
+   this backstop does not weaken first-edit H-class triage.
+7. Duplicate-owner and plan-owner contradictions cannot coexist with
    `DriftCheckDraft.decision: continue` when recorded using reserved labels.
-5. Independent compound roots and ordinary single-owner bugs remain supported.
-6. Stateful behavioral validation supplements, rather than merely expands,
-   static string assertions.
-7. Existing host distribution and method-pack authority boundaries remain
-   unchanged.
+8. Active or reset-required direction state cannot disappear during checkpoint
+   update, compaction, handoff, or resume without resolution evidence.
+9. Independent compound roots and ordinary single-owner bugs remain supported.
+10. Stateful multi-turn behavioral validation supplements, rather than merely
+   expands, static string assertions.
+11. Direction history remains bounded and does not inject raw logs or full
+    diffs into prompts or checkpoints.
+12. Existing host distribution and method-pack authority boundaries remain
+    unchanged.
 
 ## 15. User Decision
 

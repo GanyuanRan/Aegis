@@ -6,9 +6,9 @@
     "docs/current/README.md",
     "docs/adr/ADR-0001-aegis-method-pack-is-not-runtime-core.md"
   ],
-  "scopeStatus": "design completed within authorized scope",
-  "compatStatus": "no implementation or host distribution change",
-  "retirementStatus": "no new workflow owner introduced; user review pending",
+  "scopeStatus": "self-review completed within design-only scope",
+  "compatStatus": "proposal remains backward compatible; no implementation or host distribution change",
+  "retirementStatus": "no new workflow owner introduced; revised design awaits user approval",
   "newRiskSignals": [
     "user-review-pending"
   ],

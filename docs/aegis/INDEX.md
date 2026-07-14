@@ -19,3 +19,4 @@ Entries are workspace records, not authoritative runtime decisions.
 | 2026-07-14 | spec | docs/aegis/specs/2026-07-14-directional-reset-governance-design.md | Directional reset governance design |
 | 2026-07-14 | artifact | docs/aegis/work/2026-07-14-directional-reset-governance/evidence-bundle-draft-current-skill-pressure-readback.json | 2026-07-14-directional-reset-governance evidence current-skill-pressure-readback |
 | 2026-07-14 | artifact | docs/aegis/work/2026-07-14-directional-reset-governance/resume-state-hint.json | 2026-07-14-directional-reset-governance resume state hint |
+| 2026-07-14 | artifact | docs/aegis/work/2026-07-14-directional-reset-governance/evidence-bundle-draft-design-self-review.json | 2026-07-14-directional-reset-governance evidence design-self-review |
