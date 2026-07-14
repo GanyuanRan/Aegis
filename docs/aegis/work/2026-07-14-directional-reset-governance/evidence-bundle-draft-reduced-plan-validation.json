@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "taskId": "2026-07-14-directional-reset-governance",
+  "artifactKey": "reduced-plan-validation",
+  "type": "plan",
+  "source": "reduced Design Spec, implementation plan, and workspace validation",
+  "summary": "The falsifier-proven path reuses existing checkpoint/evidence state and semantic owners. Workspace validation, diff hygiene, and placeholder scanning passed before source edits; helper, schema, router, description, host, and user configuration surfaces remain excluded.",
+  "verifier": "aegis-workspace check + git diff --check + placeholder scan"
+}

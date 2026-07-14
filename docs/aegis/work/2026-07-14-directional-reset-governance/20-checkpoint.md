@@ -53,3 +53,76 @@
 - New risk signals:
 - user-review-pending
 - Advisory decision: pause-for-user
+
+## Checkpoint Update
+
+- Current todo: Capture the unmodified multi-turn pressure and size baseline.
+- Active slice: Task 1 baseline capture; no skill or helper edits yet.
+- Completed todos:
+- Read authority baseline and current workflow contracts.
+- Run current-version explicit-summary pressure scenario.
+- Write and self-review the Directional Reset Governance Design Spec.
+- Receive user approval and write the implementation plan.
+- Evidence refs:
+- docs/aegis/specs/2026-07-14-directional-reset-governance-design.md
+- docs/aegis/plans/2026-07-14-directional-reset-governance.md
+- docs/aegis/work/2026-07-14-directional-reset-governance/evidence-bundle-draft-implementation-authorization-and-plan.json
+- Blocked on: none
+- Next step: Run the bounded unmodified two-turn pressure replay and record size/test baselines.
+
+## DriftCheckDraft
+
+- Scope status: approved implementation plan matches the Design Spec
+- Compatibility status: legacy v0 and ordinary call-path preservation are explicit
+- Retirement status: locally-green direction reset will retire without a compat owner
+- New risk signals:
+- none
+- Advisory decision: continue
+
+## Checkpoint Update
+
+- Current todo: Add stateful fixtures and context-budget guards for the reduced path.
+- Active slice: Task 2 fixture and budget changes; helper, schema, router, descriptions, hosts, and user config remain out of scope.
+- Completed todos:
+- Run the approved falsifier against unmodified current skills.
+- Retire the disproven structured-field/helper proposal.
+- Rewrite and validate the Design Spec and implementation plan around existing checkpoint/evidence carriage.
+- Evidence refs:
+- docs/aegis/specs/2026-07-14-directional-reset-governance-design.md
+- docs/aegis/plans/2026-07-14-directional-reset-governance.md
+- docs/aegis/work/2026-07-14-directional-reset-governance/evidence-bundle-draft-reduced-plan-validation.json
+- Blocked on: none
+- Next step: commit the reduced plan, then update existing test owners before skill wording.
+
+## DriftCheckDraft
+
+- Scope status: same user goal with the falsifier-proven smaller implementation
+- Compatibility status: no schema, helper, CLI, router, description, host, or ordinary quick-path expansion
+- Retirement status: repairDirectionSummary and helper lifecycle proposals retired before implementation
+- New risk signals:
+- none
+- Advisory decision: continue
+
+## Checkpoint Update
+
+- Current todo: Revise the approved Design Spec and implementation plan to the falsifier-proven smaller path.
+- Active slice: Directional reset to planning; all skill/helper edits remain frozen until spec and plan remove the disproven schema path.
+- Completed todos:
+- Read authority baseline and write the initial implementation plan.
+- Run deterministic pre-change context, trigger, workflow, and artifact baselines.
+- Run two positive stateful pressure variants and one independent-root negative control against unmodified skills.
+- Evidence refs:
+- docs/aegis/specs/2026-07-14-directional-reset-governance-design.md
+- docs/aegis/plans/2026-07-14-directional-reset-governance.md
+- docs/aegis/work/2026-07-14-directional-reset-governance/evidence-bundle-draft-unmodified-stateful-falsification.json
+- Blocked on: none; the approved Design Spec pre-authorized reduction when its falsifier passed
+- Next step: Rewrite the same Design Spec and plan around existing checkpoint/evidence carriage, stateful fixtures, and call-stability budgets.
+
+## DriftCheckDraft
+
+- Scope status: same user goal; implementation path reduced by the approved falsifier
+- Compatibility status: risk reduced by removing schema/helper/CLI changes
+- Retirement status: retire the unnecessary repairDirectionSummary proposal and locally-green history loss
+- New risk signals:
+- plan must be revised before source edits
+- Advisory decision: continue

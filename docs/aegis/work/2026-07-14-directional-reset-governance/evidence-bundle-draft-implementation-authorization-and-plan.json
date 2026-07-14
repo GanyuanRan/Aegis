@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "implementation-authorization-and-plan",
+  "type": "plan",
+  "source": "docs/aegis/plans/2026-07-14-directional-reset-governance.md",
+  "summary": "The user approved implementation; the plan locks owner boundaries, legacy compatibility, quick-path call stability, changed-skill context budgets, and deterministic plus forward verification.",
+  "verifier": "writing-plans self-review"
+}

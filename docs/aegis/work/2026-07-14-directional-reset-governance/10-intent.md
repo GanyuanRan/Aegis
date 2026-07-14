@@ -97,3 +97,38 @@ These records are Method Pack drafts / hints, not authoritative runtime decision
 - Missing refs:
 - none
 - Advisory decision: pause-for-user
+
+## BaselineUsageDraft
+
+- Required baseline refs:
+- docs/current/README.md
+- docs/adr/ADR-0001-aegis-method-pack-is-not-runtime-core.md
+- docs/current/AEGIS_PROCESS_BASELINE.md
+- docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md
+- docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md
+- docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md
+- docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md
+- docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md
+- Delivered context refs:
+- none
+- Acknowledged before plan:
+- docs/current/README.md
+- docs/adr/ADR-0001-aegis-method-pack-is-not-runtime-core.md
+- docs/current/AEGIS_PROCESS_BASELINE.md
+- docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md
+- docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md
+- docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md
+- docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md
+- docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md
+- Cited in plan:
+- docs/current/README.md
+- docs/adr/ADR-0001-aegis-method-pack-is-not-runtime-core.md
+- docs/current/AEGIS_PROCESS_BASELINE.md
+- docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md
+- docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md
+- docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md
+- docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md
+- docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md
+- Missing refs:
+- none
+- Advisory decision: continue
