@@ -31,6 +31,40 @@ SKILL_PATH_LINE_RE = re.compile(
     re.IGNORECASE,
 )
 
+FOREACH_RE = re.compile(
+    r"""\bforeach\s*\([^)]*?\$(?P<item>[A-Za-z_][A-Za-z0-9_]*)
+    \s+in\s+\$(?P<collection>[A-Za-z_][A-Za-z0-9_]*)\s*\)""",
+    re.IGNORECASE | re.VERBOSE,
+)
+
+
+def extract_skills_from_foreach_read(command_text: str) -> list[str]:
+    foreach_match = FOREACH_RE.search(command_text)
+    if not foreach_match:
+        return []
+
+    item = foreach_match.group("item")
+    collection = foreach_match.group("collection")
+    if not re.search(
+        rf"\bGet-Content\b[^;}}]*\${re.escape(item)}\b",
+        command_text,
+        re.IGNORECASE,
+    ):
+        return []
+
+    assignment = re.search(
+        rf"\${re.escape(collection)}\s*=\s*@\((?P<body>.*?)\)\s*;",
+        command_text,
+        re.IGNORECASE,
+    )
+    if not assignment:
+        return []
+
+    return [
+        match.group("skill")
+        for match in SKILL_PATH_RE.finditer(assignment.group("body"))
+    ]
+
 
 def extract_skills_from_line(line: str) -> list[str]:
     command_prefix = POWERSHELL_COMMAND_PREFIX_RE.search(line)
@@ -45,7 +79,7 @@ def extract_skills_from_line(line: str) -> list[str]:
             skills.extend(
                 match.group("skill") for match in SKILL_PATH_RE.finditer(direct_invocation)
             )
-        return skills
+        return skills or extract_skills_from_foreach_read(command_text)
 
     path_match = SKILL_PATH_LINE_RE.search(line)
     if path_match:

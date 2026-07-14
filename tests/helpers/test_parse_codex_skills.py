@@ -57,6 +57,31 @@ class ParseCodexSkillsTests(unittest.TestCase):
         )
         self.assertEqual(MODULE.first_skill_load_line(lines, "brainstorming"), 1)
 
+    def test_extracts_skill_loads_from_foreach_path_array(self) -> None:
+        lines = [
+            "\"C:\\\\Program Files\\\\PowerShell\\\\7\\\\pwsh.exe\" -Command "
+            "'$files = @(\"'C:\\\\Users\\\\Example\\\\.codex\\\\aegis\\\\skills\\\\using-aegis\\\\SKILL.md',"
+            "'C:\\\\Users\\\\Example\\\\.codex\\\\aegis\\\\skills\\\\brainstorming\\\\SKILL.md'); "
+            "foreach (\"'$f in $files) { Write-Output \"FILE: $f\"; "
+            "Get-Content -LiteralPath $f -Raw }' in X:\\repo\\Aegis",
+        ]
+
+        self.assertEqual(
+            list(MODULE.iter_loaded_skills(lines)),
+            ["using-aegis", "brainstorming"],
+        )
+        self.assertEqual(MODULE.first_skill_load_line(lines, "brainstorming"), 1)
+
+    def test_ignores_foreach_paths_when_get_content_reads_another_variable(self) -> None:
+        lines = [
+            "\"C:\\\\Program Files\\\\PowerShell\\\\7\\\\pwsh.exe\" -Command "
+            "'$files = @(\"'C:\\\\Users\\\\Example\\\\.codex\\\\aegis\\\\skills\\\\brainstorming\\\\SKILL.md'); "
+            "foreach (\"'$f in $files) { Get-Content -LiteralPath $transcript -Raw }' "
+            "in X:\\repo\\Aegis",
+        ]
+
+        self.assertEqual(list(MODULE.iter_loaded_skills(lines)), [])
+
     def test_keeps_bare_skill_path_fallback(self) -> None:
         lines = [
             "skills/verification-before-completion/SKILL.md",

@@ -1,5 +1,58 @@
 # Aegis Release Notes
 
+## v2.4.7 (2026-07-14)
+
+### Directional Reset Governance
+
+- Preserved `PatchShape`, `CanonicalOwner`, `UpwardDrillSignal`, decision,
+  latest outcome, and one bounded evidence reference after a locally green
+  repair slice instead of letting a local pass erase the active direction.
+- Required verification-driven unplanned repairs to read the retained state
+  before editing and compare invariant, owner or contract seam, patch shape,
+  and causal topology.
+- Prevented renamed carriers from being treated as independent repair
+  directions when their semantic direction still converges.
+- Reused existing checkpoint prose and evidence-reference surfaces; no new
+  artifact, schema field, workflow owner, or runtime authority was added.
+
+### Workflow And Stability Safeguards
+
+- Kept `systematic-debugging` as the sole owner of repair-direction judgment,
+  while `executing-plans` performs the pre-edit routing and
+  `long-task-continuation` carries only bounded state across slices.
+- Preserved the normal quick path for proven independent canonical-owner bugs
+  and added context-growth budgets around the three touched workflow skills.
+- Added stateful trigger-health, workflow-quality, patch-shape, continuation,
+  and context-budget regression coverage for local-green directional resets.
+- Extended the Codex smoke transcript parser to recognize a constrained
+  PowerShell path-array plus `foreach` skill-read shape while rejecting loops
+  whose `Get-Content` call reads a different variable.
+
+### Verification
+
+- Fresh checks passed:
+  `bash scripts/bump-version.sh --check`,
+  `bash scripts/bump-version.sh --audit`,
+  `python tests/helpers/test_parse_codex_skills.py`,
+  `bash tests/e2e/run-all.sh --full --host-profile fast`, and
+  `git diff --check`.
+- The final full/fast run passed all four suites. Layer 1 passed `39/39`,
+  including representative Codex automatic and explicit skill-triggering
+  smoke, OpenCode base coverage, and Codex plugin-sync regression; Layer 2 and
+  Layer 3 each passed `6/6`.
+- The current Codex Desktop installation provides `codex.exe` rather than
+  `codex.cmd`, so the final host smoke used the documented `CODEX_CMD` override.
+  A parser regression test also covers the real batched skill-read transcript
+  shape observed during the release gate.
+
+### Release Surface
+
+- Bumped all declared package and host manifest versions from `2.4.6` to
+  `2.4.7`.
+- This release remains `Aegis Method Pack (runtime-ready)`, preserves
+  multi-host plugin-installable distribution, and does not add authoritative
+  `GateDecision`, `PolicySnapshot`, or completion authority.
+
 ## v2.4.5 (2026-07-12)
 
 ### Quick Install In The Fast-Track Playbooks
