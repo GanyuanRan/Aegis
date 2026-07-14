@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "taskId": "2026-07-14-directional-reset-governance",
+  "taskIntentRef": "docs/aegis/work/2026-07-14-directional-reset-governance/task-intent-draft.json",
+  "baselineRefs": [
+    "docs/current/README.md",
+    "docs/adr/ADR-0001-aegis-method-pack-is-not-runtime-core.md"
+  ],
+  "scopeStatus": "design completed within authorized scope",
+  "compatStatus": "no implementation or host distribution change",
+  "retirementStatus": "no new workflow owner introduced; user review pending",
+  "newRiskSignals": [
+    "user-review-pending"
+  ],
+  "decision": "pause-for-user"
+}

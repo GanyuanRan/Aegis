@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "taskId": "2026-07-14-directional-reset-governance",
+  "lastCheckpointRef": "docs/aegis/work/2026-07-14-directional-reset-governance/todo-checkpoint-draft.json",
+  "resumeInstruction": "Re-read the approved Design Spec, baseline usage, latest checkpoint, and worktree before planning.",
+  "knownPartialWork": [
+    "Read authority baseline and current workflow contracts.",
+    "Run current-version read-only pressure scenario.",
+    "Write and self-review the Directional Reset Governance Design Spec."
+  ],
+  "mustReadBeforeContinuing": [
+    "docs/aegis/work/2026-07-14-directional-reset-governance/10-intent.md",
+    "docs/aegis/work/2026-07-14-directional-reset-governance/20-checkpoint.md",
+    "docs/aegis/work/2026-07-14-directional-reset-governance/todo-checkpoint-draft.json"
+  ],
+  "unsafeToAssume": [
+    "Do not treat prior conversational approval as approval of the written Design Spec."
+  ]
+}

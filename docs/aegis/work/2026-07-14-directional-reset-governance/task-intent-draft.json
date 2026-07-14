@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "requestedOutcome": "Strengthen Aegis so repeated same-class consumer-side fixes and plan-shape contradictions trigger a directional reset before more edits.",
+  "goal": "Carry patch-shape and owner-risk signals across debugging, plan execution, and long-task checkpoints without creating a new authority owner.",
+  "successEvidence": [
+    "A written design approved by the user, a stateful baseline pressure scenario, targeted workflow changes, and regression verification that stops repeated same-root local patches while preserving ordinary single-owner fixes."
+  ],
+  "stopCondition": "Done only after approved design, implementation, targeted verification, workflow checks, and residual method-pack limitations are reported; otherwise blocked, needs-verification, or scope-exceeded.",
+  "nonGoals": [
+    "Create a new skill or runtime gate.",
+    "Make the workspace helper decide architecture truth.",
+    "Change host installation or public plugin identity."
+  ],
+  "scope": "systematic-debugging, executing-plans, long-task-continuation, workflow quality and trigger-health scenarios, smallest relevant current docs",
+  "changeKinds": [
+    "contract"
+  ],
+  "riskHints": [
+    "A new global gate would duplicate owners or overstep the method-pack boundary.",
+    "A naive second-fix counter could misclassify legitimate independent compound roots."
+  ]
+}

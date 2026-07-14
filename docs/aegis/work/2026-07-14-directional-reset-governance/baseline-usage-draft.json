@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "taskId": "2026-07-14-directional-reset-governance",
+  "requiredBaselineRefs": [
+    "docs/current/README.md",
+    "docs/adr/ADR-0001-aegis-method-pack-is-not-runtime-core.md",
+    "docs/current/AEGIS_PROCESS_BASELINE.md",
+    "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md",
+    "docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md",
+    "docs/current/AEGIS_MINIMALITY_REFERENCE.md"
+  ],
+  "deliveredContextRefs": [],
+  "acknowledgedBeforePlanRefs": [
+    "docs/current/README.md",
+    "docs/adr/ADR-0001-aegis-method-pack-is-not-runtime-core.md",
+    "docs/current/AEGIS_PROCESS_BASELINE.md",
+    "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md",
+    "docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md",
+    "docs/current/AEGIS_MINIMALITY_REFERENCE.md"
+  ],
+  "citedInPlanRefs": [
+    "docs/current/README.md",
+    "docs/adr/ADR-0001-aegis-method-pack-is-not-runtime-core.md",
+    "docs/current/AEGIS_PROCESS_BASELINE.md",
+    "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md",
+    "docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md",
+    "docs/current/AEGIS_MINIMALITY_REFERENCE.md"
+  ],
+  "missingRefs": [],
+  "decision": "pause-for-user"
+}

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "affectedLayers": [
+    "method-pack workflow discipline",
+    "long-task advisory state",
+    "workflow quality verification"
+  ],
+  "owners": [
+    "systematic-debugging owns directional repair judgment",
+    "executing-plans and long-task-continuation propagate and pause on unresolved signals"
+  ],
+  "invariants": [
+    "No consumer becomes a second semantic owner because a later test exposes another carrier.",
+    "Method-pack output remains advisory and never becomes GateDecision or completion authority."
+  ],
+  "compatBoundary": "Preserve fast-path behavior for ordinary single-owner fixes and preserve all supported host distribution surfaces.",
+  "nonGoals": [
+    "Create a new skill or runtime gate.",
+    "Make the workspace helper decide architecture truth.",
+    "Change host installation or public plugin identity."
+  ]
+}
