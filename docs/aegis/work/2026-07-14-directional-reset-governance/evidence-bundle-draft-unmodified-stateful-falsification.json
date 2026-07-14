@@ -1,8 +1,0 @@
-{
-  "schemaVersion": "aegis.schema.v0",
-  "artifactKey": "unmodified-stateful-falsification",
-  "type": "pressure-scenario",
-  "source": "two-stage read-only Codex CLI replay against unmodified workflow skills",
-  "summary": "Turn 1 produced an ordinary checkpoint after one locally green Answering mitigation. Both an explicit second filter and a carrier-disguised relation-section guard were stopped before editing, while an independent canonical provider serializer mapping stayed on the quick path. The existing semantic owner is sufficient when prior patch shape survives checkpoint readback; a new DriftCheck schema field/helper lifecycle is not necessary.",
-  "verifier": "bounded final decisions only; no raw replay logs retained"
-}

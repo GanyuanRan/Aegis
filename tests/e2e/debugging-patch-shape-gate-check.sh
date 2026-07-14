@@ -69,6 +69,10 @@ assert_contains "$debugging_skill" "UpwardDrillSignal:" \
     "debugging requires UpwardDrillSignal output before editing"
 assert_contains "$debugging_skill" "Decision: fix owner \\| continue investigation \\| escalate" \
     "debugging requires Decision output before editing"
+assert_contains "$debugging_skill" "locally green test does not erase" \
+    "debugging retains patch-shape state after a local pass"
+assert_contains "$debugging_skill" "carrier is not a new direction" \
+    "debugging compares direction semantically instead of by carrier name"
 assert_contains "$debugging_skill" "Minimality Check" \
     "debugging defines minimality check for stable repair"
 assert_contains "$debugging_skill" "smallest textual diff|textual diff" \
@@ -106,6 +110,10 @@ assert_contains "$process_baseline" "downstream logic re-parses raw text|re-infe
     "process baseline defines downstream re-inference signal"
 assert_contains "$process_baseline" "PatchShape.*CanonicalOwner.*UpwardDrillSignal.*Decision" \
     "process baseline requires patch-shape triage output"
+assert_contains "$process_baseline" "locally green verification does not erase triage state" \
+    "process baseline preserves triage state after local verification"
+assert_contains "$process_baseline" "new carrier name alone does not prove a new direction" \
+    "process baseline prevents carrier-name disguise"
 assert_contains "$process_baseline" "Minimal Necessary Change means the smallest sufficient change" \
     "process baseline defines minimal necessary change as sufficient repair"
 assert_contains "$process_baseline" "correct owner and abstraction layer" \

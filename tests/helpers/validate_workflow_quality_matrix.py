@@ -14,6 +14,7 @@ EXPECTED_IDS = {
     "tiny-wording-edit",
     "git-status-version-question",
     "quick-single-owner-bug",
+    "directional-reset-after-local-pass",
     "behavior-smoke-ordinary-bug-code-necessity",
     "behavior-smoke-requested-fallback-existence-check",
     "failing-test-diagnosis",
@@ -235,6 +236,8 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
             "guess-fix-without-reproduction",
             "edit-source-before-change-necessity",
             "emit-full-architecture-ceremony",
+            "create-repair-direction-artifact",
+            "invoke-architecture-review",
         ],
         "signals": [
             "reproduction",
@@ -242,6 +245,25 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
             "fresh-pass",
         ],
         "shapes": ["quick-bug-lane", "change-necessity"],
+    },
+    "directional-reset-after-local-pass": {
+        "primary": "systematic-debugging",
+        "allowed": [
+            "long-task-continuation",
+            "executing-plans",
+            "first-principles-review",
+        ],
+        "must_not": [
+            "erase-patch-shape-after-targeted-pass",
+            "treat-new-carrier-as-new-direction-by-name",
+            "edit-second-consumer-guard-before-owner-review",
+        ],
+        "signals": [
+            "checkpoint-state-readback",
+            "invariant-owner-seam-patch-shape-and-topology",
+            "pause-or-rewind",
+        ],
+        "shapes": ["checkpoint-repair-direction-readback", "pre-edit-pause"],
     },
     "behavior-smoke-ordinary-bug-code-necessity": {
         "primary": "systematic-debugging",

@@ -58,11 +58,22 @@
       "prompt": "A single helper returns the wrong default value. Please fix it quickly and verify the test.",
       "expectedPrimarySkill": "systematic-debugging",
       "allowedSecondarySkills": ["test-driven-development", "verification-before-completion"],
-      "mustNotDo": ["guess-fix-without-reproduction", "edit-source-before-change-necessity", "emit-full-architecture-ceremony"],
+      "mustNotDo": ["guess-fix-without-reproduction", "edit-source-before-change-necessity", "emit-full-architecture-ceremony", "create-repair-direction-artifact", "invoke-architecture-review"],
       "expectedOutputShape": "quick-bug-lane-root-cause-change-necessity-and-evidence",
       "workspacePolicy": "workspace-only-if-medium-risk",
       "expectedArtifacts": ["EvidenceBundleDraft"],
       "verificationSignal": "failing-test-or-reproduction-then-change-necessity-before-source-edit-then-fresh-pass"
+    },
+    {
+      "id": "directional-reset-after-local-pass",
+      "prompt": "A bounded Answering-side compatibility mitigation passed its targeted test, and the checkpoint retained PatchShape, CanonicalOwner, and UpwardDrillSignal. A differently named relation carrier now suggests another consumer-side guard. Decide what to do before editing.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": ["long-task-continuation", "executing-plans", "first-principles-review"],
+      "mustNotDo": ["erase-patch-shape-after-targeted-pass", "treat-new-carrier-as-new-direction-by-name", "edit-second-consumer-guard-before-owner-review"],
+      "expectedOutputShape": "checkpoint-repair-direction-readback-and-pre-edit-pause",
+      "workspacePolicy": "existing-long-task-work-record",
+      "expectedArtifacts": ["TodoCheckpointDraft", "EvidenceBundleDraft", "DriftCheckDraft"],
+      "verificationSignal": "checkpoint-state-readback-compares-invariant-owner-seam-patch-shape-and-topology-before-pause-or-rewind"
     },
     {
       "id": "behavior-smoke-ordinary-bug-code-necessity",

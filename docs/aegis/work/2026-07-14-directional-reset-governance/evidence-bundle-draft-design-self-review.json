@@ -1,8 +1,0 @@
-{
-  "schemaVersion": "aegis.schema.v0",
-  "artifactKey": "design-self-review",
-  "type": "design-review",
-  "source": "docs/aegis/specs/2026-07-14-directional-reset-governance-design.md",
-  "summary": "Second-pass first-principles review tightened stable direction identity, completed-attempt accounting, workflow-mandatory creation triggers, resolution evidence, compatibility, and residual advisory limits.",
-  "verifier": "first-principles-review + brainstorming"
-}

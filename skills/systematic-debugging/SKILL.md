@@ -148,6 +148,12 @@ Aegis impact/safety receipt.
    Decision: fix owner | continue investigation | escalate
    ```
 
+   After this gate fires, a locally green test does not erase it. Existing
+   checkpoint prose retains `PatchShape`, `CanonicalOwner`,
+   `UpwardDrillSignal`, `Decision`, outcome, and one bounded evidence ref.
+   Before an unplanned repair, compare invariant, owner seam, patch shape, and
+   topology; a renamed carrier is not a new direction.
+
    If the tempting fix is "just add a small guard/fallback", also run:
 
    ```text

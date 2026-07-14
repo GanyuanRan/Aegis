@@ -39,7 +39,15 @@ for pattern in \
     "<aegis-workspace-helper> bundle" \
     "<aegis-workspace-helper> check" \
     "todo-checkpoint-draft.json" \
-    "drift-check-draft.json"
+    "drift-check-draft.json" \
+    "PatchShape" \
+    "CanonicalOwner" \
+    "UpwardDrillSignal" \
+    "locally green result does not clear" \
+    "bounded evidence ref" \
+    "do not copy raw logs or full diffs" \
+    "route comparison to" \
+    "carrier name alone does not prove a new direction"
 do
     if [[ "$skill_text" != *"$pattern"* ]]; then
         echo "long-task-continuation skill missing helper integration pattern: $pattern"

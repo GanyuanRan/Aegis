@@ -209,6 +209,12 @@ After each work slice, update:
    `aegis-workspace.py add-baseline-usage`, `aegis-workspace.py add-evidence`, and `aegis-workspace.py add-drift-check`
    when available
 
+When patch-shape/ripple triage, an H-class finding, or a bounded compatibility
+mitigation fired, a locally green result does not clear that direction. Reuse
+checkpoint prose and evidence refs to retain `PatchShape`, `CanonicalOwner`,
+`UpwardDrillSignal`, decision, latest outcome, and one bounded evidence ref;
+do not copy raw logs or full diffs.
+
 If no fresh evidence exists, the state is `needs-verification` or `partial`.
 
 ## Resume Protocol
@@ -226,6 +232,9 @@ When resuming:
    obligations, and review gates.
 8. If checkpoint, baseline, view, and worktree disagree, pause and ask for
    direction or return to planning.
+9. Before an unplanned repair, read retained invariant, owner seam, patch shape,
+   and causal topology and route comparison to `systematic-debugging`; a new
+   carrier name alone does not prove a new direction.
 
 Never resume from memory alone.
 

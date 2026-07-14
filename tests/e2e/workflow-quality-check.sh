@@ -972,6 +972,16 @@ assert_contains "skills/executing-plans/SKILL.md" "Change Necessity" \
     "executing plans carries change necessity during plan execution"
 assert_contains "skills/executing-plans/SKILL.md" "any new source-code path" \
     "executing plans applies change necessity to any new source-code path"
+assert_contains "skills/executing-plans/SKILL.md" "verification-driven unplanned edit" \
+    "executing plans reads retained direction before unplanned edits"
+assert_contains "skills/executing-plans/SKILL.md" "systematic-debugging.*before editing" \
+    "executing plans keeps direction judgment in systematic debugging"
+assert_contains "skills/executing-plans/SKILL.md" "root stays on the normal plan path" \
+    "executing plans preserves the independent-root quick path"
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "locally green patch-shape state remains bounded" \
+    "workflow quality reuses existing checkpoint artifacts"
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "carrier naming alone cannot reset the direction" \
+    "workflow quality compares repair direction semantically"
 
 "${PYTHON_CMD[@]}" tests/helpers/validate_workflow_quality_matrix.py "$matrix"
 if (( failures > 0 )); then

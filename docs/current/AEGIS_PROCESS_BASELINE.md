@@ -479,6 +479,13 @@ changes:
 5. Record the result as a short note or in `ImpactStatementDraft` when the task is
    medium/high complexity
 
+A locally green verification does not erase triage state. When a checkpoint
+already exists, retain `PatchShape`, `CanonicalOwner`, `UpwardDrillSignal`, the
+decision, latest outcome, and a bounded evidence ref. Before an unplanned
+repair, read that state and compare invariant, owner/contract seam, patch shape,
+and causal topology; a new carrier name alone does not prove a new direction.
+This reuses existing checkpoint/evidence surfaces and adds no schema owner.
+
 If the triage requires changing the canonical owner, changing a public contract,
 making a cache/export/copy into a source of truth, retaining two owners, or
 adding a fallback/adapter/compatibility branch, pause for design or explicit

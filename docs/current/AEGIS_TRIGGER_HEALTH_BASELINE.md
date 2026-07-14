@@ -138,6 +138,8 @@ Question:
 Evidence:
 
 - required output markers, quality gates, and hard-signal fields
+- stateful samples where locally green checkpoint state is read before a
+  differently named but convergent repair candidate
 - scenario transcript analysis
 
 Failure owner:

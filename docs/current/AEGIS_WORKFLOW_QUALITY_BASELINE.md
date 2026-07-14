@@ -134,6 +134,8 @@ Pass criteria:
 - JSON sidecars, when present, validate structurally
 - work records use `docs/aegis/work/YYYY-MM-DD-<slug>/`
 - proof bundles remain advisory method-pack handoff packages
+- locally green patch-shape state remains bounded in existing checkpoint prose
+  and evidence refs rather than creating another artifact or schema field
 
 ### 3.7 Workspace Laziness
 
@@ -782,6 +784,12 @@ self-judged stop into a checkable, falsifiable claim; it is advisory
 method-pack discipline, not a `GateDecision`, `PolicySnapshot`, or completion
 authority.
 
+When a patch-shape/ripple/H-class or bounded compatibility slice passes local
+verification, its checkpoint state still carries `PatchShape`,
+`CanonicalOwner`, `UpwardDrillSignal`, decision, outcome, and a bounded evidence
+ref. A later unplanned candidate is compared by invariant, owner seam, patch
+shape, and causal topology; carrier naming alone cannot reset the direction.
+
 ### 4.4a `test-driven-development`
 
 Purpose:
@@ -1080,6 +1088,8 @@ the active slice against its intent lock, scope fence, baseline lock,
 compatibility boundary, retirement boundary, test obligations, and review gates.
 Drift routes back to planning or a refreshed advisory handoff instead of
 continuing from chat memory alone.
+Triggered patch-shape state survives a locally green slice in the existing
+checkpoint/evidence trail; resume reads it before proposing an unplanned edit.
 
 ### 4.7a `executing-plans`
 
@@ -1109,6 +1119,10 @@ complexity, or verification boundary, return to plan review instead of pushing
 through. If an `Execution Readiness View` contradicts the current plan, baseline,
 or worktree evidence, refresh the advisory handoff or return to planning before
 editing.
+Verification-driven unplanned edits first read retained patch-shape/owner state.
+`systematic-debugging` judges whether consumer, caller, fallback, or
+downstream-reinference candidates converge and require rewind; proven
+independent canonical-owner roots remain on the normal plan path.
 
 ### 4.8 `recording-architecture-decisions`
 

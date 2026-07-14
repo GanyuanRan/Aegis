@@ -1,8 +1,0 @@
-{
-  "schemaVersion": "aegis.schema.v0",
-  "artifactKey": "current-skill-pressure-readback",
-  "type": "pressure-scenario",
-  "source": "current systematic-debugging, executing-plans, and long-task-continuation skills",
-  "summary": "When three locally passing consumer-side repairs and the proposed fourth guard were explicitly summarized, the current skills stopped editing, refused to assign Answering as canonical owner, and selected architecture/plan review with pause-for-user.",
-  "verifier": "read-only minimal-context agent evaluation"
-}

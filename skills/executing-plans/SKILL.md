@@ -68,6 +68,12 @@ If the plan has multiple tasks, may span sessions, or includes architecture / co
 4. Before each task, restate the current checkpoint.
 5. After each task, update checkpoint, evidence refs, and drift check.
 
+Before a verification-driven unplanned edit, read retained `PatchShape`,
+`CanonicalOwner`, `UpwardDrillSignal`, outcome, and evidence refs. Route their
+comparison with the candidate to `systematic-debugging` before editing; it
+decides whether the directions converge. A proven independent canonical-owner
+root stays on the normal plan path.
+
 ### Step 2: Execute Tasks
 
 For each task:

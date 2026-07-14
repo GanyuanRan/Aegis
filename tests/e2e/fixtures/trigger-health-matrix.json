@@ -131,10 +131,10 @@
     },
     {
       "id": "repeated-fixes",
-      "prompt": "This has been fixed several times and each fix adds another fallback. Re-check the fundamentals before another patch.",
+      "prompt": "A bounded consumer-side mitigation passed its targeted test. The checkpoint retained its patch shape and owner assumption, and a differently named carrier now suggests another consumer-side guard. Re-check the fundamentals before editing.",
       "expectedPrimarySkill": "systematic-debugging",
-      "allowedSecondarySkills": ["first-principles-review"],
-      "mustNotDo": ["add-another-local-patch"],
+      "allowedSecondarySkills": ["first-principles-review", "long-task-continuation"],
+      "mustNotDo": ["add-another-local-patch", "erase-prior-patch-shape", "treat-new-carrier-name-as-new-direction"],
       "failureLayer": "routing-or-depth"
     },
     {

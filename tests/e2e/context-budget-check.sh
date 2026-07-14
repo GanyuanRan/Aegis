@@ -44,6 +44,27 @@ char_count() {
     wc -c < "$1" | tr -d '[:space:]'
 }
 
+assert_growth_budget() {
+    local file="$1"
+    local baseline="$2"
+    local allowance="$3"
+    local label="$4"
+
+    if [[ ! -f "$file" ]]; then
+        fail "$label exists"
+        return
+    fi
+
+    local current ceiling
+    current="$(char_count "$file")"
+    ceiling=$((baseline + allowance))
+    if (( current <= ceiling )); then
+        pass "$label is <= ${ceiling} chars (${current})"
+    else
+        fail "$label is <= ${ceiling} chars (${current})"
+    fi
+}
+
 echo "=== Context Budget Check ==="
 
 using_aegis="skills/using-aegis/SKILL.md"
@@ -63,6 +84,13 @@ else
         fail "using-aegis hot path is <= ${max_hot_path_chars} chars (${skill_chars})"
     fi
 fi
+
+assert_growth_budget "skills/systematic-debugging/SKILL.md" 29561 350 \
+    "systematic-debugging bounded growth"
+assert_growth_budget "skills/executing-plans/SKILL.md" 7823 450 \
+    "executing-plans bounded growth"
+assert_growth_budget "skills/long-task-continuation/SKILL.md" 11247 650 \
+    "long-task-continuation bounded growth"
 
 if [[ -f "$discipline_ref" ]]; then
     pass "using-aegis discipline reference exists"

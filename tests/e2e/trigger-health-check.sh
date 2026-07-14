@@ -95,6 +95,8 @@ assert_contains "$baseline" "task-to-skill routing" \
     "baseline includes task routing layer"
 assert_contains "$baseline" "skill execution depth" \
     "baseline includes execution-depth layer"
+assert_contains "$baseline" "locally green checkpoint state is read" \
+    "execution-depth evidence covers state readback after local success"
 assert_contains "$baseline" "### L6 Context Pressure And Re-entry" \
     "baseline keeps context-pressure as L6"
 assert_contains "$baseline" "context pressure and re-entry" \
@@ -277,6 +279,15 @@ if context_sample.get("failureLayer") != "context-pressure":
     raise SystemExit("context-compaction-reentry must use context-pressure failure layer")
 if "continue-without-reentry" not in context_sample.get("mustNotDo", []):
     raise SystemExit("context-compaction-reentry must forbid continuing without re-entry")
+
+repeated_sample = next((s for s in samples if s.get("id") == "repeated-fixes"), None)
+if not repeated_sample:
+    raise SystemExit("missing repeated-fixes sample")
+for required in ("add-another-local-patch", "erase-prior-patch-shape", "treat-new-carrier-name-as-new-direction"):
+    if required not in repeated_sample.get("mustNotDo", []):
+        raise SystemExit(f"repeated-fixes must forbid {required}")
+if "long-task-continuation" not in repeated_sample.get("allowedSecondarySkills", []):
+    raise SystemExit("repeated-fixes must allow checkpoint state readback")
 
 completion_sample = next((s for s in samples if s.get("id") == "completion-claim"), None)
 if not completion_sample:
