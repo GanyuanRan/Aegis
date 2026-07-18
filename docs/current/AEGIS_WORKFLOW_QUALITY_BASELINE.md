@@ -612,6 +612,38 @@ Pass criteria:
 - the slot remains advisory method-pack discipline, not a runtime gate,
   authoritative `GateDecision`, or completion authority
 
+### 3.20 Semantic Context Reliability
+
+Project terminology should shape non-trivial work without making simple work
+expensive or creating a second authority system.
+
+Pass criteria:
+
+- `establishing-project-context` is the only active-modeling and write-policy
+  owner; consumers carry only bounded lookup or composition cues
+- ordinary non-trivial work passively consumes relevant active terms without
+  loading active modeling
+- evidence grade (`A/B/C`) and semantic authority (`fact/decision`) remain
+  separate; A/B facts may update directly, while unresolved decisions ask one
+  bounded user question and do not become active truth
+- the first resolved term may create the glossary lazily; there is no fixed
+  initial term quota or preliminary consent requirement for decided facts
+- no semantic delta leaves bytes unchanged, and pre-write readback preserves
+  unrelated concurrent changes
+- root plus mapped bounded-context selection is relevant and bounded rather
+  than reading every glossary
+- legacy table glossaries remain readable while new writes use compact natural
+  Markdown without volatile timestamps or task/session metadata
+- context content is treated as semantic data, not executable policy; mapped
+  paths and symlinks cannot escape the project root
+- later planning, debugging, review, and continuation reuse updated canonical
+  terms
+- tiny tasks do not read, create, write, or report context ceremony
+- context output remains terminology-only and does not become architecture,
+  requirement, task-state, evidence, or completion authority
+- cache friendliness is an optimization property, not a provider cache-hit,
+  latency, context-capacity, or billing guarantee
+
 ---
 
 ## 4. Compact Output Contracts

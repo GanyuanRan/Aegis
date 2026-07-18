@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import pathlib
 import re
+import shlex
 import sys
 from typing import Iterable, Iterator
 
@@ -15,6 +16,11 @@ POWERSHELL_COMMAND_PREFIX_RE = re.compile(
     \s+-Command\s+["']
     """,
     re.IGNORECASE | re.VERBOSE,
+)
+
+POSIX_SHELL_COMMAND_PREFIX_RE = re.compile(
+    r"""^\s*(?:/(?:usr/)?bin/)?(?:bash|sh)\s+-lc\s+["']""",
+    re.IGNORECASE,
 )
 
 SKILL_PATH_RE = re.compile(
@@ -66,6 +72,26 @@ def extract_skills_from_foreach_read(command_text: str) -> list[str]:
     ]
 
 
+def extract_skills_from_posix_shell_read(command_text: str) -> list[str]:
+    command_text = re.sub(r'''["']\s+in\s+.*$''', "", command_text)
+    skills: list[str] = []
+
+    for segment in re.split(r"\s*(?:&&|;)\s*", command_text):
+        try:
+            argv = shlex.split(segment)
+        except ValueError:
+            continue
+        if not argv or pathlib.PurePosixPath(argv[0]).name not in {"cat", "sed"}:
+            continue
+
+        for argument in argv[1:]:
+            match = SKILL_PATH_RE.search(argument)
+            if match and match.end() == len(argument):
+                skills.append(match.group("skill"))
+
+    return skills
+
+
 def extract_skills_from_line(line: str) -> list[str]:
     command_prefix = POWERSHELL_COMMAND_PREFIX_RE.search(line)
     if command_prefix:
@@ -80,6 +106,10 @@ def extract_skills_from_line(line: str) -> list[str]:
                 match.group("skill") for match in SKILL_PATH_RE.finditer(direct_invocation)
             )
         return skills or extract_skills_from_foreach_read(command_text)
+
+    posix_prefix = POSIX_SHELL_COMMAND_PREFIX_RE.search(line)
+    if posix_prefix:
+        return extract_skills_from_posix_shell_read(line[posix_prefix.end() :])
 
     path_match = SKILL_PATH_LINE_RE.search(line)
     if path_match:

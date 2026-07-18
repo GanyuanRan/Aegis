@@ -111,6 +111,7 @@ run_check "workspace helper skill wiring" bash "$SCRIPT_DIR/workspace-helper-wir
 run_check "workspace helper resolution" bash "$SCRIPT_DIR/workspace-helper-resolution-check.sh"
 run_check "project bootstrap policy" bash "$SCRIPT_DIR/project-bootstrap-policy-check.sh"
 run_check "trigger health policy" bash "$SCRIPT_DIR/trigger-health-check.sh"
+run_check "context semantic infrastructure" bash "$SCRIPT_DIR/context-semantic-infrastructure-check.sh"
 run_check "Antigravity host boundary" bash "$SCRIPT_DIR/antigravity-host-boundary-check.sh"
 run_check "CC GUI host boundary" bash "$SCRIPT_DIR/cc-gui-host-boundary-check.sh"
 run_check "Pi host boundary" bash "$SCRIPT_DIR/pi-host-boundary-check.sh"

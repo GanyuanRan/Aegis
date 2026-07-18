@@ -146,11 +146,35 @@
       "failureLayer": "context-pressure"
     },
     {
+      "id": "existing-context-passive-no-active-modeling",
+      "prompt": "The approved implementation spec is ready. Write the plan using the existing Delivery Window term from CONTEXT.md without changing project language.",
+      "expectedPrimarySkill": "writing-plans",
+      "allowedSecondarySkills": ["using-aegis"],
+      "mustNotDo": ["load-establishing-project-context", "write-context"],
+      "failureLayer": "routing-or-depth"
+    },
+    {
+      "id": "resolved-term-active-modeling",
+      "prompt": "Approved fact: Delivery Window means the customer-visible arrival interval and replaces ETA. Synchronize this project term, then continue into planning.",
+      "expectedPrimarySkill": "establishing-project-context",
+      "allowedSecondarySkills": ["writing-plans"],
+      "mustNotDo": ["ask-preliminary-consent", "defer-resolved-context-write"],
+      "failureLayer": "routing-or-depth"
+    },
+    {
       "id": "simple-factual-qa",
       "prompt": "What is this repository for?",
       "expectedPrimarySkill": null,
       "allowedSecondarySkills": ["using-aegis"],
       "mustNotDo": ["force-full-workflow"],
+      "failureLayer": "false-positive"
+    },
+    {
+      "id": "tiny-task-context-false-positive",
+      "prompt": "CONTEXT.md exists, but only fix the README typo Helo to Hello.",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["load-establishing-project-context", "read-or-write-context"],
       "failureLayer": "false-positive"
     },
     {

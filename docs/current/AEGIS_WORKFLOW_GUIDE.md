@@ -111,6 +111,25 @@ If the task is small, such as a factual question, version check, or tiny wording
 edit, the agent may continue after a compact routing check without creating
 project workspace records.
 
+### Semantic Project Context
+
+For non-trivial project work, the task-owning workflow passively selects
+relevant active language from root `CONTEXT.md` and, when present, the bounded
+context mapped by `CONTEXT-MAP.md`. Passive reading does not load active domain
+modeling. Tiny tasks perform no context ceremony.
+
+`establishing-project-context` composes only for a resolved term, ambiguity,
+conflict, rename, deprecation, or authority/code mismatch. An A/B existing fact
+may update directly and minimally; an unresolved semantic decision asks one
+bounded user question and does not become active truth. The first resolved term
+may create the file lazily. `CONTEXT.md` stays terminology-only and does not
+replace requirements, architecture baselines, ADRs, task state, or runtime
+authority.
+
+Compact, stable context can improve cache friendliness, but Aegis does not
+guarantee provider cache hits, latency reduction, context-capacity reduction,
+or billing savings.
+
 ---
 
 ## 5. Task Classification

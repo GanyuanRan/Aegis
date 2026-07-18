@@ -144,6 +144,12 @@ Aegis 为什么轻量、它与独立 skill pack 的区别、五道工程护城�
 - `aegis:first-principles-review` 或“用第一性原理审查”：在实施前挑战复杂方向。
 - `aegis:update`：按当前宿主的本地路径更新已安装的 method pack。
 
+对非平凡项目任务，Aegis 可以被动复用 `CONTEXT.md`，或通过
+`CONTEXT-MAP.md` 选择相关 bounded context 的规范术语。只有术语已经确定、存在
+歧义、发生重命名/废弃或与现有证据冲突时，才进入主动领域建模。高置信度的既有事实
+可直接同步；尚未作出的领域决策仍由用户决定。文件在第一个已解决术语出现时惰性创建，
+且只保存术语。稳定字节有利于缓存，但 Aegis 不保证供应商缓存命中或费用节省。
+
 Aegis 用 Workflow Quality 让简单任务保持轻量，只在风险需要时展开。想深入了解
 方法时，阅读 [工作流程说明](docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md)、
 [工作流质量基线](docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md)、

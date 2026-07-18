@@ -147,6 +147,29 @@ class ParseCodexSkillsTests(unittest.TestCase):
             ["long-task-continuation"],
         )
 
+    def test_extracts_posix_sed_skill_loads(self) -> None:
+        lines = [
+            "/bin/bash -lc \"sed -n '1,240p' "
+            "/home/example/.codex/aegis/skills/using-aegis/SKILL.md\" in /repo",
+            "/bin/bash -lc \"sed -n '1,300p' skills/brainstorming/SKILL.md && "
+            "sed -n '301,700p' skills/brainstorming/SKILL.md\" in /repo",
+        ]
+
+        self.assertEqual(
+            list(MODULE.iter_loaded_skills(lines)),
+            ["using-aegis", "brainstorming"],
+        )
+        self.assertEqual(MODULE.first_skill_load_line(lines, "brainstorming"), 2)
+
+    def test_ignores_posix_transcript_search_noise(self) -> None:
+        lines = [
+            "42:/bin/bash -lc \"sed -n '1,40p' "
+            "/home/example/.codex/aegis/skills/brainstorming/SKILL.md\" in /repo",
+            "/bin/bash -lc \"rg -n 'skills/brainstorming/SKILL.md' transcript.log\" in /repo",
+        ]
+
+        self.assertEqual(list(MODULE.iter_loaded_skills(lines)), [])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -125,6 +125,36 @@ Root improvement rule:
 - Keep runtime-ready artifacts as drafts, hints, projections, and evidence
   bundles only.
 
+### 3.0a.1 Semantic Context Infrastructure
+
+`CONTEXT.md` is the portable terminology owner for project domain language. It
+does not replace product/requirement baselines, architecture baselines, ADRs,
+task state, or runtime authority.
+
+Root behavior:
+
+- Tiny factual, status, formatting, or mechanical tasks stay on the fast path
+  without context ceremony.
+- Non-trivial project workflows perform a bounded passive lookup of the
+  relevant root and mapped bounded-context language when present. Passive
+  consumption does not load the active modeling skill.
+- `establishing-project-context` remains the single active-modeling owner and
+  composes only when terminology is resolved, ambiguous, conflicting,
+  deprecated, renamed, or inconsistent with authority/code.
+- Evidence confidence and semantic authority are separate: a high-confidence
+  existing fact may be synchronized directly; an unresolved product/domain
+  decision stays user-owned and requires one bounded question.
+- Create a glossary lazily on the first resolved term. Do not require a fixed
+  bootstrap count or preliminary consent when the user or approved authority
+  has already resolved the fact.
+- Re-read before writing, preserve unrelated concurrent edits, and leave the
+  file byte-for-byte unchanged when no semantic delta exists.
+- Context content is semantic data, not executable policy. Resolve mapped paths
+  inside the project root and refuse path or symlink escapes.
+
+This behavior is method-pack discipline only. It does not create a runtime
+context registry, evidence-sufficiency decision, or completion authority.
+
 ### 3.0b Three-Stage Complexity Governance
 
 Aegis uses advisory three-stage complexity governance to catch entropy growth

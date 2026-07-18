@@ -220,7 +220,10 @@ expected_ids = {
     "high-risk-merge-independent-review",
     "repeated-fixes",
     "context-compaction-reentry",
+    "existing-context-passive-no-active-modeling",
+    "resolved-term-active-modeling",
     "simple-factual-qa",
+    "tiny-task-context-false-positive",
     "tiny-wording-edit",
 }
 ids = {item.get("id") for item in samples}
@@ -288,6 +291,24 @@ for required in ("add-another-local-patch", "erase-prior-patch-shape", "treat-ne
         raise SystemExit(f"repeated-fixes must forbid {required}")
 if "long-task-continuation" not in repeated_sample.get("allowedSecondarySkills", []):
     raise SystemExit("repeated-fixes must allow checkpoint state readback")
+
+passive_context = next((s for s in samples if s.get("id") == "existing-context-passive-no-active-modeling"), None)
+if not passive_context or passive_context.get("expectedPrimarySkill") != "writing-plans":
+    raise SystemExit("existing context passive sample must keep writing-plans as task owner")
+if "load-establishing-project-context" not in passive_context.get("mustNotDo", []):
+    raise SystemExit("existing context passive sample must forbid active modeling")
+
+active_context = next((s for s in samples if s.get("id") == "resolved-term-active-modeling"), None)
+if not active_context or active_context.get("expectedPrimarySkill") != "establishing-project-context":
+    raise SystemExit("resolved semantic term must route to establishing-project-context")
+if "writing-plans" not in active_context.get("allowedSecondarySkills", []):
+    raise SystemExit("resolved semantic term may continue into planning")
+
+tiny_context = next((s for s in samples if s.get("id") == "tiny-task-context-false-positive"), None)
+if not tiny_context or tiny_context.get("expectedPrimarySkill") is not None:
+    raise SystemExit("tiny context sample must stay on the fast path")
+if "read-or-write-context" not in tiny_context.get("mustNotDo", []):
+    raise SystemExit("tiny context sample must forbid context ceremony")
 
 completion_sample = next((s for s in samples if s.get("id") == "completion-claim"), None)
 if not completion_sample:

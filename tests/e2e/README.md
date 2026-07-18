@@ -29,6 +29,8 @@ Bootstrap entrypoints:
 - `workspace-helper-resolution-check.sh`
 - `project-bootstrap-policy-check.sh`
 - `trigger-health-check.sh`
+- `context-semantic-infrastructure-check.sh`
+- `context-semantic-infrastructure-live-check.sh`
 - `workflow-quality-check.sh`
 - `agentic-benchmark-check.sh`
 - `controlled-replay-check.sh`
@@ -75,6 +77,14 @@ Workspace helper coverage:
 - `trigger-health-check.sh` verifies the trigger-chain diagnostic baseline and
   representative positive/negative trigger-health matrix used when Aegis is
   installed but the expected skill does not trigger reliably.
+- `context-semantic-infrastructure-check.sh` deterministically verifies the
+  semantic-context owner, passive/active consumer boundary, lifecycle/security
+  matrix, self-hosting glossary, legacy compatibility, and no-authority-drift
+  contract. It does not claim that a host model performed the state changes.
+- `context-semantic-infrastructure-live-check.sh` is an opt-in, temporary-project
+  runner for stateful host behavior. It fingerprints the skill source under
+  test and keeps checkout-explicit behavior evidence distinct from native
+  installed routing evidence.
 - `workflow-quality-check.sh` verifies the workflow quality baseline, compact
   output contracts, and representative samples for fast-path cheapness,
   evidence freshness, artifact stability, and workspace laziness.

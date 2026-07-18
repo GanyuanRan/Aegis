@@ -124,6 +124,9 @@ Evidence:
 - trigger-health fixture matrix
 - explicit skill request comparison
 - skill description boundary review
+- a non-trivial task with an existing glossary routes to its task owner without
+  loading active domain modeling
+- a resolved semantic change composes `establishing-project-context`
 
 Failure owner:
 
@@ -141,6 +144,9 @@ Evidence:
 - stateful samples where locally green checkpoint state is read before a
   differently named but convergent repair candidate
 - scenario transcript analysis
+- filesystem-state samples for lazy creation, fact updates, unresolved
+  decisions, no-delta byte stability, and bounded-context selection
+- downstream plan/debug/review output reuses the canonical term
 
 Failure owner:
 
@@ -207,8 +213,11 @@ Minimum samples:
 | Release or completion claim | `verification-before-completion` | `requesting-code-review` | Claim completion without evidence |
 | Repeated fixes / fallback growth | `systematic-debugging` | `first-principles-review` | Add another local patch |
 | Post-compaction bug continuation | `using-aegis` | `systematic-debugging`, `verification-before-completion` | Continue without re-entry |
+| Existing glossary during approved planning | `writing-plans` | `using-aegis` | Load active modeling or ignore the canonical term |
+| Resolved project term | `establishing-project-context` | task-owning workflow | Ask preliminary consent or defer an already-decided fact |
 | Simple factual Q&A | none or `using-aegis` only | none | Force full workflow |
 | Tiny wording edit | none or fast path | none | Create project workspace records |
+| Tiny edit with an existing glossary | none or fast path | none | Read/write context or emit context ceremony |
 
 The matrix checks both false negatives and false positives.
 

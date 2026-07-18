@@ -1,5 +1,61 @@
 # Aegis Release Notes
 
+## v2.5.0 (2026-07-19)
+
+### Semantic Context Infrastructure
+
+- Promoted project-level `CONTEXT.md` from an optional glossary into a stable,
+  bounded semantic context surface for canonical terms, aliases, distinctions,
+  and authority references.
+- Split context handling into cheap passive consumption and explicitly owned
+  active modeling, so ordinary work can reuse established language without
+  loading a separate modeling workflow.
+- Added evidence grades and fact-versus-decision authority rules: agents may
+  record high-confidence resolved facts directly, while unresolved product or
+  architecture decisions still require clarification.
+- Added a compact root context baseline for `Aegis Method Pack`, `Host Adapter`,
+  `Runtime Core`, and `runtime-ready artifact` without moving runtime authority
+  into the method pack.
+
+### Reliability And Workflow Integration
+
+- Integrated semantic context as a thin input to planning, brainstorming,
+  debugging, review, continuation, and verification workflows while retaining
+  `establishing-project-context` as the single active-modeling owner.
+- Required byte-stable no-op behavior, lazy first creation, pre-write readback,
+  concurrent-edit protection, safe path resolution, legacy table readability,
+  and instruction-like content isolation.
+- Added trigger-health coverage that distinguishes passive reuse, resolved
+  semantic changes, and tiny-task false positives.
+- Documented stable semantic prefixes as a cache opportunity rather than a
+  provider-independent cache-hit or token-savings guarantee.
+
+### Verification
+
+- Added a 15-case deterministic semantic-context matrix and wired it into the
+  Layer 1 release gate.
+- Added an opt-in, temporary-project live runner with checkout/installed source
+  modes, installed-skill fingerprint protection, and no host-configuration
+  mutation.
+- Extended Codex smoke-log parsing to recognize direct POSIX `sed` skill reads
+  while retaining the existing PowerShell coverage and transcript-noise guards.
+- Representative Codex checkout runs passed first resolved-fact creation,
+  byte-stable no-op handling, and passive context consumption. The installed
+  old-skill fingerprint was rejected as stale by design; Claude CLI live
+  coverage remains environment-bound and was not claimed.
+- Fresh `bash tests/e2e/run-all.sh --full --host-profile fast` verification
+  passed all four suites. Layer 1 passed `40/40`, including representative
+  Codex automatic and explicit skill-loading smoke, OpenCode base coverage,
+  and Codex plugin-sync regression; Layer 2 and Layer 3 each passed `6/6`.
+
+### Release Surface
+
+- Bumped all declared package and host manifest versions from `2.4.7` to
+  `2.5.0`.
+- This release remains `Aegis Method Pack (runtime-ready)`, preserves
+  multi-host plugin-installable distribution, and does not add authoritative
+  `GateDecision`, `PolicySnapshot`, or completion authority.
+
 ## v2.4.7 (2026-07-14)
 
 ### Directional Reset Governance

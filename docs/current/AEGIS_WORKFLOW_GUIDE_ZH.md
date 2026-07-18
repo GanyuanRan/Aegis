@@ -106,6 +106,21 @@ Aegis goal: 修复登录后偶发跳回登录页，不重写 auth 系统。
 如果任务很小，例如事实问答、版本状态、极小文案调整，可以只做快速判断并继续，
 不创建项目工作区记录。
 
+### 项目语义上下文
+
+对非平凡项目任务，当前任务的 owner workflow 会被动选择根 `CONTEXT.md`，以及
+`CONTEXT-MAP.md` 所映射的相关 bounded context 中的 active 术语。被动读取不会加载
+主动领域建模；微小任务不执行 context ceremony。
+
+只有术语已解决、存在歧义/冲突、发生重命名/废弃，或 authority、代码与术语表不一致
+时，才组合 `establishing-project-context`。A/B 级既有事实可以直接做最小同步；尚未
+解决的语义决策只向用户提出一个有界问题，不写成 active truth。第一个已解决术语即可
+惰性创建文件。`CONTEXT.md` 只拥有术语，不取代需求、架构基线、ADR、任务状态或
+runtime authority。
+
+紧凑、稳定的 context 有利于缓存，但 Aegis 不保证供应商缓存命中、延迟下降、上下文
+容量减少或费用节省。
+
 ---
 
 ## 5. 任务分级
