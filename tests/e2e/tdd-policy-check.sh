@@ -118,7 +118,7 @@ assert_contains "$tdd_skill" "TDD Mode" \
     "TDD skill defines TDD Mode"
 assert_contains "$tdd_skill" "TDD Route" \
     "TDD skill defines TDD Route"
-assert_contains "$tdd_skill" 'description: Use when the user explicitly requests strict or test-first TDD, or when the current conversation already contains an explicit `TDD Route: strict` decision from another Aegis workflow\.' \
+assert_contains "$tdd_skill" 'description: "?Use when the user explicitly requests strict or test-first TDD, or when the current conversation already contains an explicit `TDD Route: strict` decision from another Aegis workflow\.' \
     "TDD skill keeps a narrow native trigger boundary"
 assert_not_contains "$tdd_skill" "description: Use when implementing any feature or bugfix, before writing implementation code" \
     "TDD skill no longer broad-matches every implementation request"

@@ -89,6 +89,8 @@ def validate_skill(path: Path) -> list[str]:
                 errors.append(
                     f"{path.as_posix()}: description length must be 1..240, got {len(description)}"
                 )
+            if not description.startswith("Use when"):
+                errors.append(f"{path.as_posix()}: description must start with Use when")
 
     skill_type = fields.get("type", "prompt").strip().lower()
     if skill_type not in {"prompt", "inline"}:

@@ -1,6 +1,6 @@
 ---
 name: first-principles-review
-description: "Use for explicit first-principles or Occam's-razor review, or when complex decisions involve competing constraints, repeated fixes, fallback growth, duplicate owners, or architecture/product direction risk."
+description: "Use when explicitly asked for first-principles or Occam's-razor review, or when complex decisions involve competing constraints, repeated fixes, fallback growth, duplicate owners, or architecture/product direction risk."
 ---
 
 # First Principles Review

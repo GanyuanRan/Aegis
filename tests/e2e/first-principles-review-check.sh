@@ -60,7 +60,7 @@ fi
 
 assert_contains "$skill" "^name: first-principles-review$" \
     "skill frontmatter name is stable"
-assert_contains "$skill" "description: Use when" \
+assert_contains "$skill" '^description: "?Use when' \
     "skill description uses trigger-oriented wording"
 assert_contains "$skill" "explicitly asks for first principles|first-principles|Occam" \
     "skill has explicit first-principles triggers"
