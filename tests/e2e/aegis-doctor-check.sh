@@ -47,6 +47,10 @@ ACTIVATION_JSON_OUT="$TMP_ROOT/activation-mode.json"
 TDD_TEXT_OUT="$TMP_ROOT/tdd-mode.txt"
 TDD_JSON_OUT="$TMP_ROOT/tdd-mode.json"
 PRESERVE_CONFIG_PATH="$TMP_ROOT/preserve-config.toml"
+KIMI_AUTO_HOME="$TMP_ROOT/kimi-auto-home"
+KIMI_AUTO_OS_HOME="$TMP_ROOT/kimi-auto-os-home"
+KIMI_EXPLICIT_HOME="$TMP_ROOT/kimi-explicit-home"
+KIMI_EXPLICIT_OS_HOME="$TMP_ROOT/kimi-explicit-os-home"
 
 DOCTOR="$REPO_ROOT/scripts/aegis-doctor.py"
 
@@ -178,6 +182,68 @@ assert_contains "$TDD_JSON_OUT" '"tddMode": "auto"' "tdd-mode JSON reports auto 
 assert_contains "$TDD_JSON_OUT" '"restartRequired": true' "tdd-mode JSON reports restart boundary"
 assert_contains "$CONFIG_PATH" "tdd_mode = \"auto\"" \
     "tdd-mode command writes auto mode"
+
+mkdir -p "$KIMI_AUTO_HOME/plugins" "$KIMI_AUTO_OS_HOME"
+"${PYTHON_CMD[@]}" - "$KIMI_AUTO_HOME/plugins/installed.json" "$REPO_ROOT" <<'PY'
+import json
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+root = pathlib.Path(sys.argv[2]).resolve()
+path.write_text(
+    json.dumps(
+        {
+            "version": 1,
+            "plugins": [
+                {
+                    "id": "aegis",
+                    "root": root.as_posix(),
+                    "source": "local-path",
+                    "enabled": True,
+                    "installedAt": "2026-07-23T00:00:00Z",
+                }
+            ],
+        }
+    ),
+    encoding="utf-8",
+)
+PY
+cp "$KIMI_AUTO_HOME/plugins/installed.json" "$TMP_ROOT/installed-before.json"
+HOME="$KIMI_AUTO_OS_HOME" KIMI_CODE_HOME="$KIMI_AUTO_HOME" \
+    "${PYTHON_CMD[@]}" "$DOCTOR" --config "$CONFIG_PATH" --json \
+    --host-profile kimi-code-auto >"$TMP_ROOT/kimi-auto.json"
+assert_contains "$TMP_ROOT/kimi-auto.json" '"hostProfile": "kimi-code-auto"' \
+    "Kimi auto profile verifies plugin-managed mode"
+assert_contains "$TMP_ROOT/kimi-auto.json" '"sessionStartSkill": "using-aegis"' \
+    "Kimi auto profile verifies session-start router"
+assert_contains "$TMP_ROOT/kimi-auto.json" '"duplicateExposureStatus": "none"' \
+    "Kimi auto profile verifies one active exposure route"
+cmp "$TMP_ROOT/installed-before.json" "$KIMI_AUTO_HOME/plugins/installed.json" >/dev/null
+pass "Kimi auto profile leaves installed.json unchanged"
+
+mkdir -p "$KIMI_AUTO_HOME/skills/using-aegis"
+cp "$REPO_ROOT/skills/using-aegis/SKILL.md" "$KIMI_AUTO_HOME/skills/using-aegis/SKILL.md"
+if HOME="$KIMI_AUTO_OS_HOME" KIMI_CODE_HOME="$KIMI_AUTO_HOME" \
+    "${PYTHON_CMD[@]}" "$DOCTOR" --config "$CONFIG_PATH" \
+    --host-profile kimi-code-auto >"$TMP_ROOT/kimi-auto-collision.txt" 2>&1; then
+    fail "Kimi auto profile rejects duplicate direct-child exposure"
+else
+    pass "Kimi auto profile rejects duplicate direct-child exposure"
+fi
+assert_contains "$TMP_ROOT/kimi-auto-collision.txt" "duplicate direct-child Aegis exposure" \
+    "Kimi auto collision reports the failed boundary"
+
+mkdir -p "$KIMI_EXPLICIT_HOME/skills" "$KIMI_EXPLICIT_OS_HOME"
+cp -R "$REPO_ROOT/skills/." "$KIMI_EXPLICIT_HOME/skills/"
+HOME="$KIMI_EXPLICIT_OS_HOME" KIMI_CODE_HOME="$KIMI_EXPLICIT_HOME" \
+    "${PYTHON_CMD[@]}" "$DOCTOR" --config "$CONFIG_PATH" --json \
+    --host-profile kimi-code-explicit \
+    --discovery-root "$KIMI_EXPLICIT_HOME/skills" >"$TMP_ROOT/kimi-explicit.json"
+assert_contains "$TMP_ROOT/kimi-explicit.json" '"hostProfile": "kimi-code-explicit"' \
+    "Kimi explicit profile verifies direct-child mode"
+assert_contains "$TMP_ROOT/kimi-explicit.json" '"pluginEnabled": false' \
+    "Kimi explicit profile verifies plugin is not active"
 
 if [[ -e "$REPO_ROOT/docs/aegis" ]]; then
     fail "doctor must not create docs/aegis in the Aegis method-pack repository"

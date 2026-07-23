@@ -50,6 +50,9 @@ TRIGGER_HEALTH_LAYERS = (
     "false-positive over-triggering",
 )
 
+KIMI_AUTO_PROFILE = "kimi-code-auto"
+KIMI_EXPLICIT_PROFILE = "kimi-code-explicit"
+
 
 class DoctorError(Exception):
     pass
@@ -86,6 +89,164 @@ def file_content_matches(current: Path, expected: Path) -> bool:
 
 def default_config_path() -> Path:
     return Path.home() / ".config" / "aegis" / "config.toml"
+
+
+def resolve_kimi_home(value: str | None) -> Path:
+    configured = value or os.environ.get("KIMI_CODE_HOME")
+    if configured:
+        return Path(configured).expanduser().resolve()
+    return (Path.home() / ".kimi-code").resolve()
+
+
+def load_kimi_installed_file(kimi_home: Path) -> dict[str, object]:
+    installed_path = kimi_home / "plugins" / "installed.json"
+    if not installed_path.is_file():
+        return {"version": 1, "plugins": []}
+    try:
+        data = json.loads(installed_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise DoctorError(f"cannot parse Kimi plugin registry {installed_path}: {exc}") from exc
+    if not isinstance(data, dict) or data.get("version") != 1:
+        raise DoctorError(f"Kimi plugin registry must use version 1: {installed_path}")
+    if not isinstance(data.get("plugins"), list):
+        raise DoctorError(f"Kimi plugin registry must contain a plugins list: {installed_path}")
+    return data
+
+
+def load_json_object(path: Path, label: str) -> dict[str, object]:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise DoctorError(f"cannot parse {label} {path}: {exc}") from exc
+    if not isinstance(data, dict):
+        raise DoctorError(f"{label} must be a JSON object: {path}")
+    return data
+
+
+def validate_kimi_plugin_record(root: Path, kimi_home: Path) -> dict[str, object]:
+    installed = load_kimi_installed_file(kimi_home)
+    records = [
+        item
+        for item in installed["plugins"]  # type: ignore[index]
+        if isinstance(item, dict) and item.get("id") == "aegis"
+    ]
+    if len(records) != 1:
+        raise DoctorError(
+            "Kimi auto mode requires exactly one installed Aegis plugin; "
+            "run /plugins install https://github.com/GanyuanRan/Aegis and then /reload or /new"
+        )
+    record = records[0]
+    if record.get("enabled") is not True:
+        raise DoctorError("Kimi Aegis plugin is disabled; enable it with /plugins enable aegis")
+    record_root_value = record.get("root")
+    if not isinstance(record_root_value, str) or not record_root_value:
+        raise DoctorError("Kimi Aegis plugin record is missing its managed root")
+    record_root = Path(record_root_value).expanduser()
+    if not record_root.is_dir():
+        raise DoctorError(f"Kimi Aegis managed root is missing: {record_root}")
+    try:
+        if record_root.resolve() != root.resolve():
+            raise DoctorError(
+                "run aegis-doctor.py from Kimi's managed Aegis plugin root: "
+                f"{record_root.resolve()}"
+            )
+    except OSError as exc:
+        raise DoctorError(f"cannot resolve Kimi Aegis managed root: {exc}") from exc
+
+    package = load_json_object(root / "package.json", "Aegis package metadata")
+    manifest = load_json_object(root / "kimi.plugin.json", "Kimi plugin manifest")
+    session_start = manifest.get("sessionStart")
+    if not isinstance(session_start, dict):
+        raise DoctorError("Kimi plugin manifest must define sessionStart")
+    if manifest.get("name") != "aegis":
+        raise DoctorError("Kimi plugin manifest name must be aegis")
+    if manifest.get("version") != package.get("version"):
+        raise DoctorError(
+            "Kimi managed plugin version differs from the Aegis package version: "
+            f"{manifest.get('version')!r} != {package.get('version')!r}"
+        )
+    if manifest.get("skills") != "./skills/":
+        raise DoctorError("Kimi plugin manifest must expose the canonical ./skills/ tree")
+    if session_start.get("skill") != "using-aegis":
+        raise DoctorError("Kimi plugin manifest must load using-aegis at session start")
+
+    return {
+        "id": "aegis",
+        "enabled": True,
+        "source": record.get("source"),
+        "root": record_root.resolve().as_posix(),
+        "version": manifest.get("version"),
+        "sessionStartSkill": "using-aegis",
+    }
+
+
+def skill_frontmatter_name(path: Path) -> str | None:
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return None
+    if not lines or lines[0] != "---":
+        return None
+    for line in lines[1:]:
+        if line == "---":
+            return None
+        if line.startswith("name:"):
+            value = line.split(":", 1)[1].strip().strip('"').strip("'")
+            return value or None
+    return None
+
+
+def find_kimi_skill_collisions(root: Path, kimi_home: Path) -> list[Path]:
+    skills_root = root / "skills"
+    canonical_names = {
+        child.name
+        for child in skills_root.iterdir()
+        if child.is_dir() and (child / "SKILL.md").is_file()
+    }
+    collision_roots = (kimi_home / "skills", Path.home() / ".agents" / "skills")
+    collisions: list[Path] = []
+    for discovery_root in collision_roots:
+        for name in sorted(canonical_names):
+            candidate = discovery_root / name / "SKILL.md"
+            if candidate.is_file() and skill_frontmatter_name(candidate) == name:
+                collisions.append(candidate.parent)
+    return collisions
+
+
+def enabled_kimi_aegis_plugin(kimi_home: Path) -> bool:
+    installed = load_kimi_installed_file(kimi_home)
+    return any(
+        isinstance(item, dict) and item.get("id") == "aegis" and item.get("enabled") is True
+        for item in installed["plugins"]  # type: ignore[index]
+    )
+
+
+def validate_kimi_explicit_mode(
+    root: Path,
+    kimi_home: Path,
+    discovery_root: Path | None,
+) -> dict[str, object]:
+    if discovery_root is None:
+        raise DoctorError("Kimi explicit mode requires --discovery-root")
+    if enabled_kimi_aegis_plugin(kimi_home):
+        raise DoctorError(
+            "Kimi explicit mode conflicts with the enabled Aegis plugin; "
+            "disable it with /plugins disable aegis and then /reload or /new"
+        )
+    selected = discovery_root.expanduser().resolve()
+    alternate_collisions = [
+        path
+        for path in find_kimi_skill_collisions(root, kimi_home)
+        if path.parent.resolve() != selected
+    ]
+    if alternate_collisions:
+        joined = ", ".join(path.as_posix() for path in alternate_collisions)
+        raise DoctorError(f"Kimi explicit mode has multiple direct-child Aegis exposures: {joined}")
+    return {
+        "mode": "explicit",
+        "discoveryRoot": selected.as_posix(),
+        "pluginEnabled": False,
+    }
 
 
 def method_pack_root() -> Path:
@@ -450,6 +611,55 @@ def perform_check(args: argparse.Namespace) -> dict[str, object]:
                 ),
             }
         )
+
+    host_profile_result: dict[str, object] | None = None
+    if args.host_profile:
+        kimi_home = resolve_kimi_home(args.kimi_home)
+        if args.host_profile == KIMI_AUTO_PROFILE:
+            if args.discovery_root:
+                raise DoctorError("Kimi auto mode must not use a direct-child --discovery-root")
+            plugin = validate_kimi_plugin_record(root, kimi_home)
+            collisions = find_kimi_skill_collisions(root, kimi_home)
+            if collisions:
+                joined = ", ".join(path.as_posix() for path in collisions)
+                raise DoctorError(
+                    "Kimi auto mode found duplicate direct-child Aegis exposure: "
+                    f"{joined}. Disable/remove the plugin to keep explicit mode, or remove only "
+                    "generated Aegis exposure after independently confirming ownership."
+                )
+            host_profile_result = {
+                "hostProfile": KIMI_AUTO_PROFILE,
+                "plugin": plugin,
+                "duplicateExposureStatus": "none",
+                "restartRequired": True,
+            }
+            checks.append(
+                {
+                    "name": "kimi-plugin-auto-route",
+                    "ok": True,
+                    "detail": "enabled Aegis plugin with using-aegis session start",
+                }
+            )
+        else:
+            explicit = validate_kimi_explicit_mode(
+                root,
+                kimi_home,
+                Path(args.discovery_root) if args.discovery_root else None,
+            )
+            host_profile_result = {
+                "hostProfile": KIMI_EXPLICIT_PROFILE,
+                "plugin": {"enabled": False},
+                "explicit": explicit,
+                "duplicateExposureStatus": "none",
+                "restartRequired": True,
+            }
+            checks.append(
+                {
+                    "name": "kimi-explicit-route",
+                    "ok": True,
+                    "detail": "direct-child exposure current and Aegis plugin disabled",
+                }
+            )
     record(
         "no-live-workspace-in-method-pack",
         not (root / "docs" / "aegis").exists(),
@@ -486,6 +696,8 @@ def perform_check(args: argparse.Namespace) -> dict[str, object]:
     }
     if args.discovery_root:
         result.update(discovery_result)
+    if host_profile_result is not None:
+        result.update(host_profile_result)
     return result
 
 
@@ -522,6 +734,9 @@ def print_text(result: dict[str, object]) -> None:
         print(f"Discovery shape status: {result['discoveryShapeStatus']}")
         print(f"Compatibility exposure status: {result['compatibilityExposureStatus']}")
         print(f"Discovery name policy: {result['discoveryNamePolicy']}")
+    if result.get("hostProfile"):
+        print(f"Host profile: {result['hostProfile']}")
+        print(f"Duplicate exposure status: {result['duplicateExposureStatus']}")
     trigger_health = result.get("triggerHealth", {})
     if isinstance(trigger_health, dict):
         print(f"Trigger health baseline: {trigger_health.get('baseline')}")
@@ -558,6 +773,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--write-config",
         action="store_true",
         help="write method_pack_root and workspace_helper into the config path",
+    )
+    parser.add_argument(
+        "--host-profile",
+        choices=(KIMI_AUTO_PROFILE, KIMI_EXPLICIT_PROFILE),
+        help="optional host-native verification profile",
+    )
+    parser.add_argument(
+        "--kimi-home",
+        help="Kimi data root; defaults to KIMI_CODE_HOME or ~/.kimi-code",
     )
     return parser
 
