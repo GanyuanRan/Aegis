@@ -1,0 +1,27 @@
+{
+  "name": "aegis",
+  "version": "2.5.0",
+  "description": "Aegis method-pack workflows for planning, debugging, review, verification, and delivery",
+  "author": {
+    "name": "Aegis Maintainers"
+  },
+  "homepage": "https://github.com/GanyuanRan/Aegis",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "planning",
+    "debugging",
+    "verification",
+    "workflow"
+  ],
+  "skills": "./skills/",
+  "sessionStart": {
+    "skill": "using-aegis"
+  },
+  "interface": {
+    "displayName": "Aegis",
+    "shortDescription": "Engineering workflows with evidence and owner discipline",
+    "developerName": "Aegis Maintainers",
+    "websiteURL": "https://github.com/GanyuanRan/Aegis"
+  }
+}

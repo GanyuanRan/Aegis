@@ -49,6 +49,7 @@ current_readme="docs/current/README.md"
 root_readme="README.md"
 zh_readme="README.zh-CN.md"
 kimi_guide="docs/README.kimi-code.md"
+kimi_manifest="kimi.plugin.json"
 install_check="tests/e2e/install-verification-policy-check.sh"
 goal_check="tests/e2e/goal-framing-check.sh"
 activation_check="tests/e2e/activation-mode-check.sh"
@@ -101,6 +102,8 @@ fi
 
 assert_contains "$kimi_guide" "https://moonshotai.github.io/kimi-code/en/customization/skills" \
     "Kimi guide cites official Agent Skills docs"
+assert_contains "$kimi_guide" "https://moonshotai.github.io/kimi-code/en/customization/plugins" \
+    "Kimi guide cites official Plugins docs"
 assert_contains "$kimi_guide" "https://moonshotai.github.io/kimi-code/en/configuration/config-files.html" \
     "Kimi guide cites official config docs"
 assert_contains "$kimi_guide" '\$KIMI_CODE_HOME/skills/|~/.kimi-code/skills/' \
@@ -128,6 +131,18 @@ assert_contains "$kimi_guide" "GateDecision|completion authority" \
 assert_contains "$kimi_guide" "does not claim current release-level live smoke evidence|not claim current release-level live smoke evidence" \
     "Kimi guide avoids live smoke claim"
 
+if [[ -f "$kimi_manifest" ]]; then
+    pass "Kimi plugin manifest exists"
+else
+    fail "Kimi plugin manifest exists"
+fi
+assert_contains "$kimi_manifest" '"name": "aegis"' \
+    "Kimi plugin manifest uses stable plugin id"
+assert_contains "$kimi_manifest" '"skills": "\./skills/"' \
+    "Kimi plugin manifest reuses canonical skills tree"
+assert_contains "$kimi_manifest" '"skill": "using-aegis"' \
+    "Kimi plugin manifest establishes session-start router entry"
+
 assert_contains "$updater" "KIMI_HOST_ALIASES" \
     "updater recognizes Kimi host aliases"
 assert_contains "$updater" "default_kimi_discovery_root" \
@@ -154,4 +169,3 @@ fi
 
 echo ""
 echo "Kimi Code CLI host boundary check passed."
-

@@ -47,6 +47,30 @@ def validate_codex_manifest(root: Path) -> None:
     require((root / "assets" / "app-icon.png").exists(), "logo asset must exist")
 
 
+def validate_kimi_manifest(root: Path) -> None:
+    manifest = load_json(root / "kimi.plugin.json")
+    require(manifest.get("name") == "aegis", "Kimi manifest name must be aegis")
+    require(manifest.get("skills") == "./skills/", "Kimi manifest must expose ./skills/")
+    require(
+        manifest.get("sessionStart", {}).get("skill") == "using-aegis",
+        "Kimi manifest must load using-aegis at session start",
+    )
+    require(
+        (root / "skills" / "using-aegis" / "SKILL.md").is_file(),
+        "Kimi session-start skill must exist",
+    )
+    unsupported = {
+        "tools",
+        "apps",
+        "inject",
+        "configFile",
+        "bootstrap",
+        "mcpServers",
+        "hooks",
+    }.intersection(manifest)
+    require(not unsupported, f"Kimi manifest contains unneeded runtime fields: {sorted(unsupported)}")
+
+
 def validate_cursor_manifest(root: Path) -> None:
     manifest = load_json(root / ".cursor-plugin" / "plugin.json")
     require(manifest.get("skills") == "./skills/", "Cursor manifest must expose skills")
@@ -89,6 +113,7 @@ def validate_marketplace(root: Path) -> None:
 def validate(root: Path) -> None:
     validate_versions(root)
     validate_codex_manifest(root)
+    validate_kimi_manifest(root)
     validate_cursor_manifest(root)
     validate_gemini_manifest(root)
     validate_hook_files(root)
