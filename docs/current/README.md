@@ -78,6 +78,7 @@ The public current set is:
 - `docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md`
 - `docs/current/AEGIS_KNOWN_LIMITATIONS.md`
 - `docs/adr/ADR-0001-aegis-method-pack-is-not-runtime-core.md`
+- `docs/adr/ADR-0002-kimi-native-plugin-is-the-automatic-entry.md`
 
 ## 5. Document Roles
 

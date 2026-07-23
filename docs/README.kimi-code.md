@@ -10,6 +10,7 @@ verification path. For repository authority and release status, also read:
 - `docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md`
 - `docs/current/AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md`
 - `docs/current/AEGIS_KNOWN_LIMITATIONS.md`
+- `docs/adr/ADR-0002-kimi-native-plugin-is-the-automatic-entry.md`
 
 ## Current Verdict
 

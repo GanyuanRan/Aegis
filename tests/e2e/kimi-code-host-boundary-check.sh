@@ -96,6 +96,10 @@ assert_contains "$release_checklist" 'Kimi.*plugin|plugin.*Kimi' \
     "release checklist guards Kimi plugin default"
 assert_contains "$current_readme" "docs/README.kimi-code.md" \
     "current authority map includes Kimi guide"
+assert_contains "$current_readme" "ADR-0002-kimi-native-plugin-is-the-automatic-entry.md" \
+    "current authority map includes Kimi automatic-entry ADR"
+assert_contains "$kimi_guide" "ADR-0002-kimi-native-plugin-is-the-automatic-entry.md" \
+    "Kimi guide cites the automatic-entry decision"
 
 assert_contains "$root_readme" "\`Kimi Code CLI\`" \
     "English README lists Kimi Code CLI"
