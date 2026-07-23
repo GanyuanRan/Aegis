@@ -10,7 +10,9 @@ from pathlib import Path
 from unittest.mock import patch
 
 
-MODULE_PATH = Path(__file__).resolve().parents[2] / "scripts" / "aegis-doctor.py"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+CURRENT_VERSION = json.loads((REPO_ROOT / "package.json").read_text(encoding="utf-8"))["version"]
+MODULE_PATH = REPO_ROOT / "scripts" / "aegis-doctor.py"
 SPEC = importlib.util.spec_from_file_location("aegis_doctor", MODULE_PATH)
 doctor = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
@@ -18,7 +20,7 @@ SPEC.loader.exec_module(doctor)
 
 
 class KimiDoctorTests(unittest.TestCase):
-    def make_root(self, base: Path, *, version: str = "2.5.0") -> Path:
+    def make_root(self, base: Path, *, version: str = CURRENT_VERSION) -> Path:
         root = base / "aegis"
         skill = root / "skills" / "using-aegis"
         skill.mkdir(parents=True)
@@ -104,7 +106,7 @@ class KimiDoctorTests(unittest.TestCase):
             result = doctor.validate_kimi_plugin_record(root, kimi_home)
         self.assertEqual(result["id"], "aegis")
         self.assertTrue(result["enabled"])
-        self.assertEqual(result["version"], "2.5.0")
+        self.assertEqual(result["version"], CURRENT_VERSION)
         self.assertEqual(result["sessionStartSkill"], "using-aegis")
 
     def test_missing_or_disabled_plugin_fails_auto_mode(self) -> None:

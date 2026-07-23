@@ -1,5 +1,56 @@
 # Aegis Release Notes
 
+## v2.5.1 (2026-07-23)
+
+### Kimi Code Automatic Routing
+
+- Added a native root `kimi.plugin.json` that reuses the canonical `skills/`
+  tree and establishes `sessionStart.skill = using-aegis` for new and resumed
+  Kimi sessions.
+- Made the Kimi plugin the default automatic installation path, while retaining
+  updater-managed direct-child Agent Skills as an explicit compatibility mode.
+- Defined a single-owner rule: the plugin, `$KIMI_CODE_HOME/skills/`, and
+  `~/.agents/skills/` Aegis exposures must not be enabled together.
+- Hardened all Kimi-visible skill frontmatter with quoted, trigger-oriented
+  descriptions and a repository validator for Kimi's metadata boundary.
+
+### Installation, Update, And Diagnostics
+
+- Added read-only `kimi-code-auto` and `kimi-code-explicit` doctor profiles to
+  verify plugin identity, managed root, version, session-start routing, and
+  duplicate skill exposure without mutating Kimi state.
+- Routed automatic Kimi installs and updates through Kimi's native plugin
+  manager; kept `aegis-update.py` as the owner of explicit direct-child
+  compatibility installations.
+- Updated the universal quick-install prompt so plugin, hook, and session-start
+  hosts must prove native activation and automatic entry instead of treating
+  file discovery or a generic doctor result as completion evidence.
+- Added migration, reload/new-session, rollback, and verification guidance to
+  the Kimi host guide.
+
+### Verification And Architecture
+
+- Added deterministic Kimi metadata, manifest, doctor, collision, and host
+  boundary coverage, plus an environment-bound five-case natural-language
+  routing smoke and resumed-session check.
+- Recorded the durable install/discovery decision in ADR-0002 while preserving
+  the `Aegis Method Pack (runtime-ready)` authority boundary.
+- Fresh `bash tests/e2e/run-all.sh --full --host-profile fast` verification
+  passed all four suites. Layer 1 passed `40/40`, including representative
+  Codex automatic and explicit skill-loading smoke, OpenCode base coverage,
+  and Codex plugin-sync regression; Layer 2 and Layer 3 each passed `6/6`.
+- The current release environment does not provide the `kimi` executable, so
+  native Kimi plugin installation, reload/resume, and live model-routing smoke
+  remain environment-bound and are not claimed as fresh host closeout.
+
+### Release Surface
+
+- Bumped all declared package and host manifest versions from `2.5.0` to
+  `2.5.1`.
+- This release remains `Aegis Method Pack (runtime-ready)`, preserves
+  multi-host plugin-installable distribution, and does not add authoritative
+  `GateDecision`, `PolicySnapshot`, or completion authority.
+
 ## v2.5.0 (2026-07-19)
 
 ### Semantic Context Infrastructure

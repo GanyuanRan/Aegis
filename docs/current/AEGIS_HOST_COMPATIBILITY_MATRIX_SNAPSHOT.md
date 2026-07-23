@@ -22,7 +22,7 @@ It does not answer:
 ## 2. Snapshot Date
 
 The current snapshot is based on fresh evidence and current docs landed as of
-`2026-07-12`.
+`2026-07-23`.
 
 ---
 
