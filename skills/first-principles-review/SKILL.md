@@ -1,6 +1,6 @@
 ---
 name: first-principles-review
-description: Use when the user explicitly asks for first principles, first-principles review, Occam's razor, or when a complex decision has ambiguous goals, competing constraints, repeated fixes, fallback growth, duplicate owners, or architecture/product direction risk.
+description: "Use for explicit first-principles or Occam's-razor review, or when complex decisions involve competing constraints, repeated fixes, fallback growth, duplicate owners, or architecture/product direction risk."
 ---
 
 # First Principles Review

@@ -1,6 +1,6 @@
 ---
 name: finishing-a-development-branch
-description: Use when implementation is complete, verification has passed, and the user needs to choose merge, PR, branch cleanup, or follow-up integration handling.
+description: "Use when implementation is complete, verification has passed, and the user needs to choose merge, PR, branch cleanup, or follow-up integration handling."
 ---
 
 # Finishing a Development Branch

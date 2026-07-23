@@ -1,6 +1,6 @@
 ---
 name: using-aegis
-description: Use when starting a turn or checking Aegis skill routing.
+description: "Use when starting a turn or checking Aegis skill routing."
 ---
 
 <SUBAGENT-STOP>Skip for subagents.</SUBAGENT-STOP>

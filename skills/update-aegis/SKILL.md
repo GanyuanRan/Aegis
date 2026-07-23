@@ -1,6 +1,6 @@
 ---
 name: update-aegis
-description: Use when the user says `aegis:update`, asks to update or upgrade an installed Aegis method-pack, wants the latest Aegis version, or asks whether Aegis is current on this host.
+description: "Use when the user says `aegis:update`, asks to update or upgrade an installed Aegis method-pack, wants the latest Aegis version, or asks whether Aegis is current on this host."
 ---
 
 # Update Aegis

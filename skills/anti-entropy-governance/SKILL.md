@@ -1,6 +1,6 @@
 ---
 name: anti-entropy-governance
-description: Use when retiring old logic, collapsing duplicate owners, removing fallbacks, or touching schema, persistence, or source-of-truth boundaries while deciding whether to delete old paths, retain compatibility, or stop for confirmation.
+description: "Use when retiring old logic, collapsing duplicate owners, removing fallbacks, or touching schema, persistence, or source-of-truth boundaries while deciding whether to delete old paths, retain compatibility, or stop for confirmation."
 ---
 
 # Anti-Entropy

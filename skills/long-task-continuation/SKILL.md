@@ -1,6 +1,6 @@
 ---
 name: long-task-continuation
-description: Use when a task is multi-step, may span context resets or sessions, uses subagents, or risks losing state before completion.
+description: "Use when a task is multi-step, may span context resets or sessions, uses subagents, or risks losing state before completion."
 ---
 
 # Long Task Continuation

@@ -1,6 +1,6 @@
 ---
 name: recording-architecture-decisions
-description: Use when the user asks to create, write, update, amend, supersede, or evaluate an ADR, architecture decision record, durable architecture decision, decision log, or baseline sync after architecture-changing work.
+description: "Use when the user asks to create, write, update, amend, supersede, or evaluate an ADR, architecture decision record, durable architecture decision, decision log, or baseline sync after architecture-changing work."
 ---
 
 # Recording Architecture Decisions
