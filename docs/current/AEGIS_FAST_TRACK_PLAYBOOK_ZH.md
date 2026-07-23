@@ -10,7 +10,7 @@
 最快、最推荐的方式，是把下面这段话交给你的 AI 编程 Agent：
 
 ```text
-请阅读 https://github.com/GanyuanRan/Aegis，识别我当前使用的 AI 编程宿主，并按对应宿主说明全局安装 Aegis。如果需要重启或重新加载宿主，请明确告诉我；然后从已安装的 Aegis method-pack 根目录运行完整安装验证。不要在目标项目目录中运行 doctor 命令。先定位 `<aegis-method-pack-root>`，再运行 `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`。只有当 JSON 输出包含 `"ok": true`、`"workspaceSupport": "available"` 和 `"configStatus": "configured"` 时，才把安装视为完成；如果宿主有单独的 skill discovery 目录，也要额外用 `--discovery-root <path>` 验证它指向当前版本；如果宿主说明声明了 skill 目录名前缀，也同时传 `--discovery-name-prefix <prefix>`。
+请阅读 https://github.com/GanyuanRan/Aegis，识别我当前使用的 AI 编程宿主，并按对应宿主说明全局安装 Aegis。如果需要重启或重新加载宿主，请明确告诉我；然后从已安装的 Aegis method-pack 根目录运行完整安装验证。不要在目标项目目录中运行 doctor 命令。先定位 `<aegis-method-pack-root>`，再运行 `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`。只有当 JSON 输出包含 `"ok": true`、`"workspaceSupport": "available"` 和 `"configStatus": "configured"` 时，才把安装视为完成；如果宿主有单独的 skill discovery 目录，也要额外用 `--discovery-root <path>` 验证它指向当前版本；如果宿主说明声明了 skill 目录名前缀，也同时传 `--discovery-name-prefix <prefix>`。还必须完成对应宿主说明中的原生活化与自动入口验证；当宿主提供 plugin、hook 或 session-start bootstrap 时，仅通过文件发现或通用 doctor 检查不能视为安装完成。
 ```
 
 ### 怎样才算真正安装完成
@@ -21,6 +21,8 @@
 4. JSON 结果包含 `"ok": true`、`"workspaceSupport": "available"` 和
    `"configStatus": "configured"`。
 5. 有独立 discovery 目录或 skill 名称前缀要求的宿主，也通过了对应检查。
+6. 提供原生 plugin、hook 或 session-start bootstrap 的宿主，也通过了宿主说明中的
+   活化与自动入口检查。
 
 这个区别很重要：只复制 skills 可能让宿主看见 Aegis 方法，却不能证明项目工作区
 支持完整可用。

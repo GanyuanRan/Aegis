@@ -97,6 +97,13 @@ Failure owner:
 
 - activation mode, bootstrap hook, host profile, or explicit-only install
 
+Host-profile examples:
+
+| Host profile | Trigger family | Expected entry |
+| --- | --- | --- |
+| Kimi `kimi-code-auto` | `hook-bootstrap` | Plugin `sessionStart.skill = using-aegis` |
+| Kimi `kimi-code-explicit` | `native-direct-skill` | Explicit or host-native direct-child matching; no session-start bootstrap |
+
 ### L3 Router Entry
 
 Question:

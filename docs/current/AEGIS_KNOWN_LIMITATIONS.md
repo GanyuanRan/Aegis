@@ -549,6 +549,11 @@ request.
 **Retained Item**
 - Kimi Code CLI is a structural host target, not a release-level fresh smoke
   verdict
+- The default automatic path is the Kimi-managed plugin with
+  `sessionStart.skill = using-aegis`; deterministic tests verify its manifest,
+  doctor profile, and duplicate-exposure rejection, but not live model routing
+- Updater-managed `$KIMI_CODE_HOME/skills/` direct-child exposure is retained
+  as explicit compatibility installation, not as the default automatic path
 - The generic `~/.agents/skills/` Kimi scan root is retained only as an
   official fallback, not as the Aegis Kimi canonical install path
 
@@ -557,30 +562,35 @@ request.
   `$KIMI_CODE_HOME/skills/` (`~/.kimi-code/skills/` by default) and
   `~/.agents/skills/`. They also list project-level `.kimi-code/skills/` and
   `.agents/skills/`.
-- Kimi's own user-level skill root follows `KIMI_CODE_HOME`, which makes it the
-  correct Kimi-specific Aegis exposure surface when users isolate Kimi data.
-- Aegis is a multi-skill method pack. For Kimi-specific installs, expose
-  individual skills as `$KIMI_CODE_HOME/skills/<skill-name>/SKILL.md` rather
-  than relying on the Codex umbrella symlink
+- Kimi's plugin contract provides a stable session-start owner that plain skill
+  discovery does not provide. The thin manifest reuses the canonical `skills/`
+  tree rather than copying Kimi-only skill bodies.
+- For explicit compatibility installs, expose individual skills as
+  `$KIMI_CODE_HOME/skills/<skill-name>/SKILL.md` rather than relying on the
+  Codex umbrella symlink
   `~/.agents/skills/aegis -> ~/.codex/aegis/skills`.
 - The method-pack `skills/` tree remains the canonical source of truth. Kimi
-  skill directories are generated host-visible links, not a second editable
-  skill owner.
+  plugin content and compatibility directories are host-managed or generated
+  views, not second editable skill owners.
 
 **Observation Metric**
 - `docs/README.kimi-code.md`
-- `bash tests/e2e/kimi-code-host-boundary-check.sh`
+- `bash tests/kimi-code/run-tests.sh`
+- `bash tests/kimi-code/run-tests.sh --integration`
+- `bash tests/kimi-code/run-live-smoke.sh`
 - `cd <aegis-method-pack-root> && python scripts/aegis-update.py register --host kimi-code --sync-mode junction --json`
-  uses `$KIMI_CODE_HOME/skills` or `~/.kimi-code/skills` as the default
-  discovery root, performs register-time direct-child link creation, writes the
-  host registry entry, and runs method-pack-side doctor verification
-- Release-level live Kimi Code CLI smoke is still required to prove skill
-  discovery after restart and current hot-path loading inside the running host
+  remains the explicit compatibility registration path
+- `python scripts/aegis-doctor.py --json --host-profile kimi-code-auto` verifies
+  the managed plugin owner, version, session-start entry, and absence of
+  direct-child collisions without mutating Kimi state
+- Release-level live Kimi Code CLI smoke is still required to prove automatic
+  task routing after `/reload` or `/new`, resumed-session routing, and
+  acceptable false-positive behavior
 
 **Retirement Trigger**
-- When Kimi Code CLI has a verified install/update path that proves both skill
-  discovery and project workspace support without turning Aegis into an
-  authoritative runtime core
+- When a fresh release-level Kimi run proves plugin install/update, new and
+  resumed session routing, false-positive control, and project workspace
+  support without turning Aegis into an authoritative runtime core
 
 ---
 

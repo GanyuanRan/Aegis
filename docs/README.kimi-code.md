@@ -1,16 +1,10 @@
 # Aegis for Kimi Code CLI
 
-Guide for using Aegis with Kimi Code CLI through Kimi's native Agent Skills
-discovery.
+Guide for installing Aegis through Kimi Code CLI's native plugin and Agent
+Skills contracts.
 
-Design status: the updater-managed direct-child path documented below is the
-current supported structural path. A Kimi-native plugin path for reliable
-automatic router entry is approved in direction but is not implemented or
-release-verified yet.
-
-This page only covers the Kimi Code CLI host install path. For the current
-`Aegis Method Pack` authority order, release gate, host compatibility status,
-and known limitations, read:
+This page owns the Kimi-specific install, migration, update, reload, and
+verification path. For repository authority and release status, also read:
 
 - `docs/current/README.md`
 - `docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md`
@@ -19,38 +13,22 @@ and known limitations, read:
 
 ## Current Verdict
 
-Kimi Code CLI is structurally compatible with Aegis because Kimi discovers
-Agent Skills from user and project skill roots. The official Kimi Code CLI
-Agent Skills docs list the user-level roots as:
+The default Kimi installation is the native Aegis plugin declared by the root
+`kimi.plugin.json`. It exposes the canonical `skills/` tree and establishes
+`sessionStart.skill = using-aegis`, so each new or resumed session gets a
+stable routing entry before Kimi performs task-to-skill selection.
 
-```text
-$KIMI_CODE_HOME/skills/  (default: ~/.kimi-code/skills/)
-~/.agents/skills/
-```
+Natural-language task descriptions are the normal entry point. Explicit skill
+invocation remains an override and diagnostic path.
 
-They also list project-level roots:
+The previous updater-managed direct-child installation remains supported as
+an **explicit compatibility mode**. The plugin and direct-child views must not
+be active together because that creates duplicate skill owners and unreliable
+routing evidence.
 
-```text
-.kimi-code/skills/
-.agents/skills/
-```
-
-Kimi's own user-level root moves with `KIMI_CODE_HOME`; the generic
-`~/.agents/skills/` root stays under the real OS home and is a cross-tool
-sharing surface.
-
-For Aegis, the recommended Kimi install path is Kimi's native user-level root:
-
-```text
-$KIMI_CODE_HOME/skills/<skill-name>/SKILL.md
-```
-
-The generic `~/.agents/skills/` root remains a compatibility fallback, not the
-canonical Kimi Aegis path. Do not rely on the Codex umbrella symlink
-`~/.agents/skills/aegis -> ~/.codex/aegis/skills` as the Kimi main path.
-
-This guide records structural compatibility and native install support. It does
-not claim current release-level live smoke evidence.
+This guide records implemented structural support. It does not claim current
+release-level live smoke evidence; a real Kimi CLI, login/provider access, and
+representative model-routing smoke are still required for that verdict.
 
 Official references:
 
@@ -59,206 +37,131 @@ Official references:
 - `https://moonshotai.github.io/kimi-code/en/configuration/config-files.html`
 - `https://moonshotai.github.io/kimi-code/en/reference/kimi-command.html`
 
-## Automatic Routing Design (Pending Implementation)
+## Default Automatic Installation
 
-This section records the proposed implementation boundary. It is not a current
-installation instruction and must not be used to claim Kimi live-host
-closeout.
-
-### Target Outcome
-
-The default Kimi `auto` installation must establish a stable Aegis router entry
-for every new or resumed Kimi session. Users should normally describe work in
-natural language; explicit `/skill:<name>` invocation remains an override and
-diagnostic path, not the expected daily entry path.
-
-Installing files and making Kimi discover individual skills are necessary but
-not sufficient. Automatic routing is considered available only after the host
-has loaded `using-aegis` at session start and representative natural-language
-tasks route correctly without creating unacceptable false positives.
-
-### Canonical Owners
-
-- The repository `skills/` tree remains the only editable owner of Aegis skill
-  bodies.
-- A root `kimi.plugin.json` will be the Kimi-native distribution and automatic
-  bootstrap manifest. It will reference `./skills/` rather than copy skill
-  bodies into a Kimi-only tree.
-- `skills/using-aegis/SKILL.md` remains the portable routing owner.
-- Kimi owns plugin installation, managed-copy storage, enablement, reload,
-  session-start loading, and native model invocation.
-- `docs/README.kimi-code.md` owns Kimi-specific install, migration, update,
-  reload, and verification instructions.
-
-For the current `2.5.0` release line, the intended minimal manifest behavior is:
-
-```json
-{
-  "name": "aegis",
-  "version": "2.5.0",
-  "skills": "./skills/",
-  "sessionStart": {
-    "skill": "using-aegis"
-  }
-}
-```
-
-The manifest is a thin host adapter. It must not duplicate the `using-aegis`
-body, introduce a second router, execute startup code, or grant runtime or
-completion authority. Later releases must synchronize this field with the
-repository release version.
-
-### Alternatives Considered
-
-1. Keep only direct-child skills and tune descriptions or `whenToUse`.
-   - Necessary metadata hygiene, but it still depends on the model choosing the
-     router before Aegis routing discipline can run.
-2. Write Aegis bootstrap rules into the user's global Kimi `AGENTS.md`.
-   - Can improve entry probability, but mutates a user-owned cross-project rule
-     surface and creates a second bootstrap owner.
-3. Use a thin Kimi-native plugin with `sessionStart.skill` and reuse the
-   canonical `skills/` tree.
-   - Chosen direction because it uses the host's explicit initialization
-     contract without duplicating method behavior or overwriting user rules.
-
-### Install Modes And Duplicate-Owner Rule
-
-Kimi installations must expose Aegis through exactly one active route:
-
-- `auto` (default): install the Kimi plugin and use
-  `sessionStart.skill = using-aegis`.
-- `explicit` (compatibility mode): retain updater-managed direct-child Agent
-  Skills without a session-start bootstrap.
-
-The plugin and direct-child Aegis views must not be enabled together. Migration
-and doctor checks must detect an existing alternate route and either retire it
-safely or stop with exact user instructions. The shared `~/.agents/skills/`
-surface remains a compatibility fallback only; it is not a second automatic
-route.
-
-The current direct-child installation remains supported until plugin install,
-update, rollback, and live-trigger evidence are complete. Its retirement can be
-reconsidered only after active dependency evidence is collected; it must not
-be deleted merely because the plugin path exists.
-
-### Skill Metadata Repair Track
-
-The host bootstrap does not replace valid skill metadata. Before the plugin
-path can be called reliable, every directory-form `SKILL.md` must satisfy the
-Kimi parser contract:
-
-- explicit `name` and `description`
-- quoted YAML string values when punctuation could change scalar parsing
-- concise trigger-oriented descriptions within Kimi's model-visible limit
-- no accidental `type: flow` or `disableModelInvocation: true`
-- `whenToUse` only where it adds a clear boundary instead of duplicating or
-  broadening the description
-
-Parser failure is a release failure. In particular, metadata containing an
-unquoted `: ` sequence must be rejected by repository tests rather than being
-silently omitted by Kimi.
-
-### Universal Quick-Install Prompt Boundary
-
-The universal quick-install prompt remains the recommended user entry point,
-but it must stay an orchestrator rather than embed every host's commands. Its
-contract is:
-
-1. identify the active host and use its default activation mode unless the
-   user explicitly requests another supported mode
-2. follow the current host-specific guide
-3. complete method-pack verification from the installed method-pack root
-4. complete the host-native discovery, activation, reload, and automatic-entry
-   checks required by that guide
-5. report any trust confirmation or restart/new-session action that still
-   requires the user
-
-For Kimi `auto`, a successful generic doctor result or a populated skill
-directory alone is not completion evidence. The host-specific check must also
-prove plugin identity/version, enabled state, clean reload or new-session
-activation, `using-aegis` session-start entry, and representative automatic
-routing behavior.
-
-The quick-install prompt should therefore add one stable clause rather than
-Kimi-specific commands:
+Start Kimi Code CLI and run:
 
 ```text
-Also complete the host guide's native activation and automatic-entry checks;
-file discovery or a generic doctor result alone is not sufficient when the
-host provides a plugin, hook, or session-start bootstrap contract.
+/plugins install https://github.com/GanyuanRan/Aegis
 ```
 
-### Verification Contract
-
-Implementation and release evidence must cover three layers:
-
-1. Deterministic repository checks
-   - parse every skill frontmatter with a Kimi-compatible YAML parser
-   - validate manifest schema, release-version synchronization, in-repository
-     paths, and `sessionStart.skill`
-   - reject duplicate Kimi exposure routes in managed test fixtures
-2. Isolated host-contract checks
-   - install from a release and inspect plugin diagnostics
-   - verify enable, disable, update, reload/new-session, resume, and rollback
-   - verify the loaded plugin version and managed-copy behavior
-3. Live model-routing smoke
-   - ambiguous feature -> `brainstorming`
-   - bug/regression -> `systematic-debugging`
-   - completion claim -> `verification-before-completion`
-   - explicit Aegis goal -> `goal-framing`
-   - simple factual question -> fast path without a full workflow
-
-The live smoke must report false negatives, false positives, duplicate loads,
-and environment-bound gaps. Structural tests alone cannot promote Kimi to a
-fresh release-level host verdict.
-
-### Compatibility, Rollback, And Non-Goals
-
-- Existing direct-child users retain a documented rollback path until the
-  plugin path has fresh release evidence.
-- Plugin updates require the Kimi-native reinstall/update plus `/reload` or a
-  new session; editing the original checkout does not mutate Kimi's managed
-  copy.
-- Installation must not overwrite a user's global `AGENTS.md` or make it a
-  second Aegis bootstrap owner.
-- The design does not add an MCP server, daemon, background process, new Aegis
-  router, or Kimi-only copies of skill bodies.
-- Kimi session-start loading is host execution evidence only. It is not an
-  authoritative `GateDecision`, `PolicySnapshot`, evidence-sufficiency ruling,
-  or final completion authority.
-
-### ADR And Baseline Signal
-
-This direction changes the Kimi install/discovery contract and retains a
-compatibility path, so it is ADR-relevant after implementation evidence exists.
-Do not create accepted architecture memory from this pending design. At
-completion, run the ADR creation gate and synchronize the host compatibility,
-known-limitations, activation, trigger-health, release-checklist, and quick-
-install baselines with the verified current state.
-
-## Recommended Installation (Updater-Managed Direct-Child)
-
-Keep the Aegis method-pack checkout separate, then register Kimi Code CLI with
-Aegis's host-scoped updater. When the host is registered as `kimi`,
-`kimi-code`, or `kimi-code-cli`, the updater defaults the discovery shape to
-`direct-child`. If `--discovery-root` is omitted, it uses:
+Approve Kimi's third-party plugin trust confirmation after checking that the
+source is `GanyuanRan/Aegis`. Then inspect the managed installation:
 
 ```text
-$KIMI_CODE_HOME/skills
+/plugins info aegis
 ```
 
-or, when `KIMI_CODE_HOME` is unset:
+The result must identify one enabled plugin named `aegis`. It must expose the
+repository `skills/` tree and the `using-aegis` session-start skill from the
+same managed plugin root. Do not also expose Aegis under
+`$KIMI_CODE_HOME/skills/` or `~/.agents/skills/`.
+
+Activate the installed plugin in a clean host context:
 
 ```text
-~/.kimi-code/skills
+/reload
 ```
 
-This preserves:
+If the current Kimi build or session cannot reload plugins cleanly, use:
 
-- Kimi native user-level Agent Skills discovery
-- Aegis project workspace support through the method-pack root
-- update and doctor verification through Aegis scripts
-- `~/.agents/skills/` as an optional compatibility fallback
+```text
+/new
+```
+
+Kimi owns plugin download, managed-copy storage, enablement, reload, and
+session-start loading. Editing another checkout does not update Kimi's managed
+copy.
+
+## Complete-Install Verification
+
+Use `/plugins info aegis` to locate the managed plugin root. Run verification
+from that root, not from a target project directory:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py --write-config --json --host-profile kimi-code-auto
+```
+
+Treat structural installation as complete only when the JSON reports:
+
+- `"ok": true`
+- `"hostProfile": "kimi-code-auto"`
+- exactly one enabled Aegis plugin rooted at this method pack
+- `"duplicateExposureStatus": "clean"`
+- `"workspaceSupport": "available"`
+- `"configStatus": "configured"`
+
+The doctor is read-only with respect to Kimi's plugin registry and skill
+roots. `--write-config` only writes Aegis's user-local method-pack config. Its
+`"restartRequired": true` result is a conservative host-action reminder:
+doctor cannot observe whether the running Kimi process has already reloaded.
+Complete `/reload` or `/new` and verify the new session instead of changing
+that field or treating it as a structural failure.
+
+Finally, use a new or reloaded session and give Kimi representative natural
+language tasks. File discovery and a generic doctor result are not sufficient
+proof of automatic routing. The environment-bound repository lane is:
+
+```bash
+bash tests/kimi-code/run-live-smoke.sh
+```
+
+It checks positive routing, a negative fast-path case, and resumed-session
+behavior. If CLI, login, provider, or trust prerequisites are absent, report
+the lane as environment-bound rather than passed.
+
+## Updating Automatic Installations
+
+Kimi's plugin manager owns the automatic installation. Use its native
+install/update flow against the same source, then reload or start a new
+session:
+
+```text
+/plugins install https://github.com/GanyuanRan/Aegis
+/plugins info aegis
+/reload
+```
+
+If Kimi requires removal or confirmation before replacing the managed copy,
+follow the exact prompt shown by the plugin manager. Do not substitute
+`scripts/aegis-update.py update --host kimi-code` for a plugin-managed update.
+
+After updating, rerun the `kimi-code-auto` doctor profile from the managed
+plugin root and repeat the host-native automatic-entry smoke.
+
+## Migrating From Direct-Child To Automatic Mode
+
+Before plugin installation, inspect these Kimi user-level Agent Skills roots:
+
+```text
+$KIMI_CODE_HOME/skills/  (default: ~/.kimi-code/skills/)
+~/.agents/skills/
+```
+
+Kimi also recognizes project-level `.kimi-code/skills/` and
+`.agents/skills/`. If any of these contain Aegis direct-child skills, retire
+that generated exposure using the updater or the method that created it. Do
+not delete an unknown user-owned directory merely because its name matches an
+Aegis skill.
+
+Install the plugin only after the alternate Aegis exposure is gone. The
+`kimi-code-auto` doctor profile rejects collisions instead of silently choosing
+one owner.
+
+The old Codex umbrella symlink
+`~/.agents/skills/aegis -> ~/.codex/aegis/skills` is not a valid Kimi automatic
+installation and must not be treated as the Kimi main path.
+
+## Explicit Compatibility Installation
+
+Use this mode only when native plugin installation is unavailable, when policy
+forbids third-party plugins, or when the user deliberately wants explicit-only
+entry. It exposes individual Aegis skills through Kimi's native direct-child
+Agent Skills discovery and does not establish a session-start router.
+
+Ensure the `aegis` plugin is disabled or uninstalled first. Then keep an Aegis
+method-pack checkout separate and register the Kimi host.
 
 ### macOS / Linux
 
@@ -271,7 +174,9 @@ python scripts/aegis-update.py register \
   --reload-hint "restart Kimi Code CLI"
 ```
 
-If you want to be explicit about the discovery root:
+The updater defaults to `$KIMI_CODE_HOME/skills`, or
+`~/.kimi-code/skills` when `KIMI_CODE_HOME` is unset. An explicit root is also
+supported:
 
 ```bash
 python scripts/aegis-update.py register \
@@ -298,7 +203,7 @@ python scripts\aegis-update.py register `
   --reload-hint "restart Kimi Code CLI"
 ```
 
-Expected structural result:
+Expected generated shape:
 
 ```text
 ~/.kimi-code/skills/using-aegis/SKILL.md
@@ -306,76 +211,41 @@ Expected structural result:
 ~/.kimi-code/skills/brainstorming/SKILL.md
 ```
 
-The canonical source of truth remains the method-pack root `skills/` tree.
-These direct-child directories are a generated host view for Kimi, not a second
-editable skill tree.
+The repository `skills/` tree remains the editable source of truth. These
+direct-child directories are generated compatibility views, not a second skill
+owner.
 
-Portable goal entry:
-
-```text
-Aegis goal: Fix the auth refresh bug without rewriting the auth system.
-```
-
-Use this when you want `goal-framing` to set goal, success evidence, stop
-condition, and non-goals before routing onward. `/aegis-goal <task>` is an
-optional shortcut only when the current host/session supports slash-style
-aliases.
-
-## Complete-Install Verification
-
-Run complete-install verification from the installed Aegis method-pack root.
-Do not run the doctor command from the target project directory.
+Verify explicit compatibility mode from the method-pack root:
 
 ```bash
 cd <aegis-method-pack-root>
-python scripts/aegis-doctor.py --write-config --json
-python scripts/aegis-doctor.py --discovery-root "${KIMI_CODE_HOME:-$HOME/.kimi-code}/skills"
+python scripts/aegis-doctor.py --write-config --json \
+  --host-profile kimi-code-explicit \
+  --discovery-root "${KIMI_CODE_HOME:-$HOME/.kimi-code}/skills"
 ```
 
-Treat the install as complete only when the JSON includes:
+The profile requires no enabled Aegis plugin and rejects alternate direct-child
+exposures. Restart Kimi after registration or updates.
 
-```json
-{
-  "ok": true,
-  "workspaceSupport": "available",
-  "configStatus": "configured"
-}
-```
-
-After verification, restart Kimi Code CLI so the running host reloads the
-refreshed skill content.
-
-## Updating Aegis
-
-From the method-pack root:
+Update this compatibility installation with:
 
 ```bash
 python scripts/aegis-update.py status --json
 python scripts/aegis-update.py update --host kimi-code --json
 ```
 
-The update registry is host-scoped. Do not update every registered host unless
-you explicitly intend to use `--all`.
-
-## Compatibility Fallback
-
-Kimi also scans `~/.agents/skills/`, so a generic direct-child exposure there
-can work as a fallback:
-
-```bash
-python scripts/aegis-update.py register \
-  --host kimi-code \
-  --sync-mode junction \
-  --discovery-root ~/.agents/skills \
-  --reload-hint "restart Kimi Code CLI"
-```
-
-Use this only when you intentionally want a cross-tool shared skill surface.
-For Kimi-specific installs, prefer `$KIMI_CODE_HOME/skills`.
+Kimi also scans `~/.agents/skills/`, so it may be selected as a deliberate
+cross-tool fallback by passing it as `--discovery-root`. Do not enable that
+fallback together with `$KIMI_CODE_HOME/skills` or the plugin.
 
 ## Activation Mode
 
-You can make Aegis explicit-only:
+For Kimi, `auto` and `explicit` are installation profiles:
+
+- `auto`: one enabled plugin with `sessionStart.skill = using-aegis`
+- `explicit`: no enabled Aegis plugin and exactly one direct-child skill view
+
+The generic method-pack command remains available:
 
 ```bash
 cd <aegis-method-pack-root>
@@ -383,13 +253,23 @@ python scripts/aegis-doctor.py activation-mode explicit
 ```
 
 This writes Aegis method-pack configuration only. It does not override Kimi Code CLI.
-It does not control Kimi Code CLI's native skill matcher, slash command behavior,
-or automatic skill loading rules.
+It does not disable a Kimi plugin, remove its `sessionStart` entry, or control
+Kimi's native skill matcher. To switch Kimi to explicit mode, change the
+installation profile as described above and open a new or reloaded session.
+
+Portable goal entry remains:
+
+```text
+Aegis goal: Fix the auth refresh bug without rewriting the auth system.
+```
 
 ## Authority Boundary
 
-Aegis remains a method pack. Kimi host discovery, reload behavior, and native
-skill invocation are Kimi Code CLI concerns. Aegis may provide workflow
-discipline, runtime-ready drafts, and verification guidance, but it does not
-provide authoritative `GateDecision`, authoritative `PolicySnapshot`, or final
+The plugin is a thin host adapter. It does not duplicate skill bodies, add a
+daemon or MCP server, overwrite a global `AGENTS.md`, or create a second
+router. Kimi session-start loading is host execution evidence only.
+
+Aegis remains a method pack. It can provide workflow discipline,
+runtime-ready drafts, and verification guidance, but it does not provide an
+authoritative `GateDecision`, authoritative `PolicySnapshot`, or final
 completion authority.

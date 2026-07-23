@@ -215,6 +215,12 @@ assert_contains "docs/README.kimi-code.md" "AEGIS_ACTIVATION_MODE=explicit|activ
     "Kimi Code CLI guide documents explicit activation caveat"
 assert_contains "docs/README.kimi-code.md" "does not override Kimi Code CLI" \
     "Kimi Code CLI guide clarifies activation mode does not control native matcher"
+assert_contains "$activation_doc" "kimi-code-auto" \
+    "activation mode maps Kimi automatic installation profile"
+assert_contains "$activation_doc" "kimi-code-explicit" \
+    "activation mode maps Kimi explicit installation profile"
+assert_contains "$activation_doc" "sessionStart\.skill" \
+    "activation mode records Kimi native session-start boundary"
 assert_contains "docs/README.pi.md" "AEGIS_ACTIVATION_MODE=explicit" \
     "Pi guide documents explicit activation caveat"
 assert_contains "docs/README.pi.md" "does not override Pi" \

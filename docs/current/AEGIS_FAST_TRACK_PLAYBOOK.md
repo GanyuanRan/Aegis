@@ -12,7 +12,7 @@ The fastest recommended installation path is to give this prompt to your AI
 coding agent:
 
 ```text
-Read https://github.com/GanyuanRan/Aegis, identify my current AI coding host, and install Aegis globally using the correct host guide. Restart or reload the host if needed, then run complete-install verification from the installed Aegis method-pack root. Do not run the doctor command from the target project directory. First locate `<aegis-method-pack-root>`, then run `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`. Treat the install as complete only if the JSON includes `"ok": true`, `"workspaceSupport": "available"`, and `"configStatus": "configured"`; if the host uses a separate skill discovery directory, also verify it with `--discovery-root <path>`; if the host guide declares a skill directory name prefix, also pass `--discovery-name-prefix <prefix>`.
+Read https://github.com/GanyuanRan/Aegis, identify my current AI coding host, and install Aegis globally using the correct host guide. Restart or reload the host if needed, then run complete-install verification from the installed Aegis method-pack root. Do not run the doctor command from the target project directory. First locate `<aegis-method-pack-root>`, then run `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`. Treat the install as complete only if the JSON includes `"ok": true`, `"workspaceSupport": "available"`, and `"configStatus": "configured"`; if the host uses a separate skill discovery directory, also verify it with `--discovery-root <path>`; if the host guide declares a skill directory name prefix, also pass `--discovery-name-prefix <prefix>`. Also complete the selected host guide's native activation and automatic-entry checks; file discovery or a generic doctor result alone is not sufficient when the host provides a plugin, hook, or session-start bootstrap contract.
 ```
 
 ### How To Know Installation Is Complete
@@ -28,6 +28,8 @@ Read https://github.com/GanyuanRan/Aegis, identify my current AI coding host, an
    `"configStatus": "configured"`.
 5. Hosts with a separate discovery directory or required skill-name prefix
    also passed the corresponding discovery check.
+6. Hosts with a native plugin, hook, or session-start bootstrap also passed the
+   host guide's activation and automatic-entry checks.
 
 This distinction matters: a copy-only or skills-only install may expose Aegis
 methods while leaving project workspace support unavailable.

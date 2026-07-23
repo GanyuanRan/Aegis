@@ -127,10 +127,15 @@ Confirm:
   owned by Aegis
 - Qoder is still described through native `~/.qoder/skills/`, `.qoder/skills/`,
   `.qoder/rules/`, and `AGENTS.md` surfaces, not as a fresh live smoke closeout
-- Kimi Code CLI is described through native `$KIMI_CODE_HOME/skills/`
-  (`~/.kimi-code/skills/` by default) direct-child skill discovery, while
-  `~/.agents/skills/` remains a fallback rather than the Codex umbrella main
-  path
+- Kimi Code CLI defaults to the native Aegis plugin declared by
+  `kimi.plugin.json`, with `sessionStart.skill = using-aegis`; plugin identity,
+  managed root, version, reload/new-session boundary, and automatic-entry smoke
+  are required in addition to generic doctor evidence
+- Kimi's updater-managed `$KIMI_CODE_HOME/skills/`
+  (`~/.kimi-code/skills/` by default) direct-child discovery remains an
+  explicit compatibility installation, while `~/.agents/skills/` is only a
+  shared fallback; the plugin and either direct-child route must not be active
+  together
 - Antigravity CLI is described as the current active closeout target, while
   Antigravity IDE and Antigravity App remain structural target surfaces until
   they have separate fresh evidence

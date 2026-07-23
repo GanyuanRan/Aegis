@@ -152,6 +152,17 @@ Hosts that rely solely on host-native skill discovery should state in installati
 - The host's own semantic skill matcher may still be controlled by the host
 - If the user needs to enforce explicit mode, they should use host-supported profile / install configuration to hide or not install the auto-entry skill
 
+Kimi Code CLI uses installation profiles to make this boundary enforceable:
+
+- `kimi-code-auto` requires exactly one enabled Aegis plugin whose
+  `sessionStart.skill` is `using-aegis`, with no direct-child Aegis exposure.
+- `kimi-code-explicit` requires no enabled Aegis plugin and exactly one
+  updater-managed direct-child discovery root.
+
+Writing `activation_mode = "explicit"` does not disable Kimi's plugin or
+override its native session-start contract. The user must switch the Kimi
+installation profile and then `/reload` or open `/new`.
+
 ---
 
 ## 6. Verification Boundary
