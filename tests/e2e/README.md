@@ -120,6 +120,11 @@ Workspace helper coverage:
   benchmark metrics.
 - `host-adapter-smoke-check.sh` parses core host manifests and hook configs for
   version alignment, expected paths, assets, and the no-live-workspace boundary.
+- `tests/kimi-code/run-tests.sh` is the deterministic Kimi Code entrypoint for
+  metadata, manifest, doctor-profile, duplicate-exposure, and host-boundary
+  checks. Its `--integration` mode and `run-live-smoke.sh` are environment-bound
+  and must not be represented as passed when CLI, login, provider, or trust
+  prerequisites are absent.
 - `goal-framing-check.sh` verifies the opt-in goal-framing entry, optional
   TaskIntentDraft goal fields, SubagentContextPacket shape, and no-file default
   policy.

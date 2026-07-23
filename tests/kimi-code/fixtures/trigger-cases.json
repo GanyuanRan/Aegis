@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "ambiguous-feature",
+      "prompt": "I want to add offline collaboration to this application, but the requirements and architecture are still ambiguous. Analyze how we should shape the feature before implementation. Do not modify files.",
+      "expectedSkill": "brainstorming"
+    },
+    {
+      "id": "bug-regression",
+      "prompt": "A cache change introduced an intermittent authentication regression. Diagnose the real cause before proposing a fix. Do not modify files.",
+      "expectedSkill": "systematic-debugging"
+    },
+    {
+      "id": "completion-claim",
+      "prompt": "The implementation appears complete and I am about to announce it as release-ready. Verify what evidence is required before that claim. Do not modify files.",
+      "expectedSkill": "verification-before-completion"
+    },
+    {
+      "id": "aegis-goal",
+      "prompt": "Aegis goal: stabilize token refresh without rewriting the authentication system. Frame the goal and boundaries only. Do not modify files.",
+      "expectedSkill": "goal-framing"
+    },
+    {
+      "id": "simple-factual",
+      "prompt": "What is 2 + 2? Answer with only the number and do not modify files.",
+      "expectedSkill": null
+    }
+  ]
+}

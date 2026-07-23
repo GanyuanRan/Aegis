@@ -125,6 +125,29 @@ Notes:
   remain structural target surfaces until they have their own fresh host smoke
   slice.
 
+### Kimi Code Automatic-Routing Tests
+
+The Kimi suite separates portable contract checks from credentialed model
+routing:
+
+```bash
+bash tests/kimi-code/run-tests.sh
+bash tests/kimi-code/run-tests.sh --integration
+bash tests/kimi-code/run-live-smoke.sh
+```
+
+The base lane validates Kimi-safe skill metadata, the plugin manifest,
+session-start wiring, doctor profiles, duplicate-exposure rejection, and the
+public host boundary without requiring Kimi Code. The integration lane requires
+an installed Kimi CLI and exactly one enabled Aegis plugin, then verifies the
+managed plugin root through `aegis-doctor.py --host-profile kimi-code-auto`.
+
+The live lane runs five non-mutating prompts through `kimi -p` with
+`--output-format stream-json`, checks positive and negative Skill-tool routing,
+and covers a resumed session. Missing CLI, login, provider credentials, or
+third-party trust confirmation is environment-bound evidence, not a passing
+live-host verdict.
+
 ### Grok Build Structural Host Tests
 
 The Grok Build boundary check validates the native skill root, updater

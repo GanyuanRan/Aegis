@@ -116,7 +116,7 @@ run_check "Antigravity host boundary" bash "$SCRIPT_DIR/antigravity-host-boundar
 run_check "CC GUI host boundary" bash "$SCRIPT_DIR/cc-gui-host-boundary-check.sh"
 run_check "Pi host boundary" bash "$SCRIPT_DIR/pi-host-boundary-check.sh"
 run_check "popular agent host boundary" bash "$SCRIPT_DIR/popular-agent-host-boundary-check.sh"
-run_check "Kimi Code CLI host boundary" bash "$SCRIPT_DIR/kimi-code-host-boundary-check.sh"
+run_check "Kimi Code CLI deterministic" bash tests/kimi-code/run-tests.sh
 run_check "ZCode host boundary" bash "$SCRIPT_DIR/zcode-host-boundary-check.sh"
 run_check "Grok Build host boundary" bash "$SCRIPT_DIR/grok-build-host-boundary-check.sh"
 run_check "Copilot + Qoder host boundary" bash "$SCRIPT_DIR/copilot-qoder-host-boundary-check.sh"
