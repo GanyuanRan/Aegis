@@ -268,12 +268,6 @@ assert_contains "$process_doc" "Final Output Semantic Slots / Attention Anchors"
     "process baseline names final output semantic slots and attention anchors"
 assert_contains "$process_doc" "findings-first" \
     "process baseline preserves workflow-owned final output structures"
-assert_contains "GLOBAL_USER_RULES_TEMPLATE.zh-CN.md" "事实 -> 推论 -> 结论.*信息排序原则|信息排序原则.*事实 -> 推论 -> 结论" \
-    "global user rules template frames facts-inferences-conclusions as ordering principle"
-assert_contains "GLOBAL_USER_RULES_TEMPLATE.zh-CN.md" "不是固定顶层模板" \
-    "global user rules template prevents rigid final output templates"
-assert_contains "GLOBAL_USER_RULES_TEMPLATE.zh-CN.md" "active workflow.*semantic slots|semantic slots.*任务专属输出结构" \
-    "global user rules template preserves active workflow output ownership"
 assert_contains "$baseline" "attention anchor" \
     "workflow quality baseline treats required output content as attention anchors"
 assert_contains "$baseline" "stealing structural ownership from the active workflow" \

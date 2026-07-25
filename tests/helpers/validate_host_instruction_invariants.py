@@ -30,6 +30,11 @@ def validate_surface(repo_root: Path, surface: dict[str, Any]) -> None:
             re.search(pattern, text, flags=re.IGNORECASE | re.MULTILINE),
             f"{rel_path} missing invariant pattern: {pattern}",
         )
+    for pattern in surface.get("forbiddenRegex", []):
+        require(
+            not re.search(pattern, text, flags=re.IGNORECASE | re.MULTILINE),
+            f"{rel_path} contains forbidden role-overlap pattern: {pattern}",
+        )
     max_chars = surface.get("maxChars")
     if max_chars is not None:
         require(len(text) <= int(max_chars), f"{rel_path} exceeds maxChars={max_chars}")
@@ -71,7 +76,7 @@ def main(argv: list[str]) -> int:
     if len(argv) != 3:
         raise SystemExit("usage: validate_host_instruction_invariants.py <repo-root> <fixture-json>")
     validate_matrix(Path(argv[1]), Path(argv[2]))
-    print("  [PASS] host instruction invariants preserve boundary, evidence, priority, and compact adapter rules")
+    print("  [PASS] host instruction invariants preserve projection roles, semantics, and budgets")
     return 0
 
 

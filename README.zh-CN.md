@@ -8,6 +8,8 @@
         <img src="https://img.shields.io/github/actions/workflow/status/GanyuanRan/Aegis/ci.yml?branch=main&label=CI" /></a>
     <a href="https://github.com/GanyuanRan/Aegis/releases/latest" alt="Latest Release">
         <img src="https://badgen.net/github/release/GanyuanRan/Aegis?label=Latest%20Release" /></a>
+    <a href="https://github.com/GanyuanRan/Aegis" alt="GitHub Stars">
+        <img src="https://img.shields.io/github/stars/GanyuanRan/Aegis?style=flat&label=Stars" /></a>
 </p>
 
 <p align="center">
@@ -71,10 +73,18 @@ Aegis 当前发布形态是：
 不提供 authoritative `GateDecision`，不提供 authoritative `PolicySnapshot`，
 也不授予 final completion authority。用户当前指令和目标项目规则优先于 Aegis。
 
-为了让宿主级行为更顺滑，可以使用：
+下面的文件是可选、手工复制的宿主/profile 投影，不负责安装 Aegis，也不能证明
+skill 已经可发现。如果宿主已有可靠的 Aegis bootstrap 与路由，通常无需为了路由
+再复制全局规则；否则先复制 Lite 作为完整基础 profile。Advanced 不是独立模板，
+只在确实需要持久治理偏好时按需追加：
 
 - [轻量全局规则](GLOBAL_USER_RULES_LITE.zh-CN.md)
-- [高级全局规则模板](GLOBAL_USER_RULES_TEMPLATE.zh-CN.md)
+- [高级治理 overlay](GLOBAL_USER_RULES_TEMPLATE.zh-CN.md)
+
+这些手工副本不由 `aegis:update` 管理。Lite 负责默认 `auto` activation profile
+及其 explicit 模式替换条款；Advanced 继承该选择，不再重复一份。切换到
+`explicit` 时也要同步修改已复制的 Lite profile。宿主原生 skill 匹配是否仍会
+触发，继续由宿主能力决定。
 
 Aegis 默认自动模式。要切换到显式模式，在已安装的 method-pack 根目录运行：
 

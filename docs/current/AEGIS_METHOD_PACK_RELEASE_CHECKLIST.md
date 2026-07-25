@@ -27,6 +27,8 @@ Before executing any formal release, the following must be confirmed item by ite
 2. Current authority docs do not misrepresent this repository as a full platform
 3. Current host installation instructions and testing instructions can point back to the real owner
 4. Current known limitations have been written back, rather than hidden in session conclusions
+5. If activation, TDD, routing, priority, verification, or authority semantics
+   changed, all four global user-rule projections were reviewed and any manual-copy migration was documented
 
 ---
 
@@ -40,6 +42,9 @@ The following must be re-read before release:
 4. `docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md`
 5. `docs/current/AEGIS_KNOWN_LIMITATIONS.md`
 6. `docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md`
+7. `docs/current/AEGIS_RULE_LAYERING.md`
+8. `docs/current/AEGIS_ACTIVATION_MODE.md`
+9. `docs/current/AEGIS_TDD_MODE.md`
 
 If there are conflicts among these documents, resolve them according to the authority order in `docs/current/README.md`.
 
@@ -175,12 +180,19 @@ The following must be confirmed before release:
 2. No new authoritative `GateDecision` has been added
 3. No new authoritative `completion authority` has been added
 4. No single-host implementation logic has been elevated to baseline
+5. Global user rules remain manual host/profile projections rather than a second method owner
+6. Lite remains the sole base projection for activation, priority, fast-path,
+   baseline completion evidence, and method-layer authority; Advanced remains
+   an additive governance overlay without duplicate base rules, across English
+   and Chinese
+7. Changes to manually copied profile semantics include a release-note migration notice
 
 The following checks may be directly relied upon:
 
 ```bash
 bash tests/e2e/boundary-compliance-check.sh
 bash tests/e2e/artifact-schema-check.sh
+bash tests/e2e/host-instruction-invariants-check.sh
 ```
 
 ---
@@ -195,6 +207,7 @@ A single method-pack release must include at minimum:
 4. Compatibility snapshot
 5. Known limitations
 6. Release notes or tag notes
+7. A manual-copy migration note when global user-rule profile semantics changed
 
 ---
 
@@ -206,6 +219,7 @@ The release shall be stopped if any of the following occurs:
 2. Authority documents have conflicts regarding the current repository positioning
 3. README and testing docs clearly deviate from current canonical owners
 4. The current release attempts to promise full platform capabilities
+5. Global user-rule projections conflict with current activation, TDD, priority, verification, or authority semantics
 
 ---
 

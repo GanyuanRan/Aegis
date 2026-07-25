@@ -104,10 +104,10 @@ Workspace helper coverage:
   `AEGIS_LIVE_REPLAY=1`, writes only under repo-local `.tmp/`, normalizes the
   raw host log for `analyze-transcript.sh`, and does not grant benchmark or
   completion authority.
-- `host-instruction-invariants-check.sh` verifies that global rules and thin
-  host instruction adapters preserve the key method-pack, evidence,
-  priority, and no-authority-overclaim invariants without byte-for-byte copy
-  checks.
+- `host-instruction-invariants-check.sh` verifies that manually copied global
+  rule projections and thin host instruction adapters preserve activation,
+  priority, evidence, authority, projection budgets, and the Lite-base /
+  Advanced-overlay role split without byte-for-byte copy checks.
 - `bootstrap-adapter-contract-check.sh` verifies that bootstrap adapters source
   the canonical `using-aegis` hot path or host-native references while keeping
   host-specific activation, TDD mode, JSON, discovery, warning, and tool

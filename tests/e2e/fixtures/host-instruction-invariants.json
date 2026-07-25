@@ -1,8 +1,9 @@
 {
   "version": 1,
-  "purpose": "Prevent drift in agent-facing Aegis instruction surfaces without byte-for-byte copy checks.",
+  "purpose": "Prevent drift and role overlap in agent-facing Aegis instruction surfaces without byte-for-byte copy checks.",
   "requiredSurfaces": [
     "AGENTS.md",
+    "docs/current/AEGIS_RULE_LAYERING.md",
     "GLOBAL_USER_RULES_LITE.md",
     "GLOBAL_USER_RULES_TEMPLATE.md",
     "GLOBAL_USER_RULES_LITE.zh-CN.md",
@@ -23,48 +24,120 @@
       ]
     },
     {
+      "path": "docs/current/AEGIS_RULE_LAYERING.md",
+      "requiredRegex": [
+        "skills/using-aegis/SKILL\\.md",
+        "manual.*host.*profile.*projection",
+        "not.*method.*owner",
+        "not.*updated.*aegis:update"
+      ]
+    },
+    {
       "path": "GLOBAL_USER_RULES_LITE.md",
       "requiredRegex": [
+        "manually copied host/profile projection",
+        "does\\s+not\\s+install\\s+Aegis",
+        "not\\s+updated\\s+by\\s+.*aegis:update",
+        "Activation profile.*auto",
+        "Explicit-mode replacement",
+        "only when the user explicitly invokes Aegis",
+        "host-native skill matcher",
         "At the start of each turn",
+        "Once Aegis is active for the turn.*complex",
         "Simple, local, low-risk tasks may use a fast path",
         "fresh verification evidence",
         "method layer",
         "completion authority",
         "target project's rules take priority"
-      ]
+      ],
+      "maxChars": 2600
     },
     {
       "path": "GLOBAL_USER_RULES_TEMPLATE.md",
       "requiredRegex": [
-        "does not turn Aegis into a runtime core or final authority",
-        "Route by task complexity before implementation",
+        "additive governance overlay",
+        "Lite global rules",
+        "not a standalone profile",
+        "Copy the Lite rules first",
+        "activation clause in Lite only",
+        "Lite remains the sole owner of activation",
+        "not\\s+updated\\s+by\\s+.*aegis:update",
+        "For non-trivial work.*non-goals.*baseline references",
+        "For Aegis-routed work.*baseline read set.*plan proportional",
         "Create Aegis project records lazily",
-        "Do not claim work is complete without fresh verification evidence",
-        "authoritative gate decisions",
-        "final completion authority"
-      ]
+        "TDD mode defaults to.*off",
+        "configured TDD mode",
+        "smallest sufficient change.*correct owner",
+        "externally observable behavior.*published contracts",
+        "evidence candidates, not persistent prompt payloads",
+        "completion-related claims.*exact supporting command",
+        "authoritative policy snapshots.*daemon behavior",
+        "information-ordering principle.*not a mandatory top-level template",
+        "active workflow.*semantic slots",
+        "repair track and retirement track"
+      ],
+      "forbiddenRegex": [
+        "Activation profile",
+        "Explicit-mode replacement",
+        "At the start of each turn",
+        "Simple, local, low-risk tasks",
+        "fresh verification evidence",
+        "completion authority"
+      ],
+      "maxChars": 4400
     },
     {
       "path": "GLOBAL_USER_RULES_LITE.zh-CN.md",
       "requiredRegex": [
+        "手工复制的宿主/profile 投影",
+        "不会安装 Aegis",
+        "不会由\\s*.*aegis:update.*更新",
+        "Activation profile.*auto",
+        "explicit 模式替换条款",
+        "只有用户显式调用 Aegis",
+        "宿主原生 skill matcher",
         "每轮开始先判断当前任务是否匹配已安装的 Aegis skill",
+        "Aegis 已在当前轮激活后.*复杂",
         "简单、局部、低风险任务走快速路径",
         "声明完成前必须有新的验证证据",
         "Aegis 是方法层",
         "completion authority",
         "用户当前明确指令和目标项目规则优先"
-      ]
+      ],
+      "maxChars": 2600
     },
     {
       "path": "GLOBAL_USER_RULES_TEMPLATE.zh-CN.md",
       "requiredRegex": [
-        "不会把\\s*Aegis\\s*变成 runtime core",
-        "实施前先按任务复杂度路由",
+        "可选增量治理\\s*overlay",
+        "不是一份可独立使用的 profile",
+        "先复制 Lite 规则",
+        "只在 Lite 中选择.*activation 条款",
+        "Lite 是 activation.*authority\\s+边界的唯一 owner",
+        "不由\\s*.*aegis:update.*更新",
+        "对非简单任务.*非目标.*baseline references",
+        "已由 Aegis 路由的任务.*baseline read set.*plan",
         "懒创建 Aegis 项目记录",
-        "没有 fresh verification evidence，不声明工作完成",
-        "authoritative gate decision",
-        "final completion authority"
-      ]
+        "TDD mode 默认.*off",
+        "当前配置的 TDD mode",
+        "正确 owner.*最小充分变更",
+        "外部可观察行为.*已发布 contract",
+        "证据候选.*不是持久 prompt payload",
+        "完成状态有关的结论.*支撑命令",
+        "authoritative policy snapshot.*daemon",
+        "事实 -> 推论 -> 结论.*信息排序原则",
+        "active workflow.*semantic slots",
+        "修复轨与退役轨"
+      ],
+      "forbiddenRegex": [
+        "Activation profile",
+        "explicit 模式替换条款",
+        "每轮开始",
+        "简单、局部、低风险",
+        "fresh verification evidence",
+        "completion authority"
+      ],
+      "maxChars": 4000
     },
     {
       "path": ".github/copilot-instructions.md",
@@ -91,6 +164,9 @@
     "Aegis grants completion authority",
     "Aegis provides authoritative GateDecision",
     "Aegis is an authoritative runtime core",
-    "benchmark proves final evidence sufficiency"
+    "benchmark proves final evidence sufficiency",
+    "work needs a baseline read set, plan, and atomic tasks before TDD",
+    "atomic tasks，再进入 TDD",
+    "AGENTS_RULES.md"
   ]
 }

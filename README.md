@@ -8,6 +8,8 @@
         <img src="https://img.shields.io/github/actions/workflow/status/GanyuanRan/Aegis/ci.yml?branch=main&label=CI" /></a>
     <a href="https://github.com/GanyuanRan/Aegis/releases/latest" alt="Latest Release">
         <img src="https://badgen.net/github/release/GanyuanRan/Aegis?label=Latest%20Release" /></a>
+    <a href="https://github.com/GanyuanRan/Aegis" alt="GitHub Stars">
+        <img src="https://img.shields.io/github/stars/GanyuanRan/Aegis?style=flat&label=Stars" /></a>
 </p>
 
 <p align="center">
@@ -74,10 +76,21 @@ core, an authoritative `GateDecision`, an authoritative `PolicySnapshot`, or
 final completion authority. User instructions and target-project rules outrank
 Aegis guidance.
 
-For smoother host-level behavior, use:
+The following files are optional, manually copied host/profile projections.
+They do not install Aegis or prove skill discovery. If the host already has
+reliable Aegis bootstrap and routing, no extra global rule is usually needed
+for routing. Otherwise, copy Lite as the complete base profile. Advanced is a
+non-standalone additive overlay; append only the rules needed for persistent
+governance preferences:
 
 - [Lite global rules](GLOBAL_USER_RULES_LITE.md)
-- [Advanced global rules template](GLOBAL_USER_RULES_TEMPLATE.md)
+- [Advanced governance overlay](GLOBAL_USER_RULES_TEMPLATE.md)
+
+These copied rules are not managed by `aegis:update`. Lite owns the default
+`auto` activation profile and its explicit-mode replacement; Advanced inherits
+that choice instead of repeating it. When switching to `explicit`, update the
+copied Lite profile too; host-native skill matching may still remain
+host-controlled.
 
 Activation mode defaults to automatic. To switch to explicit mode, run this
 from the installed method-pack root:

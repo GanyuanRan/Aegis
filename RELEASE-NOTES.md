@@ -1,5 +1,50 @@
 # Aegis Release Notes
 
+## v2.5.2 (2026-07-25)
+
+### Global User-Rule Profiles
+
+- Reframed the Lite and Advanced English/Chinese global user-rule files as
+  optional, manually copied host/profile projections rather than method owners,
+  installers, or skill-discovery evidence.
+- Made Lite the sole owner of the copyable activation clause: `auto` remains
+  the default, while `explicit` users replace that clause in Lite instead of
+  keeping an automatic semantic-routing instruction active.
+- Converted Advanced into a non-standalone additive governance overlay for
+  Lite, removing duplicated activation, priority, fast-path, baseline
+  completion-evidence, and method-layer authority rules.
+- Aligned the Advanced overlay with the current default `tdd_mode = "off"`,
+  correct-owner minimality, externally observable compatibility, prompt
+  hygiene, and workflow-owned output semantics.
+- Preserved all four public filenames and links while removing the stale
+  `AGENTS_RULES.md` owner reference and consolidating template projection checks
+  under `host-instruction-invariants-check.sh`.
+
+### Manual Migration
+
+- `aegis:update` does not modify global rules that users copied into a host.
+  Existing users should re-copy the Lite base profile, choose its activation
+  clause, and then append only the needed rules from the Advanced overlay.
+- Changing local Aegis activation to `explicit` must be paired with the
+  Lite profile's explicit-mode replacement clause. Host-native skill matchers
+  may still behave according to host capabilities.
+
+### README Badges
+
+- Added a dynamic GitHub Stars badge immediately after the latest-release badge
+  in both the English and Chinese README files.
+
+### Verification And Release Surface
+
+- Fresh `bash tests/e2e/run-all.sh --full --host-profile fast` verification
+  passed all four suites. Layer 1 passed `40/40`; Layer 2 and Layer 3 each
+  passed `6/6`.
+- Bumped all declared package and host manifest versions from `2.5.1` to
+  `2.5.2` with no undeclared version references found by the version audit.
+- This release remains `Aegis Method Pack (runtime-ready)`, preserves
+  multi-host plugin-installable distribution, and does not add authoritative
+  `GateDecision`, `PolicySnapshot`, or completion authority.
+
 ## v2.5.1 (2026-07-23)
 
 ### Kimi Code Automatic Routing
