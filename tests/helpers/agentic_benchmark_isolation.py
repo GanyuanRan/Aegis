@@ -106,29 +106,53 @@ def reset_directory(path: Path, root: Path) -> None:
     require(not lexical.is_symlink(), "reset directory leaf must not be a symlink")
     if lexical.exists():
         require(lexical.is_dir(), "reset directory leaf must be an ordinary directory")
-        shutil.rmtree(lexical)
+        remove_tmp_artifact_entry(lexical, root)
     lexical.mkdir(parents=True)
-
-
-def remove_tmp_directory(path: Path, root: Path) -> None:
-    lexical = resolve_tmp_child(root, path, "remove directory")
-    require(not lexical.is_symlink(), "remove directory leaf must not be a symlink")
-    if not lexical.exists():
-        return
-    require(lexical.is_dir(), "remove directory leaf must be an ordinary directory")
-    shutil.rmtree(lexical)
 
 
 def remove_tmp_artifact_entry(path: Path, root: Path) -> None:
     candidate = path if path.is_absolute() else root / path
     require(candidate.name not in {"", ".", ".."}, "artifact entry must name a strict child")
     tmp_root = (root / ".tmp").resolve()
-    lexical = candidate.parent.resolve() / candidate.name
+    parent = candidate.parent.resolve()
+    lexical = parent / candidate.name
     require(tmp_root in lexical.parents, "artifact entry must be a strict child of repo .tmp")
-    if lexical.is_symlink() or (lexical.exists() and not lexical.is_dir()):
+    try:
+        root_metadata = lexical.lstat()
+    except FileNotFoundError:
+        return
+    if stat.S_ISLNK(root_metadata.st_mode) or not stat.S_ISDIR(root_metadata.st_mode):
         lexical.unlink()
-    elif lexical.is_dir():
-        shutil.rmtree(lexical)
+        return
+    try:
+        mountinfo = Path("/proc/self/mountinfo").read_bytes()
+        mount_points = []
+        for line in mountinfo.splitlines():
+            fields = line.split()
+            require(len(fields) >= 10 and b"-" in fields[6:], "artifact mount boundary could not be verified")
+            require(re.search(rb"\\(?![0-7]{3})", fields[4]) is None, "artifact mount boundary could not be verified")
+            mount_point = re.sub(rb"\\([0-7]{3})", lambda item: bytes([int(item.group(1), 8)]), fields[4])
+            require(mount_point.startswith(b"/"), "artifact mount boundary could not be verified")
+            mount_points.append(mount_point)
+    except OSError as exc:
+        raise SystemExit("artifact mount boundary could not be verified") from exc
+    root_bytes = os.fsencode(lexical)
+    prefix = root_bytes + b"/"
+    require(
+        not any(point == root_bytes or point.startswith(prefix) for point in mount_points),
+        "artifact tree must not contain mount points",
+    )
+    root_device = root_metadata.st_dev
+    pending = [root_bytes]
+    while pending:
+        with os.scandir(pending.pop()) as iterator:
+            entries = list(iterator)
+        for entry in entries:
+            metadata = entry.stat(follow_symlinks=False)
+            require(metadata.st_dev == root_device, "artifact tree must stay on one filesystem")
+            if stat.S_ISDIR(metadata.st_mode):
+                pending.append(entry.path if isinstance(entry.path, bytes) else os.fsencode(entry.path))
+    shutil.rmtree(lexical)
 
 
 def prepare_distribution_snapshot(root: Path, destination: Path) -> dict[str, Any]:
@@ -521,7 +545,7 @@ def run_provider_preflight(
         )
     finally:
         try:
-            remove_tmp_directory(output_root, root)
+            remove_tmp_artifact_entry(output_root, root)
         except (OSError, SystemExit) as exc:
             raise SystemExit("provider preflight isolated root cleanup failed") from exc
         require(not output_root.exists(), "provider preflight isolated root cleanup failed")

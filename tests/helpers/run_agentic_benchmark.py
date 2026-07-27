@@ -38,7 +38,6 @@ from agentic_benchmark_isolation import (
     prepare_distribution_snapshot,
     redact_proxy_output,
     remove_tmp_artifact_entry,
-    remove_tmp_directory,
     resolve_proxy_policy,
     resolve_tmp_child,
     run_isolation_audit,
@@ -596,7 +595,7 @@ def execute_target(
         credential_policy,
         _execute_target_unscrubbed,
         callback_arguments,
-        lambda path: remove_tmp_directory(path, root),
+        lambda path: remove_tmp_artifact_entry(path, root),
     )
 
 
@@ -840,7 +839,7 @@ def require_execution_opt_in(profile_id: str, environment: dict[str, str]) -> No
 def run_command(args: argparse.Namespace) -> None:
     root = repo_root()
     output_root = resolve_tmp_child(root, args.output_root, "output-root")
-    attempts_root = resolve_tmp_child(root, output_root / "attempts", "attempts artifact root")
+    attempts_root = output_root / "attempts"
     try:
         batch, ledger = load_batch_and_ledger(output_root)
         proxy_policy = verify_batch(batch, root, output_root)

@@ -316,6 +316,23 @@ while True:
             self.assertFalse(attempts_root.exists())
             self.assertEqual(batch.read_text(encoding="utf-8"), '{"trusted":"sibling"}')
 
+    def test_purge_untrusted_unlinks_a_root_symlink_without_following_its_target(self):
+        with tempfile.TemporaryDirectory(prefix="agentic-purge-link-test-", dir=self.root / ".tmp") as value:
+            output_root = Path(value)
+            outside = output_root / "outside"
+            secret = outside / "secret.txt"
+            outside.mkdir()
+            secret.write_text("external-secret", encoding="utf-8")
+            attempts_link = output_root / "attempts"
+            attempts_link.symlink_to(outside, target_is_directory=True)
+            exposure = supervise_confidential_cleanup(
+                {"root": str(self.root), "treeRoot": str(attempts_link), "mode": "purge-untrusted"},
+                1.0,
+            )
+            self.assertIsNone(exposure)
+            self.assertFalse(attempts_link.is_symlink())
+            self.assertEqual(secret.read_text(encoding="utf-8"), "external-secret")
+
     def test_unverifiable_ledger_deletes_the_entire_untrusted_attempt_tree(self):
         with tempfile.TemporaryDirectory(prefix="agentic-untrusted-ledger-test-", dir=self.root / ".tmp") as value:
             output_root = Path(value)

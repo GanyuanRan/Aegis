@@ -329,12 +329,21 @@ def _execute_provider_preflight(runner: Any, request: dict[str, Any]) -> dict[st
 def _execute_confidential_cleanup(runner: Any, request: dict[str, Any]) -> dict[str, Any]:
     root = _path(request.get("root"), "root")
     _require(root.resolve() == runner.repo_root(), "confidential cleanup root drifted")
-    tree_root = runner.resolve_tmp_child(root, _path(request.get("treeRoot"), "treeRoot"), "confidential tree root")
+    tree_value = _path(request.get("treeRoot"), "treeRoot")
     mode = request.get("mode")
     if mode == "purge-untrusted":
         _require(set(request) == {"root", "treeRoot", "mode", "timeoutSeconds"}, "untrusted cleanup request is invalid")
-        runner.remove_tmp_artifact_entry(tree_root, root)
+        runner.remove_tmp_artifact_entry(tree_value, root)
         return {"exposure": None}
+    _require(mode in {"attempt", "stage", "auth-check"}, "confidential cleanup mode is invalid")
+    try:
+        tree_root = runner.resolve_tmp_child(root, tree_value, "confidential tree root")
+    except BaseException:
+        try:
+            runner.remove_tmp_artifact_entry(tree_value, root)
+        except BaseException:
+            raise SystemExit("confidential cleanup path removal failed") from None
+        raise
     credential_policy = runner.credential_policy_from_markers(request.get("credentialMarkers"))
     proxy_policy = runner.resolve_proxy_policy(os.environ)
     auth_unchanged = runner.auth_source_matches_guard(request.get("authGuard"))
@@ -344,26 +353,24 @@ def _execute_confidential_cleanup(runner: Any, request: dict[str, Any]) -> dict[
             tree_root / "isolated/home",
             proxy_policy,
             credential_policy,
-            lambda path: runner.remove_tmp_directory(path, root),
+            lambda path: runner.remove_tmp_artifact_entry(path, root),
         )
     elif mode == "stage":
         exposure = runner.finalize_confidential_stage(
             tree_root,
             proxy_policy,
             credential_policy,
-            lambda path: runner.remove_tmp_directory(path, root),
+            lambda path: runner.remove_tmp_artifact_entry(path, root),
         )
     elif mode == "auth-check":
         exposure = None
-    else:
-        raise SystemExit("confidential cleanup mode is invalid")
     if not auth_unchanged:
         if mode == "auth-check":
             runner.finalize_confidential_stage(
                 tree_root,
                 proxy_policy,
                 credential_policy,
-                lambda path: runner.remove_tmp_directory(path, root),
+                lambda path: runner.remove_tmp_artifact_entry(path, root),
             )
         exposure = "auth-drift"
     return {"exposure": exposure}

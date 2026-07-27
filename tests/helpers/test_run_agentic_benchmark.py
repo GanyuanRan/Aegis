@@ -822,6 +822,59 @@ class RunnerContractTest(unittest.TestCase):
                 self.assertFalse(attempt_root.exists())
                 self.assertEqual(outside.read_text(encoding="utf-8"), "outside-safe")
 
+    def test_safe_artifact_remover_unlinks_a_root_symlink_without_following_it(self):
+        root = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory(prefix="agentic-remove-link-test-", dir=root / ".tmp") as value:
+            output_root = Path(value)
+            outside = output_root / "outside"
+            secret = outside / "secret.txt"
+            outside.mkdir()
+            secret.write_text("external-secret", encoding="utf-8")
+            link = output_root / "attempts"
+            link.symlink_to(outside, target_is_directory=True)
+            benchmark_runner.remove_tmp_artifact_entry(link, root)
+            self.assertFalse(link.is_symlink())
+            self.assertEqual(secret.read_text(encoding="utf-8"), "external-secret")
+
+    def test_safe_artifact_remover_rejects_mountinfo_and_cross_device_trees_before_deletion(self):
+        root = Path(__file__).resolve().parents[2]
+        for boundary in ("root-mount", "descendant-mount", "cross-device"):
+            with self.subTest(boundary=boundary), tempfile.TemporaryDirectory(
+                prefix=f"agentic-remove-{boundary}-", dir=root / ".tmp"
+            ) as value:
+                output_root = Path(value)
+                attempt_root = output_root / "attempts"
+                mounted = attempt_root / "mounted space"
+                artifact = mounted / "result.txt"
+                artifact.parent.mkdir(parents=True)
+                artifact.write_text("must-remain", encoding="utf-8")
+                outside = output_root / "outside.txt"
+                outside.write_text("external-remains", encoding="utf-8")
+                link = attempt_root / "outside-link"
+                link.symlink_to(outside)
+                mount_target = attempt_root if boundary == "root-mount" else mounted
+                encoded_mount = os.fsencode(mount_target).replace(b" ", b"\\040")
+                fake_mountinfo = b"1 0 0:1 / / rw - ext4 root rw\n2 1 0:1 / " + encoded_mount + b" rw - ext4 bind rw\n"
+                real_read_bytes = Path.read_bytes
+                real_lstat = Path.lstat
+
+                def read_bytes(path: Path) -> bytes:
+                    return fake_mountinfo if path == Path("/proc/self/mountinfo") else real_read_bytes(path)
+
+                def lstat(path: Path):
+                    metadata = real_lstat(path)
+                    if boundary == "cross-device" and path == attempt_root:
+                        metadata = mock.Mock(st_mode=metadata.st_mode, st_dev=metadata.st_dev + 1)
+                    return metadata
+
+                mountinfo = read_bytes if boundary != "cross-device" else real_read_bytes
+                with mock.patch.object(Path, "read_bytes", new=mountinfo), mock.patch.object(Path, "lstat", new=lstat):
+                    with self.assertRaises(SystemExit):
+                        benchmark_runner.remove_tmp_artifact_entry(attempt_root, root)
+                self.assertEqual(artifact.read_text(encoding="utf-8"), "must-remain")
+                self.assertTrue(link.is_symlink())
+                self.assertEqual(outside.read_text(encoding="utf-8"), "external-remains")
+
     def test_credential_cleanup_failure_retries_deletion_and_fails_without_secret(self):
         root = Path(__file__).resolve().parents[2]
         secret = "private-refresh-token-value"
@@ -836,7 +889,7 @@ class RunnerContractTest(unittest.TestCase):
                 artifact.write_text(secret, encoding="utf-8")
                 return {"status": "valid", "contractPass": True, "elapsedSeconds": 0.1}
 
-            real_remove = benchmark_runner.remove_tmp_directory
+            real_remove = benchmark_runner.remove_tmp_artifact_entry
             attempt_removals = 0
 
             def fail_attempt_once(path: Path, repo: Path):
@@ -848,7 +901,7 @@ class RunnerContractTest(unittest.TestCase):
                 return real_remove(path, repo)
 
             with mock.patch.object(benchmark_runner, "_execute_target_unscrubbed", side_effect=fake_inner), mock.patch.object(
-                benchmark_runner, "remove_tmp_directory", side_effect=fail_attempt_once
+                benchmark_runner, "remove_tmp_artifact_entry", side_effect=fail_attempt_once
             ):
                 with self.assertRaises(SystemExit) as caught:
                     execute_target(
@@ -998,7 +1051,7 @@ class RunnerContractTest(unittest.TestCase):
                 (attempt_root / "isolated/home").mkdir(parents=True)
                 return {"status": "valid", "contractPass": True}
 
-            real_remove = benchmark_runner.remove_tmp_directory
+            real_remove = benchmark_runner.remove_tmp_artifact_entry
             calls = 0
 
             def fail_home_once(path: Path, repo: Path):
@@ -1009,7 +1062,7 @@ class RunnerContractTest(unittest.TestCase):
                 return real_remove(path, repo)
 
             with mock.patch.object(benchmark_runner, "_execute_target_unscrubbed", side_effect=fake_inner), mock.patch.object(
-                benchmark_runner, "remove_tmp_directory", side_effect=fail_home_once
+                benchmark_runner, "remove_tmp_artifact_entry", side_effect=fail_home_once
             ):
                 with self.assertRaises(SystemExit) as caught:
                     execute_target(
@@ -1042,7 +1095,7 @@ class RunnerContractTest(unittest.TestCase):
                 {"001-stale"},
                 policy,
                 EMPTY_CREDENTIAL_POLICY,
-                lambda path: benchmark_runner.remove_tmp_directory(path, root),
+                lambda path: benchmark_runner.remove_tmp_artifact_entry(path, root),
             )
             self.assertFalse((attempt_root / "isolated/home").exists())
             self.assertEqual(workspace.read_text(encoding="utf-8"), "[REDACTED_PROXY]")
@@ -1071,7 +1124,7 @@ class RunnerContractTest(unittest.TestCase):
                     {root.name for root in [*leaking_roots, safe_root]},
                     resolve_proxy_policy({}),
                     CredentialPolicy((secret,)),
-                    lambda path: benchmark_runner.remove_tmp_directory(path, root),
+                    lambda path: benchmark_runner.remove_tmp_artifact_entry(path, root),
                 )
             self.assertEqual(str(caught.exception), "stale benchmark attempt artifacts were unsafe")
             self.assertNotIn(secret, str(caught.exception))
