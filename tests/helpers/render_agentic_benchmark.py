@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import html
 import json
+import math
 import random
 import re
 import tempfile
@@ -121,7 +122,10 @@ def atomic_text(path: Path, value: str) -> None:
 
 
 def canonical_json(value: Any) -> str:
-    return json.dumps(value, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+    try:
+        return json.dumps(value, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False) + "\n"
+    except (TypeError, ValueError) as exc:
+        raise SystemExit(f"cannot serialize canonical JSON: {exc}") from exc
 
 
 def walk(value: Any, path: str = "$") -> list[tuple[str, Any]]:
@@ -292,6 +296,12 @@ def validate_common(report: dict[str, Any], expected_type: str) -> dict[str, Any
 
     design = report.get("design")
     require(isinstance(design, dict), "design must be an object")
+    design_fields = {"portfolioCaseCount", "caseCount", "arms", "repetitions", "targetRuns", "maxAttempts", "clusterUnit"}
+    require(set(design) == design_fields, "design fields drifted")
+    for field in ("portfolioCaseCount", "caseCount", "repetitions", "targetRuns", "maxAttempts"):
+        require(type(design[field]) is int, f"design.{field} must be an integer")
+    require(isinstance(design["arms"], list), "design.arms must be a list")
+    require(isinstance(design["clusterUnit"], str), "design.clusterUnit must be a string")
     expected_design = {
         "portfolioCaseCount": 30,
         "caseCount": 20,
@@ -306,7 +316,7 @@ def validate_common(report: dict[str, Any], expected_type: str) -> dict[str, Any
     require(isinstance(attempts, dict), "attempts must be an object")
     require(set(attempts) == {"total", "valid", "passes", "fails", "invalid", "invalidReasons", "remaining"}, "attempt fields drifted")
     for field in ("total", "valid", "passes", "fails", "invalid", "remaining"):
-        require(isinstance(attempts.get(field), int) and attempts[field] >= 0, f"attempts.{field} must be a non-negative integer")
+        require(type(attempts.get(field)) is int and attempts[field] >= 0, f"attempts.{field} must be a non-negative integer")
     require(profile["targetRuns"] <= attempts["total"] <= profile["maxAttempts"], "attempt total must stay within the frozen ceiling")
     require(attempts["valid"] == profile["targetRuns"] and attempts["remaining"] == 0, "report must contain every valid target")
     require(attempts["passes"] + attempts["fails"] == profile["targetRuns"], "pass/fail counts must sum to the profile target")
@@ -314,7 +324,7 @@ def validate_common(report: dict[str, Any], expected_type: str) -> dict[str, Any
     invalid_reasons = attempts.get("invalidReasons")
     require(isinstance(invalid_reasons, dict), "attempts.invalidReasons must be an object")
     require(set(invalid_reasons).issubset({"timeout", "infrastructure", "scorer-unknown", "credential-exposure"}), "attempts.invalidReasons contains an unsupported reason")
-    require(all(isinstance(value, int) and value > 0 for value in invalid_reasons.values()), "invalid reason counts must be positive integers")
+    require(all(type(value) is int and value > 0 for value in invalid_reasons.values()), "invalid reason counts must be positive integers")
     require(sum(invalid_reasons.values()) == attempts["invalid"], "invalid reason counts must match attempts.invalid")
     require(report.get("completeness") == "complete", "partial benchmark reports cannot be projected")
     require(tuple(report.get("unsupportedClaims", ())) == UNSUPPORTED_CLAIMS, "unsupported claim boundary drifted")
@@ -337,13 +347,14 @@ def validate_common(report: dict[str, Any], expected_type: str) -> dict[str, Any
         if count_field == "subjects":
             require(isinstance(flag[count_field], list) and flag[count_field] and all(isinstance(item, str) and re.fullmatch(r"[a-z0-9][a-z0-9-]{2,79}(?::(?:baseline-no-aegis|aegis-auto))?", item) is not None for item in flag[count_field]), f"review.flags[{index}].subjects is invalid")
         else:
-            require(isinstance(flag[count_field], int) and flag[count_field] > 0, f"review.flags[{index}].{count_field} must be a positive integer")
+            require(type(flag[count_field]) is int and flag[count_field] > 0, f"review.flags[{index}].{count_field} must be a positive integer")
     unresolved = any(flag["status"] == "unresolved" for flag in review["flags"])
     require((review["status"] == "unknown") is unresolved, "review status must reflect unresolved flags")
     resource = report.get("resourceUse")
     require(isinstance(resource, dict) and set(resource) == {"tokens", "costUsd", "costStatus"}, "resourceUse fields drifted")
-    require(isinstance(resource["tokens"], dict) and all(re.fullmatch(r"[a-z][a-z0-9_]{0,39}", key) is not None and isinstance(value, int) and value >= 0 for key, value in resource["tokens"].items()), "resource token counts must use safe names and non-negative integers")
-    require(resource["costUsd"] is None or (isinstance(resource["costUsd"], (int, float)) and not isinstance(resource["costUsd"], bool) and resource["costUsd"] >= 0), "resource cost must be null or non-negative")
+    require(isinstance(resource["tokens"], dict) and all(re.fullmatch(r"[a-z][a-z0-9_]{0,39}", key) is not None and type(value) is int and value >= 0 for key, value in resource["tokens"].items()), "resource token counts must use safe names and non-negative integers")
+    cost = resource["costUsd"]
+    require(cost is None or (type(cost) in {int, float} and math.isfinite(float(cost)) and cost >= 0), "resource cost must be null or a finite non-negative number")
     require(resource["costStatus"] in {"unavailable-from-host-events", "reported-by-host"}, "resource cost status is invalid")
     publication = report.get("publication")
     require(isinstance(publication, dict) and set(publication) == {"authorized", "eligible", "reason"} and type(publication.get("authorized")) is bool and type(publication.get("eligible")) is bool and isinstance(publication.get("reason"), str), "publication boundary must be explicit")
@@ -651,6 +662,13 @@ def self_test(print_golden: bool = False) -> None:
         ("unknown profile", lambda value: value.update({"profileId": "unknown-held-out"})),
         ("wrong repetition", lambda value: value["design"].update({"repetitions": 2})),
         ("wrong ceiling", lambda value: value["design"].update({"maxAttempts": 44})),
+        ("boolean repetitions", lambda value: value["design"].update({"repetitions": True})),
+        ("floating target shape", lambda value: value["design"].update({"targetRuns": 120.0})),
+        ("boolean invalid count", lambda value: value["attempts"].update({"invalid": False})),
+        ("boolean remaining count", lambda value: value["attempts"].update({"remaining": False})),
+        ("boolean invalid reason count", lambda value: value["attempts"].update({"total": 121, "invalid": 1, "invalidReasons": {"timeout": True}})),
+        ("infinite private cost", lambda value: value["resourceUse"].update({"costUsd": float("inf")})),
+        ("NaN private cost", lambda value: value["resourceUse"].update({"costUsd": float("nan")})),
     ]
     for label, mutation in negatives:
         report = synthetic_private("positive")
@@ -676,6 +694,8 @@ def self_test(print_golden: bool = False) -> None:
     for label, mutation in (
         ("profile", lambda value: value.update({"profileId": "standard-held-out"})),
         ("limitations", lambda value: value["limitations"].append("hand-edited-claim")),
+        ("infinite cost", lambda value: value["resourceUse"].update({"costUsd": float("inf")})),
+        ("NaN cost", lambda value: value["resourceUse"].update({"costUsd": float("nan")})),
     ):
         public = sanitize_private(synthetic_private("positive"))
         mutation(public)
@@ -684,6 +704,14 @@ def self_test(print_golden: bool = False) -> None:
         except SystemExit:
             continue
         raise SystemExit(f"hand-edited public {label} was accepted")
+
+    for label, value in (("Infinity", float("inf")), ("NaN", float("nan"))):
+        try:
+            canonical_json({"nonFinite": value})
+        except SystemExit as exc:
+            require("cannot serialize canonical JSON" in str(exc), f"canonical JSON {label} failure was not user-safe")
+            continue
+        raise SystemExit(f"canonical JSON accepted {label}")
 
     temporary_root = repo_root() / ".tmp"
     temporary_root.mkdir(exist_ok=True)
@@ -694,7 +722,7 @@ def self_test(print_golden: bool = False) -> None:
         for name, content in zip(("result.json", "result.svg", "result.en.md", "result.zh.md"), outputs):
             atomic_text(root / name, content)
         require(not any(OUTPUT_PRIVATE_PATTERN.search(path.read_text(encoding="utf-8")) for path in root.iterdir()), "projection contains private execution material")
-    print("Agentic benchmark renderer self-test passed: 6 profile goldens, 15 negative cases.")
+    print("Agentic benchmark renderer self-test passed: 6 profile goldens, 26 negative cases.")
 
 
 def sanitize_command(args: argparse.Namespace) -> None:
