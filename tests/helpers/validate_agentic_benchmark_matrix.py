@@ -98,6 +98,14 @@ EXPECTED_CONTROLLED_REPLAY_MAPPING = {
     "completion-evidence-boundary": "completion-claim-with-missing-evidence",
 }
 
+EXPECTED_LIVE_PARTITIONS = ["held-out-normal", "held-out-boundary"]
+EXPECTED_LIVE_ARMS = ["baseline-no-aegis", "aegis-auto"]
+EXPECTED_PORTFOLIO_PARTITIONS = {
+    "development": 10,
+    "held-out-normal": 10,
+    "held-out-boundary": 10,
+}
+
 
 def require(condition: bool, message: str) -> None:
     if not condition:
@@ -196,11 +204,25 @@ def validate_evaluation_contract(data: dict[str, Any]) -> None:
     )
 
     live = by_id["opt-in-live-repeated-held-out"]
-    require(live.get("implementationStatus") == "contract-only", "live repeated/held-out tier must remain contract-only")
+    require(
+        live.get("implementationStatus") == "implementation-in-progress",
+        "live repeated/held-out tier must remain implementation-in-progress until harness completion",
+    )
     require(
         live.get("defaultCi") is False and live.get("optIn") is True,
         "live repeated/held-out tier must be opt-in outside default CI",
     )
+    require(live.get("datasetPartitions") == EXPECTED_LIVE_PARTITIONS, "live repeated/held-out partitions drifted")
+    require(live.get("arms") == EXPECTED_LIVE_ARMS, "live repeated/held-out arms drifted")
+    require(
+        live.get("scoreSource") == "arm-neutral-observable-outcome-analysis",
+        "live repeated/held-out scorer must remain arm-neutral and outcome-based",
+    )
+    require(live.get("repetitionsPerCase") == 3, "live repeated/held-out repetitions must be 3")
+    require(live.get("validRunTarget") == 120, "live repeated/held-out valid run target must be 120")
+    require(live.get("paidAttemptCeiling") == 132, "live repeated/held-out paid attempt ceiling must be 132")
+    require(live.get("requiresFrozenBatch") is True, "live repeated/held-out tier must freeze each batch")
+    require(live.get("supportsPromotionEvidence") is False, "in-progress live tier cannot support promotion evidence")
     require(
         {"repeated-run-evidence", "held-out-evidence"}.issubset(set(live.get("requiredEvidence", []))),
         "live repeated/held-out tier must require repeated and held-out evidence",
@@ -231,6 +253,25 @@ def validate_evaluation_contract(data: dict[str, Any]) -> None:
         FORBIDDEN_AUTOMATIC_PROMOTION_ACTIONS.issubset(set(promotion.get("automaticActionsForbidden", []))),
         "promotionPolicy must forbid automatic promotion and skill/baseline modification",
     )
+
+
+def validate_case_portfolio_contract(data: dict[str, Any]) -> None:
+    portfolio = data.get("casePortfolio")
+    require(isinstance(portfolio, dict), "casePortfolio must be an object")
+    manifest_path = portfolio.get("manifestPath")
+    require(
+        manifest_path == "tests/e2e/fixtures/agentic-benchmark-cases.json",
+        "casePortfolio manifest path drifted",
+    )
+    require(
+        portfolio.get("implementationStatus") == "contract-only",
+        "casePortfolio must remain contract-only until the concrete manifest exists",
+    )
+    require(portfolio.get("schemaVersion") == 1, "casePortfolio schema version must be 1")
+    require(portfolio.get("caseCount") == 30, "casePortfolio case count must be 30")
+    require(portfolio.get("scenarioClassCount") == 10, "casePortfolio scenario class count must be 10")
+    require(portfolio.get("partitions") == EXPECTED_PORTFOLIO_PARTITIONS, "casePortfolio partitions drifted")
+    require(portfolio.get("arms") == EXPECTED_LIVE_ARMS, "casePortfolio arms drifted")
 
 
 def validate_metrics(data: dict[str, Any]) -> None:
@@ -428,11 +469,12 @@ def validate_isolation_and_boundary(data: dict[str, Any]) -> None:
 
 def validate_matrix(path: Path) -> None:
     data = load_json(path)
-    require(data.get("version") == 2, "version must be 2")
+    require(data.get("version") == 3, "version must be 3")
     require(data.get("status") == "draft", "status must be draft")
     require("runtime authority" in data.get("primaryQuestion", ""), "primary question must name runtime authority boundary")
     validate_arms(data)
     validate_evaluation_contract(data)
+    validate_case_portfolio_contract(data)
     validate_metrics(data)
     scenarios = validate_scenarios(data)
     validate_coverage(repo_root(), path, data, scenarios)

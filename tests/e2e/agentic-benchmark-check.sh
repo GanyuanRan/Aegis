@@ -94,6 +94,28 @@ elif mutation == "live-tier-implemented":
         if tier["id"] == "opt-in-live-repeated-held-out":
             tier["implementationStatus"] = "implemented"
             break
+elif mutation in {
+    "live-valid-run-target",
+    "live-paid-attempt-ceiling",
+    "live-score-source",
+    "live-supports-promotion",
+}:
+    live = next(tier for tier in matrix["evaluationTiers"] if tier["id"] == "opt-in-live-repeated-held-out")
+    field, value = {
+        "live-valid-run-target": ("validRunTarget", 119),
+        "live-paid-attempt-ceiling": ("paidAttemptCeiling", 120),
+        "live-score-source": ("scoreSource", "static-transcript-contract-analysis"),
+        "live-supports-promotion": ("supportsPromotionEvidence", True),
+    }[mutation]
+    live[field] = value
+elif mutation in {"portfolio-case-count", "portfolio-status"}:
+    field, value = {
+        "portfolio-case-count": ("caseCount", 29),
+        "portfolio-status": ("implementationStatus", "implemented"),
+    }[mutation]
+    matrix["casePortfolio"][field] = value
+elif mutation == "report-authority-overclaim":
+    matrix["reportBoundaries"]["forbiddenClaims"].remove("aegis-grants-completion-authority")
 elif mutation == "automatic-promotion":
     matrix["promotionPolicy"]["authority"] = "automatic"
 elif mutation in {
@@ -171,6 +193,7 @@ assert_negative_coverage_case() {
     local mutation="$1"
     local label="$2"
     local expected_error="$3"
+    local validator_scope="${4:-both}"
     local paths
     local case_matrix
     local case_manifest
@@ -188,13 +211,17 @@ assert_negative_coverage_case() {
         fail "$label produced the expected benchmark matrix rejection"
     fi
 
-    if validator_output="$("${PYTHON_CMD[@]}" tests/helpers/run_controlled_replay_samples.py \
-        --manifest "$case_manifest" --validate-only 2>&1)"; then
-        fail "$label rejected by controlled replay validator"
-    elif grep -qF "$expected_error" <<<"$validator_output"; then
-        pass "$label rejected by controlled replay validator"
+    if [[ "$validator_scope" == "both" ]]; then
+        if validator_output="$("${PYTHON_CMD[@]}" tests/helpers/run_controlled_replay_samples.py \
+            --manifest "$case_manifest" --validate-only 2>&1)"; then
+            fail "$label rejected by controlled replay validator"
+        elif grep -qF "$expected_error" <<<"$validator_output"; then
+            pass "$label rejected by controlled replay validator"
+        else
+            fail "$label produced the expected controlled replay rejection"
+        fi
     else
-        fail "$label produced the expected controlled replay rejection"
+        pass "$label remains owned by the benchmark matrix validator"
     fi
 }
 
@@ -277,6 +304,14 @@ assert_contains "$baseline" "does not provide variance, held-out, blind-review, 
     "benchmark baseline rejects single static replay overclaims"
 assert_contains "$baseline" "automatically promote a candidate" \
     "benchmark baseline keeps candidate promotion advisory"
+assert_contains "$baseline" "exactly 30 cases" \
+    "benchmark baseline defines the concrete thirty-case target"
+assert_contains "$baseline" "arm-neutral and observable-outcome based" \
+    "benchmark baseline requires fair live outcome scoring"
+assert_contains "$baseline" "hard ceiling of 132 paid attempts" \
+    "benchmark baseline bounds paid retry attempts"
+assert_contains "$baseline" "sanitized, path-independent advisory report" \
+    "benchmark baseline defines a public-safe report projection"
 
 "${PYTHON_CMD[@]}" tests/helpers/validate_workflow_quality_matrix.py "$workflow_matrix"
 "${PYTHON_CMD[@]}" tests/helpers/validate_agentic_benchmark_matrix.py "$matrix"
@@ -286,14 +321,21 @@ mkdir -p "$REPO_ROOT/.tmp"
 coverage_negative_root="$(mktemp -d "$REPO_ROOT/.tmp/agentic-coverage-negative.XXXXXX")"
 trap 'rm -rf -- "$coverage_negative_root"' EXIT
 
-while IFS='|' read -r mutation label expected_error; do
-    assert_negative_coverage_case "$mutation" "$label" "$expected_error"
+while IFS='|' read -r mutation label expected_error validator_scope; do
+    assert_negative_coverage_case "$mutation" "$label" "$expected_error" "$validator_scope"
 done <<'CASES'
 coordinated-fourth-replay|coordinated fourth replay drift|controlled replay refs must match the public baseline
 coordinated-wrong-scenario|coordinated replay scenario remap|controlled replay refs must match the public baseline
 refs-without-live-eligibility|controlled refs without live eligibility|live replay eligibility must equal controlled replay availability
 controlled-replay-held-out|controlled replay held-out overclaim|must use development partition
-live-tier-implemented|unimplemented live evaluation claim|live repeated/held-out tier must remain contract-only
+live-tier-implemented|early live implementation claim|live repeated/held-out tier must remain implementation-in-progress until harness completion
+live-valid-run-target|live valid-run target drift|live repeated/held-out valid run target must be 120|matrix-only
+live-paid-attempt-ceiling|live paid-attempt ceiling drift|live repeated/held-out paid attempt ceiling must be 132|matrix-only
+live-score-source|arm-biased live scorer drift|live repeated/held-out scorer must remain arm-neutral and outcome-based|matrix-only
+live-supports-promotion|in-progress live promotion overclaim|in-progress live tier cannot support promotion evidence|matrix-only
+portfolio-case-count|portfolio case-count drift|casePortfolio case count must be 30|matrix-only
+portfolio-status|portfolio implementation overclaim|casePortfolio must remain contract-only until the concrete manifest exists|matrix-only
+report-authority-overclaim|report authority overclaim|missing forbidden claims: aegis-grants-completion-authority|matrix-only
 automatic-promotion|automatic candidate promotion claim|promotionPolicy must remain advisory-only
 controlled-default-ci|controlled replay default CI drift|controlled-replay must not be the default CI tier
 live-default-ci|live tier default CI drift|live repeated/held-out tier must be opt-in outside default CI

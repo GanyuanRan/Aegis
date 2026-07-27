@@ -103,7 +103,7 @@ def relative_path(root: Path, path: Path) -> str:
 
 def load_benchmark_contract(root: Path, matrix_path: str) -> dict[str, Any]:
     matrix = load_json(resolve_repo_path(root, matrix_path, "benchmarkMatrix"))
-    require(matrix.get("version") == 2, "benchmark matrix version must be 2")
+    require(matrix.get("version") == 3, "benchmark matrix version must be 3")
     require(matrix.get("authorityBoundary") == AUTHORITY_BOUNDARY, "benchmark matrix boundary drifted")
     validate_evaluation_contract(matrix)
     return matrix
@@ -160,7 +160,10 @@ def validate_evaluation_contract(matrix: dict[str, Any]) -> None:
         "controlled-replay must forbid variance, held-out, blind-review, and promotion claims",
     )
     live = tiers_by_id["opt-in-live-repeated-held-out"]
-    require(live.get("implementationStatus") == "contract-only", "live repeated/held-out tier must remain contract-only")
+    require(
+        live.get("implementationStatus") == "implementation-in-progress",
+        "live repeated/held-out tier must remain implementation-in-progress until harness completion",
+    )
     require(
         live.get("defaultCi") is False and live.get("optIn") is True,
         "live repeated/held-out tier must be opt-in outside default CI",

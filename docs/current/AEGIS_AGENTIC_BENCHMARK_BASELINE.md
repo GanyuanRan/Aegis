@@ -128,7 +128,7 @@ method-pack verification, not a runtime gate.
 
 ### 7.1 Scenario Coverage Contract
 
-The version 2 matrix maps every minimum scenario class to three distinct
+The version 3 matrix maps every minimum scenario class to three distinct
 coverage signals:
 
 - `workflowQualityFixtureRefs` names one or more existing deterministic
@@ -162,8 +162,9 @@ The benchmark contract separates four evidence tiers:
 
 1. `deterministic-static` is implemented and is the default CI tier.
 2. `controlled-replay` is implemented for the checked-in captured transcripts.
-3. `opt-in-live-repeated-held-out` is contract-only and remains outside default
-   CI.
+3. `opt-in-live-repeated-held-out` is implementation-in-progress and remains
+   explicit opt-in outside default CI. This status describes harness work, not
+   live result evidence.
 4. `sampled-blind-human-review` is contract-only and is reserved for sampled
    escalation with arm identity hidden from reviewers.
 
@@ -177,6 +178,32 @@ Candidate promotion remains advisory. It requires held-out evidence, repeated
 run evidence, no regression in a primary metric, and review of high-variance
 results or non-discriminating assertions. Benchmark output must not
 automatically promote a candidate or modify a skill, workflow, or baseline.
+
+### 7.3 P1 Case Portfolio And Fair-Scoring Contract
+
+Matrix version 3 reserves one concrete portfolio manifest at:
+
+`tests/e2e/fixtures/agentic-benchmark-cases.json`
+
+The target portfolio contains exactly 30 cases: one development, one held-out
+normal, and one held-out boundary case for each of the ten required scenario
+classes. The live comparison uses only `baseline-no-aegis` and `aegis-auto`,
+with three repetitions for each of the 20 held-out cases. This yields a target
+of 120 valid runs with a hard ceiling of 132 paid attempts. An incomplete batch
+must not feed public benchmark claims.
+
+Held-out scoring must be arm-neutral and observable-outcome based. The same
+contract applies to both arms. Source-edit cases inspect the resulting
+workspace, git diff, fixture-owned tests and response/event evidence. Advisory
+or no-edit cases inspect worktree preservation, forbidden actions, response
+claims and event order. Aegis skill names, routes, artifact names, or semantic
+aliases may be diagnostic attribution only; they cannot make a task pass and
+must not be required from the no-Aegis arm.
+
+The portfolio remains `contract-only` until its concrete manifest and validator
+exist. The repeated-live tier remains `implementation-in-progress` until the
+case validator, outcome scorer, isolated runner, aggregation and report
+projection pass their offline gates. Neither status is live benchmark evidence.
 
 ## 8. Controlled Replay Samples
 
@@ -243,3 +270,32 @@ evidence.
 Live capture output is environment-bound benchmark evidence. It is not part of
 the default Layer 1 offline gate, does not prove host compatibility on its own,
 and does not grant final evidence sufficiency or completion authority.
+
+## 10. Repeated Held-Out Isolation And Publication Boundary
+
+The repeated held-out path must fail closed unless both arms receive the same
+prompt, seeded project, host, model, timeout and tool policy in fresh workspaces.
+The no-Aegis arm must prove that injected Aegis instructions, skills and plugins
+are absent. The Aegis arm may mount only a distribution-shaped snapshot of the
+evaluated method pack; benchmark prompts, scorers and expected outcomes must be
+outside the agent-visible filesystem. Authentication may be made available
+read-only through the host's supported path, but credentials must never enter
+fixtures, logs, reports or public artifacts.
+
+Before the first held-out attempt, the matrix, portfolio, prompts, projects,
+outcome contracts, evaluated method-pack snapshot and run policy must be frozen
+and hashed. Semantic changes invalidate the batch. Infrastructure-invalid
+attempts remain in an immutable ledger and consume the 132-attempt ceiling.
+
+Repeated results aggregate by held-out case, not by treating three repetitions
+as three independent tasks. Percentage-point deltas and confidence intervals
+must use a deterministic case-cluster method with its seed recorded. Mixed
+within-case outcomes, non-discriminating arm results and scorer unknowns require
+blinded review or remain explicitly unknown.
+
+Raw logs and workspaces stay under repo-local `.tmp/`. A README publication may
+commit only a sanitized, path-independent advisory report plus a deterministic
+SVG and exact table projection. The public snapshot must exclude credentials,
+absolute local paths, session identifiers, raw reasoning, raw host logs and
+unpublished prompt content. A neutral or negative valid result remains
+publishable; incomplete, contaminated or hand-selected results do not.

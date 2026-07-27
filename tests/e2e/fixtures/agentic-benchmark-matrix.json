@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "status": "draft",
   "authorityBoundary": "advisory-method-pack-evidence-not-completion-authority",
   "primaryQuestion": "Does Aegis improve representative agent behavior for evidence, boundary, route, owner, retirement, and workspace discipline without becoming runtime authority?",
@@ -53,6 +53,22 @@
     "workflowQualityMatrix": "tests/e2e/fixtures/workflow-quality-matrix.json",
     "controlledReplayManifest": "tests/e2e/fixtures/replay-samples.json"
   },
+  "casePortfolio": {
+    "manifestPath": "tests/e2e/fixtures/agentic-benchmark-cases.json",
+    "implementationStatus": "contract-only",
+    "schemaVersion": 1,
+    "caseCount": 30,
+    "scenarioClassCount": 10,
+    "partitions": {
+      "development": 10,
+      "held-out-normal": 10,
+      "held-out-boundary": 10
+    },
+    "arms": [
+      "baseline-no-aegis",
+      "aegis-auto"
+    ]
+  },
   "evaluationTiers": [
     {
       "id": "deterministic-static",
@@ -80,9 +96,23 @@
     },
     {
       "id": "opt-in-live-repeated-held-out",
-      "implementationStatus": "contract-only",
+      "implementationStatus": "implementation-in-progress",
       "defaultCi": false,
       "optIn": true,
+      "datasetPartitions": [
+        "held-out-normal",
+        "held-out-boundary"
+      ],
+      "arms": [
+        "baseline-no-aegis",
+        "aegis-auto"
+      ],
+      "scoreSource": "arm-neutral-observable-outcome-analysis",
+      "repetitionsPerCase": 3,
+      "validRunTarget": 120,
+      "paidAttemptCeiling": 132,
+      "requiresFrozenBatch": true,
+      "supportsPromotionEvidence": false,
       "requiredEvidence": [
         "repeated-run-evidence",
         "held-out-evidence"
