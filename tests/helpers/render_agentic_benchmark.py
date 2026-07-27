@@ -18,6 +18,8 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+from agentic_benchmark_scheduler import INVALID_REASONS
+
 
 PRIVATE_REPORT_TYPE = "agentic-benchmark-private-report"
 PUBLIC_REPORT_TYPE = "agentic-benchmark-sanitized-report"
@@ -393,7 +395,7 @@ def validate_common(report: dict[str, Any], expected_type: str) -> dict[str, Any
     require(attempts["total"] == attempts["valid"] + attempts["invalid"], "attempt total must include every invalid attempt")
     invalid_reasons = attempts.get("invalidReasons")
     require(isinstance(invalid_reasons, dict), "attempts.invalidReasons must be an object")
-    require(set(invalid_reasons).issubset({"timeout", "infrastructure", "scorer-unknown", "credential-exposure"}), "attempts.invalidReasons contains an unsupported reason")
+    require(set(invalid_reasons).issubset(INVALID_REASONS), "attempts.invalidReasons contains an unsupported reason")
     require(all(type(value) is int and value > 0 for value in invalid_reasons.values()), "invalid reason counts must be positive integers")
     require(sum(invalid_reasons.values()) == attempts["invalid"], "invalid reason counts must match attempts.invalid")
     require(report.get("completeness") == "complete", "partial benchmark reports cannot be projected")
@@ -694,6 +696,19 @@ def synthetic_private(kind: str, profile_id: str = "extended-held-out") -> dict[
     return report
 
 
+def synthetic_with_successful_proxy_retry(profile_id: str) -> dict[str, Any]:
+    report = synthetic_private("positive", profile_id)
+    profile = PROFILE_CONTRACTS[profile_id]
+    report["batchId"] = f"synthetic-{profile_id}-proxy-retry"
+    report["batchDigest"] = hashlib.sha256(f"batch-{profile_id}-proxy-retry".encode()).hexdigest()
+    report["attempts"].update({
+        "total": profile["targetRuns"] + 1,
+        "invalid": 1,
+        "invalidReasons": {"proxy-exposure": 1},
+    })
+    return report
+
+
 def bundle_hash(bundle: tuple[str, str, str, str]) -> str:
     return hashlib.sha256("\0".join(bundle).encode()).hexdigest()
 
@@ -719,6 +734,28 @@ def self_test(print_golden: bool = False) -> None:
                 print(f'    "{golden_id}": "{digest}",')
             else:
                 require(GOLDEN_HASHES[golden_id] == digest, f"{golden_id} golden projection hash drifted: {digest}")
+
+    for profile_id in PROFILE_CONTRACTS:
+        private = synthetic_with_successful_proxy_retry(profile_id)
+        public = sanitize_private(private)
+        bundle = projection_bundle(public)
+        require(bundle == projection_bundle(json.loads(bundle[0])), f"{profile_id} proxy-retry projection is not byte-identical")
+        require(public["attempts"]["invalidReasons"] == {"proxy-exposure": 1}, f"{profile_id} proxy retry was not preserved")
+        require(public["attempts"]["valid"] == PROFILE_CONTRACTS[profile_id]["targetRuns"], f"{profile_id} proxy retry lost a valid target")
+        ElementTree.fromstring(bundle[1])
+
+        unsupported = synthetic_with_successful_proxy_retry(profile_id)
+        unsupported["attempts"].update({
+            "total": PROFILE_CONTRACTS[profile_id]["targetRuns"] + 2,
+            "invalid": 2,
+            "invalidReasons": {"proxy-exposure": 1, "unknown-transport": 1},
+        })
+        try:
+            sanitize_private(unsupported)
+        except SystemExit:
+            pass
+        else:
+            raise SystemExit(f"{profile_id} proxy-retry projection accepted an unsupported invalid reason")
 
     negatives = [
         ("partial report", lambda value: value.update({"completeness": "partial"})),
@@ -861,7 +898,7 @@ def self_test(print_golden: bool = False) -> None:
             require(not list(root.glob(".blocked-output.*.tmp")), "failed atomic write left a temporary file")
         else:
             raise SystemExit("atomic write unexpectedly replaced a directory")
-    print("Agentic benchmark renderer self-test passed: 6 profile goldens, 35 negative cases.")
+    print("Agentic benchmark renderer self-test passed: 6 profile goldens, 2 proxy-retry projections, 37 negative cases.")
 
 
 def sanitize_command(args: argparse.Namespace) -> None:
