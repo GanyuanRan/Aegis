@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import hashlib
+import os
 import shutil
 import subprocess
 import sys
@@ -16,6 +17,8 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import agentic_benchmark_isolation
+import agentic_benchmark_provider_preflight
 from agentic_benchmark_isolation import (
     PROXY_KEYS,
     build_bwrap_command,
@@ -29,7 +32,6 @@ from agentic_benchmark_isolation import (
     validate_bwrap_command,
 )
 from agentic_benchmark_provider_preflight import freeze_auth_file, run_sanitized_provider_preflight
-import agentic_benchmark_provider_preflight
 
 
 def setenv_keys(command: list[str]) -> list[str]:
@@ -501,10 +503,25 @@ class SanitizedPreflightTest(unittest.TestCase):
             "import signal,time; signal.signal(signal.SIGTERM, signal.SIG_IGN); time.sleep(60)",
         ]
         started = time.monotonic()
-        with mock.patch.object(agentic_benchmark_provider_preflight, "PREFLIGHT_CLEANUP_TIMEOUT_SECONDS", 0.1):
-            result = run_sanitized_provider_preflight(command, "requested-model", 0.2)
+        result = run_sanitized_provider_preflight(command, "requested-model", 0.2)
         self.assertEqual(result["status"], "timeout")
         self.assertLess(time.monotonic() - started, 1.0)
+
+    def test_outer_supervised_isolation_and_preflight_children_do_not_create_sessions(self):
+        command = [sys.executable, "-c", "import os; print(os.getpgrp())"]
+        isolation_group = agentic_benchmark_isolation.run_command(
+            command,
+            "isolation child",
+            timeout=1.0,
+            process_group_supervised=True,
+        )
+        preflight = agentic_benchmark_provider_preflight._default_command_runner(
+            command,
+            1.0,
+            process_group_supervised=True,
+        )
+        self.assertEqual(int(isolation_group.strip()), os.getpgrp())
+        self.assertEqual(int(preflight.stdout.strip()), os.getpgrp())
 
 
 if __name__ == "__main__":

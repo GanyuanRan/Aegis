@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import argparse
 import copy
 import json
 import os
@@ -31,7 +30,6 @@ from run_agentic_benchmark import (
     parse_codex_jsonl,
     require_execution_opt_in,
     resolve_auth_file,
-    run_command,
     schedule_targets,
     validate_live_isolation_report,
 )
@@ -394,117 +392,6 @@ class RunnerContractTest(unittest.TestCase):
             with self.assertRaises(SystemExit) as caught:
                 resolve_auth_file(link)
         self.assertEqual(str(caught.exception), "Codex auth file must not be a symlink")
-
-    def test_run_closes_frozen_auth_when_setup_aborts(self):
-        root = Path(__file__).resolve().parents[2]
-        batch = fake_batch()
-        batch["profileId"] = "development-pilot"
-        ledger = initial_ledger(batch)
-        frozen = mock.Mock()
-        frozen.mount_path = Path("/proc/1/fd/9")
-        frozen.credential_policy = EMPTY_CREDENTIAL_POLICY
-        frozen.drift_guard.return_value = {"source": "/safe/auth", "fingerprint": "a" * 64}
-        args = argparse.Namespace(output_root=root / ".tmp/fake-run", auth_file=Path("/safe/auth"))
-        with mock.patch.object(benchmark_runner, "load_batch_and_ledger", return_value=(batch, ledger)), mock.patch.object(
-            benchmark_runner, "verify_batch", return_value=resolve_proxy_policy({})
-        ), mock.patch.object(benchmark_runner, "require_execution_opt_in"), mock.patch.object(
-            benchmark_runner, "freeze_auth_file", return_value=frozen
-        ), mock.patch.object(
-            benchmark_runner.agentic_benchmark_scheduler, "execute_budgeted_stage", side_effect=SystemExit("setup aborted")
-        ):
-            with self.assertRaises(SystemExit):
-                run_command(args)
-        frozen.close.assert_called_once_with()
-
-    def test_initial_trust_failures_purge_untrusted_attempts_with_no_auth_context(self):
-        root = Path(__file__).resolve().parents[2]
-        for stage in ("load", "verify", "proxy", "auth"):
-            with self.subTest(stage=stage), tempfile.TemporaryDirectory(
-                prefix=f"agentic-initial-{stage}-", dir=root / ".tmp"
-            ) as value:
-                output_root = Path(value)
-                leaked = output_root / "attempts/001-unknown/workspace/secret.txt"
-                leaked.parent.mkdir(parents=True)
-                leaked.write_text("unknown prior credential", encoding="utf-8")
-                batch = fake_batch()
-                ledger = initial_ledger(batch)
-                failure = SystemExit(f"private {stage} failure")
-                captured: list[tuple[dict, float]] = []
-
-                def purge(request: dict, timeout: float) -> None:
-                    captured.append((request, timeout))
-                    benchmark_runner.remove_tmp_artifact_entry(Path(request["treeRoot"]), root)
-
-                load = mock.Mock(return_value=(batch, ledger))
-                verify = mock.Mock(return_value=resolve_proxy_policy({}))
-                freeze = mock.Mock(side_effect=failure if stage == "auth" else AssertionError("freeze must not run"))
-                proxy_patch = mock.patch.object(benchmark_runner, "resolve_proxy_policy")
-                if stage == "load":
-                    load.side_effect = failure
-                elif stage == "verify":
-                    verify.side_effect = failure
-                elif stage == "proxy":
-                    batch["batchDigest"] = benchmark_runner.batch_digest(batch)
-                    verify = benchmark_runner.verify_batch
-                with mock.patch.object(benchmark_runner, "load_batch_and_ledger", load), mock.patch.object(
-                    benchmark_runner, "verify_batch", verify
-                ), mock.patch.object(benchmark_runner, "freeze_auth_file", freeze), mock.patch.object(
-                    benchmark_runner, "supervise_confidential_cleanup", side_effect=purge
-                ), proxy_patch as resolve_proxy:
-                    if stage == "proxy":
-                        resolve_proxy.side_effect = failure
-                    with self.assertRaises(SystemExit) as caught:
-                        run_command(argparse.Namespace(output_root=output_root, auth_file=Path("/private/auth")))
-                self.assertIs(caught.exception, failure)
-                self.assertFalse((output_root / "attempts").exists())
-                self.assertEqual(len(captured), 1)
-                request, timeout = captured[0]
-                self.assertEqual(set(request), {"root", "treeRoot", "mode"})
-                self.assertEqual(request["mode"], "purge-untrusted")
-                self.assertLessEqual(timeout, 2.0)
-
-    def test_missing_opt_in_after_trusted_setup_preserves_completed_artifacts(self):
-        root = Path(__file__).resolve().parents[2]
-        with tempfile.TemporaryDirectory(prefix="agentic-missing-opt-in-", dir=root / ".tmp") as value:
-            output_root = Path(value)
-            completed = output_root / "attempts/001-completed/result.json"
-            completed.parent.mkdir(parents=True)
-            completed.write_text('{"status":"valid"}', encoding="utf-8")
-            batch = fake_batch()
-            ledger = initial_ledger(batch)
-            frozen = mock.Mock(
-                mount_path=Path("/proc/1/fd/9"), descriptor=9, credential_policy=EMPTY_CREDENTIAL_POLICY
-            )
-            setup = {"authFile": "/proc/1/fd/9", "bwrap": "/safe/bwrap", "codex": "/safe/codex"}
-            args = argparse.Namespace(output_root=output_root, auth_file=Path("/safe/auth"))
-            with mock.patch.dict(os.environ, {}, clear=True), mock.patch.object(
-                benchmark_runner, "load_batch_and_ledger", return_value=(batch, ledger)
-            ), mock.patch.object(benchmark_runner, "verify_batch", return_value=resolve_proxy_policy({})), mock.patch.object(
-                benchmark_runner, "freeze_auth_file", return_value=frozen
-            ), mock.patch.object(
-                benchmark_runner.agentic_benchmark_scheduler, "execute_budgeted_stage", return_value=setup
-            ) as execute_stage, mock.patch.object(benchmark_runner, "supervise_confidential_cleanup") as purge:
-                with self.assertRaises(SystemExit) as caught:
-                    run_command(args)
-            self.assertIn("AEGIS_AGENTIC_BENCHMARK_LIVE", str(caught.exception))
-            self.assertEqual(completed.read_text(encoding="utf-8"), '{"status":"valid"}')
-            purge.assert_not_called()
-            execute_stage.assert_not_called()
-            frozen.close.assert_called_once_with()
-
-    def test_initial_purge_failure_is_sanitized_and_has_security_priority(self):
-        root = Path(__file__).resolve().parents[2]
-        private_error = OSError("private ledger read detail")
-        with tempfile.TemporaryDirectory(prefix="agentic-purge-failure-", dir=root / ".tmp") as value, mock.patch.object(
-            benchmark_runner, "load_batch_and_ledger", side_effect=private_error
-        ), mock.patch.object(
-            benchmark_runner, "supervise_confidential_cleanup", side_effect=SystemExit("private cleanup detail")
-        ):
-            with self.assertRaises(SystemExit) as caught:
-                run_command(argparse.Namespace(output_root=Path(value), auth_file=Path("/private/auth")))
-        self.assertEqual(str(caught.exception), "untrusted benchmark artifact purge failed")
-        self.assertIsNone(caught.exception.__cause__)
-        self.assertNotIn("private", str(caught.exception))
 
     def test_attempt_artifacts_are_scrubbed_before_any_result_returns(self):
         root = Path(__file__).resolve().parents[2]
@@ -1177,19 +1064,71 @@ class RunnerContractTest(unittest.TestCase):
         try:
             self.assertEqual(process.stdout.readline().strip(), "ready")  # type: ignore[union-attr]
             started = time.monotonic()
-            _stdout, _stderr, timed_out = communicate_with_timeout(
+            _stdout, _stderr, timed_out, output_exceeded, artifact_exceeded = communicate_with_timeout(
                 process,
                 0.05,
                 cleanup_timeout_seconds=0.1,
             )
             elapsed = time.monotonic() - started
             self.assertTrue(timed_out)
+            self.assertFalse(output_exceeded)
+            self.assertFalse(artifact_exceeded)
             self.assertEqual(process.returncode, -signal.SIGKILL)
             self.assertLess(elapsed, 1.0)
         finally:
             if process.poll() is None:
                 process.kill()
                 process.wait(timeout=1)
+
+    def test_outer_supervised_attempt_child_does_not_create_a_nested_session(self):
+        root = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory(prefix="agentic-attempt-group-", dir=root / ".tmp") as value:
+            output_root = Path(value)
+            (output_root / "workspace").mkdir()
+            (output_root / "prompt.txt").write_text("prompt", encoding="utf-8")
+            batch = {
+                "frozenCases": [
+                    {
+                        "caseId": "case",
+                        "frozenSeedProjectPath": "seed",
+                        "frozenPromptPath": "prompt.txt",
+                    }
+                ],
+                "modelPolicy": {"requestedModel": "model"},
+            }
+            target = {"targetId": "target", "caseId": "case", "arm": "baseline-no-aegis"}
+            fake_process = mock.Mock()
+            with mock.patch.object(
+                benchmark_runner,
+                "prepare_arm_layout",
+                return_value={"workspace": output_root / "workspace"},
+            ), mock.patch.object(benchmark_runner, "snapshot_workspace", return_value={}), mock.patch.object(
+                benchmark_runner, "build_codex_live_command", return_value=["fake-codex"]
+            ), mock.patch.object(benchmark_runner, "validate_bwrap_command"), mock.patch.object(
+                benchmark_runner.subprocess, "Popen", return_value=fake_process
+            ) as popen, mock.patch.object(
+                benchmark_runner,
+                "communicate_with_timeout",
+                return_value=("", "", False, True, False),
+            ):
+                result = benchmark_runner._execute_target_unscrubbed(
+                    root=root,
+                    output_root=output_root,
+                    batch=batch,
+                    target=target,
+                    attempt_number=1,
+                    auth_file=output_root / "auth",
+                    bwrap=output_root / "bwrap",
+                    codex=output_root / "codex",
+                    timeout_seconds=1.0,
+                    proxy_policy=resolve_proxy_policy({}),
+                    credential_policy=EMPTY_CREDENTIAL_POLICY,
+                    process_group_supervised=True,
+                )
+            self.assertFalse(popen.call_args.kwargs["start_new_session"])
+            self.assertEqual(result["invalidReason"], "infrastructure")
+            stderr = (output_root / "attempts/001-target/codex-stderr.log").read_text(encoding="utf-8")
+            self.assertNotIn("timed out", stderr)
 
 
 if __name__ == "__main__":

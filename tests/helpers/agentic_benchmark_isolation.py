@@ -9,7 +9,6 @@ import json
 import os
 import re
 import shutil
-import signal
 import stat
 import subprocess
 import time
@@ -17,6 +16,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+from agentic_benchmark_process_supervisor import communicate_with_timeout
 from agentic_benchmark_provider_preflight import CommandRunner
 from agentic_benchmark_provider_preflight import command_memfd_descriptors
 from agentic_benchmark_provider_preflight import PROXY_KEYS
@@ -512,6 +512,7 @@ def run_provider_preflight(
     timeout_seconds: float,
     proxy_policy: ProxyPolicy,
     command_runner: CommandRunner | None = None,
+    process_group_supervised: bool = False,
 ) -> dict[str, Any]:
     require(bwrap.is_file(), "bwrap is required for provider preflight")
     require(codex.is_file(), "Codex executable is required for provider preflight")
@@ -542,6 +543,7 @@ def run_provider_preflight(
             requested_model,
             timeout_seconds,
             command_runner=command_runner,
+            process_group_supervised=process_group_supervised,
         )
     finally:
         try:
@@ -551,26 +553,31 @@ def run_provider_preflight(
         require(not output_root.exists(), "provider preflight isolated root cleanup failed")
 
 
-def run_command(command: list[str], label: str, timeout: float = 60.0) -> str:
+def run_command(
+    command: list[str],
+    label: str,
+    timeout: float = 60.0,
+    *,
+    process_group_supervised: bool = False,
+) -> str:
     process = subprocess.Popen(
         command,
         text=True,
         stdin=subprocess.DEVNULL,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        start_new_session=True,
+        start_new_session=not process_group_supervised,
         pass_fds=command_memfd_descriptors(command),
     )
-    try:
-        stdout, stderr = process.communicate(timeout=timeout)
-    except subprocess.TimeoutExpired as exc:
-        os.killpg(process.pid, signal.SIGTERM)
-        try:
-            process.communicate(timeout=5)
-        except subprocess.TimeoutExpired:
-            os.killpg(process.pid, signal.SIGKILL)
-            process.communicate()
-        raise SystemExit(f"{label} timed out") from exc
+    stdout, stderr, timed_out, output_exceeded, _artifact_exceeded = communicate_with_timeout(
+        process,
+        timeout,
+        owns_process_group=not process_group_supervised,
+    )
+    if timed_out:
+        raise SystemExit(f"{label} timed out")
+    if output_exceeded:
+        raise SystemExit(f"{label} output exceeded the capture limit")
     require(process.returncode == 0, f"{label} failed with exit {process.returncode}: {stderr[:500]}")
     return stdout
 
@@ -683,6 +690,7 @@ def run_isolation_audit(
     codex: Path,
     prepared_snapshot: Path | None = None,
     timeout_seconds: float = 60.0,
+    process_group_supervised: bool = False,
 ) -> dict[str, Any]:
     require(timeout_seconds > 0, "isolation audit timeout must be positive")
     deadline = time.monotonic() + timeout_seconds
@@ -724,7 +732,12 @@ def run_isolation_audit(
             debug_prompt=True,
         )
         validate_bwrap_command(command, root=root, output_root=output_root, layout=layouts[arm])
-        raw = run_command(command, f"{arm} Codex prompt-input audit", remaining_timeout())
+        raw = run_command(
+            command,
+            f"{arm} Codex prompt-input audit",
+            remaining_timeout(),
+            process_group_supervised=process_group_supervised,
+        )
         try:
             data = json.loads(raw)
         except json.JSONDecodeError as exc:
@@ -733,7 +746,14 @@ def run_isolation_audit(
 
         audit_command = mount_audit_command(bwrap=bwrap, codex=codex, layout=layouts[arm])
         validate_bwrap_command(audit_command, root=root, output_root=output_root, layout=layouts[arm])
-        mount_audits[arm] = json.loads(run_command(audit_command, f"{arm} mount audit", remaining_timeout()))
+        mount_audits[arm] = json.loads(
+            run_command(
+                audit_command,
+                f"{arm} mount audit",
+                remaining_timeout(),
+                process_group_supervised=process_group_supervised,
+            )
+        )
 
     baseline = summaries["baseline-no-aegis"]
     aegis = summaries["aegis-auto"]

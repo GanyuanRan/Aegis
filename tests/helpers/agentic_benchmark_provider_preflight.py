@@ -9,7 +9,6 @@ import fcntl
 import ipaddress
 import os
 import re
-import signal
 import stat
 import subprocess
 import time
@@ -20,11 +19,12 @@ from types import MappingProxyType
 from typing import Any
 from urllib.parse import urlsplit
 
+from agentic_benchmark_process_supervisor import communicate_with_timeout
+
 
 CommandRunner = Callable[[list[str], float], subprocess.CompletedProcess[str]]
 AttemptCallback = Callable[..., dict[str, Any]]
 DirectoryRemover = Callable[[Path], None]
-PREFLIGHT_CLEANUP_TIMEOUT_SECONDS = 5.0
 MAX_ARTIFACT_ENTRIES = 4_096
 MAX_ARTIFACT_FILE_BYTES = 64 * 1024 * 1024
 MAX_ARTIFACT_TOTAL_BYTES = 256 * 1024 * 1024
@@ -115,7 +115,12 @@ def _credential_markers_from_auth(value: Any) -> tuple[str, ...]:
 
 def _read_auth_bytes(auth_file: Path) -> bytes:
     path = auth_file.expanduser().absolute()
-    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_CLOEXEC", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+        | getattr(os, "O_NONBLOCK", 0)
+    )
     try:
         descriptor = os.open(path, flags)
     except OSError as exc:
@@ -635,47 +640,29 @@ def scrub_stale_confidential_artifacts(
         raise SystemExit("stale benchmark attempt artifacts were unsafe")
 
 
-def _terminate_process(process: subprocess.Popen[str]) -> None:
-    try:
-        os.killpg(process.pid, signal.SIGTERM)
-    except ProcessLookupError:
-        pass
-    try:
-        process.communicate(timeout=PREFLIGHT_CLEANUP_TIMEOUT_SECONDS)
-        return
-    except subprocess.TimeoutExpired:
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-    try:
-        process.communicate(timeout=PREFLIGHT_CLEANUP_TIMEOUT_SECONDS)
-        return
-    except subprocess.TimeoutExpired:
-        for stream in (process.stdout, process.stderr):
-            if stream is not None:
-                stream.close()
-    try:
-        process.wait(timeout=PREFLIGHT_CLEANUP_TIMEOUT_SECONDS)
-    except subprocess.TimeoutExpired:
-        pass
-
-
-def _default_command_runner(command: list[str], timeout_seconds: float) -> subprocess.CompletedProcess[str]:
+def _default_command_runner(
+    command: list[str],
+    timeout_seconds: float,
+    *,
+    process_group_supervised: bool = False,
+) -> subprocess.CompletedProcess[str]:
     process = subprocess.Popen(
         command,
         text=True,
         stdin=subprocess.DEVNULL,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        start_new_session=True,
+        start_new_session=not process_group_supervised,
         pass_fds=command_memfd_descriptors(command),
     )
-    try:
-        stdout, stderr = process.communicate(timeout=timeout_seconds)
-    except subprocess.TimeoutExpired as exc:
-        _terminate_process(process)
-        raise subprocess.TimeoutExpired(command[0], timeout_seconds) from exc
+    stdout, stderr, timed_out, output_exceeded, _artifact_exceeded = communicate_with_timeout(
+        process,
+        timeout_seconds,
+        output_limit_bytes=1_048_576,
+        owns_process_group=not process_group_supervised,
+    )
+    if timed_out or output_exceeded:
+        raise subprocess.TimeoutExpired(command[0], timeout_seconds)
     return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
 
 
@@ -695,6 +682,7 @@ def run_sanitized_provider_preflight(
     *,
     command_runner: CommandRunner | None = None,
     clock: Callable[[], float] = time.monotonic,
+    process_group_supervised: bool = False,
 ) -> dict[str, Any]:
     """Execute a no-inference catalog command and discard all raw output."""
 
@@ -704,7 +692,14 @@ def run_sanitized_provider_preflight(
         raise SystemExit("provider preflight requested model must be non-empty")
     started = clock()
     try:
-        completed = (command_runner or _default_command_runner)(command, timeout_seconds)
+        if command_runner is None:
+            completed = _default_command_runner(
+                command,
+                timeout_seconds,
+                process_group_supervised=process_group_supervised,
+            )
+        else:
+            completed = command_runner(command, timeout_seconds)
     except subprocess.TimeoutExpired:
         return _result("timeout", clock() - started, False, 0)
     except OSError:

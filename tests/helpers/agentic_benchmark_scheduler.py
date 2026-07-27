@@ -158,6 +158,28 @@ def _set_status(ledger: dict[str, Any], status: str, reason: str | None = None) 
     ledger["scheduler"] = state
 
 
+def _settle_wall(
+    ledger: dict[str, Any],
+    *,
+    phase: str,
+    pre_cumulative: float,
+    elapsed: float,
+    reservation: float,
+) -> bool:
+    """Settle without hiding an overrun behind a numeric clamp."""
+
+    if elapsed <= reservation:
+        ledger["cumulativeWallSeconds"] = pre_cumulative + elapsed
+        return False
+    ledger["cumulativeWallSeconds"] = pre_cumulative + reservation
+    ledger["wallClockOverrun"] = {
+        "phase": phase,
+        "elapsedSeconds": elapsed,
+        "reservationSeconds": reservation,
+    }
+    return True
+
+
 def _attempt_record(target: dict[str, Any], attempt_number: int, wave_number: int) -> dict[str, Any]:
     return {
         "attemptNumber": attempt_number,
@@ -430,6 +452,14 @@ def validate_ledger(batch: dict[str, Any], ledger: dict[str, Any]) -> None:
         float(cumulative) <= float(batch["wallClockBudgetSeconds"]),
         "ledger cumulativeWallSeconds exceeds the wall-clock budget",
     )
+    overrun = ledger.get("wallClockOverrun")
+    if overrun is not None:
+        _require(isinstance(overrun, dict), "ledger wallClockOverrun must be an object")
+        _require(set(overrun) == {"phase", "elapsedSeconds", "reservationSeconds"}, "ledger wallClockOverrun fields are invalid")
+        _require(isinstance(overrun["phase"], str) and overrun["phase"], "ledger wallClockOverrun phase is invalid")
+        elapsed = _positive_number(overrun["elapsedSeconds"], "wallClockOverrun.elapsedSeconds")
+        reserved = _positive_number(overrun["reservationSeconds"], "wallClockOverrun.reservationSeconds")
+        _require(elapsed > reserved, "ledger wallClockOverrun must record a real overrun")
     _validate_active_budget_stage(batch, ledger)
     active = _validate_active_wave(batch, ledger)
     if active is None:
@@ -449,6 +479,7 @@ def execute_budgeted_stage(
     """Persistently reserve and settle one pre-schedule active-run stage."""
 
     validate_ledger(batch, ledger)
+    _require("wallClockOverrun" not in ledger, "benchmark cannot resume after a wall-clock deadline overrun")
     _require(isinstance(stage, str) and stage, "budget stage name must be non-empty")
     maximum = _positive_number(maximum_seconds, "budget stage maximum")
     if _recover_interrupted(batch, ledger):
@@ -486,20 +517,33 @@ def execute_budgeted_stage(
     except BaseException:
         finished = monotonic()
         _require(finished >= started, "monotonic clock moved backwards")
-        ledger["cumulativeWallSeconds"] = pre_stage + min(finished - started, reservation)
+        overrun = _settle_wall(
+            ledger,
+            phase=stage,
+            pre_cumulative=pre_stage,
+            elapsed=finished - started,
+            reservation=reservation,
+        )
         del ledger["activeBudgetStage"]
-        _set_status(ledger, "stopped", f"{stage}-failed")
+        _set_status(ledger, "stopped", "wall-clock-deadline-overrun" if overrun else f"{stage}-failed")
         _atomic_json(ledger_path, ledger)
         raise
     finished = monotonic()
     _require(finished >= started, "monotonic clock moved backwards")
     elapsed = finished - started
-    ledger["cumulativeWallSeconds"] = pre_stage + min(elapsed, reservation)
+    overrun = _settle_wall(
+        ledger,
+        phase=stage,
+        pre_cumulative=pre_stage,
+        elapsed=elapsed,
+        reservation=reservation,
+    )
     del ledger["activeBudgetStage"]
     _set_status(ledger, "running", f"{stage}-complete")
     _atomic_json(ledger_path, ledger)
     if elapsed >= reservation:
-        _set_status(ledger, "stopped", "cumulative-wall-budget-exhausted")
+        reason = "wall-clock-deadline-overrun" if overrun else "cumulative-wall-budget-exhausted"
+        _set_status(ledger, "stopped", reason)
         _atomic_json(ledger_path, ledger)
         raise SystemExit(f"benchmark {stage} exceeded the remaining wall-clock budget")
     return result
@@ -543,6 +587,10 @@ def execute_schedule(
     """Execute waves using an executor that enforces its supplied timeout."""
 
     validate_ledger(batch, ledger)
+    if "wallClockOverrun" in ledger:
+        _set_status(ledger, "stopped", "wall-clock-deadline-overrun")
+        _atomic_json(ledger_path, ledger)
+        return ledger
     if _recover_interrupted(batch, ledger):
         _set_status(ledger, "recovered", "interrupted-launched-attempts-invalidated")
         _atomic_json(ledger_path, ledger)
@@ -596,10 +644,23 @@ def execute_schedule(
         _require(finished >= started, "monotonic clock moved backwards")
         for attempt in attempts:
             attempt.update(results[attempt["attemptNumber"]])
-        ledger["cumulativeWallSeconds"] = pre_wave_cumulative + min(finished - started, timeout_seconds)
+        elapsed = finished - started
+        overrun = _settle_wall(
+            ledger,
+            phase=f"wave-{wave_number}",
+            pre_cumulative=pre_wave_cumulative,
+            elapsed=elapsed,
+            reservation=timeout_seconds,
+        )
         del ledger["activeWave"]
-        _set_status(ledger, "running", "wave-committed")
+        _set_status(
+            ledger,
+            "stopped" if overrun else "running",
+            "wall-clock-deadline-overrun" if overrun else "wave-committed",
+        )
         _atomic_json(ledger_path, ledger)
+        if overrun:
+            return ledger
 
         for target, attempt in zip(targets, attempts):
             if attempt["status"] == "invalid":

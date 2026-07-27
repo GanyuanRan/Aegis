@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import sys
 import tempfile
 import time
@@ -16,7 +17,7 @@ from unittest import mock
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import agentic_benchmark_process_supervisor
-from agentic_benchmark_process_supervisor import MAX_RESULT_BYTES, supervise_attempt, supervise_confidential_cleanup, supervise_operation, supervise_process, supervise_stage
+from agentic_benchmark_process_supervisor import MAX_RESULT_BYTES, communicate_with_timeout, supervise_attempt, supervise_confidential_cleanup, supervise_operation, supervise_process, supervise_stage
 from agentic_benchmark_scheduler import execute_budgeted_stage
 from agentic_benchmark_provider_preflight import freeze_auth_file
 from agentic_benchmark_isolation import remove_tmp_artifact_entry
@@ -63,10 +64,13 @@ from pathlib import Path
 phase, pid_path = sys.argv[1:]
 child = os.fork()
 if child == 0:
+    if phase == 'nested-new-session':
+        os.setsid()
     signal.signal(signal.SIGTERM, signal.SIG_IGN)
     while True:
         time.sleep(60)
 Path(pid_path).write_text(str(child), encoding='utf-8')
+print('ready', flush=True)
 signal.signal(signal.SIGTERM, signal.SIG_IGN)
 sys.stdin.read()
 while True:
@@ -106,6 +110,95 @@ while True:
                     self.assertTrue(pid_path.is_file())
                     self._assert_process_gone(int(pid_path.read_text(encoding="utf-8")))
 
+    def test_nested_new_session_escape_is_observed_and_killed(self):
+        with tempfile.TemporaryDirectory(prefix="agentic-supervisor-escape-", dir=self.root / ".tmp") as value:
+            directory = Path(value)
+            pid_path = directory / "escape.pid"
+            started = time.monotonic()
+            outcome = supervise_process(
+                [sys.executable, str(self._hang_script(directory)), "nested-new-session", str(pid_path)],
+                "{}",
+                0.5,
+            )
+            self.assertLess(time.monotonic() - started, 0.5)
+            self.assertTrue(outcome["timedOut"])
+            self._assert_process_gone(int(pid_path.read_text(encoding="utf-8")))
+
+    def test_capture_and_monitor_exceptions_sweep_children_and_close_pidfds(self):
+        for failure_source in ("capture", "monitor"):
+            with self.subTest(failure_source=failure_source), tempfile.TemporaryDirectory(
+                prefix=f"agentic-supervisor-{failure_source}-", dir=self.root / ".tmp"
+            ) as value:
+                directory = Path(value)
+                pid_path = directory / "child.pid"
+                process = subprocess.Popen(
+                    [sys.executable, str(self._hang_script(directory)), "nested-new-session", str(pid_path)],
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    start_new_session=True,
+                )
+                deadline = time.monotonic() + 1.0
+                while not pid_path.exists() and time.monotonic() < deadline:
+                    time.sleep(0.01)
+                self.assertTrue(pid_path.exists())
+                opened_pidfds: list[int] = []
+                real_pidfd_open = os.pidfd_open
+
+                def track_pidfd(pid: int) -> int:
+                    descriptor = real_pidfd_open(pid)
+                    opened_pidfds.append(descriptor)
+                    return descriptor
+
+                patches = [mock.patch.object(agentic_benchmark_process_supervisor.os, "pidfd_open", side_effect=track_pidfd)]
+                if failure_source == "capture":
+                    patches.append(mock.patch.object(agentic_benchmark_process_supervisor.os, "read", side_effect=OSError("capture failed")))
+                else:
+                    patches.append(mock.patch.object(agentic_benchmark_process_supervisor, "artifact_limits_exceeded", side_effect=OSError("monitor failed")))
+                started = time.monotonic()
+                with patches[0], patches[1], self.assertRaises(SystemExit) as caught:
+                    communicate_with_timeout(
+                        process,
+                        0.5,
+                        artifact_root=directory if failure_source == "monitor" else None,
+                    )
+                self.assertEqual(str(caught.exception), "process supervision failed")
+                self.assertLess(time.monotonic() - started, 0.5)
+                self._assert_process_gone(int(pid_path.read_text(encoding="utf-8")))
+                self.assertTrue(process.stdout.closed)
+                self.assertTrue(process.stderr.closed)
+                self.assertTrue(opened_pidfds)
+                for descriptor in opened_pidfds:
+                    with self.assertRaises(OSError):
+                        os.fstat(descriptor)
+
+    def test_terminal_worker_sweeps_same_group_grandchild(self):
+        with tempfile.TemporaryDirectory(prefix="agentic-supervisor-terminal-", dir=self.root / ".tmp") as value:
+            pid_path = Path(value) / "grandchild.pid"
+            script = """
+import os
+import signal
+import sys
+import time
+
+child = os.fork()
+if child == 0:
+    os.setsid()
+    sink = os.open(os.devnull, os.O_RDWR)
+    for descriptor in (0, 1, 2):
+        os.dup2(sink, descriptor)
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
+    time.sleep(60)
+else:
+    with open(sys.argv[1], 'w', encoding='utf-8') as stream:
+        stream.write(str(child))
+    time.sleep(0.15)
+"""
+            outcome = supervise_process([sys.executable, "-c", script, str(pid_path)], "{}", 1.0)
+            self.assertFalse(outcome["timedOut"])
+            self.assertEqual(outcome["returncode"], 0)
+            self._assert_process_gone(int(pid_path.read_text(encoding="utf-8")))
+
     def test_real_hanging_setup_callback_is_bounded_and_charged(self):
         with tempfile.TemporaryDirectory(prefix="agentic-supervisor-stage-", dir=self.root / ".tmp") as value:
             directory = Path(value)
@@ -134,10 +227,48 @@ while True:
 
     def test_worker_result_output_is_capped(self):
         command = [sys.executable, "-c", f"import sys; sys.stdin.read(); print('x' * {MAX_RESULT_BYTES + 1})"]
+        started = time.monotonic()
         outcome = supervise_process(command, "{}", 1.0)
+        self.assertLess(time.monotonic() - started, 1.0)
         self.assertFalse(outcome["timedOut"])
         self.assertTrue(outcome["outputExceeded"])
         self.assertEqual(outcome["stdout"], "")
+
+    def test_legal_output_that_looks_like_an_old_sentinel_is_not_misclassified(self):
+        text = "benchmark-output-limit-exceeded"
+        outcome = supervise_process(
+            [sys.executable, "-c", f"import sys; sys.stdin.read(); print({text!r})"],
+            "{}",
+            1.0,
+        )
+        self.assertEqual(outcome["returncode"], 0)
+        self.assertFalse(outcome["timedOut"])
+        self.assertFalse(outcome["outputExceeded"])
+        self.assertEqual(outcome["stdout"].strip(), text)
+
+    def test_live_artifact_growth_is_terminated_before_worker_completion(self):
+        with tempfile.TemporaryDirectory(prefix="agentic-artifact-growth-", dir=self.root / ".tmp") as value:
+            artifact_root = Path(value) / "attempt"
+            artifact_root.mkdir()
+            script = (
+                "import pathlib,sys,time; "
+                "path=pathlib.Path(sys.argv[1]); "
+                "path.write_bytes(b'x'*4096); "
+                "time.sleep(60)"
+            )
+            started = time.monotonic()
+            with mock.patch("agentic_benchmark_provider_preflight.MAX_ARTIFACT_FILE_BYTES", 1024), mock.patch(
+                "agentic_benchmark_provider_preflight.MAX_ARTIFACT_TOTAL_BYTES", 1024
+            ):
+                outcome = supervise_process(
+                    [sys.executable, "-c", script, str(artifact_root / "growing.bin")],
+                    "{}",
+                    1.0,
+                    artifact_root=artifact_root,
+                )
+            self.assertLess(time.monotonic() - started, 1.0)
+            self.assertTrue(outcome["artifactExceeded"])
+            self.assertFalse(outcome["timedOut"])
 
     def test_parent_timeout_cleanup_promotes_residual_credential_exposure(self):
         cleanup_calls = 0
@@ -200,10 +331,10 @@ while True:
 
     def test_stage_cleanup_runs_after_success_and_crash_with_a_reserved_deadline(self):
         for label, side_effect in (("success", None), ("crash", SystemExit("worker crashed"))):
-            cleanup_budgets: list[float] = []
+            cleanup_calls: list[tuple[float, bool]] = []
 
-            def cleanup(seconds: float) -> None:
-                cleanup_budgets.append(seconds)
+            def cleanup(seconds: float, uncertain: bool) -> None:
+                cleanup_calls.append((seconds, uncertain))
 
             with self.subTest(label=label), mock.patch.object(
                 agentic_benchmark_process_supervisor,
@@ -217,15 +348,23 @@ while True:
                 else:
                     with self.assertRaises(SystemExit):
                         supervise_stage("provider-preflight", {}, 0.9, cleanup)
-            self.assertEqual(len(cleanup_budgets), 1)
-            self.assertGreater(cleanup_budgets[0], 0)
-            self.assertLessEqual(cleanup_budgets[0], 0.3)
+            self.assertEqual(len(cleanup_calls), 1)
+            self.assertGreater(cleanup_calls[0][0], 0)
+            self.assertLessEqual(cleanup_calls[0][0], 0.3)
+            self.assertEqual(cleanup_calls[0][1], side_effect is not None)
 
     def test_credential_markers_use_worker_stdin_and_never_argv_or_result(self):
         secret = "private-refresh-token-value"
         captured: dict[str, object] = {}
 
-        def fake_supervise(command: list[str], payload: str, timeout_seconds: float, *, pass_fds: tuple[int, ...] = ()) -> dict:
+        def fake_supervise(
+            command: list[str],
+            payload: str,
+            timeout_seconds: float,
+            *,
+            pass_fds: tuple[int, ...] = (),
+            artifact_root: Path | None = None,
+        ) -> dict:
             captured.update(command=command, payload=payload, timeout=timeout_seconds, pass_fds=pass_fds)
             return {
                 "returncode": 0,

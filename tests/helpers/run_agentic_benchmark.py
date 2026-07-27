@@ -10,6 +10,7 @@ import os
 import random
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import time
@@ -18,13 +19,8 @@ from pathlib import Path
 from typing import Any
 
 import agentic_benchmark_scheduler
-from agentic_benchmark_process_supervisor import (
-    CONFIDENTIAL_CLEANUP_MAX_SECONDS,
-    communicate_with_timeout,
-    supervise_attempt,
-    supervise_confidential_cleanup,
-    supervise_stage,
-)
+from agentic_benchmark_active_run import run_active
+from agentic_benchmark_process_supervisor import communicate_with_timeout
 
 from agentic_benchmark_isolation import (
     ARMS,
@@ -63,6 +59,7 @@ from validate_agentic_benchmark_matrix import validate_matrix
 
 REPORT_TYPE = "agentic-benchmark-private-report"
 LEDGER_TYPE = "agentic-benchmark-attempt-ledger"
+MAX_CONTROL_FILE_BYTES = 4 * 1024 * 1024
 UNSUPPORTED_CLAIMS = [
     "runtime-authority",
     "automatic-candidate-promotion",
@@ -313,6 +310,7 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
     schedule = schedule_targets(cases, profile["repetitionsPerCase"], seed, profile["arms"])
     harness_paths = [
         "tests/helpers/run_agentic_benchmark.py",
+        "tests/helpers/agentic_benchmark_active_run.py",
         "tests/helpers/agentic_benchmark_scheduler.py",
         "tests/helpers/agentic_benchmark_process_supervisor.py",
         "tests/helpers/agentic_benchmark_isolation.py",
@@ -511,9 +509,15 @@ def _execute_target_unscrubbed(
         start_new_session=not process_group_supervised,
         pass_fds=command_memfd_descriptors(command),
     )
-    stdout, stderr, timed_out = communicate_with_timeout(process, timeout_seconds)
+    stdout, stderr, timed_out, output_exceeded, _artifact_exceeded = communicate_with_timeout(
+        process,
+        timeout_seconds,
+        owns_process_group=not process_group_supervised,
+    )
     if timed_out:
         stderr += "\nbenchmark attempt timed out\n"
+    if output_exceeded:
+        stderr += "\nbenchmark attempt output exceeded the capture limit\n"
     elapsed = round(time.monotonic() - started, 3)
     stdout, stdout_exposed = redact_credential_output(stdout, credential_policy)
     stderr, stderr_exposed = redact_credential_output(stderr, credential_policy)
@@ -527,6 +531,8 @@ def _execute_target_unscrubbed(
         return {"status": "invalid", "invalidReason": "proxy-exposure", "elapsedSeconds": elapsed}
     if timed_out:
         return {"status": "invalid", "invalidReason": "timeout", "elapsedSeconds": elapsed}
+    if output_exceeded:
+        return {"status": "invalid", "invalidReason": "infrastructure", "elapsedSeconds": elapsed}
     if process.returncode != 0:
         return {"status": "invalid", "invalidReason": "infrastructure", "elapsedSeconds": elapsed, "hostExit": process.returncode}
 
@@ -767,9 +773,46 @@ def aggregate(batch: dict[str, Any], ledger: dict[str, Any]) -> dict[str, Any]:
     return report
 
 
+def _load_control_json(path: Path, label: str) -> dict[str, Any]:
+    """Read a bounded local regular file without following or blocking on links/FIFOs."""
+
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_CLOEXEC", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+        | getattr(os, "O_NONBLOCK", 0)
+    )
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as exc:
+        raise SystemExit(f"benchmark {label} is unavailable") from exc
+    try:
+        metadata = os.fstat(descriptor)
+        require(stat.S_ISREG(metadata.st_mode), f"benchmark {label} must be a regular file")
+        require(metadata.st_size <= MAX_CONTROL_FILE_BYTES, f"benchmark {label} is too large")
+        chunks: list[bytes] = []
+        remaining = MAX_CONTROL_FILE_BYTES + 1
+        while remaining:
+            chunk = os.read(descriptor, min(65_536, remaining))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            remaining -= len(chunk)
+        payload = b"".join(chunks)
+        require(len(payload) <= MAX_CONTROL_FILE_BYTES, f"benchmark {label} is too large")
+        try:
+            value = json.loads(payload)
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise SystemExit(f"benchmark {label} is invalid") from exc
+        require(isinstance(value, dict), f"benchmark {label} must contain a JSON object")
+        return value
+    finally:
+        os.close(descriptor)
+
+
 def load_batch_and_ledger(output_root: Path) -> tuple[dict[str, Any], dict[str, Any]]:
-    batch = load_json(output_root / "batch.json", "batch")
-    ledger = load_json(output_root / "ledger.json", "ledger")
+    batch = _load_control_json(output_root / "batch.json", "batch")
+    ledger = _load_control_json(output_root / "ledger.json", "ledger")
     require(ledger.get("reportType") == LEDGER_TYPE, "ledger report type is invalid")
     require(ledger.get("batchDigest") == batch.get("batchDigest"), "ledger belongs to a different batch")
     return batch, ledger
@@ -837,125 +880,7 @@ def require_execution_opt_in(profile_id: str, environment: dict[str, str]) -> No
 
 
 def run_command(args: argparse.Namespace) -> None:
-    root = repo_root()
-    output_root = resolve_tmp_child(root, args.output_root, "output-root")
-    attempts_root = output_root / "attempts"
-    try:
-        batch, ledger = load_batch_and_ledger(output_root)
-        proxy_policy = verify_batch(batch, root, output_root)
-        frozen_auth = freeze_auth_file(args.auth_file)
-    except BaseException:
-        try:
-            exposure = supervise_confidential_cleanup(
-                {"root": str(root), "treeRoot": str(attempts_root), "mode": "purge-untrusted"},
-                CONFIDENTIAL_CLEANUP_MAX_SECONDS,
-            )
-            require(exposure is None, "untrusted benchmark artifact purge reported an exposure")
-        except BaseException:
-            raise SystemExit("untrusted benchmark artifact purge failed") from None
-        raise
-    auth_file = frozen_auth.mount_path
-    credential_policy = frozen_auth.credential_policy
-    credential_markers = list(credential_policy.in_memory_markers())
-    ledger_path = output_root / "ledger.json"
-
-    def confidential_cleanup(tree_root: Path, mode: str, seconds: float) -> str | None:
-        return supervise_confidential_cleanup(
-            {
-                "root": str(root),
-                "treeRoot": str(tree_root),
-                "mode": mode,
-                "authGuard": frozen_auth.drift_guard(),
-                "credentialMarkers": credential_markers,
-            },
-            seconds,
-        )
-
-    def isolation_stage(remaining_seconds: float) -> dict[str, Any]:
-        frozen_auth.assert_source_unchanged()
-        return supervise_stage(
-            "isolation-setup",
-            {
-                "root": str(root),
-                "outputRoot": str(output_root),
-                "batch": batch,
-                "authFile": str(auth_file),
-                "authFd": frozen_auth.descriptor,
-                "credentialMarkers": credential_markers,
-            },
-            remaining_seconds,
-            lambda seconds: confidential_cleanup(output_root / "isolation-audit", "stage", seconds),
-        )
-
-    def preflight_stage(remaining_seconds: float) -> dict[str, Any]:
-        frozen_auth.assert_source_unchanged()
-        return supervise_stage(
-            "provider-preflight",
-            {
-                "root": str(root),
-                "outputRoot": str(output_root),
-                "batch": batch,
-                "authFile": str(auth_file),
-                "authFd": frozen_auth.descriptor,
-                "bwrap": str(bwrap),
-                "codex": str(codex),
-            },
-            remaining_seconds,
-            lambda seconds: confidential_cleanup(output_root / "provider-preflight-isolated", "stage", seconds),
-        )
-
-    def executor(target: dict[str, Any], attempt_number: int, timeout_seconds: float) -> dict[str, Any]:
-        frozen_auth.assert_source_unchanged()
-        current_proxy_policy = verify_batch(batch, root, output_root)
-        require(
-            network_policy_metadata(current_proxy_policy) == network_policy_metadata(proxy_policy),
-            "benchmark proxy policy drifted",
-        )
-        def recover_attempt_artifacts(seconds: float, uncertain: bool) -> str | None:
-            leaf = f"{attempt_number:03d}-{target['targetId']}"
-            require(Path(leaf).name == leaf, "attempt targetId must not contain path separators")
-            attempt_root = resolve_tmp_child(root, output_root / "attempts" / leaf, "attempt artifact root")
-            return confidential_cleanup(attempt_root, "attempt" if uncertain else "auth-check", seconds)
-
-        return supervise_attempt(
-            {
-                "root": str(root),
-                "outputRoot": str(output_root),
-                "batch": batch,
-                "target": target,
-                "attemptNumber": attempt_number,
-                "authFile": str(auth_file),
-                "authFd": frozen_auth.descriptor,
-                "bwrap": str(bwrap),
-                "codex": str(codex),
-                "credentialMarkers": credential_markers,
-                "timeoutSeconds": timeout_seconds,
-            },
-            timeout_seconds,
-            recover_attempt_artifacts,
-        )
-
-    try:
-        require_execution_opt_in(batch["profileId"], os.environ)
-        setup = agentic_benchmark_scheduler.execute_budgeted_stage(
-            batch, ledger, ledger_path, "isolation-and-setup", batch["wallClockBudgetSeconds"], isolation_stage,
-        )
-        auth_file, bwrap, codex = (Path(setup[key]) for key in ("authFile", "bwrap", "codex"))
-        preflight = agentic_benchmark_scheduler.execute_budgeted_stage(
-            batch, ledger, ledger_path, "provider-preflight", batch["preflightTimeoutSeconds"], preflight_stage,
-        )
-        atomic_json(output_root / "provider-preflight.json", preflight)
-        require(preflight["status"] == "ready", f"provider preflight is not ready: {preflight['status']}")
-        agentic_benchmark_scheduler.execute_schedule(batch, ledger, ledger_path, executor)
-        frozen_auth.assert_source_unchanged()
-        verify_batch(batch, root, output_root)
-        report = aggregate(batch, ledger)
-        atomic_json(output_root / "private-report.json", report)
-        print(json.dumps({"batchId": batch["batchId"], "attempts": report["attempts"], "completeness": report["completeness"]}, sort_keys=True))
-        if report["completeness"] != "complete":
-            raise SystemExit(75)
-    finally:
-        frozen_auth.close()
+    run_active(sys.modules[__name__], args)
 
 
 def aggregate_command(args: argparse.Namespace) -> None:

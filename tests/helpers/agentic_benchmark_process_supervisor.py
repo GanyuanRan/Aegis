@@ -4,7 +4,10 @@
 from __future__ import annotations
 
 import json
+import fcntl
 import os
+import resource
+import selectors
 import signal
 import subprocess
 import sys
@@ -15,8 +18,11 @@ from typing import Any, Callable
 
 MAX_REQUEST_BYTES = 1_048_576
 MAX_RESULT_BYTES = 65_536
+MAX_CHILD_OUTPUT_BYTES = 16 * 1024 * 1024
 PROCESS_CLEANUP_SECONDS = 1.0
 CONFIDENTIAL_CLEANUP_MAX_SECONDS = 2.0
+ARTIFACT_POLL_SECONDS = 0.02
+PROCESS_RETURN_RESERVE_SECONDS = 0.05
 
 
 def _require(condition: bool, message: str) -> None:
@@ -24,38 +30,138 @@ def _require(condition: bool, message: str) -> None:
         raise SystemExit(message)
 
 
-def _text(value: str | bytes | None) -> str:
-    if value is None:
-        return ""
-    return value.decode(errors="replace") if isinstance(value, bytes) else value
-
-
-def terminate_process(process: subprocess.Popen[str], cleanup_seconds: float = PROCESS_CLEANUP_SECONDS) -> tuple[str, str]:
-    """Terminate a complete process group and reap its leader within a bound."""
-
-    _require(cleanup_seconds > 0, "process cleanup timeout must be positive")
-    try:
-        os.killpg(process.pid, signal.SIGTERM)
-    except ProcessLookupError:
-        pass
-    try:
-        return process.communicate(timeout=cleanup_seconds)
-    except subprocess.TimeoutExpired:
+def _descendant_pids(root_pid: int) -> set[int]:
+    descendants: set[int] = set()
+    pending = [root_pid]
+    while pending:
+        parent = pending.pop()
         try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-    try:
-        return process.communicate(timeout=cleanup_seconds)
-    except subprocess.TimeoutExpired as exc:
-        for stream in (process.stdout, process.stderr):
-            if stream is not None:
-                stream.close()
+            children = [
+                int(value)
+                for value in Path(f"/proc/{parent}/task/{parent}/children").read_text(encoding="ascii").split()
+            ]
+        except (OSError, ValueError):
+            continue
+        for child in children:
+            if child not in descendants:
+                descendants.add(child)
+                pending.append(child)
+    return descendants
+
+
+def _observe_descendants(root_pid: int, observed: dict[int, int]) -> None:
+    if not hasattr(os, "pidfd_open") or not hasattr(signal, "pidfd_send_signal"):
+        return
+    for pid in _descendant_pids(root_pid):
+        if pid in observed:
+            continue
         try:
-            process.wait(timeout=cleanup_seconds)
-        except subprocess.TimeoutExpired:
+            observed[pid] = os.pidfd_open(pid)
+        except OSError:
+            continue
+
+
+def _signal_process_tree(
+    process: subprocess.Popen[str],
+    signal_number: int,
+    owns_process_group: bool,
+    observed_descendants: dict[int, int] | None = None,
+) -> None:
+    observed = observed_descendants if observed_descendants is not None else {}
+    _observe_descendants(process.pid, observed)
+    if owns_process_group:
+        try:
+            os.killpg(process.pid, signal_number)
+        except OSError:
             pass
-        return _text(exc.output), _text(exc.stderr)
+    else:
+        try:
+            os.kill(process.pid, signal_number)
+        except OSError:
+            pass
+    for descriptor in observed.values():
+        try:
+            signal.pidfd_send_signal(descriptor, signal_number)
+        except OSError:
+            pass
+
+
+def artifact_limits_exceeded(root: Path) -> bool:
+    """Check the confidentiality owner's hard artifact shape without following links."""
+
+    from agentic_benchmark_provider_preflight import MAX_ARTIFACT_ENTRIES
+    from agentic_benchmark_provider_preflight import MAX_ARTIFACT_FILE_BYTES
+    from agentic_benchmark_provider_preflight import MAX_ARTIFACT_TOTAL_BYTES
+
+    if not root.exists() or root.is_symlink() or not root.is_dir():
+        return False
+    entries = 0
+    total_bytes = 0
+    pending = [os.fsencode(root)]
+    while pending:
+        directory = pending.pop()
+        try:
+            iterator = os.scandir(directory)
+        except OSError:
+            return True
+        with iterator:
+            for entry in iterator:
+                entries += 1
+                if entries > MAX_ARTIFACT_ENTRIES:
+                    return True
+                try:
+                    if entry.is_dir(follow_symlinks=False):
+                        pending.append(entry.path)
+                        continue
+                    size = entry.stat(follow_symlinks=False).st_size
+                except OSError:
+                    return True
+                total_bytes += size
+                if size > MAX_ARTIFACT_FILE_BYTES or total_bytes > MAX_ARTIFACT_TOTAL_BYTES:
+                    return True
+    return False
+
+
+def sweep_process_tree(
+    process: subprocess.Popen[str],
+    cleanup_deadline: float,
+    *,
+    owns_process_group: bool,
+    observed_descendants: dict[int, int],
+) -> None:
+    """Kill and reap a complete observed tree within one absolute cleanup deadline."""
+
+    def alive() -> bool:
+        _observe_descendants(process.pid, observed_descendants)
+        for pid, descriptor in list(observed_descendants.items()):
+            try:
+                signal.pidfd_send_signal(descriptor, 0)
+            except OSError:
+                os.close(descriptor)
+                del observed_descendants[pid]
+        if process.poll() is None:
+            return True
+        if owns_process_group:
+            try:
+                os.killpg(process.pid, 0)
+                return True
+            except OSError:
+                pass
+        return bool(observed_descendants)
+
+    if not alive():
+        return
+    _signal_process_tree(process, signal.SIGTERM, owns_process_group, observed_descendants)
+    term_deadline = time.monotonic() + max(0.0, cleanup_deadline - time.monotonic()) / 4
+    while time.monotonic() < term_deadline and alive():
+        time.sleep(0.01)
+    _signal_process_tree(process, signal.SIGKILL, owns_process_group, observed_descendants)
+    while time.monotonic() < cleanup_deadline and alive():
+        time.sleep(0.005)
+    process.poll()
+    for descriptor in observed_descendants.values():
+        os.close(descriptor)
+    observed_descendants.clear()
 
 
 def communicate_with_timeout(
@@ -63,16 +169,89 @@ def communicate_with_timeout(
     timeout_seconds: float,
     *,
     cleanup_timeout_seconds: float = PROCESS_CLEANUP_SECONDS,
-) -> tuple[str, str, bool]:
-    """Bound a subprocess and its process group; callers may discard output."""
+    output_limit_bytes: int = MAX_CHILD_OUTPUT_BYTES,
+    owns_process_group: bool = True,
+    artifact_root: Path | None = None,
+) -> tuple[str, str, bool, bool, bool]:
+    """Stream bounded output and terminate on growth or deadline overrun."""
 
     _require(timeout_seconds > 0, "process timeout must be positive")
+    _require(output_limit_bytes > 0, "process output limit must be positive")
+    _require(process.stdout is not None and process.stderr is not None, "bounded capture requires output pipes")
+    return_reserve = min(PROCESS_RETURN_RESERVE_SECONDS, timeout_seconds / 10)
+    available_seconds = timeout_seconds - return_reserve
+    cleanup_seconds = min(
+        cleanup_timeout_seconds,
+        available_seconds,
+        max(timeout_seconds / 2, min(PROCESS_RETURN_RESERVE_SECONDS, available_seconds)),
+    )
+    cleanup_deadline = time.monotonic() + timeout_seconds - return_reserve
+    deadline = cleanup_deadline - cleanup_seconds
+    stdout_fd, stderr_fd = process.stdout.fileno(), process.stderr.fileno()
+    buffers = {stdout_fd: bytearray(), stderr_fd: bytearray()}
+    selector = selectors.DefaultSelector()
+    stopped = False
+    exceeded = False
+    artifact_exceeded = False
+    next_artifact_poll = 0.0
+    observed_descendants: dict[int, int] = {}
+    supervision_error: BaseException | None = None
     try:
-        stdout, stderr = process.communicate(timeout=timeout_seconds)
-        return stdout, stderr, False
+        for descriptor in buffers:
+            os.set_blocking(descriptor, False)
+            selector.register(descriptor, selectors.EVENT_READ)
+        while selector.get_map():
+            now = time.monotonic()
+            _observe_descendants(process.pid, observed_descendants)
+            remaining = deadline - now
+            if remaining <= 0:
+                stopped = True
+                break
+            if artifact_root is not None and now >= next_artifact_poll:
+                if artifact_limits_exceeded(artifact_root):
+                    artifact_exceeded = True
+                    stopped = True
+                    break
+                next_artifact_poll = now + ARTIFACT_POLL_SECONDS
+            for key, _mask in selector.select(min(remaining, ARTIFACT_POLL_SECONDS)):
+                chunk = os.read(key.fd, 65_536)
+                if not chunk:
+                    selector.unregister(key.fd)
+                    continue
+                captured = len(buffers[stdout_fd]) + len(buffers[stderr_fd])
+                allowed = output_limit_bytes - captured
+                buffers[key.fd].extend(chunk[: max(0, allowed)])
+                if len(chunk) > allowed:
+                    exceeded = True
+                    stopped = True
+                    break
+            if stopped:
+                break
+        if not stopped:
+            remaining = deadline - time.monotonic()
+            process.wait(timeout=max(0.001, remaining))
     except subprocess.TimeoutExpired:
-        stdout, stderr = terminate_process(process, cleanup_timeout_seconds)
-        return stdout, stderr, True
+        stopped = True
+    except BaseException as exc:
+        stopped = True
+        supervision_error = exc
+    finally:
+        selector.close()
+        try:
+            sweep_process_tree(
+                process,
+                cleanup_deadline,
+                owns_process_group=owns_process_group,
+                observed_descendants=observed_descendants,
+            )
+        finally:
+            stdout = buffers[stdout_fd].decode(errors="replace")
+            stderr = buffers[stderr_fd].decode(errors="replace")
+            process.stdout.close()
+            process.stderr.close()
+    if supervision_error is not None:
+        raise SystemExit("process supervision failed") from None
+    return stdout, stderr, stopped and not exceeded and not artifact_exceeded, exceeded, artifact_exceeded
 
 
 def _invalid(reason: str, elapsed: float) -> dict[str, Any]:
@@ -85,42 +264,50 @@ def supervise_process(
     timeout_seconds: float,
     *,
     pass_fds: tuple[int, ...] = (),
+    artifact_root: Path | None = None,
 ) -> dict[str, Any]:
     """Execute one local worker tree with a deadline that includes cleanup."""
 
     _require(command and all(isinstance(item, str) and item for item in command), "supervisor command is invalid")
     _require(timeout_seconds > 0, "process supervisor timeout must be positive")
-    cleanup_seconds = min(PROCESS_CLEANUP_SECONDS, timeout_seconds / 2)
-    execution_seconds = timeout_seconds - cleanup_seconds
     _require(len(payload.encode()) <= MAX_REQUEST_BYTES, "process supervisor request is too large")
     started = time.monotonic()
-    process = subprocess.Popen(
-        command,
-        text=True,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL,
-        start_new_session=True,
-        pass_fds=pass_fds,
-    )
+    _require(hasattr(os, "memfd_create"), "process supervisor requires sealed memfd support")
+    _require(hasattr(os, "pidfd_open") and hasattr(signal, "pidfd_send_signal"), "process supervisor requires pidfd support")
+    request_fd = os.memfd_create("aegis-benchmark-request", os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING)
     try:
-        stdout, _stderr = process.communicate(input=payload, timeout=execution_seconds)
-    except subprocess.TimeoutExpired:
-        terminate_process(process, cleanup_seconds)
-        return {
-            "returncode": process.returncode,
-            "stdout": "",
-            "elapsedSeconds": min(time.monotonic() - started, timeout_seconds),
-            "timedOut": True,
-            "outputExceeded": False,
-        }
-    encoded = stdout.encode()
+        encoded_payload = payload.encode()
+        view = memoryview(encoded_payload)
+        while view:
+            written = os.write(request_fd, view)
+            _require(written > 0, "process supervisor request write failed")
+            view = view[written:]
+        os.lseek(request_fd, 0, os.SEEK_SET)
+        seals = fcntl.F_SEAL_SEAL | fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_GROW | fcntl.F_SEAL_WRITE
+        fcntl.fcntl(request_fd, fcntl.F_ADD_SEALS, seals)
+        process = subprocess.Popen(
+            command,
+            stdin=request_fd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            start_new_session=True,
+            pass_fds=pass_fds,
+        )
+        stdout, _stderr, timed_out, output_exceeded, artifact_exceeded = communicate_with_timeout(
+            process,
+            timeout_seconds,
+            output_limit_bytes=MAX_RESULT_BYTES,
+            artifact_root=artifact_root,
+        )
+    finally:
+        os.close(request_fd)
     return {
         "returncode": process.returncode,
-        "stdout": stdout if len(encoded) <= MAX_RESULT_BYTES else "",
-        "elapsedSeconds": min(time.monotonic() - started, timeout_seconds),
-        "timedOut": False,
-        "outputExceeded": len(encoded) > MAX_RESULT_BYTES,
+        "stdout": "" if output_exceeded else stdout,
+        "elapsedSeconds": time.monotonic() - started,
+        "timedOut": timed_out,
+        "outputExceeded": output_exceeded,
+        "artifactExceeded": artifact_exceeded,
     }
 
 
@@ -131,7 +318,10 @@ def supervise_operation(
 ) -> Any:
     """Run a complete active-run stage in one killable process."""
 
-    _require(operation in {"attempt", "confidential-cleanup", "isolation-setup", "provider-preflight"}, "unknown supervised operation")
+    _require(
+        operation in {"attempt", "confidential-cleanup", "finalize", "isolation-setup", "provider-preflight"},
+        "unknown supervised operation",
+    )
     worker_request = dict(request)
     worker_request["timeoutSeconds"] = timeout_seconds
     payload = json.dumps({"operation": operation, "request": worker_request}, separators=(",", ":"))
@@ -147,21 +337,39 @@ def supervise_operation(
             raise SystemExit("auth fd is unavailable") from exc
         pass_fds = (auth_fd,)
     command = [sys.executable, str(Path(__file__).resolve()), "--worker"]
-    outcome = supervise_process(command, payload, timeout_seconds, pass_fds=pass_fds) if pass_fds else supervise_process(command, payload, timeout_seconds)
+    output_root = Path(request["outputRoot"]) if isinstance(request.get("outputRoot"), str) else None
+    artifact_root: Path | None = None
+    if operation == "attempt" and output_root is not None:
+        target = request.get("target")
+        number = request.get("attemptNumber")
+        if isinstance(target, dict) and isinstance(target.get("targetId"), str) and isinstance(number, int):
+            leaf = f"{number:03d}-{target['targetId']}"
+            if Path(leaf).name == leaf:
+                artifact_root = output_root / "attempts" / leaf
+    elif operation == "isolation-setup" and output_root is not None:
+        artifact_root = output_root / "isolation-audit"
+    elif operation == "provider-preflight" and output_root is not None:
+        artifact_root = output_root / "provider-preflight-isolated"
+    kwargs = {"pass_fds": pass_fds, "artifact_root": artifact_root}
+    outcome = supervise_process(command, payload, timeout_seconds, **kwargs)
     elapsed = outcome["elapsedSeconds"]
 
     if outcome["timedOut"]:
         if operation == "attempt":
             return _invalid("timeout", elapsed)
         raise SystemExit(f"benchmark {operation} exceeded the remaining wall-clock budget")
-    if outcome["returncode"] != 0:
-        if operation == "attempt":
-            return _invalid("infrastructure", elapsed)
-        raise SystemExit(f"benchmark {operation} failed")
     if outcome["outputExceeded"]:
         if operation == "attempt":
             return _invalid("infrastructure", elapsed)
         raise SystemExit(f"benchmark {operation} result is too large")
+    if outcome.get("artifactExceeded"):
+        if operation == "attempt":
+            return _invalid("infrastructure", elapsed)
+        raise SystemExit(f"benchmark {operation} artifact limits were exceeded")
+    if outcome["returncode"] != 0:
+        if operation == "attempt":
+            return _invalid("infrastructure", elapsed)
+        raise SystemExit(f"benchmark {operation} failed")
     try:
         result = json.loads(outcome["stdout"])
     except (TypeError, json.JSONDecodeError):
@@ -216,7 +424,7 @@ def supervise_stage(
     operation: str,
     request: dict[str, Any],
     timeout_seconds: float,
-    final_cleanup: Callable[[float], str | None],
+    final_cleanup: Callable[[float, bool], str | None],
 ) -> Any:
     """Run a stage and its parent-owned confidentiality cleanup within one budget."""
 
@@ -228,7 +436,7 @@ def supervise_stage(
         result = supervise_operation(operation, request, execution_seconds)
     except BaseException as exc:
         pending = exc
-    exposure = final_cleanup(cleanup_seconds)
+    exposure = final_cleanup(cleanup_seconds, pending is not None)
     if exposure == "auth-drift":
         raise SystemExit("Codex auth changed during benchmark execution")
     if exposure in {"credential-exposure", "proxy-exposure"}:
@@ -302,6 +510,7 @@ def _execute_isolation_setup(runner: Any, request: dict[str, Any]) -> dict[str, 
         codex=codex,
         prepared_snapshot=output_root / "distribution-snapshot",
         timeout_seconds=request["timeoutSeconds"] + PROCESS_CLEANUP_SECONDS,
+        process_group_supervised=True,
     )
     runner.validate_live_isolation_report(report, batch)
     runner.atomic_json(output_root / "isolation-report.json", report)
@@ -323,6 +532,7 @@ def _execute_provider_preflight(runner: Any, request: dict[str, Any]) -> dict[st
         requested_model=batch["modelPolicy"]["requestedModel"],
         timeout_seconds=request["timeoutSeconds"] + PROCESS_CLEANUP_SECONDS,
         proxy_policy=proxy_policy,
+        process_group_supervised=True,
     )
 
 
@@ -355,6 +565,8 @@ def _execute_confidential_cleanup(runner: Any, request: dict[str, Any]) -> dict[
             credential_policy,
             lambda path: runner.remove_tmp_artifact_entry(path, root),
         )
+        if request.get("purgeAfter") is True and tree_root.exists():
+            runner.remove_tmp_artifact_entry(tree_root, root)
     elif mode == "stage":
         exposure = runner.finalize_confidential_stage(
             tree_root,
@@ -376,6 +588,26 @@ def _execute_confidential_cleanup(runner: Any, request: dict[str, Any]) -> dict[
     return {"exposure": exposure}
 
 
+def _execute_finalize(runner: Any, request: dict[str, Any]) -> dict[str, Any]:
+    root = _path(request.get("root"), "root")
+    _require(root.resolve() == runner.repo_root(), "supervised finalize root drifted")
+    output_root = runner.resolve_tmp_child(root, _path(request.get("outputRoot"), "outputRoot"), "output-root")
+    batch = request.get("batch")
+    runner.verify_batch(batch, root, output_root)
+    loaded_batch, ledger = runner.load_batch_and_ledger(output_root)
+    _require(loaded_batch == batch, "supervised finalize batch drifted")
+    _require(runner.auth_source_matches_guard(request.get("authGuard")), "Codex auth changed during benchmark execution")
+    report = runner.aggregate(batch, ledger)
+    runner.atomic_json(output_root / "private-report.json", report)
+    runner.verify_batch(batch, root, output_root)
+    _require(runner.auth_source_matches_guard(request.get("authGuard")), "Codex auth changed during benchmark execution")
+    return {
+        "batchId": batch["batchId"],
+        "attempts": report["attempts"],
+        "completeness": report["completeness"],
+    }
+
+
 def _worker() -> int:
     raw = sys.stdin.read(MAX_REQUEST_BYTES + 1)
     _require(len(raw.encode()) <= MAX_REQUEST_BYTES, "attempt worker request is too large")
@@ -389,14 +621,24 @@ def _worker() -> int:
         os.dup2(sink.fileno(), sys.stdout.fileno())
 
     import run_agentic_benchmark as runner
+    from agentic_benchmark_provider_preflight import MAX_ARTIFACT_FILE_BYTES
+
+    _current_soft, current_hard = resource.getrlimit(resource.RLIMIT_FSIZE)
+    file_limit = min(MAX_ARTIFACT_FILE_BYTES, current_hard) if current_hard != resource.RLIM_INFINITY else MAX_ARTIFACT_FILE_BYTES
+    resource.setrlimit(resource.RLIMIT_FSIZE, (file_limit, file_limit))
 
     if operation == "attempt":
-        policy = runner.resolve_proxy_policy(os.environ)
+        root = _path(request.get("root"), "root")
+        output_root = _path(request.get("outputRoot"), "outputRoot")
+        batch = request.get("batch")
+        policy = runner.verify_batch(batch, root, output_root)
+        runner.validate_auth_mount_file(_path(request.get("authFile"), "authFile"))
+        _require(runner.auth_source_matches_guard(request.get("authGuard")), "Codex auth changed during benchmark execution")
         credential_policy = runner.credential_policy_from_markers(request.get("credentialMarkers"))
         result = runner.execute_target(
-            root=_path(request.get("root"), "root"),
-            output_root=_path(request.get("outputRoot"), "outputRoot"),
-            batch=request.get("batch"),
+            root=root,
+            output_root=output_root,
+            batch=batch,
             target=request.get("target"),
             attempt_number=request.get("attemptNumber"),
             auth_file=_path(request.get("authFile"), "authFile"),
@@ -407,12 +649,16 @@ def _worker() -> int:
             credential_policy=credential_policy,
             process_group_supervised=True,
         )
+        runner.verify_batch(batch, root, output_root)
+        _require(runner.auth_source_matches_guard(request.get("authGuard")), "Codex auth changed during benchmark execution")
     elif operation == "isolation-setup":
         result = _execute_isolation_setup(runner, request)
     elif operation == "provider-preflight":
         result = _execute_provider_preflight(runner, request)
     elif operation == "confidential-cleanup":
         result = _execute_confidential_cleanup(runner, request)
+    elif operation == "finalize":
+        result = _execute_finalize(runner, request)
     else:
         raise SystemExit("worker operation is invalid")
     rendered = json.dumps(result, separators=(",", ":"))

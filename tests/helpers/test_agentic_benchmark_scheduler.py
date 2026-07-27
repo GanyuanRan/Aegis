@@ -309,7 +309,11 @@ class SchedulerTest(unittest.TestCase):
         self.assertEqual([timeouts[number] for number in (3, 4)], [2.0, 2.0])
         self.assertEqual(len(state["attempts"]), 4)
         self.assertEqual(state["cumulativeWallSeconds"], 5.0)
-        self.assertEqual(state["scheduler"]["reason"], "cumulative-wall-budget-exhausted")
+        self.assertEqual(state["scheduler"]["reason"], "wall-clock-deadline-overrun")
+        self.assertEqual(
+            state["wallClockOverrun"],
+            {"phase": "wave-2", "elapsedSeconds": 3.0, "reservationSeconds": 2.0},
+        )
 
         stopped = ledger(cumulative=5.0)
         calls = []
@@ -366,6 +370,37 @@ class SchedulerTest(unittest.TestCase):
             )
         self.assertEqual(state["cumulativeWallSeconds"], 4.0)
         self.assertNotIn("activeBudgetStage", state)
+
+    def test_stage_overrun_records_real_elapsed_and_refuses_resume(self):
+        frozen = batch(case_count=2, wall=2.0, timeout=2.0)
+        state = ledger()
+        with tempfile.TemporaryDirectory(prefix="agentic-scheduler-overrun-", dir=self.root / ".tmp") as value:
+            ledger_path = Path(value) / "ledger.json"
+            with self.assertRaises(SystemExit):
+                execute_budgeted_stage(
+                    frozen,
+                    state,
+                    ledger_path,
+                    "finalize",
+                    2.0,
+                    lambda _remaining: "late",
+                    monotonic=TickClock(step=3.0),
+                )
+            self.assertEqual(state["cumulativeWallSeconds"], 2.0)
+            self.assertEqual(
+                state["wallClockOverrun"],
+                {"phase": "finalize", "elapsedSeconds": 3.0, "reservationSeconds": 2.0},
+            )
+            self.assertEqual(state["scheduler"]["reason"], "wall-clock-deadline-overrun")
+            with self.assertRaises(SystemExit):
+                execute_budgeted_stage(
+                    frozen,
+                    state,
+                    ledger_path,
+                    "finalize",
+                    2.0,
+                    lambda _remaining: self.fail("overrun ledger must not resume"),
+                )
 
     def test_ledger_wall_total_cannot_exceed_profile_ceiling(self):
         frozen = batch(wall=5.0)
