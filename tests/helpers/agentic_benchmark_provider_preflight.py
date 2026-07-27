@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Raw Codex catalog reduction for the isolated benchmark preflight."""
+"""Provider-network validation and confidentiality boundaries for the benchmark."""
 
 from __future__ import annotations
 
@@ -131,13 +131,23 @@ def redact_proxy_output(text: str, policy: ProxyPolicy) -> tuple[str, bool]:
 
 def scrub_proxy_artifact_tree(root: Path, policy: ProxyPolicy) -> bool:
     exposed = False
-    markers = sorted({value.encode() for value in policy.child_environment().values()}, key=len, reverse=True)
+    markers = sorted({os.fsencode(value) for value in policy.child_environment().values()}, key=len, reverse=True)
     if not root.exists():
         return False
     if root.is_symlink() or not root.is_dir():
         raise OSError("artifact root must be an ordinary directory")
     for candidate in root.rglob("*"):
-        if candidate.is_symlink() or not candidate.is_file():
+        if candidate.is_symlink():
+            payload = os.readlink(os.fsencode(candidate))
+            redacted = payload
+            for marker in markers:
+                redacted = redacted.replace(marker, b"[REDACTED_PROXY]")
+            if redacted != payload:
+                candidate.unlink()
+                candidate.write_bytes(redacted)
+                exposed = True
+            continue
+        if not candidate.is_file():
             continue
         payload = candidate.read_bytes()
         redacted = payload

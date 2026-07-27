@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import copy
 import json
+import os
 import signal
 import subprocess
 import sys
@@ -351,6 +352,35 @@ class RunnerContractTest(unittest.TestCase):
                 self.assertIs(caught.exception, error)
                 self.assertFalse((attempt_root / "isolated/home").exists())
 
+    def test_attempt_proxy_symlink_is_materialized_and_invalidates_result(self):
+        root = Path(__file__).resolve().parents[2]
+        proxy = "http://proxy.invalid:8080"
+        policy = resolve_proxy_policy({"HTTP_PROXY": proxy})
+        target = {"targetId": "symlink-target"}
+        with tempfile.TemporaryDirectory(prefix="agentic-artifact-link-test-", dir=root / ".tmp") as value:
+            output_root = Path(value)
+            attempt_root = output_root / "attempts/001-symlink-target"
+            proxy_link = attempt_root / "workspace/proxy-link"
+            safe_link = attempt_root / "workspace/safe-link"
+
+            def fake_inner(**_kwargs):
+                proxy_link.parent.mkdir(parents=True)
+                os.symlink(proxy.encode() + b"\xff-tail", os.fsencode(proxy_link))
+                safe_link.symlink_to("unrelated-target")
+                return {"status": "valid", "contractPass": True, "elapsedSeconds": 1.25}
+
+            with mock.patch.object(benchmark_runner, "_execute_target_unscrubbed", side_effect=fake_inner):
+                result = execute_target(
+                    root=root, output_root=output_root, batch={}, target=target, attempt_number=1,
+                    auth_file=output_root / "auth", bwrap=output_root / "bwrap", codex=output_root / "codex",
+                    timeout_seconds=1, proxy_policy=policy,
+                )
+            self.assertEqual(result, {"status": "invalid", "invalidReason": "proxy-exposure", "elapsedSeconds": 1.25})
+            self.assertFalse(proxy_link.is_symlink())
+            self.assertEqual(proxy_link.read_bytes(), b"[REDACTED_PROXY]\xff-tail")
+            self.assertTrue(safe_link.is_symlink())
+            self.assertEqual(os.readlink(os.fsencode(safe_link)), b"unrelated-target")
+
     def test_scrub_failure_deletes_attempt_root_and_fails_closed(self):
         root = Path(__file__).resolve().parents[2]
         policy = resolve_proxy_policy({"HTTP_PROXY": "http://proxy.invalid:8080"})
@@ -415,13 +445,21 @@ class RunnerContractTest(unittest.TestCase):
             attempt_root = output_root / "attempts/001-stale"
             home_cache = attempt_root / "isolated/home/.codex/cache"
             workspace = attempt_root / "workspace/result.txt"
+            proxy_link = attempt_root / "workspace/proxy-link"
+            safe_link = attempt_root / "workspace/safe-link"
             home_cache.parent.mkdir(parents=True)
             workspace.parent.mkdir(parents=True)
             home_cache.write_text(proxy, encoding="utf-8")
             workspace.write_text(proxy, encoding="utf-8")
+            os.symlink(b"prefix-" + proxy.encode() + b"-\xff", os.fsencode(proxy_link))
+            safe_link.symlink_to("unrelated-target")
             scrub_stale_attempt_artifacts(root, output_root, policy)
             self.assertFalse((attempt_root / "isolated/home").exists())
             self.assertEqual(workspace.read_text(encoding="utf-8"), "[REDACTED_PROXY]")
+            self.assertFalse(proxy_link.is_symlink())
+            self.assertEqual(proxy_link.read_bytes(), b"prefix-[REDACTED_PROXY]-\xff")
+            self.assertTrue(safe_link.is_symlink())
+            self.assertEqual(os.readlink(os.fsencode(safe_link)), b"unrelated-target")
 
     def test_production_child_timeout_escalates_to_bounded_sigkill(self):
         process = subprocess.Popen(
