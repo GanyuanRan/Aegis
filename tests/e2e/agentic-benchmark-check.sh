@@ -716,28 +716,28 @@ else
 fi
 
 resume_checks_ok=1
-if resume_output="$(AEGIS_AGENTIC_BENCHMARK_LIVE=1 AEGIS_AGENTIC_BENCHMARK_HELD_OUT=1 AEGIS_AGENTIC_BENCHMARK_EXTENDED=1 \
+if resume_output="$(PYTHONOPTIMIZE=1 AEGIS_AGENTIC_BENCHMARK_LIVE=1 AEGIS_AGENTIC_BENCHMARK_HELD_OUT=1 AEGIS_AGENTIC_BENCHMARK_EXTENDED=1 \
     bash "$repeated_runner" --profile standard-held-out --batch-id offline-contract --model dry-run-pinned-model \
     --output-root "$dry_run_root" 2>&1)"; then
     resume_checks_ok=0
 elif ! grep -qF "prepared batch profile differs" <<<"$resume_output"; then
     resume_checks_ok=0
 fi
-if resume_output="$(AEGIS_AGENTIC_BENCHMARK_LIVE=1 AEGIS_AGENTIC_BENCHMARK_HELD_OUT=1 AEGIS_AGENTIC_BENCHMARK_EXTENDED=1 \
+if resume_output="$(PYTHONOPTIMIZE=1 AEGIS_AGENTIC_BENCHMARK_LIVE=1 AEGIS_AGENTIC_BENCHMARK_HELD_OUT=1 AEGIS_AGENTIC_BENCHMARK_EXTENDED=1 \
     bash "$repeated_runner" --profile extended-held-out --batch-id changed-batch --model dry-run-pinned-model \
     --output-root "$dry_run_root" 2>&1)"; then
     resume_checks_ok=0
 elif ! grep -qF "prepared batch id differs" <<<"$resume_output"; then
     resume_checks_ok=0
 fi
-if resume_output="$(AEGIS_AGENTIC_BENCHMARK_LIVE=1 AEGIS_AGENTIC_BENCHMARK_HELD_OUT=1 AEGIS_AGENTIC_BENCHMARK_EXTENDED=1 \
+if resume_output="$(PYTHONOPTIMIZE=1 AEGIS_AGENTIC_BENCHMARK_LIVE=1 AEGIS_AGENTIC_BENCHMARK_HELD_OUT=1 AEGIS_AGENTIC_BENCHMARK_EXTENDED=1 \
     bash "$repeated_runner" --profile extended-held-out --batch-id offline-contract --model changed-model \
     --output-root "$dry_run_root" 2>&1)"; then
     resume_checks_ok=0
 elif ! grep -qF "prepared batch model differs" <<<"$resume_output"; then
     resume_checks_ok=0
 fi
-if resume_output="$(AEGIS_AGENTIC_BENCHMARK_LIVE=1 bash "$repeated_runner" --profile development-pilot \
+if resume_output="$(PYTHONOPTIMIZE=1 AEGIS_AGENTIC_BENCHMARK_LIVE=1 bash "$repeated_runner" --profile development-pilot \
     --case shared-owner-bug-repair --batch-id offline-pilot --model dry-run-pinned-model \
     --output-root "$pilot_dry_run_root" 2>&1)"; then
     resume_checks_ok=0
@@ -745,9 +745,9 @@ elif ! grep -qF "prepared batch case selection differs" <<<"$resume_output"; the
     resume_checks_ok=0
 fi
 if [[ "$resume_checks_ok" == "1" ]]; then
-    pass "resume rejects profile, batch, model, and case invocation drift before execution"
+    pass "optimized Python resume rejects profile, batch, model, and case invocation drift before execution"
 else
-    fail "resume rejects profile, batch, model, and case invocation drift before execution"
+    fail "optimized Python resume rejects profile, batch, model, and case invocation drift before execution"
 fi
 
 if full_only_output="$(AEGIS_AGENTIC_BENCHMARK_LIVE=0 AEGIS_AGENTIC_BENCHMARK_HELD_OUT=0 AEGIS_AGENTIC_BENCHMARK_EXTENDED=0 AEGIS_AGENTIC_BENCHMARK_FULL=1 bash "$repeated_runner" \

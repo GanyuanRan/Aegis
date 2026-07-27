@@ -144,9 +144,13 @@ from pathlib import Path
 batch = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 profile, batch_id, model, case_id = sys.argv[2:6]
 requested_cases = [case_id] if case_id else []
-assert batch["profileId"] == profile, "prepared batch profile differs from this invocation"
-assert batch["batchId"] == batch_id, "prepared batch id differs from this invocation"
-assert batch["modelPolicy"]["requestedModel"] == model, "prepared batch model differs from this invocation"
-assert batch["requestedCaseIds"] == requested_cases, "prepared batch case selection differs from this invocation"
+if batch["profileId"] != profile:
+    raise SystemExit("prepared batch profile differs from this invocation")
+if batch["batchId"] != batch_id:
+    raise SystemExit("prepared batch id differs from this invocation")
+if batch["modelPolicy"]["requestedModel"] != model:
+    raise SystemExit("prepared batch model differs from this invocation")
+if batch["requestedCaseIds"] != requested_cases:
+    raise SystemExit("prepared batch case selection differs from this invocation")
 PY
 "${PYTHON_CMD[@]}" tests/helpers/run_agentic_benchmark.py run --output-root "$OUTPUT_ROOT"
