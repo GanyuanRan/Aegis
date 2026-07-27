@@ -28,9 +28,9 @@ from run_agentic_benchmark import (
     initial_ledger,
     parse_codex_jsonl,
     redact_credential_output,
+    require_execution_opt_in,
     resolve_auth_file,
     schedule_targets,
-    scrub_stale_attempt_artifacts,
     validate_live_isolation_report,
 )
 from agentic_benchmark_isolation import resolve_proxy_policy
@@ -49,6 +49,7 @@ def fake_batch(*, max_attempts: int | None = None) -> dict:
         "batchDigest": "a" * 64,
         "batchSeed": "fake-seed",
         "partition": "development",
+        "datasetPartitions": ["development"],
         "caseIds": [case["id"] for case in cases],
         "portfolioCaseCount": 30,
         "caseCount": len(cases),
@@ -163,6 +164,31 @@ class RunnerContractTest(unittest.TestCase):
         self.assertEqual(first[0]["repetition"], first[1]["repetition"])
         self.assertEqual([target["arm"] for target in first[:2]], list(ARMS))
         self.assertEqual(len({target["targetId"] for target in first}), 8)
+
+    def test_execution_opt_ins_are_profile_specific_and_full_is_retired(self):
+        require_execution_opt_in("development-pilot", {"AEGIS_AGENTIC_BENCHMARK_LIVE": "1"})
+        with self.assertRaises(SystemExit):
+            require_execution_opt_in(
+                "standard-held-out",
+                {"AEGIS_AGENTIC_BENCHMARK_LIVE": "1", "AEGIS_AGENTIC_BENCHMARK_FULL": "1"},
+            )
+        require_execution_opt_in(
+            "standard-held-out",
+            {"AEGIS_AGENTIC_BENCHMARK_LIVE": "1", "AEGIS_AGENTIC_BENCHMARK_HELD_OUT": "1"},
+        )
+        with self.assertRaises(SystemExit):
+            require_execution_opt_in(
+                "extended-held-out",
+                {"AEGIS_AGENTIC_BENCHMARK_LIVE": "1", "AEGIS_AGENTIC_BENCHMARK_HELD_OUT": "1"},
+            )
+        require_execution_opt_in(
+            "extended-held-out",
+            {
+                "AEGIS_AGENTIC_BENCHMARK_LIVE": "1",
+                "AEGIS_AGENTIC_BENCHMARK_HELD_OUT": "1",
+                "AEGIS_AGENTIC_BENCHMARK_EXTENDED": "1",
+            },
+        )
 
     def test_arm_contamination_is_refused(self):
         batch = fake_batch()
@@ -453,7 +479,11 @@ class RunnerContractTest(unittest.TestCase):
             workspace.write_text(proxy, encoding="utf-8")
             os.symlink(b"prefix-" + proxy.encode() + b"-\xff", os.fsencode(proxy_link))
             safe_link.symlink_to("unrelated-target")
-            scrub_stale_attempt_artifacts(root, output_root, policy)
+            agentic_benchmark_provider_preflight.scrub_stale_proxy_artifacts(
+                output_root / "attempts",
+                policy,
+                lambda path: benchmark_runner.remove_tmp_directory(path, root),
+            )
             self.assertFalse((attempt_root / "isolated/home").exists())
             self.assertEqual(workspace.read_text(encoding="utf-8"), "[REDACTED_PROXY]")
             self.assertFalse(proxy_link.is_symlink())

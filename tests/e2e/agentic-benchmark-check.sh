@@ -584,45 +584,87 @@ else
     fail "repeated runner fake-host contracts"
 fi
 
-if held_out_shape_output="$("${PYTHON_CMD[@]}" tests/helpers/run_agentic_benchmark.py prepare \
+if retired_shape_output="$("${PYTHON_CMD[@]}" tests/helpers/run_agentic_benchmark.py prepare \
+    --profile standard-held-out \
     --partition held-out \
-    --repetitions 1 \
-    --max-attempts 40 \
-    --batch-id invalid-held-out-shape \
+    --batch-id retired-shape-flag \
     --model dry-run-model \
-    --output-root "$coverage_negative_root/invalid-held-out" 2>&1)"; then
-    fail "held-out runner rejects a non-120 target shape"
-elif grep -qF "complete held-out preparation requires 3 repetitions" <<<"$held_out_shape_output"; then
-    pass "held-out runner rejects a non-120 target shape"
+    --output-root "$coverage_negative_root/retired-shape-flag" 2>&1)"; then
+    fail "profile-only runner rejects retired raw shape flags"
+elif grep -qF "unrecognized arguments: --partition held-out" <<<"$retired_shape_output"; then
+    pass "profile-only runner rejects retired raw shape flags"
 else
-    fail "held-out shape rejection emits the expected diagnostic"
+    fail "retired raw shape flag emits the expected argparse diagnostic"
 fi
 
+retired_wrapper_flags_ok=1
+for retired_flag in --partition --repetitions --max-attempts --arms --timeout-seconds; do
+    if bash "$repeated_runner" --profile standard-held-out --batch-id "retired-${retired_flag#--}" \
+        --model dry-run-model --output-root "$coverage_negative_root/retired-${retired_flag#--}" \
+        "$retired_flag" retired >/dev/null 2>&1; then
+        retired_wrapper_flags_ok=0
+    fi
+done
+if [[ "$retired_wrapper_flags_ok" == "1" ]]; then
+    pass "profile-only wrapper rejects every retired raw shape flag"
+else
+    fail "profile-only wrapper rejects every retired raw shape flag"
+fi
+
+if bash "$repeated_runner" --dry-run --profile development-pilot --batch-id pilot-without-case \
+    --output-root "$coverage_negative_root/pilot-without-case" >/dev/null 2>&1; then
+    fail "development profile requires exactly one case"
+else
+    pass "development profile requires exactly one case"
+fi
+if bash "$repeated_runner" --dry-run --profile standard-held-out --case ambiguous-feature-dev \
+    --batch-id held-out-with-case --output-root "$coverage_negative_root/held-out-with-case" >/dev/null 2>&1; then
+    fail "held-out profiles reject case selection"
+else
+    pass "held-out profiles reject case selection"
+fi
+
+pilot_dry_run_root="$coverage_negative_root/pilot-dry-run"
+standard_dry_run_root="$coverage_negative_root/standard-dry-run"
 dry_run_root="$coverage_negative_root/repeated-dry-run"
-if bash "$repeated_runner" --dry-run \
-    --partition held-out \
-    --repetitions 3 \
-    --max-attempts 132 \
+if bash "$repeated_runner" --dry-run --profile development-pilot \
+    --case ambiguous-feature-dev \
+    --batch-id offline-pilot \
+    --output-root "$pilot_dry_run_root" >/dev/null \
+    && bash "$repeated_runner" --dry-run --profile standard-held-out \
+    --batch-id offline-standard \
+    --output-root "$standard_dry_run_root" >/dev/null \
+    && bash "$repeated_runner" --dry-run --profile extended-held-out \
     --batch-id offline-contract \
     --output-root "$dry_run_root" >/dev/null \
-    && "${PYTHON_CMD[@]}" - "$dry_run_root/batch.json" <<'PY'
+    && "${PYTHON_CMD[@]}" - "$pilot_dry_run_root/batch.json" "$standard_dry_run_root/batch.json" "$dry_run_root/batch.json" <<'PY'
 import json
 import os
 import sys
 from pathlib import Path
 
-batch = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-assert batch["caseCount"] == 20
-assert batch["targetRunCount"] == 120
-assert batch["maxAttempts"] == 132
-assert batch["preflightTimeoutSeconds"] == 30
-assert set(batch["networkPolicy"]) == {"mode", "keys", "schemes", "fingerprint"}
-assert batch["networkPolicy"]["mode"] in {"direct", "proxy"}
-assert batch["networkPolicy"]["keys"] == sorted(batch["networkPolicy"]["keys"])
-assert set(batch["networkPolicy"]["keys"]) <= {"HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY"}
-assert batch["networkPolicy"]["schemes"] == sorted(batch["networkPolicy"]["schemes"])
-assert len(batch["networkPolicy"]["fingerprint"]) == 64
-assert len({target["targetId"] for target in batch["schedule"]}) == 120
+profiles = {
+    "development-pilot": (1, 2, 2, 2, 300),
+    "standard-held-out": (20, 40, 44, 8, 2700),
+    "extended-held-out": (20, 120, 132, 8, 2700),
+}
+for path in sys.argv[1:]:
+    batch_path = Path(path)
+    batch = json.loads(batch_path.read_text(encoding="utf-8"))
+    ledger = json.loads((batch_path.parent / "ledger.json").read_text(encoding="utf-8"))
+    case_count, target_count, ceiling, workers, wall = profiles[batch["profileId"]]
+    assert (batch["caseCount"], batch["targetRunCount"], batch["maxAttempts"]) == (case_count, target_count, ceiling)
+    assert (batch["workers"], batch["wallClockBudgetSeconds"]) == (workers, wall)
+    assert batch["preflightTimeoutSeconds"] == 30
+    assert len({target["targetId"] for target in batch["schedule"]}) == target_count
+    assert set(batch["networkPolicy"]) == {"mode", "keys", "schemes", "fingerprint"}
+    assert batch["networkPolicy"]["mode"] in {"direct", "proxy"}
+    assert batch["networkPolicy"]["keys"] == sorted(batch["networkPolicy"]["keys"])
+    assert set(batch["networkPolicy"]["keys"]) <= {"HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY"}
+    assert batch["networkPolicy"]["schemes"] == sorted(batch["networkPolicy"]["schemes"])
+    assert len(batch["networkPolicy"]["fingerprint"]) == 64
+    assert ledger["attempts"] == []
+    assert not any((batch_path.parent / name).exists() for name in ("attempts", "provider-preflight.json", "isolation-report.json"))
 def strings(value):
     if isinstance(value, str):
         return [value]
@@ -631,16 +673,101 @@ def strings(value):
     if isinstance(value, dict):
         return [item for child in value.values() for item in strings(child)]
     return []
-stored_strings = set(strings(batch))
+stored_strings = {item for path in sys.argv[1:] for item in strings(json.loads(Path(path).read_text(encoding="utf-8")))}
 for key in ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "http_proxy", "https_proxy", "all_proxy", "NO_PROXY", "no_proxy"):
     value = os.environ.get(key)
     if value:
         assert value not in stored_strings
 PY
 then
-    pass "held-out dry-run plans 120 valid targets within 132 attempts"
+    pass "profile dry-runs freeze exact 2/40/120 target shapes with zero model calls"
 else
-    fail "held-out dry-run plans 120 valid targets within 132 attempts"
+    fail "profile dry-runs freeze exact bounded shapes"
+fi
+
+profile_drift_root="$coverage_negative_root/profile-drift"
+cp -a "$standard_dry_run_root" "$profile_drift_root"
+"${PYTHON_CMD[@]}" - "$profile_drift_root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path("tests/helpers").resolve()))
+from run_agentic_benchmark import batch_digest
+
+root = Path(sys.argv[1])
+batch_path = root / "batch.json"
+ledger_path = root / "ledger.json"
+batch = json.loads(batch_path.read_text(encoding="utf-8"))
+ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+batch["workers"] = 7
+batch["batchDigest"] = batch_digest(batch)
+ledger["batchDigest"] = batch["batchDigest"]
+batch_path.write_text(json.dumps(batch, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+ledger_path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+PY
+if profile_drift_output="$("${PYTHON_CMD[@]}" tests/helpers/run_agentic_benchmark.py aggregate \
+    --output-root "$profile_drift_root" 2>&1)"; then
+    fail "batch projection drift is rejected against the frozen matrix profile"
+elif grep -qF "batch profile fields drifted from the frozen matrix" <<<"$profile_drift_output"; then
+    pass "batch projection drift is rejected against the frozen matrix profile"
+else
+    fail "batch projection drift emits the expected diagnostic"
+fi
+
+resume_checks_ok=1
+if resume_output="$(AEGIS_AGENTIC_BENCHMARK_LIVE=1 AEGIS_AGENTIC_BENCHMARK_HELD_OUT=1 AEGIS_AGENTIC_BENCHMARK_EXTENDED=1 \
+    bash "$repeated_runner" --profile standard-held-out --batch-id offline-contract --model dry-run-pinned-model \
+    --output-root "$dry_run_root" 2>&1)"; then
+    resume_checks_ok=0
+elif ! grep -qF "prepared batch profile differs" <<<"$resume_output"; then
+    resume_checks_ok=0
+fi
+if resume_output="$(AEGIS_AGENTIC_BENCHMARK_LIVE=1 AEGIS_AGENTIC_BENCHMARK_HELD_OUT=1 AEGIS_AGENTIC_BENCHMARK_EXTENDED=1 \
+    bash "$repeated_runner" --profile extended-held-out --batch-id changed-batch --model dry-run-pinned-model \
+    --output-root "$dry_run_root" 2>&1)"; then
+    resume_checks_ok=0
+elif ! grep -qF "prepared batch id differs" <<<"$resume_output"; then
+    resume_checks_ok=0
+fi
+if resume_output="$(AEGIS_AGENTIC_BENCHMARK_LIVE=1 AEGIS_AGENTIC_BENCHMARK_HELD_OUT=1 AEGIS_AGENTIC_BENCHMARK_EXTENDED=1 \
+    bash "$repeated_runner" --profile extended-held-out --batch-id offline-contract --model changed-model \
+    --output-root "$dry_run_root" 2>&1)"; then
+    resume_checks_ok=0
+elif ! grep -qF "prepared batch model differs" <<<"$resume_output"; then
+    resume_checks_ok=0
+fi
+if resume_output="$(AEGIS_AGENTIC_BENCHMARK_LIVE=1 bash "$repeated_runner" --profile development-pilot \
+    --case shared-owner-bug-repair --batch-id offline-pilot --model dry-run-pinned-model \
+    --output-root "$pilot_dry_run_root" 2>&1)"; then
+    resume_checks_ok=0
+elif ! grep -qF "prepared batch case selection differs" <<<"$resume_output"; then
+    resume_checks_ok=0
+fi
+if [[ "$resume_checks_ok" == "1" ]]; then
+    pass "resume rejects profile, batch, model, and case invocation drift before execution"
+else
+    fail "resume rejects profile, batch, model, and case invocation drift before execution"
+fi
+
+if full_only_output="$(AEGIS_AGENTIC_BENCHMARK_LIVE=0 AEGIS_AGENTIC_BENCHMARK_HELD_OUT=0 AEGIS_AGENTIC_BENCHMARK_EXTENDED=0 AEGIS_AGENTIC_BENCHMARK_FULL=1 bash "$repeated_runner" \
+    --profile standard-held-out --batch-id full-alone --model dry-run-model \
+    --output-root "$coverage_negative_root/full-alone" 2>&1)"; then
+    fail "retired FULL variable cannot authorize a held-out run"
+elif grep -qF "AEGIS_AGENTIC_BENCHMARK_LIVE=1" <<<"$full_only_output"; then
+    pass "retired FULL variable cannot authorize a held-out run"
+else
+    fail "FULL-only rejection names the live opt-in"
+fi
+
+if full_live_output="$(AEGIS_AGENTIC_BENCHMARK_LIVE=1 AEGIS_AGENTIC_BENCHMARK_HELD_OUT=0 AEGIS_AGENTIC_BENCHMARK_EXTENDED=0 AEGIS_AGENTIC_BENCHMARK_FULL=1 bash "$repeated_runner" \
+    --profile standard-held-out --batch-id full-with-live --model dry-run-model \
+    --output-root "$coverage_negative_root/full-with-live" 2>&1)"; then
+    fail "retired FULL variable cannot replace held-out opt-in"
+elif grep -qF "AEGIS_AGENTIC_BENCHMARK_HELD_OUT=1" <<<"$full_live_output"; then
+    pass "retired FULL variable cannot replace held-out opt-in"
+else
+    fail "held-out opt-in rejection names the current variable"
 fi
 
 if proxy_drift_output="$(HTTP_PROXY=http://drift.invalid:8080 http_proxy=http://drift.invalid:8080 "${PYTHON_CMD[@]}" tests/helpers/run_agentic_benchmark.py aggregate \
@@ -661,9 +788,7 @@ print(hashlib.sha256(Path(sys.argv[1]).read_bytes()).hexdigest())
 PY
 )"
 if bash "$repeated_runner" --dry-run \
-    --partition held-out \
-    --repetitions 3 \
-    --max-attempts 132 \
+    --profile extended-held-out \
     --batch-id offline-contract \
     --output-root "$dry_run_root" >/dev/null 2>&1; then
     fail "dry-run refuses to replace preserved batch evidence"

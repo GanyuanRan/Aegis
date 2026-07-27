@@ -13,41 +13,40 @@ else
     PYTHON_CMD=(python)
 fi
 
-PARTITION=""
-REPETITIONS=""
-MAX_ATTEMPTS=""
+PROFILE=""
 BATCH_ID=""
 MODEL="${AEGIS_AGENTIC_BENCHMARK_MODEL:-}"
 OUTPUT_ROOT=""
-ARMS="baseline-no-aegis,aegis-auto"
 DRY_RUN=0
-CASES=()
+CASE_ID=""
 
 usage() {
     cat <<'EOF'
-Usage: run-agentic-benchmark.sh --partition <development|held-out|held-out-normal|held-out-boundary> \
-  --repetitions <n> --max-attempts <n> --batch-id <id> --model <model> [options]
+Usage: run-agentic-benchmark.sh --profile <development-pilot|standard-held-out|extended-held-out> \
+  --batch-id <id> [--model <model>] [options]
 
 Options:
-  --case <id>          Restrict to a case in the selected partition; repeatable.
-  --arms <ids>         Must remain baseline-no-aegis,aegis-auto.
+  --case <id>          Required exactly once for development-pilot; forbidden otherwise.
   --output-root <dir>  Repo-local .tmp directory for private evidence.
   --dry-run            Freeze and print the schedule; make zero model calls.
 
 Environment for a real run:
-  AEGIS_AGENTIC_BENCHMARK_LIVE=1   Required for every paid run.
-  AEGIS_AGENTIC_BENCHMARK_FULL=1   Additionally required for held-out.
-  AEGIS_AGENTIC_BENCHMARK_MODEL    Alternative to --model.
+  AEGIS_AGENTIC_BENCHMARK_LIVE=1       Required for every paid run.
+  AEGIS_AGENTIC_BENCHMARK_HELD_OUT=1   Additionally required for held-out profiles.
+  AEGIS_AGENTIC_BENCHMARK_EXTENDED=1   Additionally required for extended-held-out.
+  AEGIS_AGENTIC_BENCHMARK_MODEL        Alternative to --model.
 EOF
 }
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --partition) PARTITION="$2"; shift 2 ;;
-        --case) CASES+=("$2"); shift 2 ;;
-        --arms) ARMS="$2"; shift 2 ;;
-        --repetitions) REPETITIONS="$2"; shift 2 ;;
-        --max-attempts) MAX_ATTEMPTS="$2"; shift 2 ;;
+        --profile) PROFILE="$2"; shift 2 ;;
+        --case)
+            if [[ -n "$CASE_ID" ]]; then
+                echo "ERROR: --case may be provided only once." >&2
+                exit 2
+            fi
+            CASE_ID="$2"; shift 2 ;;
         --batch-id) BATCH_ID="$2"; shift 2 ;;
         --model) MODEL="$2"; shift 2 ;;
         --output-root) OUTPUT_ROOT="$2"; shift 2 ;;
@@ -57,15 +56,24 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [[ -z "$PARTITION" || -z "$REPETITIONS" || -z "$MAX_ATTEMPTS" || -z "$BATCH_ID" ]]; then
-    echo "ERROR: partition, repetitions, max-attempts and batch-id are required." >&2
+if [[ -z "$PROFILE" || -z "$BATCH_ID" ]]; then
+    echo "ERROR: profile and batch-id are required." >&2
     usage
     exit 2
 fi
-if [[ "$ARMS" != "baseline-no-aegis,aegis-auto" ]]; then
-    echo "ERROR: benchmark arms are frozen as baseline-no-aegis,aegis-auto." >&2
-    exit 2
-fi
+case "$PROFILE" in
+    development-pilot)
+        if [[ -z "$CASE_ID" ]]; then
+            echo "ERROR: development-pilot requires exactly one --case." >&2
+            exit 2
+        fi ;;
+    standard-held-out|extended-held-out)
+        if [[ -n "$CASE_ID" ]]; then
+            echo "ERROR: $PROFILE does not accept --case." >&2
+            exit 2
+        fi ;;
+    *) echo "ERROR: unknown benchmark profile: $PROFILE" >&2; exit 2 ;;
+esac
 if [[ -z "$MODEL" ]]; then
     if [[ "$DRY_RUN" == "1" ]]; then
         MODEL="dry-run-pinned-model"
@@ -80,16 +88,14 @@ fi
 
 prepare_args=(
     prepare
-    --partition "$PARTITION"
-    --repetitions "$REPETITIONS"
-    --max-attempts "$MAX_ATTEMPTS"
+    --profile "$PROFILE"
     --batch-id "$BATCH_ID"
     --model "$MODEL"
     --output-root "$OUTPUT_ROOT"
 )
-for case_id in "${CASES[@]}"; do
-    prepare_args+=(--case "$case_id")
-done
+if [[ -n "$CASE_ID" ]]; then
+    prepare_args+=(--case "$CASE_ID")
+fi
 
 if [[ "$DRY_RUN" == "1" ]]; then
     "${PYTHON_CMD[@]}" tests/helpers/run_agentic_benchmark.py "${prepare_args[@]}"
@@ -101,9 +107,12 @@ from pathlib import Path
 batch = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 print(json.dumps({
     "batchId": batch["batchId"],
+    "profileId": batch["profileId"],
     "caseCount": batch["caseCount"],
     "targetRuns": batch["targetRunCount"],
     "maxAttempts": batch["maxAttempts"],
+    "workers": batch["workers"],
+    "wallClockBudgetSeconds": batch["wallClockBudgetSeconds"],
     "modelCalls": 0,
     "dryRun": True,
 }, sort_keys=True))
@@ -115,28 +124,29 @@ if [[ "${AEGIS_AGENTIC_BENCHMARK_LIVE:-0}" != "1" ]]; then
     echo "ERROR: set AEGIS_AGENTIC_BENCHMARK_LIVE=1 for paid benchmark execution." >&2
     exit 90
 fi
-if [[ "$PARTITION" == "held-out" && "${AEGIS_AGENTIC_BENCHMARK_FULL:-0}" != "1" ]]; then
-    echo "ERROR: set AEGIS_AGENTIC_BENCHMARK_FULL=1 for the complete held-out batch." >&2
+if [[ "$PROFILE" != "development-pilot" && "${AEGIS_AGENTIC_BENCHMARK_HELD_OUT:-0}" != "1" ]]; then
+    echo "ERROR: set AEGIS_AGENTIC_BENCHMARK_HELD_OUT=1 for held-out execution." >&2
     exit 91
+fi
+if [[ "$PROFILE" == "extended-held-out" && "${AEGIS_AGENTIC_BENCHMARK_EXTENDED:-0}" != "1" ]]; then
+    echo "ERROR: set AEGIS_AGENTIC_BENCHMARK_EXTENDED=1 for extended execution." >&2
+    exit 92
 fi
 
 if [[ ! -f "$OUTPUT_ROOT/batch.json" ]]; then
     "${PYTHON_CMD[@]}" tests/helpers/run_agentic_benchmark.py "${prepare_args[@]}"
 fi
-"${PYTHON_CMD[@]}" - "$OUTPUT_ROOT/batch.json" "$PARTITION" "$BATCH_ID" "$MODEL" "$REPETITIONS" "$MAX_ATTEMPTS" "${CASES[@]}" <<'PY'
+"${PYTHON_CMD[@]}" - "$OUTPUT_ROOT/batch.json" "$PROFILE" "$BATCH_ID" "$MODEL" "$CASE_ID" <<'PY'
 import json
 import sys
 from pathlib import Path
 
 batch = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-partition, batch_id, model = sys.argv[2:5]
-repetitions, max_attempts = map(int, sys.argv[5:7])
-requested_cases = sorted(sys.argv[7:])
-assert batch["partition"] == partition, "prepared batch partition differs from this invocation"
+profile, batch_id, model, case_id = sys.argv[2:6]
+requested_cases = [case_id] if case_id else []
+assert batch["profileId"] == profile, "prepared batch profile differs from this invocation"
 assert batch["batchId"] == batch_id, "prepared batch id differs from this invocation"
 assert batch["modelPolicy"]["requestedModel"] == model, "prepared batch model differs from this invocation"
-assert batch["repetitions"] == repetitions, "prepared batch repetitions differ from this invocation"
-assert batch["maxAttempts"] == max_attempts, "prepared batch attempt ceiling differs from this invocation"
 assert batch["requestedCaseIds"] == requested_cases, "prepared batch case selection differs from this invocation"
 PY
 "${PYTHON_CMD[@]}" tests/helpers/run_agentic_benchmark.py run --output-root "$OUTPUT_ROOT"

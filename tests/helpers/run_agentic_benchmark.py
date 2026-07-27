@@ -32,7 +32,6 @@ from agentic_benchmark_isolation import (
     prepare_distribution_snapshot,
     redact_proxy_output,
     remove_tmp_directory,
-    reset_directory,
     resolve_proxy_policy,
     resolve_tmp_child,
     run_isolation_audit,
@@ -49,12 +48,6 @@ from validate_agentic_benchmark_matrix import validate_matrix
 
 REPORT_TYPE = "agentic-benchmark-private-report"
 LEDGER_TYPE = "agentic-benchmark-attempt-ledger"
-PARTITION_MAP = {
-    "development": {"development"},
-    "held-out-normal": {"held-out-normal"},
-    "held-out-boundary": {"held-out-boundary"},
-    "held-out": {"held-out-normal", "held-out-boundary"},
-}
 UNSUPPORTED_CLAIMS = [
     "runtime-authority",
     "automatic-candidate-promotion",
@@ -102,8 +95,7 @@ def command_version(argv: list[str]) -> str | None:
 
 
 def resolve_repo_file(root: Path, value: Path, label: str) -> Path:
-    candidate = value if value.is_absolute() else root / value
-    resolved = candidate.resolve()
+    resolved = (value if value.is_absolute() else root / value).resolve()
     require(root == resolved or root in resolved.parents, f"{label} must stay inside the repo: {value}")
     require(resolved.is_file(), f"{label} must reference an existing file: {value}")
     return resolved
@@ -113,23 +105,15 @@ def relative_repo_path(root: Path, path: Path) -> str:
     return path.resolve().relative_to(root).as_posix()
 
 
-def find_case(manifest: dict[str, Any], case_id: str) -> dict[str, Any]:
-    matches = [case for case in manifest["cases"] if case["id"] == case_id]
-    require(len(matches) == 1, f"unknown benchmark case: {case_id}")
-    return matches[0]
-
-
-def find_frozen_case(batch: dict[str, Any], case_id: str) -> dict[str, Any]:
-    matches = [case for case in batch["frozenCases"] if case["caseId"] == case_id]
-    require(len(matches) == 1, f"unknown frozen benchmark case: {case_id}")
+def find_case(cases: list[dict[str, Any]], id_field: str, case_id: str, label: str) -> dict[str, Any]:
+    matches = [case for case in cases if case[id_field] == case_id]
+    require(len(matches) == 1, f"unknown {label} case: {case_id}")
     return matches[0]
 
 
 def default_auth_file() -> Path:
-    codex_home = os.environ.get("CODEX_HOME")
-    if codex_home:
-        return Path(codex_home) / "auth.json"
-    return Path.home() / ".codex/auth.json"
+    codex_home = Path(os.environ.get("CODEX_HOME") or Path.home() / ".codex")
+    return codex_home / "auth.json"
 
 
 def resolve_auth_file(value: Path) -> Path:
@@ -148,20 +132,21 @@ def resolve_tool(name: str, environment_key: str) -> Path:
     return resolved
 
 
-def select_cases(
+def select_profile_cases(
     manifest: dict[str, Any],
-    partition: str,
+    profile: dict[str, Any],
     requested_case_ids: list[str],
 ) -> list[dict[str, Any]]:
-    allowed = PARTITION_MAP[partition]
+    allowed = set(profile["datasetPartitions"])
     cases = [case for case in manifest["cases"] if case["partition"] in allowed and case["liveEligible"]]
-    if requested_case_ids:
-        requested = set(requested_case_ids)
-        known = {case["id"] for case in cases}
-        missing = sorted(requested - known)
-        require(not missing, f"requested cases do not belong to {partition}: {', '.join(missing)}")
-        cases = [case for case in cases if case["id"] in requested]
-    require(cases, "benchmark selection contains no live-eligible cases")
+    if profile["id"] == "development-pilot":
+        require(len(requested_case_ids) == 1, "development-pilot requires exactly one --case")
+        requested = requested_case_ids[0]
+        require(requested in {case["id"] for case in cases}, f"case is not development/live eligible: {requested}")
+        cases = [case for case in cases if case["id"] == requested]
+    else:
+        require(not requested_case_ids, f"{profile['id']} does not accept --case")
+    require(len(cases) == profile["caseCount"], f"{profile['id']} case selection does not match the matrix profile")
     return sorted(cases, key=lambda case: case["id"])
 
 
@@ -169,12 +154,13 @@ def schedule_targets(
     cases: list[dict[str, Any]],
     repetitions: int,
     batch_seed: str,
+    arms: list[str] | tuple[str, ...] = ARMS,
 ) -> list[dict[str, Any]]:
     require(repetitions > 0, "repetitions must be positive")
     targets: list[dict[str, Any]] = []
     for case in cases:
         for repetition in range(1, repetitions + 1):
-            for arm in ARMS:
+            for arm in arms:
                 target_key = f"{case['id']}|{repetition}|{arm}"
                 targets.append(
                     {
@@ -194,8 +180,8 @@ def schedule_targets(
         for target in targets
         if (target["caseId"], target["repetition"]) == canary_key
     ]
-    require(len(canary) == len(ARMS), "schedule could not promote an exact paired canary")
-    arm_order = {arm: index for index, arm in enumerate(ARMS)}
+    require(len(canary) == len(arms), "schedule could not promote an exact paired canary")
+    arm_order = {arm: index for index, arm in enumerate(arms)}
     canary.sort(key=lambda target: arm_order[target["arm"]])
     canary_ids = {target["targetId"] for target in canary}
     targets = canary + [target for target in targets if target["targetId"] not in canary_ids]
@@ -238,17 +224,28 @@ def batch_digest(batch: dict[str, Any]) -> str:
     return canonical_json_hash(payload)
 
 
+def profile_fields(profile: dict[str, Any]) -> dict[str, Any]:
+    fields = {key: profile[key] for key in (
+        "datasetPartitions", "caseCount", "arms", "workers", "wallClockBudgetSeconds",
+        "preflightTimeoutSeconds", "perAttemptTimeoutSeconds", "infrastructureFailureLimit",
+    )}
+    fields.update(profileId=profile["id"], repetitions=profile["repetitionsPerCase"], targetRunCount=profile["validRunTarget"], maxAttempts=profile["paidAttemptCeiling"])
+    return fields
+
+
 def verify_batch(batch: dict[str, Any], root: Path, output_root: Path) -> ProxyPolicy:
     require(batch.get("version") == 1, "batch version must be 1")
     require(batch.get("authorityBoundary") == AUTHORITY_BOUNDARY, "batch authority boundary drifted")
     require(batch.get("batchDigest") == batch_digest(batch), "batch digest mismatch")
-    require(batch.get("arms") == list(ARMS), "batch arm contract drifted")
     require(batch.get("targetRunCount") == len(batch.get("schedule", [])), "batch target count drifted")
-    require(batch.get("maxAttempts", 0) >= batch["targetRunCount"], "max attempts cannot be smaller than target runs")
     proxy_policy = resolve_proxy_policy(os.environ)
     require(batch.get("networkPolicy") == network_policy_metadata(proxy_policy), "host proxy policy does not match the frozen batch metadata")
     require(hash_tree(output_root / "distribution-snapshot") == batch["distributionSnapshot"]["treeHash"], "frozen distribution snapshot drifted")
-    require(file_hash(output_root / batch["frozenMatrixPath"]) == batch["matrixHash"], "frozen benchmark matrix drifted")
+    frozen_matrix_path = output_root / batch["frozenMatrixPath"]
+    require(file_hash(frozen_matrix_path) == batch["matrixHash"], "frozen benchmark matrix drifted")
+    frozen_matrix = load_json(frozen_matrix_path, "frozen matrix")
+    profile = next((item for item in frozen_matrix["runProfiles"] if item["id"] == batch.get("profileId")), None)
+    require(profile is not None and all(batch.get(key) == value for key, value in profile_fields(profile).items()), "batch profile fields drifted from the frozen matrix")
     require(file_hash(output_root / batch["frozenManifestPath"]) == batch["manifestHash"], "frozen case manifest drifted")
     for artifact in batch["harnessArtifacts"]:
         require(file_hash(root / artifact["path"]) == artifact["hash"], f"benchmark harness changed after prepare: {artifact['path']}")
@@ -281,37 +278,15 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
     validate_manifest(manifest_path, False)
     matrix = load_json(matrix_path, "matrix")
     manifest = load_json(manifest_path, "case manifest")
-    cases = select_cases(manifest, args.partition, args.case)
-    target_count = len(cases) * args.repetitions * len(ARMS)
-    require(args.max_attempts >= target_count, f"max-attempts must be at least the {target_count} target runs")
-    if args.partition == "held-out":
-        require(not args.case, "complete held-out preparation cannot select a case subset")
-        require(len(cases) == 20, "complete held-out preparation must select 20 cases")
-    selected_partitions = sorted({case["partition"] for case in cases})
-    matching_profiles = [
-        profile
-        for profile in matrix["runProfiles"]
-        if sorted(profile["datasetPartitions"]) == selected_partitions
-        and profile["caseCount"] == len(cases)
-        and profile["arms"] == list(ARMS)
-        and profile["repetitionsPerCase"] == args.repetitions
-        and profile["validRunTarget"] == target_count
-        and profile["paidAttemptCeiling"] == args.max_attempts
-    ]
-    require(
-        len(matching_profiles) == 1,
-        "batch shape must match exactly one matrix run profile; complete held-out preparation requires 3 repetitions or the exact matrix-owned run profile",
-    )
-    profile = matching_profiles[0]
+    profile = next((item for item in matrix["runProfiles"] if item["id"] == args.profile), None)
+    require(profile is not None, f"unknown benchmark profile: {args.profile}")
+    cases = select_profile_cases(manifest, profile, args.case)
     require(re.fullmatch(r"[a-z0-9][a-z0-9._-]{2,79}", args.batch_id) is not None, "batch-id has an invalid format")
     require(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,79}", args.model or "") is not None, "--model is required and must pin a safe model identifier")
 
     output_root = resolve_tmp_child(root, args.output_root, "output-root")
-    if args.replace:
-        reset_directory(output_root, root)
-    else:
-        require(not output_root.exists() or not any(output_root.iterdir()), "output-root already contains a prepared batch")
-        output_root.mkdir(parents=True, exist_ok=True)
+    require(not output_root.exists() or not any(output_root.iterdir()), "output-root already contains a prepared batch")
+    output_root.mkdir(parents=True, exist_ok=True)
     snapshot = prepare_distribution_snapshot(root, output_root / "distribution-snapshot")
     frozen_contracts = output_root / "frozen-contracts"
     frozen_contracts.mkdir()
@@ -320,7 +295,7 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
     codex_value = os.environ.get("AEGIS_BENCHMARK_CODEX") or shutil.which("codex")
     bwrap_value = os.environ.get("AEGIS_BENCHMARK_BWRAP") or shutil.which("bwrap")
     seed = hashlib.sha256(args.batch_id.encode()).hexdigest()
-    schedule = schedule_targets(cases, args.repetitions, seed)
+    schedule = schedule_targets(cases, profile["repetitionsPerCase"], seed, profile["arms"])
     harness_paths = [
         "tests/helpers/run_agentic_benchmark.py",
         "tests/helpers/agentic_benchmark_scheduler.py",
@@ -335,21 +310,10 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
         "authorityBoundary": AUTHORITY_BOUNDARY,
         "batchId": args.batch_id,
         "batchSeed": seed,
-        "partition": args.partition,
         "requestedCaseIds": sorted(args.case),
         "caseIds": [case["id"] for case in cases],
         "portfolioCaseCount": len(manifest["cases"]),
-        "caseCount": len(cases),
-        "arms": list(ARMS),
-        "repetitions": args.repetitions,
-        "targetRunCount": target_count,
-        "maxAttempts": args.max_attempts,
-        "profileId": profile["id"],
-        "workers": profile["workers"],
-        "wallClockBudgetSeconds": profile["wallClockBudgetSeconds"],
-        "perAttemptTimeoutSeconds": profile["perAttemptTimeoutSeconds"],
-        "infrastructureFailureLimit": profile["infrastructureFailureLimit"],
-        "preflightTimeoutSeconds": profile["preflightTimeoutSeconds"],
+        **profile_fields(profile),
         "modelPolicy": {"requestedModel": args.model, "mustMatchAcrossArms": True},
         "networkPolicy": network_policy_metadata(proxy_policy),
         "toolPolicy": {
@@ -506,10 +470,6 @@ def redact_credential_output(text: str, auth_file: Path) -> tuple[str, bool]:
     return redacted, exposed
 
 
-def write_before_tree(path: Path, workspace: Path) -> None:
-    atomic_json(path, {"version": 1, "files": snapshot_workspace(workspace)})
-
-
 def timeout_output(value: str | bytes | None) -> str:
     if value is None:
         return ""
@@ -577,14 +537,14 @@ def _execute_target_unscrubbed(
     timeout_seconds: float,
     proxy_policy: ProxyPolicy,
 ) -> dict[str, Any]:
-    case = find_frozen_case(batch, target["caseId"])
+    case = find_case(batch["frozenCases"], "caseId", target["caseId"], "frozen benchmark")
     attempt_root = output_root / "attempts" / f"{attempt_number:03d}-{target['targetId']}"
     attempt_root.mkdir(parents=True)
     snapshot_root = output_root / "distribution-snapshot"
     arm_snapshot = snapshot_root if target["arm"] == "aegis-auto" else None
     layout = prepare_arm_layout(attempt_root / "isolated", output_root / case["frozenSeedProjectPath"], auth_file, arm_snapshot)
     before_tree = attempt_root / "before-tree.json"
-    write_before_tree(before_tree, layout["workspace"])
+    atomic_json(before_tree, {"version": 1, "files": snapshot_workspace(layout["workspace"])})
     prompt = (output_root / case["frozenPromptPath"]).read_text(encoding="utf-8")
     command = build_codex_live_command(
         bwrap=bwrap,
@@ -696,11 +656,6 @@ def execute_target(
         callback_arguments,
         lambda path: remove_tmp_directory(path, root),
     )
-
-
-def scrub_stale_attempt_artifacts(root: Path, output_root: Path, proxy_policy: ProxyPolicy) -> None:
-    attempts_root = resolve_tmp_child(root, output_root / "attempts", "attempts artifact root")
-    scrub_stale_proxy_artifacts(attempts_root, proxy_policy, lambda path: remove_tmp_directory(path, root))
 
 
 def percentile(values: list[float], fraction: float) -> float:
@@ -815,7 +770,7 @@ def aggregate(batch: dict[str, Any], ledger: dict[str, Any]) -> dict[str, Any]:
         "authorityBoundary": AUTHORITY_BOUNDARY,
         "batchId": batch["batchId"],
         "batchDigest": batch["batchDigest"],
-        "partition": batch["partition"],
+        "partition": "development" if batch["datasetPartitions"] == ["development"] else "held-out",
         "versions": {
             "aegis": batch["distributionSnapshot"]["version"],
             "codex": batch["hostVersions"]["codex"],
@@ -903,7 +858,7 @@ def isolation_audit_command(args: argparse.Namespace) -> None:
     manifest_path = resolve_repo_file(root, args.manifest, "manifest")
     validate_manifest(manifest_path, False)
     manifest = load_json(manifest_path, "case manifest")
-    case = find_case(manifest, args.case)
+    case = find_case(manifest["cases"], "id", args.case, "benchmark")
     output_root = resolve_tmp_child(root, args.output_root, "output-root")
     report_path = resolve_tmp_child(root, args.report_json, "report-json")
     require(output_root in report_path.parents, "isolation report must stay inside output-root")
@@ -928,7 +883,15 @@ def validate_command(args: argparse.Namespace) -> None:
 
 def prepare_command(args: argparse.Namespace) -> None:
     batch = prepare_batch(args)
-    print(json.dumps({"batchId": batch["batchId"], "caseCount": batch["caseCount"], "targetRuns": batch["targetRunCount"], "maxAttempts": batch["maxAttempts"], "modelCalls": 0}, sort_keys=True))
+    print(json.dumps({"batchId": batch["batchId"], "profileId": batch["profileId"], "caseCount": batch["caseCount"], "targetRuns": batch["targetRunCount"], "maxAttempts": batch["maxAttempts"], "modelCalls": 0}, sort_keys=True))
+
+
+def require_execution_opt_in(profile_id: str, environment: dict[str, str]) -> None:
+    require(environment.get("AEGIS_AGENTIC_BENCHMARK_LIVE") == "1", "set AEGIS_AGENTIC_BENCHMARK_LIVE=1 for paid benchmark execution")
+    if profile_id in {"standard-held-out", "extended-held-out"}:
+        require(environment.get("AEGIS_AGENTIC_BENCHMARK_HELD_OUT") == "1", "set AEGIS_AGENTIC_BENCHMARK_HELD_OUT=1 for held-out execution")
+    if profile_id == "extended-held-out":
+        require(environment.get("AEGIS_AGENTIC_BENCHMARK_EXTENDED") == "1", "set AEGIS_AGENTIC_BENCHMARK_EXTENDED=1 for extended execution")
 
 
 def run_command(args: argparse.Namespace) -> None:
@@ -936,15 +899,13 @@ def run_command(args: argparse.Namespace) -> None:
     output_root = resolve_tmp_child(root, args.output_root, "output-root")
     batch, ledger = load_batch_and_ledger(output_root)
     proxy_policy = verify_batch(batch, root, output_root)
-    require(args.timeout_seconds > 0, "timeout-seconds must be positive")
-    require(os.environ.get("AEGIS_AGENTIC_BENCHMARK_LIVE") == "1", "set AEGIS_AGENTIC_BENCHMARK_LIVE=1 for paid benchmark execution")
-    if batch["partition"] == "held-out":
-        require(os.environ.get("AEGIS_AGENTIC_BENCHMARK_FULL") == "1", "set AEGIS_AGENTIC_BENCHMARK_FULL=1 for a held-out batch")
+    require_execution_opt_in(batch["profileId"], os.environ)
     auth_file = resolve_auth_file(args.auth_file)
-    scrub_stale_attempt_artifacts(root, output_root, proxy_policy)
+    attempts_root = resolve_tmp_child(root, output_root / "attempts", "attempts artifact root")
+    scrub_stale_proxy_artifacts(attempts_root, proxy_policy, lambda path: remove_tmp_directory(path, root))
     bwrap = resolve_tool("bwrap", "AEGIS_BENCHMARK_BWRAP")
     codex = resolve_tool("codex", "AEGIS_BENCHMARK_CODEX")
-    frozen_isolation_case = find_frozen_case(batch, batch["caseIds"][0])
+    frozen_isolation_case = find_case(batch["frozenCases"], "caseId", batch["caseIds"][0], "frozen benchmark")
     isolation_case = {
         "id": frozen_isolation_case["caseId"],
         "promptPath": relative_repo_path(root, output_root / frozen_isolation_case["frozenPromptPath"]),
@@ -1033,20 +994,16 @@ def parse_args() -> argparse.Namespace:
 
     prepare = subparsers.add_parser("prepare", help="freeze a deterministic no-call benchmark batch")
     add_contract_args(prepare)
-    prepare.add_argument("--partition", choices=sorted(PARTITION_MAP), required=True)
+    prepare.add_argument("--profile", required=True)
     prepare.add_argument("--case", action="append", default=[])
-    prepare.add_argument("--repetitions", type=int, required=True)
-    prepare.add_argument("--max-attempts", type=int, required=True)
     prepare.add_argument("--batch-id", required=True)
     prepare.add_argument("--model", required=True)
     prepare.add_argument("--output-root", type=Path, required=True)
-    prepare.add_argument("--replace", action="store_true")
     prepare.set_defaults(handler=prepare_command)
 
     run = subparsers.add_parser("run", help="execute a prepared batch with explicit paid-run opt-in")
     run.add_argument("--output-root", type=Path, required=True)
     run.add_argument("--auth-file", type=Path, default=default_auth_file())
-    run.add_argument("--timeout-seconds", type=int, default=900)
     run.set_defaults(handler=run_command)
 
     aggregate_parser = subparsers.add_parser("aggregate", help="aggregate the preserved attempt ledger")
