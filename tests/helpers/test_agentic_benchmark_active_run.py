@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import signal
 import subprocess
@@ -18,6 +19,7 @@ from unittest import mock
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import agentic_benchmark_active_run as active_run
+import agentic_benchmark_scheduler as scheduler_owner
 import agentic_benchmark_process_supervisor as process_supervisor
 import run_agentic_benchmark as benchmark_runner
 from agentic_benchmark_provider_preflight import CredentialPolicy
@@ -84,6 +86,87 @@ class ActiveRunTest(unittest.TestCase):
         value.credential_policy = EMPTY_CREDENTIAL_POLICY
         value.drift_guard.return_value = {"source": "/safe/auth", "fingerprint": "a" * 64}
         return value
+
+    def prepare_short_batch(self, output_root: Path, wall_seconds: float, cumulative: float = 0.0) -> tuple[dict, dict]:
+        benchmark_runner.prepare_batch(
+            argparse.Namespace(
+                matrix=Path("tests/e2e/fixtures/agentic-benchmark-matrix.json"),
+                manifest=Path("tests/e2e/fixtures/agentic-benchmark-cases.json"),
+                profile="development-pilot",
+                case=["tiny-fast-dev"],
+                batch_id=f"offline-active-{output_root.name[-12:]}",
+                model="offline-test-model",
+                output_root=output_root,
+            )
+        )
+        matrix_path = output_root / "frozen-contracts/matrix.json"
+        matrix = json.loads(matrix_path.read_text(encoding="utf-8"))
+        profile = next(item for item in matrix["runProfiles"] if item["id"] == "development-pilot")
+        profile["wallClockBudgetSeconds"] = wall_seconds
+        profile["preflightTimeoutSeconds"] = wall_seconds
+        profile["perAttemptTimeoutSeconds"] = wall_seconds
+        benchmark_runner.atomic_json(matrix_path, matrix)
+        batch_path = output_root / "batch.json"
+        batch = json.loads(batch_path.read_text(encoding="utf-8"))
+        batch["wallClockBudgetSeconds"] = wall_seconds
+        batch["preflightTimeoutSeconds"] = wall_seconds
+        batch["perAttemptTimeoutSeconds"] = wall_seconds
+        batch["matrixHash"] = benchmark_runner.file_hash(matrix_path)
+        batch["batchDigest"] = benchmark_runner.batch_digest(batch)
+        ledger = benchmark_runner.initial_ledger(batch)
+        ledger["cumulativeWallSeconds"] = cumulative
+        benchmark_runner.atomic_json(batch_path, batch)
+        benchmark_runner.atomic_json(output_root / "ledger.json", ledger)
+        benchmark_runner.atomic_json(
+            output_root / "active-budget.json",
+            {
+                "version": 1,
+                "profileId": batch["profileId"],
+                "batchDigest": batch["batchDigest"],
+                "wallClockBudgetSeconds": wall_seconds,
+            },
+        )
+        return batch, ledger
+
+    @staticmethod
+    def write_outer_worker(directory: Path) -> Path:
+        script = directory / "outer-worker.py"
+        script.write_text(
+            """
+import json
+import sys
+import time
+from pathlib import Path
+
+mode, helper_root, events_path = sys.argv[1:]
+request = json.loads(sys.stdin.read())
+if mode == "timeout":
+    time.sleep(60)
+    raise SystemExit(0)
+sys.path.insert(0, helper_root)
+import agentic_benchmark_scheduler as scheduler
+output_root = Path(request["outputRoot"])
+batch = json.loads((output_root / "batch.json").read_text(encoding="utf-8"))
+ledger = json.loads((output_root / "ledger.json").read_text(encoding="utf-8"))
+events = Path(events_path)
+events.write_text("auth-close\\n", encoding="utf-8")
+print(json.dumps({"batchId": batch["batchId"], "completeness": "complete"}), flush=True)
+with events.open("a", encoding="utf-8") as stream:
+    stream.write("summary\\n")
+scheduler.settle_invocation(
+    batch,
+    ledger,
+    output_root / "ledger.json",
+    request["invocationId"],
+    time.monotonic() - request["startedMonotonicSeconds"],
+)
+with events.open("a", encoding="utf-8") as stream:
+    stream.write("settle\\n")
+""".strip()
+            + "\n",
+            encoding="utf-8",
+        )
+        return script
 
     def test_initial_load_and_auth_failures_purge_untrusted_attempts(self):
         for stage in ("load", "auth"):
@@ -282,6 +365,137 @@ class ActiveRunTest(unittest.TestCase):
                     burner.wait(timeout=2)
             self.assertLess(time.monotonic() - started, wall_seconds)
             frozen.close.assert_called_once_with()
+
+    def test_real_outer_timeout_keeps_reservation_and_next_reserve_consumes_it(self):
+        wall_seconds = 0.5
+        with tempfile.TemporaryDirectory(prefix="agentic-outer-timeout-", dir=self.root / ".tmp") as value:
+            output_root = Path(value)
+            batch, _ledger = self.prepare_short_batch(output_root, wall_seconds)
+            worker = self.write_outer_worker(output_root)
+            events = output_root / "events.txt"
+            args = argparse.Namespace(output_root=output_root, auth_file=output_root / "unused-auth.json")
+            command = [sys.executable, str(worker), "timeout", str(Path(__file__).resolve().parent), str(events)]
+            started = time.monotonic()
+            with mock.patch.dict(os.environ, {"AEGIS_AGENTIC_BENCHMARK_LIVE": "1"}), mock.patch.object(
+                active_run, "_active_worker_command", return_value=command
+            ), self.assertRaises(SystemExit):
+                active_run.run_supervised(args)
+            elapsed = time.monotonic() - started
+            self.assertLessEqual(elapsed, wall_seconds + 0.05)
+            persisted = json.loads((output_root / "ledger.json").read_text(encoding="utf-8"))
+            self.assertIn("activeInvocation", persisted)
+            with self.assertRaises(SystemExit) as caught:
+                process_supervisor._execute_reserve_invocation(
+                    benchmark_runner,
+                    {
+                        "root": str(self.root),
+                        "outputRoot": str(output_root),
+                        "invocationId": "replacement",
+                        "timeoutSeconds": wall_seconds,
+                    },
+                )
+            recovered = json.loads((output_root / "ledger.json").read_text(encoding="utf-8"))
+            self.assertIn("new batch", str(caught.exception))
+            self.assertNotIn("activeInvocation", recovered)
+            self.assertEqual(recovered["cumulativeWallSeconds"], batch["wallClockBudgetSeconds"])
+
+    def test_real_outer_success_settles_after_close_and_summary_with_total_elapsed(self):
+        wall_seconds = 1.0
+        with tempfile.TemporaryDirectory(prefix="agentic-outer-success-", dir=self.root / ".tmp") as value:
+            output_root = Path(value)
+            self.prepare_short_batch(output_root, wall_seconds)
+            worker = self.write_outer_worker(output_root)
+            events = output_root / "events.txt"
+            args = argparse.Namespace(output_root=output_root, auth_file=output_root / "unused-auth.json")
+            command = [sys.executable, str(worker), "success", str(Path(__file__).resolve().parent), str(events)]
+            started = time.monotonic()
+            with mock.patch.dict(os.environ, {"AEGIS_AGENTIC_BENCHMARK_LIVE": "1"}), mock.patch.object(
+                active_run, "_active_worker_command", return_value=command
+            ):
+                active_run.run_supervised(args)
+            outer_elapsed = time.monotonic() - started
+            persisted = json.loads((output_root / "ledger.json").read_text(encoding="utf-8"))
+            self.assertEqual(events.read_text(encoding="utf-8").splitlines(), ["auth-close", "summary", "settle"])
+            self.assertNotIn("activeInvocation", persisted)
+            self.assertGreater(persisted["cumulativeWallSeconds"], 0)
+            self.assertLessEqual(abs(persisted["cumulativeWallSeconds"] - outer_elapsed), 0.08)
+
+    def test_active_worker_logic_closes_and_prints_before_total_settlement(self):
+        wall_seconds = 1.0
+        with tempfile.TemporaryDirectory(prefix="agentic-worker-settle-", dir=self.root / ".tmp") as value:
+            output_root = Path(value)
+            batch = frozen_batch(wall_seconds)
+            ledger = initial_ledger()
+            ledger["activeInvocation"] = {
+                "invocationId": "invocation-1",
+                "preInvocationCumulativeWallSeconds": 0.0,
+                "reservedWallSeconds": wall_seconds,
+            }
+            events: list[str] = []
+            frozen = self.frozen_auth()
+            frozen.close.side_effect = lambda: events.append("auth-close")
+
+            def execute_stage(_batch, _ledger, _path, stage, _maximum, _callback):
+                if stage == "isolation-and-setup":
+                    return {"authFile": "/proc/self/fd/9", "bwrap": "/safe/bwrap", "codex": "/safe/codex"}
+                if stage == "provider-preflight":
+                    return {"status": "ready"}
+                if stage == "finalize":
+                    return {"batchId": "fake", "attempts": {}, "completeness": "complete"}
+                self.fail(f"unexpected stage {stage}")
+
+            def settle(*args):
+                scheduler_owner.settle_invocation(*args)
+                events.append("settle")
+
+            scheduler = SimpleNamespace(
+                validate_ledger=scheduler_owner.validate_ledger,
+                checkpoint_invocation=scheduler_owner.checkpoint_invocation,
+                settle_invocation=settle,
+                execute_budgeted_stage=execute_stage,
+                execute_schedule=lambda *_args: None,
+            )
+            runner = self.runner(output_root, batch, ledger, frozen)
+            runner.agentic_benchmark_scheduler = scheduler
+            started = time.monotonic() - 0.05
+            with mock.patch("builtins.print", side_effect=lambda *_args, **_kwargs: events.append("summary")):
+                active_run.run_active(
+                    runner,
+                    argparse.Namespace(output_root=output_root, auth_file=Path("/safe/auth")),
+                    invocation_id="invocation-1",
+                    started_monotonic_seconds=started,
+                    reserved_wall_seconds=wall_seconds,
+                )
+            persisted = json.loads((output_root / "ledger.json").read_text(encoding="utf-8"))
+            self.assertEqual(events[-3:], ["auth-close", "summary", "settle"])
+            self.assertNotIn("activeInvocation", persisted)
+            self.assertGreaterEqual(persisted["cumulativeWallSeconds"], 0.05)
+
+    def test_bootstrap_prior_cumulative_tightens_reservation_deadline(self):
+        wall_seconds = 0.1
+        with tempfile.TemporaryDirectory(prefix="agentic-outer-prior-", dir=self.root / ".tmp") as value:
+            output_root = Path(value)
+            self.prepare_short_batch(output_root, wall_seconds, cumulative=0.05)
+            args = argparse.Namespace(output_root=output_root, auth_file=output_root / "unused-auth.json")
+            captured: list[float] = []
+
+            def reserve(_operation: str, _request: dict, timeout_seconds: float):
+                captured.append(timeout_seconds)
+                outcome = process_supervisor.supervise_process(
+                    [sys.executable, "-c", "import time; time.sleep(60)"],
+                    "{}",
+                    timeout_seconds,
+                )
+                self.assertTrue(outcome["timedOut"])
+                raise SystemExit("simulated slow reservation control")
+
+            started = time.monotonic()
+            with mock.patch.dict(os.environ, {"AEGIS_AGENTIC_BENCHMARK_LIVE": "1"}), mock.patch.object(
+                active_run, "supervise_operation", side_effect=reserve
+            ), self.assertRaises(SystemExit):
+                active_run.run_supervised(args)
+            self.assertLess(captured[0], wall_seconds - 0.05)
+            self.assertLessEqual(time.monotonic() - started, wall_seconds)
 
 
 if __name__ == "__main__":

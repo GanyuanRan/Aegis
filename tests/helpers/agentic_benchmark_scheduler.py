@@ -48,6 +48,11 @@ ACTIVE_BUDGET_STAGE_FIELDS = {
     "reservedWallSeconds",
     "preStageCumulativeWallSeconds",
 }
+ACTIVE_INVOCATION_FIELDS = {
+    "invocationId",
+    "preInvocationCumulativeWallSeconds",
+    "reservedWallSeconds",
+}
 ATTEMPT_IDENTITY_FIELDS = (
     "targetId",
     "caseId",
@@ -178,6 +183,33 @@ def _settle_wall(
         "reservationSeconds": reservation,
     }
     return True
+
+
+def _validate_active_invocation(batch: dict[str, Any], ledger: dict[str, Any]) -> dict[str, Any] | None:
+    active = ledger.get("activeInvocation")
+    if active is None:
+        return None
+    _require(isinstance(active, dict), "activeInvocation must be an object")
+    _require(set(active) == ACTIVE_INVOCATION_FIELDS, "activeInvocation fields are invalid")
+    invocation_id = active["invocationId"]
+    _require(isinstance(invocation_id, str) and invocation_id, "activeInvocation invocationId is invalid")
+    pre_invocation = active["preInvocationCumulativeWallSeconds"]
+    _require(
+        isinstance(pre_invocation, (int, float))
+        and not isinstance(pre_invocation, bool)
+        and math.isfinite(pre_invocation)
+        and pre_invocation >= 0,
+        "activeInvocation pre-invocation wall time is invalid",
+    )
+    reserved = _positive_number(active["reservedWallSeconds"], "activeInvocation.reservedWallSeconds")
+    wall = float(batch["wallClockBudgetSeconds"])
+    _require(float(pre_invocation) + reserved == wall, "activeInvocation must reserve all remaining wall time")
+    cumulative = float(ledger["cumulativeWallSeconds"])
+    _require(
+        float(pre_invocation) <= cumulative <= float(pre_invocation) + reserved,
+        "activeInvocation cumulative wall time is outside its reservation",
+    )
+    return active
 
 
 def _attempt_record(target: dict[str, Any], attempt_number: int, wave_number: int) -> dict[str, Any]:
@@ -460,10 +492,107 @@ def validate_ledger(batch: dict[str, Any], ledger: dict[str, Any]) -> None:
         elapsed = _positive_number(overrun["elapsedSeconds"], "wallClockOverrun.elapsedSeconds")
         reserved = _positive_number(overrun["reservationSeconds"], "wallClockOverrun.reservationSeconds")
         _require(elapsed > reserved, "ledger wallClockOverrun must record a real overrun")
+    _validate_active_invocation(batch, ledger)
     _validate_active_budget_stage(batch, ledger)
     active = _validate_active_wave(batch, ledger)
     if active is None:
         _replay_queue(batch, ledger)
+
+
+def reserve_invocation(
+    batch: dict[str, Any],
+    ledger: dict[str, Any],
+    ledger_path: Path,
+    invocation_id: str,
+) -> dict[str, Any]:
+    """Persist a fail-closed reservation before any active-run control work."""
+
+    validate_ledger(batch, ledger)
+    _require(isinstance(invocation_id, str) and invocation_id, "invocation id must be non-empty")
+    active = ledger.get("activeInvocation")
+    if active is not None:
+        pre_invocation = float(active["preInvocationCumulativeWallSeconds"])
+        reservation = float(active["reservedWallSeconds"])
+        if "activeWave" in ledger:
+            _recover_interrupted(batch, ledger)
+        ledger.pop("activeBudgetStage", None)
+        ledger["cumulativeWallSeconds"] = pre_invocation + reservation
+        del ledger["activeInvocation"]
+        _set_status(ledger, "stopped", "interrupted-active-invocation-reservation-consumed")
+        _atomic_json(ledger_path, ledger)
+        raise SystemExit("interrupted active invocation consumed its reservation; prepare a new batch")
+    _require("wallClockOverrun" not in ledger, "benchmark cannot start after a wall-clock deadline overrun")
+    pre_invocation = float(ledger["cumulativeWallSeconds"])
+    reservation = float(batch["wallClockBudgetSeconds"]) - pre_invocation
+    _require(reservation > 0, "benchmark cumulative wall-clock budget is exhausted")
+    ledger["activeInvocation"] = {
+        "invocationId": invocation_id,
+        "preInvocationCumulativeWallSeconds": pre_invocation,
+        "reservedWallSeconds": reservation,
+    }
+    _set_status(ledger, "running", "active-invocation-reserved")
+    _atomic_json(ledger_path, ledger)
+    return ledger["activeInvocation"]
+
+
+def _invocation_elapsed_target(
+    batch: dict[str, Any],
+    ledger: dict[str, Any],
+    invocation_id: str,
+    elapsed_seconds: float,
+) -> tuple[dict[str, Any], float, bool]:
+    validate_ledger(batch, ledger)
+    active = ledger.get("activeInvocation")
+    _require(active is not None, "active invocation reservation is missing")
+    _require(active["invocationId"] == invocation_id, "active invocation id drifted")
+    elapsed = _positive_number(elapsed_seconds, "active invocation elapsed seconds")
+    pre_invocation = float(active["preInvocationCumulativeWallSeconds"])
+    reservation = float(active["reservedWallSeconds"])
+    if elapsed <= reservation:
+        return active, max(float(ledger["cumulativeWallSeconds"]), pre_invocation + elapsed), False
+    ledger["wallClockOverrun"] = {
+        "phase": "active-invocation",
+        "elapsedSeconds": elapsed,
+        "reservationSeconds": reservation,
+    }
+    return active, pre_invocation + reservation, True
+
+
+def checkpoint_invocation(
+    batch: dict[str, Any],
+    ledger: dict[str, Any],
+    ledger_path: Path,
+    invocation_id: str,
+    elapsed_seconds: float,
+) -> None:
+    """Persist non-stage invocation time while retaining the crash reservation."""
+
+    _active, target, overrun = _invocation_elapsed_target(batch, ledger, invocation_id, elapsed_seconds)
+    ledger["cumulativeWallSeconds"] = target
+    if overrun:
+        _set_status(ledger, "stopped", "wall-clock-deadline-overrun")
+    _atomic_json(ledger_path, ledger)
+    if overrun:
+        raise SystemExit("benchmark active invocation exceeded its wall-clock reservation")
+
+
+def settle_invocation(
+    batch: dict[str, Any],
+    ledger: dict[str, Any],
+    ledger_path: Path,
+    invocation_id: str,
+    elapsed_seconds: float,
+) -> None:
+    """Settle total invocation time only after output and auth close complete."""
+
+    _active, target, overrun = _invocation_elapsed_target(batch, ledger, invocation_id, elapsed_seconds)
+    ledger["cumulativeWallSeconds"] = target
+    del ledger["activeInvocation"]
+    if overrun:
+        _set_status(ledger, "stopped", "wall-clock-deadline-overrun")
+    _atomic_json(ledger_path, ledger)
+    if overrun:
+        raise SystemExit("benchmark active invocation exceeded its wall-clock reservation")
 
 
 def execute_budgeted_stage(

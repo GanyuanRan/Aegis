@@ -8,11 +8,14 @@ import json
 import sys
 import tempfile
 import threading
+import time
 import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import agentic_benchmark_scheduler as scheduler
+from agentic_benchmark_process_supervisor import supervise_process
 from agentic_benchmark_scheduler import execute_budgeted_stage, execute_schedule, validate_ledger
 
 
@@ -401,6 +404,44 @@ class SchedulerTest(unittest.TestCase):
                     2.0,
                     lambda _remaining: self.fail("overrun ledger must not resume"),
                 )
+
+    def test_active_invocation_normal_path_settles_total_control_and_return_elapsed(self):
+        frozen = batch(case_count=2, wall=2.0, timeout=2.0)
+        state = ledger()
+        with tempfile.TemporaryDirectory(prefix="agentic-invocation-settle-", dir=self.root / ".tmp") as value:
+            ledger_path = Path(value) / "ledger.json"
+            scheduler.reserve_invocation(frozen, state, ledger_path, "invocation-1")
+            self.assertEqual(state["cumulativeWallSeconds"], 0.0)
+            self.assertEqual(state["activeInvocation"]["reservedWallSeconds"], 2.0)
+            scheduler.checkpoint_invocation(frozen, state, ledger_path, "invocation-1", 0.15)
+            scheduler.settle_invocation(frozen, state, ledger_path, "invocation-1", 0.25)
+            persisted = json.loads(ledger_path.read_text(encoding="utf-8"))
+        self.assertNotIn("activeInvocation", state)
+        self.assertEqual(state["cumulativeWallSeconds"], 0.25)
+        self.assertEqual(persisted["cumulativeWallSeconds"], 0.25)
+
+    def test_control_timeout_keeps_full_reservation_and_resume_cannot_reacquire_it(self):
+        frozen = batch(case_count=2, wall=0.1, timeout=0.1)
+        state = ledger()
+        with tempfile.TemporaryDirectory(prefix="agentic-invocation-timeout-", dir=self.root / ".tmp") as value:
+            ledger_path = Path(value) / "ledger.json"
+            scheduler.reserve_invocation(frozen, state, ledger_path, "invocation-1")
+            started = time.monotonic()
+            outcome = supervise_process(
+                [sys.executable, "-c", "import time; time.sleep(0.2)"],
+                "{}",
+                0.1,
+            )
+            self.assertLessEqual(time.monotonic() - started, 0.1)
+            self.assertTrue(outcome["timedOut"])
+            persisted = json.loads(ledger_path.read_text(encoding="utf-8"))
+            self.assertEqual(persisted["activeInvocation"]["invocationId"], "invocation-1")
+            with self.assertRaises(SystemExit) as caught:
+                scheduler.reserve_invocation(frozen, persisted, ledger_path, "invocation-2")
+            recovered = json.loads(ledger_path.read_text(encoding="utf-8"))
+        self.assertIn("new batch", str(caught.exception))
+        self.assertNotIn("activeInvocation", recovered)
+        self.assertEqual(recovered["cumulativeWallSeconds"], 0.1)
 
     def test_ledger_wall_total_cannot_exceed_profile_ceiling(self):
         frozen = batch(wall=5.0)

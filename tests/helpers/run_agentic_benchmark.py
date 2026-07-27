@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 
 import agentic_benchmark_scheduler
-from agentic_benchmark_active_run import run_active
+from agentic_benchmark_active_run import run_supervised
 from agentic_benchmark_process_supervisor import communicate_with_timeout
 
 from agentic_benchmark_isolation import (
@@ -249,6 +249,17 @@ def verify_batch(batch: dict[str, Any], root: Path, output_root: Path) -> ProxyP
     require(batch.get("version") == 1, "batch version must be 1")
     require(batch.get("authorityBoundary") == AUTHORITY_BOUNDARY, "batch authority boundary drifted")
     require(batch.get("batchDigest") == batch_digest(batch), "batch digest mismatch")
+    active_budget = _load_control_json(output_root / "active-budget.json", "active budget")
+    require(
+        active_budget
+        == {
+            "version": 1,
+            "profileId": batch.get("profileId"),
+            "batchDigest": batch.get("batchDigest"),
+            "wallClockBudgetSeconds": batch.get("wallClockBudgetSeconds"),
+        },
+        "active budget projection drifted from the frozen batch",
+    )
     require(batch.get("targetRunCount") == len(batch.get("schedule", [])), "batch target count drifted")
     proxy_policy = resolve_proxy_policy(os.environ)
     require(batch.get("networkPolicy") == network_policy_metadata(proxy_policy), "host proxy policy does not match the frozen batch metadata")
@@ -352,6 +363,15 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
         "schedule": schedule,
     }
     batch["batchDigest"] = batch_digest(batch)
+    atomic_json(
+        output_root / "active-budget.json",
+        {
+            "version": 1,
+            "profileId": batch["profileId"],
+            "batchDigest": batch["batchDigest"],
+            "wallClockBudgetSeconds": batch["wallClockBudgetSeconds"],
+        },
+    )
     verify_batch(batch, root, output_root)
     atomic_json(output_root / "batch.json", batch)
     atomic_json(output_root / "ledger.json", initial_ledger(batch))
@@ -509,7 +529,7 @@ def _execute_target_unscrubbed(
         start_new_session=not process_group_supervised,
         pass_fds=command_memfd_descriptors(command),
     )
-    stdout, stderr, timed_out, output_exceeded, _artifact_exceeded = communicate_with_timeout(
+    stdout, stderr, timed_out, output_exceeded, _artifact_limit_observed = communicate_with_timeout(
         process,
         timeout_seconds,
         owns_process_group=not process_group_supervised,
@@ -880,7 +900,7 @@ def require_execution_opt_in(profile_id: str, environment: dict[str, str]) -> No
 
 
 def run_command(args: argparse.Namespace) -> None:
-    run_active(sys.modules[__name__], args)
+    run_supervised(args)
 
 
 def aggregate_command(args: argparse.Namespace) -> None:

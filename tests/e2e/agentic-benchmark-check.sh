@@ -427,6 +427,16 @@ assert_contains "$baseline" "must not say" \
     "benchmark baseline forbids overclaiming"
 assert_contains "$baseline" "completion authority" \
     "benchmark baseline preserves completion authority boundary"
+assert_contains "$baseline" "activeInvocation.*reservation|reservation.*active invocation" \
+    "benchmark baseline makes the full remaining invocation reservation explicit"
+assert_contains "$baseline" "requires a new batch" \
+    "benchmark baseline refuses wall-budget recovery after interruption"
+assert_contains "$baseline" "sampled artifact" \
+    "benchmark baseline labels aggregate artifact monitoring as sampled"
+assert_contains "$baseline" "sampling does not guarantee detection" \
+    "benchmark baseline disclaims transient artifact peak detection"
+assert_contains "$baseline" "RLIMIT_FSIZE.*hard kernel-enforced ceiling" \
+    "benchmark baseline preserves the hard per-file kernel limit"
 assert_contains "$baseline" "Controlled Replay Samples" \
     "benchmark baseline describes controlled replay sample layer"
 assert_contains "$baseline" "does not run a live host agent" \
@@ -652,6 +662,7 @@ for path in sys.argv[1:]:
     batch_path = Path(path)
     batch = json.loads(batch_path.read_text(encoding="utf-8"))
     ledger = json.loads((batch_path.parent / "ledger.json").read_text(encoding="utf-8"))
+    active_budget = json.loads((batch_path.parent / "active-budget.json").read_text(encoding="utf-8"))
     case_count, target_count, ceiling, workers, wall = profiles[batch["profileId"]]
     assert (batch["caseCount"], batch["targetRunCount"], batch["maxAttempts"]) == (case_count, target_count, ceiling)
     assert (batch["workers"], batch["wallClockBudgetSeconds"]) == (workers, wall)
@@ -664,6 +675,12 @@ for path in sys.argv[1:]:
     assert batch["networkPolicy"]["schemes"] == sorted(batch["networkPolicy"]["schemes"])
     assert len(batch["networkPolicy"]["fingerprint"]) == 64
     assert ledger["attempts"] == []
+    assert active_budget == {
+        "version": 1,
+        "profileId": batch["profileId"],
+        "batchDigest": batch["batchDigest"],
+        "wallClockBudgetSeconds": batch["wallClockBudgetSeconds"],
+    }
     assert not any((batch_path.parent / name).exists() for name in ("attempts", "provider-preflight.json", "isolation-report.json"))
 def strings(value):
     if isinstance(value, str):
@@ -698,13 +715,17 @@ from run_agentic_benchmark import batch_digest
 root = Path(sys.argv[1])
 batch_path = root / "batch.json"
 ledger_path = root / "ledger.json"
+active_budget_path = root / "active-budget.json"
 batch = json.loads(batch_path.read_text(encoding="utf-8"))
 ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+active_budget = json.loads(active_budget_path.read_text(encoding="utf-8"))
 batch["workers"] = 7
 batch["batchDigest"] = batch_digest(batch)
 ledger["batchDigest"] = batch["batchDigest"]
+active_budget["batchDigest"] = batch["batchDigest"]
 batch_path.write_text(json.dumps(batch, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 ledger_path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+active_budget_path.write_text(json.dumps(active_budget, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 PY
 if profile_drift_output="$("${PYTHON_CMD[@]}" tests/helpers/run_agentic_benchmark.py aggregate \
     --output-root "$profile_drift_root" 2>&1)"; then

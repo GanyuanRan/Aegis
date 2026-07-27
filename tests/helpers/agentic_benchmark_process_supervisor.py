@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import ctypes
 import fcntl
 import os
 import resource
@@ -23,6 +24,7 @@ PROCESS_CLEANUP_SECONDS = 1.0
 CONFIDENTIAL_CLEANUP_MAX_SECONDS = 2.0
 ARTIFACT_POLL_SECONDS = 0.02
 PROCESS_RETURN_RESERVE_SECONDS = 0.05
+PR_SET_CHILD_SUBREAPER = 36
 
 
 def _require(condition: bool, message: str) -> None:
@@ -30,23 +32,108 @@ def _require(condition: bool, message: str) -> None:
         raise SystemExit(message)
 
 
+def _direct_child_pids(root_pid: int) -> set[int]:
+    try:
+        return {
+            int(value)
+            for value in Path(f"/proc/{root_pid}/task/{root_pid}/children").read_text(encoding="ascii").split()
+        }
+    except (OSError, ValueError):
+        return set()
+
+
 def _descendant_pids(root_pid: int) -> set[int]:
     descendants: set[int] = set()
     pending = [root_pid]
     while pending:
         parent = pending.pop()
-        try:
-            children = [
-                int(value)
-                for value in Path(f"/proc/{parent}/task/{parent}/children").read_text(encoding="ascii").split()
-            ]
-        except (OSError, ValueError):
-            continue
+        children = _direct_child_pids(parent)
         for child in children:
             if child not in descendants:
                 descendants.add(child)
                 pending.append(child)
     return descendants
+
+
+def _enable_child_subreaper() -> None:
+    libc = ctypes.CDLL(None, use_errno=True)
+    if libc.prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0) != 0:
+        raise SystemExit("process containment subreaper setup failed")
+
+
+def _sealed_memfd(name: str, payload: bytes) -> int:
+    _require(hasattr(os, "memfd_create"), "process supervisor requires sealed memfd support")
+    descriptor = os.memfd_create(name, os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING)
+    try:
+        view = memoryview(payload)
+        while view:
+            written = os.write(descriptor, view)
+            _require(written > 0, "process supervisor request write failed")
+            view = view[written:]
+        os.lseek(descriptor, 0, os.SEEK_SET)
+        seals = fcntl.F_SEAL_SEAL | fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_GROW | fcntl.F_SEAL_WRITE
+        fcntl.fcntl(descriptor, fcntl.F_ADD_SEALS, seals)
+        return descriptor
+    except BaseException:
+        os.close(descriptor)
+        raise
+
+
+def _contain_process(command_fd: int) -> int:
+    """Keep a stable subreaper alive until its command tree is fully reaped."""
+
+    _enable_child_subreaper()
+    os.lseek(command_fd, 0, os.SEEK_SET)
+    raw = os.read(command_fd, MAX_REQUEST_BYTES + 1)
+    _require(len(raw) <= MAX_REQUEST_BYTES, "process containment request is too large")
+    envelope = json.loads(raw)
+    _require(isinstance(envelope, dict) and set(envelope) == {"command", "passFds"}, "process containment request is invalid")
+    command = envelope["command"]
+    pass_fds = envelope["passFds"]
+    _require(isinstance(command, list) and command and all(isinstance(item, str) and item for item in command), "contained command is invalid")
+    _require(
+        isinstance(pass_fds, list)
+        and all(isinstance(item, int) and not isinstance(item, bool) and item >= 0 for item in pass_fds),
+        "contained pass-fd list is invalid",
+    )
+    termination_started: list[float | None] = [None]
+
+    def request_termination(_signal_number: int, _frame: Any) -> None:
+        if termination_started[0] is None:
+            termination_started[0] = time.monotonic()
+
+    signal.signal(signal.SIGTERM, request_termination)
+    child = subprocess.Popen(
+        command,
+        stdin=sys.stdin.fileno(),
+        stdout=sys.stdout.fileno(),
+        stderr=sys.stderr.fileno(),
+        start_new_session=False,
+        pass_fds=tuple(pass_fds),
+    )
+    child_return: int | None = None
+    while True:
+        if child_return is None:
+            child_return = child.poll()
+        descendants = _descendant_pids(os.getpid())
+        if termination_started[0] is not None:
+            signal_number = signal.SIGKILL if time.monotonic() - termination_started[0] >= 0.01 else signal.SIGTERM
+            for pid in descendants:
+                try:
+                    os.kill(pid, signal_number)
+                except OSError:
+                    pass
+        if child_return is not None:
+            for pid in _direct_child_pids(os.getpid()):
+                if pid == child.pid:
+                    continue
+                try:
+                    os.waitpid(pid, os.WNOHANG)
+                except ChildProcessError:
+                    pass
+            if not _descendant_pids(os.getpid()):
+                return child_return
+        time.sleep(0.002)
 
 
 def _observe_descendants(root_pid: int, observed: dict[int, int]) -> None:
@@ -86,8 +173,8 @@ def _signal_process_tree(
             pass
 
 
-def artifact_limits_exceeded(root: Path) -> bool:
-    """Check the confidentiality owner's hard artifact shape without following links."""
+def artifact_limit_observed(root: Path) -> bool:
+    """Sample the current artifact shape without claiming transient peak coverage."""
 
     from agentic_benchmark_provider_preflight import MAX_ARTIFACT_ENTRIES
     from agentic_benchmark_provider_preflight import MAX_ARTIFACT_FILE_BYTES
@@ -192,7 +279,7 @@ def communicate_with_timeout(
     selector = selectors.DefaultSelector()
     stopped = False
     exceeded = False
-    artifact_exceeded = False
+    artifact_observed = False
     next_artifact_poll = 0.0
     observed_descendants: dict[int, int] = {}
     supervision_error: BaseException | None = None
@@ -208,8 +295,8 @@ def communicate_with_timeout(
                 stopped = True
                 break
             if artifact_root is not None and now >= next_artifact_poll:
-                if artifact_limits_exceeded(artifact_root):
-                    artifact_exceeded = True
+                if artifact_limit_observed(artifact_root):
+                    artifact_observed = True
                     stopped = True
                     break
                 next_artifact_poll = now + ARTIFACT_POLL_SECONDS
@@ -251,7 +338,7 @@ def communicate_with_timeout(
             process.stderr.close()
     if supervision_error is not None:
         raise SystemExit("process supervision failed") from None
-    return stdout, stderr, stopped and not exceeded and not artifact_exceeded, exceeded, artifact_exceeded
+    return stdout, stderr, stopped and not exceeded and not artifact_observed, exceeded, artifact_observed
 
 
 def _invalid(reason: str, elapsed: float) -> dict[str, Any]:
@@ -272,28 +359,23 @@ def supervise_process(
     _require(timeout_seconds > 0, "process supervisor timeout must be positive")
     _require(len(payload.encode()) <= MAX_REQUEST_BYTES, "process supervisor request is too large")
     started = time.monotonic()
-    _require(hasattr(os, "memfd_create"), "process supervisor requires sealed memfd support")
     _require(hasattr(os, "pidfd_open") and hasattr(signal, "pidfd_send_signal"), "process supervisor requires pidfd support")
-    request_fd = os.memfd_create("aegis-benchmark-request", os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING)
+    request_fd = _sealed_memfd("aegis-benchmark-request", payload.encode())
+    command_payload = json.dumps(
+        {"command": command, "passFds": list(pass_fds)}, separators=(",", ":")
+    ).encode()
+    _require(len(command_payload) <= MAX_REQUEST_BYTES, "process containment request is too large")
+    command_fd = _sealed_memfd("aegis-benchmark-command", command_payload)
     try:
-        encoded_payload = payload.encode()
-        view = memoryview(encoded_payload)
-        while view:
-            written = os.write(request_fd, view)
-            _require(written > 0, "process supervisor request write failed")
-            view = view[written:]
-        os.lseek(request_fd, 0, os.SEEK_SET)
-        seals = fcntl.F_SEAL_SEAL | fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_GROW | fcntl.F_SEAL_WRITE
-        fcntl.fcntl(request_fd, fcntl.F_ADD_SEALS, seals)
         process = subprocess.Popen(
-            command,
+            [sys.executable, str(Path(__file__).resolve()), "--contain", str(command_fd)],
             stdin=request_fd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             start_new_session=True,
-            pass_fds=pass_fds,
+            pass_fds=(command_fd, *pass_fds),
         )
-        stdout, _stderr, timed_out, output_exceeded, artifact_exceeded = communicate_with_timeout(
+        stdout, _stderr, timed_out, output_exceeded, artifact_observed = communicate_with_timeout(
             process,
             timeout_seconds,
             output_limit_bytes=MAX_RESULT_BYTES,
@@ -301,13 +383,77 @@ def supervise_process(
         )
     finally:
         os.close(request_fd)
+        os.close(command_fd)
     return {
         "returncode": process.returncode,
         "stdout": "" if output_exceeded else stdout,
         "elapsedSeconds": time.monotonic() - started,
         "timedOut": timed_out,
         "outputExceeded": output_exceeded,
-        "artifactExceeded": artifact_exceeded,
+        "artifactLimitObserved": artifact_observed,
+    }
+
+
+def supervise_inherited_process(
+    command: list[str],
+    payload: str,
+    timeout_seconds: float,
+    *,
+    pass_fds: tuple[int, ...] = (),
+) -> dict[str, Any]:
+    """Execute a contained command with inherited output under one deadline."""
+
+    _require(command and all(isinstance(item, str) and item for item in command), "supervisor command is invalid")
+    _require(timeout_seconds > 0, "process supervisor timeout must be positive")
+    _require(len(payload.encode()) <= MAX_REQUEST_BYTES, "process supervisor request is too large")
+    _require(hasattr(os, "pidfd_open") and hasattr(signal, "pidfd_send_signal"), "process supervisor requires pidfd support")
+    started = time.monotonic()
+    return_reserve = min(PROCESS_RETURN_RESERVE_SECONDS, timeout_seconds / 10)
+    cleanup_seconds = min(PROCESS_CLEANUP_SECONDS, max(0.0, timeout_seconds - return_reserve) / 2)
+    cleanup_deadline = started + timeout_seconds - return_reserve
+    execution_deadline = cleanup_deadline - cleanup_seconds
+    request_fd = _sealed_memfd("aegis-benchmark-request", payload.encode())
+    command_payload = json.dumps(
+        {"command": command, "passFds": list(pass_fds)}, separators=(",", ":")
+    ).encode()
+    _require(len(command_payload) <= MAX_REQUEST_BYTES, "process containment request is too large")
+    command_fd = _sealed_memfd("aegis-benchmark-command", command_payload)
+    observed_descendants: dict[int, int] = {}
+    supervision_error: BaseException | None = None
+    timed_out = False
+    try:
+        process = subprocess.Popen(
+            [sys.executable, str(Path(__file__).resolve()), "--contain", str(command_fd)],
+            stdin=request_fd,
+            start_new_session=True,
+            pass_fds=(command_fd, *pass_fds),
+        )
+        try:
+            while process.poll() is None:
+                _observe_descendants(process.pid, observed_descendants)
+                remaining = execution_deadline - time.monotonic()
+                if remaining <= 0:
+                    timed_out = True
+                    break
+                time.sleep(min(0.005, remaining))
+        except BaseException as exc:
+            supervision_error = exc
+        finally:
+            sweep_process_tree(
+                process,
+                cleanup_deadline,
+                owns_process_group=True,
+                observed_descendants=observed_descendants,
+            )
+    finally:
+        os.close(request_fd)
+        os.close(command_fd)
+    if supervision_error is not None:
+        raise SystemExit("process supervision failed") from None
+    return {
+        "returncode": process.returncode,
+        "elapsedSeconds": time.monotonic() - started,
+        "timedOut": timed_out,
     }
 
 
@@ -319,7 +465,14 @@ def supervise_operation(
     """Run a complete active-run stage in one killable process."""
 
     _require(
-        operation in {"attempt", "confidential-cleanup", "finalize", "isolation-setup", "provider-preflight"},
+        operation in {
+            "attempt",
+            "confidential-cleanup",
+            "finalize",
+            "isolation-setup",
+            "provider-preflight",
+            "reserve-invocation",
+        },
         "unknown supervised operation",
     )
     worker_request = dict(request)
@@ -362,10 +515,10 @@ def supervise_operation(
         if operation == "attempt":
             return _invalid("infrastructure", elapsed)
         raise SystemExit(f"benchmark {operation} result is too large")
-    if outcome.get("artifactExceeded"):
+    if outcome.get("artifactLimitObserved"):
         if operation == "attempt":
             return _invalid("infrastructure", elapsed)
-        raise SystemExit(f"benchmark {operation} artifact limits were exceeded")
+        raise SystemExit(f"benchmark {operation} artifact limits were observed during sampled monitoring")
     if outcome["returncode"] != 0:
         if operation == "attempt":
             return _invalid("infrastructure", elapsed)
@@ -608,6 +761,35 @@ def _execute_finalize(runner: Any, request: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _execute_reserve_invocation(runner: Any, request: dict[str, Any]) -> dict[str, Any]:
+    root = _path(request.get("root"), "root")
+    _require(root.resolve() == runner.repo_root(), "invocation reservation root drifted")
+    output_root = runner.resolve_tmp_child(root, _path(request.get("outputRoot"), "outputRoot"), "output-root")
+    batch, ledger = runner.load_batch_and_ledger(output_root)
+    runner.agentic_benchmark_scheduler.validate_ledger(batch, ledger)
+    active = runner.agentic_benchmark_scheduler.reserve_invocation(
+        batch,
+        ledger,
+        output_root / "ledger.json",
+        request.get("invocationId"),
+    )
+    try:
+        runner.verify_batch(batch, root, output_root)
+        runner.require_execution_opt_in(batch["profileId"], os.environ)
+    except BaseException:
+        try:
+            runner.remove_tmp_artifact_entry(output_root / "attempts", root)
+        except BaseException:
+            raise SystemExit("untrusted attempt artifact cleanup failed") from None
+        raise
+    return {
+        "invocationId": active["invocationId"],
+        "profileId": batch["profileId"],
+        "batchDigest": batch["batchDigest"],
+        "reservedWallSeconds": active["reservedWallSeconds"],
+    }
+
+
 def _worker() -> int:
     raw = sys.stdin.read(MAX_REQUEST_BYTES + 1)
     _require(len(raw.encode()) <= MAX_REQUEST_BYTES, "attempt worker request is too large")
@@ -659,6 +841,8 @@ def _worker() -> int:
         result = _execute_confidential_cleanup(runner, request)
     elif operation == "finalize":
         result = _execute_finalize(runner, request)
+    elif operation == "reserve-invocation":
+        result = _execute_reserve_invocation(runner, request)
     else:
         raise SystemExit("worker operation is invalid")
     rendered = json.dumps(result, separators=(",", ":"))
@@ -670,10 +854,12 @@ def _worker() -> int:
 
 
 if __name__ == "__main__":
-    if sys.argv[1:] != ["--worker"]:
-        raise SystemExit("process supervisor is an internal benchmark helper")
     try:
-        raise SystemExit(_worker())
+        if sys.argv[1:] == ["--worker"]:
+            raise SystemExit(_worker())
+        if len(sys.argv) == 3 and sys.argv[1] == "--contain":
+            raise SystemExit(_contain_process(int(sys.argv[2])))
+        raise SystemExit("process supervisor is an internal benchmark helper")
     except SystemExit:
         raise
     except BaseException:

@@ -209,6 +209,12 @@ isolation and setup, provider preflight, paired canary and fan-out, plus each
 attempt's Codex execution, parsing, scoring and artifact cleanup. Reservations
 are persisted before work starts, resume cannot reset consumed time, and no
 ledger may record cumulative wall time above the selected profile ceiling.
+The same ceiling also includes bounded control-file bootstrap, validation,
+authentication freeze, report persistence, summary output and authentication
+close. Before active child work starts, `activeInvocation` fsyncs a reservation
+for all remaining time. An interrupted active invocation consumes that complete
+reservation on the next start and requires a new batch; restart is not a way to
+regain wall-clock budget.
 
 The preflight proves only that Codex returned a sanitized, non-empty catalog,
 that the requested model was present, and that no visible refresh failure was
@@ -326,6 +332,14 @@ evaluated method pack; benchmark prompts, scorers and expected outcomes must be
 outside the agent-visible filesystem. Authentication may be made available
 read-only through the host's supported path, but credentials must never enter
 fixtures, logs, reports or public artifacts.
+
+Artifact entry-count and aggregate-size enforcement uses sampled artifact
+monitoring plus a terminal confidentiality scrub. A stable over-limit tree is
+terminated when observed, but sampling does not guarantee detection of a
+transient peak that is created and deleted between polls. The per-file
+`RLIMIT_FSIZE` remains a hard kernel-enforced ceiling; the sampled aggregate
+monitor and terminal scrub must not be described as hard historical peak
+measurement.
 
 Before the first held-out attempt, the matrix, selected profile, portfolio,
 prompts, projects, outcome contracts, evaluated method-pack snapshot and run

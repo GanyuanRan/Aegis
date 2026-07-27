@@ -655,7 +655,7 @@ def _default_command_runner(
         start_new_session=not process_group_supervised,
         pass_fds=command_memfd_descriptors(command),
     )
-    stdout, stderr, timed_out, output_exceeded, _artifact_exceeded = communicate_with_timeout(
+    stdout, stderr, timed_out, output_exceeded, _artifact_limit_observed = communicate_with_timeout(
         process,
         timeout_seconds,
         output_limit_bytes=1_048_576,

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import os
+import signal
 import subprocess
 import sys
 import tempfile
@@ -124,6 +125,103 @@ while True:
             self.assertTrue(outcome["timedOut"])
             self._assert_process_gone(int(pid_path.read_text(encoding="utf-8")))
 
+    def test_immediate_leader_exit_cannot_escape_subreaper_containment_in_80_trials(self):
+        script = """
+import os
+import signal
+import sys
+import time
+
+child = os.fork()
+if child == 0:
+    os.setsid()
+    sink = os.open(os.devnull, os.O_RDWR)
+    for descriptor in (0, 1, 2):
+        os.dup2(sink, descriptor)
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
+    with open(sys.argv[1], "w", encoding="utf-8") as stream:
+        stream.write(str(os.getpid()))
+    while True:
+        time.sleep(60)
+os._exit(0)
+"""
+        with tempfile.TemporaryDirectory(prefix="agentic-immediate-exit-", dir=self.root / ".tmp") as value:
+            directory = Path(value)
+            for trial in range(80):
+                pid_path = directory / f"{trial}.pid"
+                pid: int | None = None
+                try:
+                    outcome = supervise_process(
+                        [sys.executable, "-c", script, str(pid_path)],
+                        "{}",
+                        0.2,
+                    )
+                    deadline = time.monotonic() + 0.2
+                    while (not pid_path.exists() or not pid_path.read_text(encoding="utf-8")) and time.monotonic() < deadline:
+                        time.sleep(0.001)
+                    self.assertTrue(pid_path.exists() and pid_path.read_text(encoding="utf-8"), f"trial {trial} did not publish its child pid")
+                    pid = int(pid_path.read_text(encoding="utf-8"))
+                    self.assertTrue(outcome["timedOut"], f"trial {trial} returned before its adopted child exited")
+                    self._assert_process_gone(pid)
+                finally:
+                    if pid is not None:
+                        try:
+                            os.kill(pid, signal.SIGKILL)
+                        except ProcessLookupError:
+                            pass
+
+    def test_monitor_exception_reaps_trampoline_and_immediate_exit_adoptee(self):
+        script = """
+import os
+import signal
+import sys
+import time
+
+child = os.fork()
+if child == 0:
+    os.setsid()
+    sink = os.open(os.devnull, os.O_RDWR)
+    for descriptor in (0, 1, 2):
+        os.dup2(sink, descriptor)
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
+    with open(sys.argv[1], "w", encoding="utf-8") as stream:
+        stream.write(str(os.getpid()))
+    while True:
+        time.sleep(60)
+os._exit(0)
+"""
+        with tempfile.TemporaryDirectory(prefix="agentic-subreeaper-error-", dir=self.root / ".tmp") as value:
+            directory = Path(value)
+            pid_path = directory / "adoptee.pid"
+            launched: list[subprocess.Popen[str]] = []
+            real_popen = subprocess.Popen
+
+            def capture_popen(*args, **kwargs):
+                process = real_popen(*args, **kwargs)
+                launched.append(process)
+                return process
+
+            def fail_after_adoption(_root: Path) -> bool:
+                if pid_path.exists() and pid_path.read_text(encoding="utf-8"):
+                    raise OSError("monitor failed")
+                return False
+
+            with mock.patch.object(agentic_benchmark_process_supervisor.subprocess, "Popen", side_effect=capture_popen), mock.patch.object(
+                agentic_benchmark_process_supervisor, "artifact_limit_observed", side_effect=fail_after_adoption
+            ), self.assertRaises(SystemExit) as caught:
+                supervise_process(
+                    [sys.executable, "-c", script, str(pid_path)],
+                    "{}",
+                    0.5,
+                    artifact_root=directory,
+                )
+            self.assertEqual(str(caught.exception), "process supervision failed")
+            self.assertTrue(pid_path.exists() and pid_path.read_text(encoding="utf-8"))
+            self._assert_process_gone(int(pid_path.read_text(encoding="utf-8")))
+            self.assertEqual(len(launched), 1)
+            self.assertIsNotNone(launched[0].returncode)
+            self._assert_process_gone(launched[0].pid)
+
     def test_capture_and_monitor_exceptions_sweep_children_and_close_pidfds(self):
         for failure_source in ("capture", "monitor"):
             with self.subTest(failure_source=failure_source), tempfile.TemporaryDirectory(
@@ -154,7 +252,7 @@ while True:
                 if failure_source == "capture":
                     patches.append(mock.patch.object(agentic_benchmark_process_supervisor.os, "read", side_effect=OSError("capture failed")))
                 else:
-                    patches.append(mock.patch.object(agentic_benchmark_process_supervisor, "artifact_limits_exceeded", side_effect=OSError("monitor failed")))
+                    patches.append(mock.patch.object(agentic_benchmark_process_supervisor, "artifact_limit_observed", side_effect=OSError("monitor failed")))
                 started = time.monotonic()
                 with patches[0], patches[1], self.assertRaises(SystemExit) as caught:
                     communicate_with_timeout(
@@ -172,7 +270,7 @@ while True:
                     with self.assertRaises(OSError):
                         os.fstat(descriptor)
 
-    def test_terminal_worker_sweeps_same_group_grandchild(self):
+    def test_terminal_worker_with_live_grandchild_is_timed_out_and_swept(self):
         with tempfile.TemporaryDirectory(prefix="agentic-supervisor-terminal-", dir=self.root / ".tmp") as value:
             pid_path = Path(value) / "grandchild.pid"
             script = """
@@ -195,8 +293,7 @@ else:
     time.sleep(0.15)
 """
             outcome = supervise_process([sys.executable, "-c", script, str(pid_path)], "{}", 1.0)
-            self.assertFalse(outcome["timedOut"])
-            self.assertEqual(outcome["returncode"], 0)
+            self.assertTrue(outcome["timedOut"])
             self._assert_process_gone(int(pid_path.read_text(encoding="utf-8")))
 
     def test_real_hanging_setup_callback_is_bounded_and_charged(self):
@@ -246,7 +343,7 @@ else:
         self.assertFalse(outcome["outputExceeded"])
         self.assertEqual(outcome["stdout"].strip(), text)
 
-    def test_live_artifact_growth_is_terminated_before_worker_completion(self):
+    def test_stable_artifact_limit_observation_terminates_before_worker_completion(self):
         with tempfile.TemporaryDirectory(prefix="agentic-artifact-growth-", dir=self.root / ".tmp") as value:
             artifact_root = Path(value) / "attempt"
             artifact_root.mkdir()
@@ -267,8 +364,17 @@ else:
                     artifact_root=artifact_root,
                 )
             self.assertLess(time.monotonic() - started, 1.0)
-            self.assertTrue(outcome["artifactExceeded"])
+            self.assertTrue(outcome["artifactLimitObserved"])
             self.assertFalse(outcome["timedOut"])
+
+    def test_sampled_artifact_monitor_does_not_claim_deleted_transient_peaks(self):
+        with tempfile.TemporaryDirectory(prefix="agentic-artifact-transient-", dir=self.root / ".tmp") as value:
+            artifact_root = Path(value)
+            transient = artifact_root / "transient.bin"
+            transient.write_bytes(b"x" * 4096)
+            transient.unlink()
+            with mock.patch("agentic_benchmark_provider_preflight.MAX_ARTIFACT_FILE_BYTES", 1024):
+                self.assertFalse(agentic_benchmark_process_supervisor.artifact_limit_observed(artifact_root))
 
     def test_parent_timeout_cleanup_promotes_residual_credential_exposure(self):
         cleanup_calls = 0
