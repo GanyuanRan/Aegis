@@ -162,8 +162,8 @@ The benchmark contract separates four evidence tiers:
 
 1. `deterministic-static` is implemented and is the default CI tier.
 2. `controlled-replay` is implemented for the checked-in captured transcripts.
-3. `opt-in-live-repeated-held-out` is implementation-in-progress and remains
-   explicit opt-in outside default CI. This status describes harness work, not
+3. `opt-in-live-repeated-held-out` is implemented and remains explicit opt-in
+   outside default CI. This status describes the offline-verified harness, not
    live result evidence.
 4. `sampled-blind-human-review` is contract-only and is reserved for sampled
    escalation with arm identity hidden from reviewers.
@@ -200,10 +200,10 @@ claims and event order. Aegis skill names, routes, artifact names, or semantic
 aliases may be diagnostic attribution only; they cannot make a task pass and
 must not be required from the no-Aegis arm.
 
-The concrete portfolio and validator are implemented. The repeated-live tier
-remains `implementation-in-progress` until the outcome scorer, isolated runner,
-aggregation and report projection pass their offline gates. Portfolio
-implementation is not live benchmark evidence.
+The concrete portfolio, outcome scorer, isolated repeated runner, aggregation
+and report projection are implemented and pass their focused offline gates.
+Harness implementation is not live benchmark evidence: no result exists until
+an explicitly authorized, complete held-out batch is executed and reviewed.
 
 The repeated runner is available at `tests/e2e/run-agentic-benchmark.sh`. Its
 offline path freezes the matrix, manifest, prompts, project trees, outcome
@@ -314,3 +314,10 @@ SVG and exact table projection. The public snapshot must exclude credentials,
 absolute local paths, session identifiers, raw reasoning, raw host logs and
 unpublished prompt content. A neutral or negative valid result remains
 publishable; incomplete, contaminated or hand-selected results do not.
+
+`tests/helpers/render_agentic_benchmark.py` is the single public projection
+owner. It recomputes every displayed score from the complete 120-row held-out
+case result set, validates the 30/20/120/132 design and case-cluster interval,
+then produces a zero-based SVG and English/Chinese tables from the same
+sanitized JSON. The repeated runner owns private execution and aggregation only;
+it does not expose a second sanitizer or renderer path.

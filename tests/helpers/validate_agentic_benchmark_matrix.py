@@ -205,8 +205,8 @@ def validate_evaluation_contract(data: dict[str, Any]) -> None:
 
     live = by_id["opt-in-live-repeated-held-out"]
     require(
-        live.get("implementationStatus") == "implementation-in-progress",
-        "live repeated/held-out tier must remain implementation-in-progress until harness completion",
+        live.get("implementationStatus") == "implemented",
+        "live repeated/held-out harness must be implemented after its offline gates pass",
     )
     require(
         live.get("defaultCi") is False and live.get("optIn") is True,
@@ -222,7 +222,7 @@ def validate_evaluation_contract(data: dict[str, Any]) -> None:
     require(live.get("validRunTarget") == 120, "live repeated/held-out valid run target must be 120")
     require(live.get("paidAttemptCeiling") == 132, "live repeated/held-out paid attempt ceiling must be 132")
     require(live.get("requiresFrozenBatch") is True, "live repeated/held-out tier must freeze each batch")
-    require(live.get("supportsPromotionEvidence") is False, "in-progress live tier cannot support promotion evidence")
+    require(live.get("supportsPromotionEvidence") is False, "live repeated/held-out tier cannot support promotion evidence by itself")
     require(
         {"repeated-run-evidence", "held-out-evidence"}.issubset(set(live.get("requiredEvidence", []))),
         "live repeated/held-out tier must require repeated and held-out evidence",

@@ -89,10 +89,10 @@ elif mutation == "refs-without-live-eligibility":
     scenarios["quick-bug-change-necessity"]["coverage"]["liveReplayEligible"] = False
 elif mutation == "controlled-replay-held-out":
     manifest["samples"][0]["datasetPartition"] = "held-out"
-elif mutation == "live-tier-implemented":
+elif mutation == "live-tier-in-progress":
     for tier in matrix["evaluationTiers"]:
         if tier["id"] == "opt-in-live-repeated-held-out":
-            tier["implementationStatus"] = "implemented"
+            tier["implementationStatus"] = "implementation-in-progress"
             break
 elif mutation in {
     "live-valid-run-target",
@@ -410,11 +410,11 @@ coordinated-fourth-replay|coordinated fourth replay drift|controlled replay refs
 coordinated-wrong-scenario|coordinated replay scenario remap|controlled replay refs must match the public baseline
 refs-without-live-eligibility|controlled refs without live eligibility|live replay eligibility must equal controlled replay availability
 controlled-replay-held-out|controlled replay held-out overclaim|must use development partition
-live-tier-implemented|early live implementation claim|live repeated/held-out tier must remain implementation-in-progress until harness completion
+live-tier-in-progress|live harness implementation status regression|live repeated/held-out harness must be implemented after its offline gates pass
 live-valid-run-target|live valid-run target drift|live repeated/held-out valid run target must be 120|matrix-only
 live-paid-attempt-ceiling|live paid-attempt ceiling drift|live repeated/held-out paid attempt ceiling must be 132|matrix-only
 live-score-source|arm-biased live scorer drift|live repeated/held-out scorer must remain arm-neutral and outcome-based|matrix-only
-live-supports-promotion|in-progress live promotion overclaim|in-progress live tier cannot support promotion evidence|matrix-only
+live-supports-promotion|live promotion overclaim|live repeated/held-out tier cannot support promotion evidence by itself|matrix-only
 portfolio-case-count|portfolio case-count drift|casePortfolio case count must be 30|matrix-only
 portfolio-status|portfolio implementation status regression|casePortfolio must be implemented after concrete manifest validation|matrix-only
 report-authority-overclaim|report authority overclaim|missing forbidden claims: aegis-grants-completion-authority|matrix-only

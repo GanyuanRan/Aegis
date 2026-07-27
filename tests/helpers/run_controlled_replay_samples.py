@@ -161,8 +161,8 @@ def validate_evaluation_contract(matrix: dict[str, Any]) -> None:
     )
     live = tiers_by_id["opt-in-live-repeated-held-out"]
     require(
-        live.get("implementationStatus") == "implementation-in-progress",
-        "live repeated/held-out tier must remain implementation-in-progress until harness completion",
+        live.get("implementationStatus") == "implemented",
+        "live repeated/held-out harness must be implemented after its offline gates pass",
     )
     require(
         live.get("defaultCi") is False and live.get("optIn") is True,

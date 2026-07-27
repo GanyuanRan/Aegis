@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare, audit, execute, aggregate, and sanitize the Aegis agentic benchmark."""
+"""Prepare, audit, execute, and aggregate the Aegis agentic benchmark."""
 
 from __future__ import annotations
 
@@ -38,7 +38,6 @@ from validate_agentic_benchmark_matrix import validate_matrix
 
 
 REPORT_TYPE = "agentic-benchmark-private-report"
-SANITIZED_REPORT_TYPE = "agentic-benchmark-sanitized-report"
 LEDGER_TYPE = "agentic-benchmark-attempt-ledger"
 PARTITION_MAP = {
     "development": {"development"},
@@ -259,7 +258,7 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
         require(target_count == 120, "complete held-out preparation must target 120 valid runs")
         require(args.max_attempts == 132, "complete held-out preparation requires the frozen 132-attempt ceiling")
     require(re.fullmatch(r"[a-z0-9][a-z0-9._-]{2,79}", args.batch_id) is not None, "batch-id has an invalid format")
-    require(args.model and not args.model.isspace(), "--model is required and must pin a model identifier")
+    require(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,79}", args.model or "") is not None, "--model is required and must pin a safe model identifier")
 
     output_root = resolve_tmp_child(root, args.output_root, "output-root")
     if args.replace:
@@ -280,6 +279,7 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
         "tests/helpers/run_agentic_benchmark.py",
         "tests/helpers/agentic_benchmark_isolation.py",
         "tests/helpers/score_agentic_benchmark_outcome.py",
+        "tests/helpers/render_agentic_benchmark.py",
     ]
     batch: dict[str, Any] = {
         "version": 1,
@@ -289,6 +289,7 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
         "partition": args.partition,
         "requestedCaseIds": sorted(args.case),
         "caseIds": [case["id"] for case in cases],
+        "portfolioCaseCount": len(manifest["cases"]),
         "caseCount": len(cases),
         "arms": list(ARMS),
         "repetitions": args.repetitions,
@@ -657,11 +658,14 @@ def cluster_interval(valid: list[dict[str, Any]], seed: str, iterations: int = 4
 
 def arm_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
     result_rate = rate(records)
+    unsafe_count = sum(bool(record.get("triggeredVetoes")) for record in records)
     return {
         "validRuns": len(records),
         "passes": sum(record["contractPass"] is True for record in records),
         "fails": sum(record["contractPass"] is False for record in records),
         "passRate": None if result_rate is None else round(result_rate * 100, 2),
+        "unsafeOutcomes": unsafe_count,
+        "unsafeOutcomeRate": None if not records else round(unsafe_count / len(records) * 100, 2),
     }
 
 
@@ -740,6 +744,7 @@ def aggregate(batch: dict[str, Any], ledger: dict[str, Any]) -> dict[str, Any]:
             "observedStatus": "recorded" if observed_models else "unavailable-from-host-events",
         },
         "design": {
+            "portfolioCaseCount": batch["portfolioCaseCount"],
             "caseCount": batch["caseCount"],
             "arms": list(ARMS),
             "repetitions": batch["repetitions"],
@@ -769,6 +774,7 @@ def aggregate(batch: dict[str, Any], ledger: dict[str, Any]) -> dict[str, Any]:
                 "repetition": record["repetition"],
                 "arm": record["arm"],
                 "contractPass": record["contractPass"],
+                "unsafeOutcome": bool(record.get("triggeredVetoes")),
             }
             for record in sorted(valid, key=lambda item: (item["caseId"], item["repetition"], item["arm"]))
         ],
@@ -779,37 +785,6 @@ def aggregate(batch: dict[str, Any], ledger: dict[str, Any]) -> dict[str, Any]:
         "unsupportedClaims": UNSUPPORTED_CLAIMS,
     }
     return report
-
-
-def sanitized_report(report: dict[str, Any]) -> dict[str, Any]:
-    require(report.get("reportType") == REPORT_TYPE, "private report type is invalid")
-    require(report.get("authorityBoundary") == AUTHORITY_BOUNDARY, "private report authority boundary drifted")
-    require(report.get("completeness") == "complete", "partial benchmark reports cannot be sanitized for projection")
-    require(report.get("attempts", {}).get("remaining") == 0, "benchmark report still has incomplete targets")
-    require(report.get("attempts", {}).get("valid") == report.get("design", {}).get("targetRuns"), "valid-run total does not match the frozen target")
-    allowed = {
-        "version": 1,
-        "reportType": SANITIZED_REPORT_TYPE,
-        "authorityBoundary": report["authorityBoundary"],
-        "batchId": report["batchId"],
-        "batchDigest": report["batchDigest"],
-        "partition": report["partition"],
-        "versions": report["versions"],
-        "model": report["model"],
-        "design": report["design"],
-        "attempts": report["attempts"],
-        "overall": report["overall"],
-        "perScenarioClass": report["perScenarioClass"],
-        "resourceUse": report["resourceUse"],
-        "review": report["review"],
-        "completeness": report["completeness"],
-        "publication": report["publication"],
-        "unsupportedClaims": report["unsupportedClaims"],
-    }
-    serialized = json.dumps(allowed, sort_keys=True)
-    require(not re.search(r"(?:^|[\"'])/(?:home|Users|workspace|tmp)/", serialized), "sanitized report contains an absolute machine path")
-    require(not re.search(r"auth\.json|credential|session[_-]?id|rollout[_-]?id|raw[-_ ]?(?:log|reasoning)", serialized, flags=re.IGNORECASE), "sanitized report contains private execution data")
-    return allowed
 
 
 def load_batch_and_ledger(output_root: Path) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -939,26 +914,6 @@ def aggregate_command(args: argparse.Namespace) -> None:
     print(json.dumps({"batchId": batch["batchId"], "completeness": report["completeness"], "valid": report["attempts"]["valid"]}, sort_keys=True))
 
 
-def sanitize_command(args: argparse.Namespace) -> None:
-    root = repo_root()
-    private_path = resolve_repo_file(root, args.private_report, "private-report")
-    output_path = resolve_tmp_child(root, args.output_json, "output-json")
-    report = sanitized_report(load_json(private_path, "private report"))
-    atomic_json(output_path, report)
-    print(json.dumps({"batchId": report["batchId"], "reportType": report["reportType"]}, sort_keys=True))
-
-
-def render_input_command(args: argparse.Namespace) -> None:
-    root = repo_root()
-    report_path = resolve_repo_file(root, args.sanitized_report, "sanitized-report")
-    report = load_json(report_path, "sanitized report")
-    require(report.get("reportType") == SANITIZED_REPORT_TYPE, "render input must be a sanitized report")
-    require(report.get("authorityBoundary") == AUTHORITY_BOUNDARY, "render input authority boundary drifted")
-    output_path = resolve_tmp_child(root, args.output_json, "output-json")
-    atomic_json(output_path, report)
-    print(json.dumps({"batchId": report["batchId"], "renderInput": True}, sort_keys=True))
-
-
 def add_contract_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--matrix", type=Path, default=Path("tests/e2e/fixtures/agentic-benchmark-matrix.json"))
     parser.add_argument("--manifest", type=Path, default=Path("tests/e2e/fixtures/agentic-benchmark-cases.json"))
@@ -1003,15 +958,6 @@ def parse_args() -> argparse.Namespace:
     aggregate_parser.add_argument("--report-json", type=Path)
     aggregate_parser.set_defaults(handler=aggregate_command)
 
-    sanitize = subparsers.add_parser("sanitize", help="strip a private report to the projection contract")
-    sanitize.add_argument("--private-report", type=Path, required=True)
-    sanitize.add_argument("--output-json", type=Path, required=True)
-    sanitize.set_defaults(handler=sanitize_command)
-
-    render_input = subparsers.add_parser("render-input", help="validate and copy a sanitized renderer input")
-    render_input.add_argument("--sanitized-report", type=Path, required=True)
-    render_input.add_argument("--output-json", type=Path, required=True)
-    render_input.set_defaults(handler=render_input_command)
     return parser.parse_args()
 
 

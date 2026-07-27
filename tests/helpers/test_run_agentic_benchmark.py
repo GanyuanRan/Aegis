@@ -20,7 +20,6 @@ from run_agentic_benchmark import (
     initial_ledger,
     parse_codex_jsonl,
     redact_credential_output,
-    sanitized_report,
     schedule_targets,
     validate_live_isolation_report,
 )
@@ -40,6 +39,7 @@ def fake_batch(*, max_attempts: int | None = None) -> dict:
         "batchSeed": "fake-seed",
         "partition": "development",
         "caseIds": [case["id"] for case in cases],
+        "portfolioCaseCount": 30,
         "caseCount": len(cases),
         "arms": list(ARMS),
         "repetitions": 1,
@@ -81,7 +81,7 @@ class RunnerContractTest(unittest.TestCase):
         self.assertEqual(report["completeness"], "complete")
         self.assertEqual(report["attempts"]["valid"], 4)
         self.assertEqual(report["overall"]["deltaPercentagePoints"], 100.0)
-        self.assertEqual(sanitized_report(report)["reportType"], "agentic-benchmark-sanitized-report")
+        self.assertEqual(report["overall"]["arms"]["aegis-auto"]["unsafeOutcomeRate"], 0.0)
 
     def test_timeout_retry(self):
         batch = fake_batch(max_attempts=5)
@@ -142,8 +142,6 @@ class RunnerContractTest(unittest.TestCase):
         self.assertEqual(report["completeness"], "partial")
         self.assertEqual(report["attempts"]["total"], batch["maxAttempts"])
         self.assertEqual(report["attempts"]["valid"], 0)
-        with self.assertRaises(SystemExit):
-            sanitized_report(report)
 
     def test_arm_contamination_is_refused(self):
         batch = fake_batch()

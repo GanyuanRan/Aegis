@@ -96,7 +96,7 @@
     },
     {
       "id": "opt-in-live-repeated-held-out",
-      "implementationStatus": "implementation-in-progress",
+      "implementationStatus": "implemented",
       "defaultCi": false,
       "optIn": true,
       "datasetPartitions": [
