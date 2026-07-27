@@ -37,9 +37,9 @@ else
 fi
 
 if "${PYTHON_CMD[@]}" tests/helpers/render_agentic_benchmark.py self-test; then
-    pass "positive, neutral and negative deterministic golden projections"
+    pass "standard and extended positive, neutral and negative golden projections"
 else
-    fail "positive, neutral and negative deterministic golden projections"
+    fail "standard and extended positive, neutral and negative golden projections"
 fi
 
 "${PYTHON_CMD[@]}" - "$projection_root/private.json" <<'PY'
@@ -49,7 +49,7 @@ from pathlib import Path
 sys.path.insert(0, "tests/helpers")
 from render_agentic_benchmark import canonical_json, synthetic_private
 
-Path(sys.argv[1]).write_text(canonical_json(synthetic_private("positive")), encoding="utf-8")
+Path(sys.argv[1]).write_text(canonical_json(synthetic_private("positive", "standard-held-out")), encoding="utf-8")
 PY
 
 if "${PYTHON_CMD[@]}" tests/helpers/render_agentic_benchmark.py sanitize \
@@ -83,6 +83,8 @@ fi
 
 if rg -q '0%' "$projection_root/result-a.svg" \
     && rg -q '100%' "$projection_root/result-a.svg" \
+    && rg -q 'standard-held-out.*n=40 runs / 20 cases' "$projection_root/result-a.svg" \
+    && rg -q 'Repeated-run evidence is unsupported' "$projection_root/result-a.en.md" \
     && rg -q 'lower is better' "$projection_root/result-a.svg" \
     && [[ "$(rg -c '<text class="label" x="40"' "$projection_root/result-a.svg")" -eq 10 ]]; then
     pass "SVG uses a zero-based scale, ten class comparisons and unsafe panel"
@@ -96,7 +98,12 @@ else
     pass "runner no longer owns public sanitization or rendering"
 fi
 
-if [[ -f benchmarks/README.md ]] && rg -q 'advisory' benchmarks/README.md && rg -qi 'raw logs' benchmarks/README.md; then
+if [[ -f benchmarks/README.md ]] \
+    && rg -q '40 `standard-held-out`' benchmarks/README.md \
+    && rg -q '120 `extended-held-out`' benchmarks/README.md \
+    && rg -q 'No result is currently published' benchmarks/README.md \
+    && rg -q 'advisory' benchmarks/README.md \
+    && rg -qi 'raw logs' benchmarks/README.md; then
     pass "benchmark evidence boundary is documented"
 else
     fail "benchmark evidence boundary is documented"

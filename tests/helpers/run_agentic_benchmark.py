@@ -770,6 +770,7 @@ def aggregate(batch: dict[str, Any], ledger: dict[str, Any]) -> dict[str, Any]:
         "authorityBoundary": AUTHORITY_BOUNDARY,
         "batchId": batch["batchId"],
         "batchDigest": batch["batchDigest"],
+        "profileId": batch["profileId"],
         "partition": "development" if batch["datasetPartitions"] == ["development"] else "held-out",
         "versions": {
             "aegis": batch["distributionSnapshot"]["version"],

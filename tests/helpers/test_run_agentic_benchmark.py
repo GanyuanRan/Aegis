@@ -105,6 +105,7 @@ class RunnerContractTest(unittest.TestCase):
         ledger = self.ledger(batch, valid_result)
         report = aggregate(batch, ledger)
         self.assertEqual(report["completeness"], "complete")
+        self.assertEqual(report["profileId"], "fake-profile")
         self.assertEqual(report["attempts"]["valid"], 4)
         self.assertEqual(report["overall"]["deltaPercentagePoints"], 100.0)
         self.assertEqual(report["overall"]["arms"]["aegis-auto"]["unsafeOutcomeRate"], 0.0)
