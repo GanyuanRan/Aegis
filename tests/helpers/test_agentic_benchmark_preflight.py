@@ -22,6 +22,7 @@ from agentic_benchmark_isolation import (
     network_policy_metadata,
     prepare_provider_preflight_layout,
     redact_proxy_output,
+    reset_directory,
     resolve_proxy_policy,
     run_provider_preflight,
     validate_bwrap_command,
@@ -90,6 +91,11 @@ class ProxyPolicyTest(unittest.TestCase):
             "hostname": {"HTTP_PROXY": "http:///"},
             "port": {"HTTP_PROXY": "http://proxy.invalid:70000"},
             "empty-port": {"HTTP_PROXY": "http://proxy.invalid:"},
+            "malformed-percent": {"HTTP_PROXY": "http://proxy.invalid/%ZZ"},
+            "backslash": {"HTTP_PROXY": "http://proxy.invalid\\route"},
+            "leading-hyphen": {"HTTP_PROXY": "http://-proxy.invalid"},
+            "empty-label": {"HTTP_PROXY": "http://proxy..invalid"},
+            "unicode-host": {"HTTP_PROXY": "http://prøxy.invalid"},
         }
         for label, environment in cases.items():
             with self.subTest(label=label):
@@ -99,6 +105,16 @@ class ProxyPolicyTest(unittest.TestCase):
                 self.assertIn(next(iter(environment)).upper(), message)
                 for value in environment.values():
                     self.assertNotIn(value, message)
+
+    def test_valid_dns_ipv4_and_bracketed_ipv6_are_accepted(self):
+        policy = resolve_proxy_policy(
+            {
+                "HTTP_PROXY": "http://proxy.example:8080",
+                "HTTPS_PROXY": "https://127.0.0.1:443",
+                "ALL_PROXY": "socks5h://[2001:db8::1]:1080",
+            }
+        )
+        self.assertEqual(network_policy_metadata(policy)["keys"], list(PROXY_KEYS))
 
 
 class CommandBoundaryTest(unittest.TestCase):
@@ -121,7 +137,7 @@ class CommandBoundaryTest(unittest.TestCase):
 
     def test_preflight_command_is_exact_and_neutral(self):
         captured: list[list[str]] = []
-        isolated_root = self.scratch / "isolated"
+        isolated_root = self.scratch / "provider-preflight-isolated"
 
         def fake_runner(command: list[str], _timeout: float) -> subprocess.CompletedProcess[str]:
             captured.append(command)
@@ -144,7 +160,7 @@ class CommandBoundaryTest(unittest.TestCase):
 
         result = run_provider_preflight(
             root=self.root,
-            output_root=isolated_root,
+            batch_root=self.scratch,
             auth_file=self.auth,
             bwrap=self.bwrap,
             codex=self.codex,
@@ -175,7 +191,7 @@ class CommandBoundaryTest(unittest.TestCase):
     def test_failure_timeout_and_exception_remove_the_entire_isolated_root(self):
         for status in ("failure", "timeout", "exception"):
             with self.subTest(status=status):
-                isolated_root = self.scratch / f"isolated-{status}"
+                isolated_root = self.scratch / "provider-preflight-isolated"
 
                 def fake_runner(command: list[str], timeout: float) -> subprocess.CompletedProcess[str]:
                     codex_home = isolated_root / "home/.codex"
@@ -189,7 +205,7 @@ class CommandBoundaryTest(unittest.TestCase):
 
                 arguments = {
                     "root": self.root,
-                    "output_root": isolated_root,
+                    "batch_root": self.scratch,
                     "auth_file": self.auth,
                     "bwrap": self.bwrap,
                     "codex": self.codex,
@@ -211,7 +227,7 @@ class CommandBoundaryTest(unittest.TestCase):
                     self.assertNotIn(forbidden, serialized)
 
     def test_cleanup_failure_fails_closed_without_disclosure(self):
-        isolated_root = self.scratch / "isolated-cleanup-failure"
+        isolated_root = self.scratch / "provider-preflight-isolated"
         patcher = mock.patch(
             "agentic_benchmark_isolation.shutil.rmtree",
             side_effect=OSError("private cleanup detail http://proxy.invalid:8080"),
@@ -226,7 +242,7 @@ class CommandBoundaryTest(unittest.TestCase):
             with self.assertRaises(SystemExit) as caught:
                 run_provider_preflight(
                     root=self.root,
-                    output_root=isolated_root,
+                    batch_root=self.scratch,
                     auth_file=self.auth,
                     bwrap=self.bwrap,
                     codex=self.codex,
@@ -277,6 +293,85 @@ class CommandBoundaryTest(unittest.TestCase):
                     )
                 self.assertIn(key, str(caught.exception))
                 self.assertNotIn("unexpected.invalid", str(caught.exception))
+
+    def test_command_environment_is_an_exact_prefix_only_contract(self):
+        layout = prepare_provider_preflight_layout(self.scratch / "exact-env-layout", self.auth)
+        base = build_provider_preflight_command(
+            bwrap=self.bwrap,
+            codex=self.codex,
+            layout=layout,
+            proxy_policy=self.policy,
+        )
+        separator = base.index("--")
+        child_argument = base.copy()
+        child_argument.extend(["--setenv", "NO_PROXY", "child-only-secret"])
+        validate_bwrap_command(
+            child_argument,
+            root=self.root,
+            output_root=self.scratch,
+            layout=layout,  # type: ignore[arg-type]
+            client_network=True,
+            proxy_policy=self.policy,
+        )
+
+        mutations: list[tuple[str, list[str], str]] = []
+        arbitrary = base.copy()
+        arbitrary[separator:separator] = ["--setenv", "EXTRA", "private-value"]
+        mutations.append(("arbitrary", arbitrary, "EXTRA"))
+        duplicate = base.copy()
+        duplicate[separator:separator] = ["--setenv", "HOME", "private-value"]
+        mutations.append(("duplicate", duplicate, "HOME"))
+        drift = base.copy()
+        home_value = drift.index("HOME") + 1
+        drift[home_value] = "/private/home"
+        mutations.append(("base-drift", drift, "HOME"))
+        missing = base.copy()
+        tmpdir_flag = missing.index("TMPDIR") - 1
+        del missing[tmpdir_flag : tmpdir_flag + 3]
+        mutations.append(("missing", missing, "TMPDIR"))
+        proxy_drift = base.copy()
+        proxy_value = proxy_drift.index("HTTP_PROXY") + 1
+        proxy_drift[proxy_value] = "http://private.invalid"
+        mutations.append(("proxy-drift", proxy_drift, "HTTP_PROXY"))
+        for label, command, key in mutations:
+            with self.subTest(label=label):
+                with self.assertRaises(SystemExit) as caught:
+                    validate_bwrap_command(
+                        command,
+                        root=self.root,
+                        output_root=self.scratch,
+                        layout=layout,  # type: ignore[arg-type]
+                        client_network=True,
+                        proxy_policy=self.policy,
+                    )
+                self.assertIn(key, str(caught.exception))
+                for secret in ("private-value", "/private/home", "private.invalid"):
+                    self.assertNotIn(secret, str(caught.exception))
+
+    def test_reset_directory_rejects_leaf_symlinks_without_touching_targets(self):
+        sibling = self.scratch / "sibling"
+        sibling.mkdir()
+        sibling_marker = sibling / "marker"
+        sibling_marker.write_text("keep", encoding="utf-8")
+        dot_marker = self.scratch / "dot-marker"
+        dot_marker.write_text("keep", encoding="utf-8")
+        with tempfile.TemporaryDirectory(prefix="agentic-preflight-outside-") as outside_value:
+            outside = Path(outside_value)
+            outside_marker = outside / "marker"
+            outside_marker.write_text("keep", encoding="utf-8")
+            links = {
+                "dot-link": Path("."),
+                "sibling-link": Path("sibling"),
+                "outside-link": outside,
+            }
+            for name, target in links.items():
+                link = self.scratch / name
+                link.symlink_to(target, target_is_directory=True)
+                with self.subTest(name=name), self.assertRaises(SystemExit):
+                    reset_directory(link, self.root)
+            self.assertEqual(outside_marker.read_text(encoding="utf-8"), "keep")
+        self.assertEqual(sibling_marker.read_text(encoding="utf-8"), "keep")
+        self.assertEqual(dot_marker.read_text(encoding="utf-8"), "keep")
 
 
 class SanitizedPreflightTest(unittest.TestCase):

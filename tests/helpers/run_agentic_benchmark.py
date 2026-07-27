@@ -31,6 +31,7 @@ from agentic_benchmark_isolation import (
     prepare_arm_layout,
     prepare_distribution_snapshot,
     redact_proxy_output,
+    remove_tmp_directory,
     reset_directory,
     resolve_proxy_policy,
     resolve_tmp_child,
@@ -38,6 +39,8 @@ from agentic_benchmark_isolation import (
     run_provider_preflight,
     validate_bwrap_command,
 )
+from agentic_benchmark_provider_preflight import execute_with_proxy_artifact_boundary
+from agentic_benchmark_provider_preflight import scrub_stale_proxy_artifacts
 from score_agentic_benchmark_outcome import score as score_outcome
 from score_agentic_benchmark_outcome import snapshot_workspace
 from validate_agentic_benchmark_cases import load_json, validate_manifest
@@ -127,6 +130,14 @@ def default_auth_file() -> Path:
     if codex_home:
         return Path(codex_home) / "auth.json"
     return Path.home() / ".codex/auth.json"
+
+
+def resolve_auth_file(value: Path) -> Path:
+    expanded = value.expanduser()
+    require(not expanded.is_symlink(), "Codex auth file must not be a symlink")
+    resolved = expanded.resolve()
+    require(resolved.is_file(), f"Codex auth file is required: {resolved}")
+    return resolved
 
 
 def resolve_tool(name: str, environment_key: str) -> Path:
@@ -553,7 +564,7 @@ def communicate_with_timeout(
         return stdout, stderr, True
 
 
-def execute_target(
+def _execute_target_unscrubbed(
     *,
     root: Path,
     output_root: Path,
@@ -612,7 +623,6 @@ def execute_target(
     stderr, stderr_proxy_exposed = redact_proxy_output(stderr, proxy_policy)
     raw_log.write_text(stdout, encoding="utf-8")
     stderr_log.write_text(stderr, encoding="utf-8")
-    shutil.rmtree(layout["home"])
     if stdout_exposed or stderr_exposed:
         return {"status": "invalid", "invalidReason": "credential-exposure", "elapsedSeconds": elapsed}
     if stdout_proxy_exposed or stderr_proxy_exposed:
@@ -659,6 +669,38 @@ def execute_target(
         "observedModels": parsed["observedModels"],
         "artifactRoot": attempt_root.relative_to(output_root).as_posix(),
     }
+
+
+def execute_target(
+    *,
+    root: Path,
+    output_root: Path,
+    batch: dict[str, Any],
+    target: dict[str, Any],
+    attempt_number: int,
+    auth_file: Path,
+    bwrap: Path,
+    codex: Path,
+    timeout_seconds: float,
+    proxy_policy: ProxyPolicy,
+) -> dict[str, Any]:
+    callback_arguments = locals()
+    leaf = f"{attempt_number:03d}-{target['targetId']}"
+    require(Path(leaf).name == leaf, "attempt targetId must not contain path separators")
+    attempt_root = resolve_tmp_child(root, output_root / "attempts" / leaf, "attempt artifact root")
+    return execute_with_proxy_artifact_boundary(
+        attempt_root,
+        attempt_root / "isolated/home",
+        proxy_policy,
+        _execute_target_unscrubbed,
+        callback_arguments,
+        lambda path: remove_tmp_directory(path, root),
+    )
+
+
+def scrub_stale_attempt_artifacts(root: Path, output_root: Path, proxy_policy: ProxyPolicy) -> None:
+    attempts_root = resolve_tmp_child(root, output_root / "attempts", "attempts artifact root")
+    scrub_stale_proxy_artifacts(attempts_root, proxy_policy, lambda path: remove_tmp_directory(path, root))
 
 
 def percentile(values: list[float], fraction: float) -> float:
@@ -869,7 +911,7 @@ def isolation_audit_command(args: argparse.Namespace) -> None:
         root=root,
         case=case,
         output_root=output_root,
-        auth_file=args.auth_file.expanduser().resolve(),
+        auth_file=resolve_auth_file(args.auth_file),
         bwrap=resolve_tool("bwrap", "AEGIS_BENCHMARK_BWRAP"),
         codex=resolve_tool("codex", "AEGIS_BENCHMARK_CODEX"),
     )
@@ -898,8 +940,8 @@ def run_command(args: argparse.Namespace) -> None:
     require(os.environ.get("AEGIS_AGENTIC_BENCHMARK_LIVE") == "1", "set AEGIS_AGENTIC_BENCHMARK_LIVE=1 for paid benchmark execution")
     if batch["partition"] == "held-out":
         require(os.environ.get("AEGIS_AGENTIC_BENCHMARK_FULL") == "1", "set AEGIS_AGENTIC_BENCHMARK_FULL=1 for a held-out batch")
-    auth_file = args.auth_file.expanduser().resolve()
-    require(auth_file.is_file(), f"Codex auth file is required: {auth_file}")
+    auth_file = resolve_auth_file(args.auth_file)
+    scrub_stale_attempt_artifacts(root, output_root, proxy_policy)
     bwrap = resolve_tool("bwrap", "AEGIS_BENCHMARK_BWRAP")
     codex = resolve_tool("codex", "AEGIS_BENCHMARK_CODEX")
     frozen_isolation_case = find_frozen_case(batch, batch["caseIds"][0])
@@ -921,7 +963,7 @@ def run_command(args: argparse.Namespace) -> None:
     atomic_json(output_root / "isolation-report.json", isolation_report)
     preflight = run_provider_preflight(
         root=root,
-        output_root=output_root / "provider-preflight-isolated",
+        batch_root=output_root,
         auth_file=auth_file,
         bwrap=bwrap,
         codex=codex,

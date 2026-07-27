@@ -12,13 +12,15 @@ import signal
 import stat
 import subprocess
 from collections import Counter
-from collections.abc import Mapping
 from pathlib import Path
-from types import MappingProxyType
 from typing import Any
-from urllib.parse import urlsplit
 
 from agentic_benchmark_provider_preflight import CommandRunner
+from agentic_benchmark_provider_preflight import PROXY_KEYS
+from agentic_benchmark_provider_preflight import ProxyPolicy
+from agentic_benchmark_provider_preflight import network_policy_metadata
+from agentic_benchmark_provider_preflight import redact_proxy_output
+from agentic_benchmark_provider_preflight import resolve_proxy_policy
 from agentic_benchmark_provider_preflight import run_sanitized_provider_preflight
 
 
@@ -36,94 +38,12 @@ NEUTRAL_CONFIG = (
 )
 AUTHORITY_BOUNDARY = "advisory-method-pack-evidence-not-completion-authority"
 IGNORED_TREE_PARTS = {".git", ".pytest_cache", "__pycache__"}
-PROXY_KEYS = ("ALL_PROXY", "HTTPS_PROXY", "HTTP_PROXY")
-PROXY_SCHEMES = {"http", "https", "socks5", "socks5h"}
-
-
-class ProxyPolicy:
-    """Validated proxy values with a deliberately secret-free representation."""
-
-    __slots__ = ("__mapping", "__sealed")
-
-    def __init__(self, mapping: dict[str, str]) -> None:
-        object.__setattr__(self, "_ProxyPolicy__mapping", MappingProxyType(dict(mapping)))
-        object.__setattr__(self, "_ProxyPolicy__sealed", True)
-
-    def __setattr__(self, _name: str, _value: object) -> None:
-        raise AttributeError("ProxyPolicy is immutable")
-
-    def __repr__(self) -> str:
-        return f"ProxyPolicy(mode={'proxy' if self.__mapping else 'direct'}, keys={sorted(self.__mapping)})"
-
-    def _child_environment(self) -> dict[str, str]:
-        return dict(self.__mapping)
-
-
-def _proxy_error(key: str, reason: str) -> None:
-    raise SystemExit(f"invalid proxy environment key {key}: {reason}")
-
-
-def _validate_proxy_url(key: str, value: str) -> str:
-    if any(character.isspace() or ord(character) < 32 or ord(character) == 127 for character in value):
-        _proxy_error(key, "whitespace or control characters are forbidden")
-    if "?" in value:
-        _proxy_error(key, "query components are forbidden")
-    if "#" in value:
-        _proxy_error(key, "fragment components are forbidden")
-    try:
-        parsed = urlsplit(value)
-        port = parsed.port
-    except ValueError:
-        _proxy_error(key, "URL or port is invalid")
-    scheme = parsed.scheme.lower()
-    if scheme not in PROXY_SCHEMES:
-        _proxy_error(key, "scheme is not allowed")
-    if not parsed.netloc or not parsed.hostname:
-        _proxy_error(key, "hostname is required")
-    if parsed.username is not None or parsed.password is not None:
-        _proxy_error(key, "username or password is forbidden")
-    if parsed.path not in {"", "/"}:
-        _proxy_error(key, "proxy must contain only an authority")
-    if parsed.netloc.endswith(":") or port == 0:
-        _proxy_error(key, "port is invalid")
-    return scheme
-
-
-def resolve_proxy_policy(environment: Mapping[str, str]) -> ProxyPolicy:
-    mapping: dict[str, str] = {}
-    for key in PROXY_KEYS:
-        lowercase = key.lower()
-        upper_present = key in environment
-        lower_present = lowercase in environment
-        if upper_present and lower_present and environment[key] != environment[lowercase]:
-            _proxy_error(key, "uppercase and lowercase values conflict")
-        if not upper_present and not lower_present:
-            continue
-        value = environment[key] if upper_present else environment[lowercase]
-        _validate_proxy_url(key, value)
-        mapping[key] = value
-    return ProxyPolicy(mapping)
-
-
-def network_policy_metadata(policy: ProxyPolicy) -> dict[str, Any]:
-    mapping = policy._child_environment()
-    return {
-        "mode": "proxy" if mapping else "direct",
-        "keys": sorted(mapping),
-        "schemes": sorted({_validate_proxy_url(key, value) for key, value in mapping.items()}),
-        "fingerprint": canonical_json_hash(mapping),
-    }
-
-
-def redact_proxy_output(text: str, policy: ProxyPolicy) -> tuple[str, bool]:
-    redacted = text
-    exposed = False
-    values = set(policy._child_environment().values())
-    for value in sorted(values, key=len, reverse=True):
-        if value in redacted:
-            redacted = redacted.replace(value, "[REDACTED_PROXY]")
-            exposed = True
-    return redacted, exposed
+BWRAP_BASE_ENVIRONMENT = {
+    "HOME": str(VIRTUAL_HOME),
+    "CODEX_HOME": str(VIRTUAL_CODEX_HOME),
+    "PATH": "/usr/local/bin:/usr/bin:/bin",
+    "TMPDIR": "/tmp",
+}
 
 
 def require(condition: bool, message: str) -> None:
@@ -168,19 +88,31 @@ def hash_tree(path: Path, *, reject_symlinks: bool = True) -> str:
 
 def resolve_tmp_child(root: Path, value: Path, label: str) -> Path:
     candidate = value if value.is_absolute() else root / value
-    resolved = candidate.resolve()
+    require(candidate.name not in {"", ".", ".."}, f"{label} must name a strict child")
+    require(not candidate.is_symlink(), f"{label} must not be a symlink")
     tmp_root = (root / ".tmp").resolve()
-    require(tmp_root in resolved.parents, f"{label} must be a strict child of repo .tmp: {value}")
-    return resolved
+    parent = candidate.parent.resolve()
+    lexical = parent / candidate.name
+    require(tmp_root in lexical.parents, f"{label} must be a strict child of repo .tmp: {value}")
+    return lexical
 
 
 def reset_directory(path: Path, root: Path) -> None:
-    tmp_root = (root / ".tmp").resolve()
-    resolved = path.resolve()
-    require(tmp_root in resolved.parents, f"refusing to reset directory outside repo .tmp: {path}")
-    if resolved.exists():
-        shutil.rmtree(resolved)
-    resolved.mkdir(parents=True)
+    lexical = resolve_tmp_child(root, path, "reset directory")
+    require(not lexical.is_symlink(), "reset directory leaf must not be a symlink")
+    if lexical.exists():
+        require(lexical.is_dir(), "reset directory leaf must be an ordinary directory")
+        shutil.rmtree(lexical)
+    lexical.mkdir(parents=True)
+
+
+def remove_tmp_directory(path: Path, root: Path) -> None:
+    lexical = resolve_tmp_child(root, path, "remove directory")
+    require(not lexical.is_symlink(), "remove directory leaf must not be a symlink")
+    if not lexical.exists():
+        return
+    require(lexical.is_dir(), "remove directory leaf must be an ordinary directory")
+    shutil.rmtree(lexical)
 
 
 def prepare_distribution_snapshot(root: Path, destination: Path) -> dict[str, Any]:
@@ -355,7 +287,7 @@ def build_bwrap_command(
     if isolate_network:
         command.insert(3, "--unshare-net")
     else:
-        for key, value in sorted(proxy_policy._child_environment().items()):  # type: ignore[union-attr]
+        for key, value in sorted(proxy_policy.child_environment().items()):  # type: ignore[union-attr]
             command.extend(["--setenv", key, value])
     command.extend(system_mount_args())
     command.extend(["--dev", "/dev", "--proc", "/proc"])
@@ -454,9 +386,10 @@ def build_provider_preflight_command(
 
 def command_mounts(command: list[str]) -> list[tuple[str, str, str]]:
     mounts: list[tuple[str, str, str]] = []
-    for index, value in enumerate(command):
-        if value in {"--bind", "--ro-bind"} and index + 2 < len(command):
-            mounts.append((value, command[index + 1], command[index + 2]))
+    prefix = command[: command.index("--")]
+    for index, value in enumerate(prefix):
+        if value in {"--bind", "--ro-bind"} and index + 2 < len(prefix):
+            mounts.append((value, prefix[index + 1], prefix[index + 2]))
     return mounts
 
 
@@ -499,29 +432,25 @@ def validate_bwrap_command(
     else:
         require(proxy_policy is None, "network-disabled benchmark command must not receive a proxy policy")
         require("--unshare-net" in command, "benchmark command must disable network during prompt audit")
+    separator = command.index("--")
+    prefix = command[:separator]
     command_environment: dict[str, str] = {}
-    for index, value in enumerate(command):
+    for index, value in enumerate(prefix):
         if value != "--setenv":
             continue
-        require(index + 2 < len(command), "benchmark command contains an incomplete environment entry")
-        key = command[index + 1]
+        require(index + 2 < len(prefix), "benchmark command contains an incomplete environment entry")
+        key = prefix[index + 1]
         require(key not in command_environment, f"benchmark command repeats environment key {key}")
-        command_environment[key] = command[index + 2]
-    proxy_environment = {
-        key: value for key, value in command_environment.items() if key.lower().endswith("_proxy")
-    }
-    forbidden_no_proxy = next((key for key in command_environment if key.lower() == "no_proxy"), None)
-    require(forbidden_no_proxy is None, f"benchmark command must not forward proxy key {forbidden_no_proxy}")
-    unexpected_proxy_keys = sorted(set(proxy_environment) - set(PROXY_KEYS))
-    require(not unexpected_proxy_keys, f"benchmark command contains unexpected proxy key {unexpected_proxy_keys[0]}" if unexpected_proxy_keys else "")
-    expected_proxy_environment = proxy_policy._child_environment() if proxy_policy is not None else {}
-    for key in PROXY_KEYS:
-        require(
-            (key in proxy_environment) == (key in expected_proxy_environment),
-            f"benchmark command proxy key {key} presence does not match validated policy",
-        )
-        if key in expected_proxy_environment:
-            require(proxy_environment[key] == expected_proxy_environment[key], f"benchmark command proxy key {key} value does not match validated policy")
+        command_environment[key] = prefix[index + 2]
+    expected_environment = dict(BWRAP_BASE_ENVIRONMENT)
+    if proxy_policy is not None:
+        expected_environment.update(proxy_policy.child_environment())
+    unexpected_keys = sorted(set(command_environment) - set(expected_environment))
+    require(not unexpected_keys, f"benchmark command contains unexpected environment key {unexpected_keys[0]}" if unexpected_keys else "")
+    missing_keys = sorted(set(expected_environment) - set(command_environment))
+    require(not missing_keys, f"benchmark command environment key {missing_keys[0]} is missing" if missing_keys else "")
+    for key in sorted(expected_environment):
+        require(command_environment[key] == expected_environment[key], f"benchmark command environment key {key} value drifted")
     require(command.count("--clearenv") == 1, "benchmark command must clear the inherited environment exactly once")
     require("--unshare-pid" in command, "benchmark command must isolate the host process table")
     require(str(output_root.resolve()) not in {target for _, _, target in mounts}, "benchmark output root must not be mounted as a whole")
@@ -530,7 +459,7 @@ def validate_bwrap_command(
 def run_provider_preflight(
     *,
     root: Path,
-    output_root: Path,
+    batch_root: Path,
     auth_file: Path,
     bwrap: Path,
     codex: Path,
@@ -544,6 +473,9 @@ def run_provider_preflight(
     require(auth_file.is_file(), "Codex auth file is required for provider preflight")
     require(not auth_file.is_symlink(), "Codex auth file must not be a symlink")
     require(auth_file.stat().st_mode & 0o022 == 0, "Codex auth file must not be group/world writable")
+    batch_root = resolve_tmp_child(root, batch_root, "provider preflight batch root")
+    require(batch_root.is_dir(), "provider preflight batch root must be an ordinary directory")
+    output_root = batch_root / "provider-preflight-isolated"
     reset_directory(output_root, root)
     try:
         layout = prepare_provider_preflight_layout(output_root, auth_file)
@@ -570,8 +502,8 @@ def run_provider_preflight(
         )
     finally:
         try:
-            shutil.rmtree(output_root)
-        except OSError as exc:
+            remove_tmp_directory(output_root, root)
+        except (OSError, SystemExit) as exc:
             raise SystemExit("provider preflight isolated root cleanup failed") from exc
         require(not output_root.exists(), "provider preflight isolated root cleanup failed")
 

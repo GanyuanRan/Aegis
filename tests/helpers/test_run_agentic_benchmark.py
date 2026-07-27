@@ -12,20 +12,27 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import run_agentic_benchmark as benchmark_runner
+import agentic_benchmark_provider_preflight
 from run_agentic_benchmark import (
     ARMS,
     AUTHORITY_BOUNDARY,
     aggregate,
     communicate_with_timeout,
+    execute_target,
     initial_ledger,
     parse_codex_jsonl,
     redact_credential_output,
+    resolve_auth_file,
     schedule_targets,
+    scrub_stale_attempt_artifacts,
     validate_live_isolation_report,
 )
+from agentic_benchmark_isolation import resolve_proxy_policy
 
 
 def fake_batch(*, max_attempts: int | None = None) -> dict:
@@ -237,6 +244,184 @@ class RunnerContractTest(unittest.TestCase):
         self.assertTrue(exposed)
         self.assertNotIn(secret, redacted)
         self.assertIn("[REDACTED_CREDENTIAL]", redacted)
+
+    def test_auth_cli_path_rejects_a_symlink_before_resolve(self):
+        root = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory(prefix="agentic-auth-link-test-", dir=root / ".tmp") as value:
+            directory = Path(value)
+            auth = directory / "auth.json"
+            auth.write_text("{}\n", encoding="utf-8")
+            link = directory / "auth-link.json"
+            link.symlink_to(auth)
+            with self.assertRaises(SystemExit) as caught:
+                resolve_auth_file(link)
+        self.assertEqual(str(caught.exception), "Codex auth file must not be a symlink")
+
+    def test_attempt_artifacts_are_scrubbed_before_any_result_returns(self):
+        root = Path(__file__).resolve().parents[2]
+        proxy = "http://proxy.invalid:8080"
+        policy = resolve_proxy_policy({"HTTP_PROXY": proxy})
+        target = {"targetId": "fake-target"}
+        with tempfile.TemporaryDirectory(prefix="agentic-artifact-test-", dir=root / ".tmp") as value:
+            output_root = Path(value)
+            attempt_root = output_root / "attempts/001-fake-target"
+
+            def fake_inner(**_kwargs):
+                for relative in ("isolated/home/.codex/cache", "isolated/cache.bin", "workspace/result.txt", "codex-stderr.log"):
+                    path = attempt_root / relative
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(f"before {proxy} after".encode())
+                return {"status": "valid", "contractPass": True, "elapsedSeconds": 2.5}
+
+            with mock.patch.object(benchmark_runner, "_execute_target_unscrubbed", side_effect=fake_inner):
+                result = execute_target(
+                    root=root,
+                    output_root=output_root,
+                    batch={},
+                    target=target,
+                    attempt_number=1,
+                    auth_file=output_root / "auth",
+                    bwrap=output_root / "bwrap",
+                    codex=output_root / "codex",
+                    timeout_seconds=1,
+                    proxy_policy=policy,
+                )
+            self.assertEqual(result, {"status": "invalid", "invalidReason": "proxy-exposure", "elapsedSeconds": 2.5})
+            self.assertFalse((attempt_root / "isolated/home").exists())
+            for path in attempt_root.rglob("*"):
+                if path.is_file():
+                    self.assertNotIn(proxy.encode(), path.read_bytes())
+
+            def exposed_error(**_kwargs):
+                exposed_path = attempt_root / "workspace/error.txt"
+                exposed_path.parent.mkdir(parents=True, exist_ok=True)
+                exposed_path.write_text(proxy, encoding="utf-8")
+                raise RuntimeError("original error")
+
+            with mock.patch.object(benchmark_runner, "_execute_target_unscrubbed", side_effect=exposed_error):
+                result = execute_target(
+                    root=root, output_root=output_root, batch={}, target=target, attempt_number=1,
+                    auth_file=output_root / "auth", bwrap=output_root / "bwrap", codex=output_root / "codex",
+                    timeout_seconds=1, proxy_policy=policy,
+                )
+            self.assertEqual(result, {"status": "invalid", "invalidReason": "proxy-exposure", "elapsedSeconds": 0.0})
+
+    def test_attempt_cleanup_preserves_normal_result_and_reraises_original_errors(self):
+        root = Path(__file__).resolve().parents[2]
+        policy = resolve_proxy_policy({"HTTP_PROXY": "http://proxy.invalid:8080"})
+        target = {"targetId": "fake-target"}
+        with tempfile.TemporaryDirectory(prefix="agentic-artifact-flow-test-", dir=root / ".tmp") as value:
+            output_root = Path(value)
+            attempt_root = output_root / "attempts/001-fake-target"
+            expected = {"status": "invalid", "invalidReason": "infrastructure", "elapsedSeconds": 1.0}
+
+            def normal(**_kwargs):
+                (attempt_root / "isolated/home").mkdir(parents=True)
+                (attempt_root / "workspace").mkdir()
+                (attempt_root / "workspace/result.txt").write_text("safe", encoding="utf-8")
+                return expected
+
+            with mock.patch.object(benchmark_runner, "_execute_target_unscrubbed", side_effect=normal):
+                result = execute_target(
+                    root=root, output_root=output_root, batch={}, target=target, attempt_number=1,
+                    auth_file=output_root / "auth", bwrap=output_root / "bwrap", codex=output_root / "codex",
+                    timeout_seconds=1, proxy_policy=policy,
+                )
+            self.assertIs(result, expected)
+            self.assertFalse((attempt_root / "isolated/home").exists())
+
+        for label, error in (("parse", ValueError("parse detail")), ("scorer", RuntimeError("scorer detail")), ("popen", OSError("popen detail"))):
+            with self.subTest(label=label), tempfile.TemporaryDirectory(prefix="agentic-artifact-error-test-", dir=root / ".tmp") as value:
+                output_root = Path(value)
+                attempt_root = output_root / "attempts/001-fake-target"
+
+                def failing(**_kwargs):
+                    (attempt_root / "isolated/home").mkdir(parents=True)
+                    (attempt_root / "workspace").mkdir()
+                    (attempt_root / "workspace/result.txt").write_text("safe", encoding="utf-8")
+                    raise error
+
+                with mock.patch.object(benchmark_runner, "_execute_target_unscrubbed", side_effect=failing):
+                    with self.assertRaises(type(error)) as caught:
+                        execute_target(
+                            root=root, output_root=output_root, batch={}, target=target, attempt_number=1,
+                            auth_file=output_root / "auth", bwrap=output_root / "bwrap", codex=output_root / "codex",
+                            timeout_seconds=1, proxy_policy=policy,
+                        )
+                self.assertIs(caught.exception, error)
+                self.assertFalse((attempt_root / "isolated/home").exists())
+
+    def test_scrub_failure_deletes_attempt_root_and_fails_closed(self):
+        root = Path(__file__).resolve().parents[2]
+        policy = resolve_proxy_policy({"HTTP_PROXY": "http://proxy.invalid:8080"})
+        target = {"targetId": "fake-target"}
+        with tempfile.TemporaryDirectory(prefix="agentic-artifact-failure-test-", dir=root / ".tmp") as value:
+            output_root = Path(value)
+            attempt_root = output_root / "attempts/001-fake-target"
+
+            def fake_inner(**_kwargs):
+                (attempt_root / "isolated/home").mkdir(parents=True)
+                (attempt_root / "workspace").mkdir()
+                return {"status": "valid", "contractPass": True}
+
+            with mock.patch.object(benchmark_runner, "_execute_target_unscrubbed", side_effect=fake_inner), mock.patch.object(
+                agentic_benchmark_provider_preflight, "scrub_proxy_artifact_tree", side_effect=OSError("private proxy detail")
+            ):
+                with self.assertRaises(SystemExit) as caught:
+                    execute_target(
+                        root=root, output_root=output_root, batch={}, target=target, attempt_number=1,
+                        auth_file=output_root / "auth", bwrap=output_root / "bwrap", codex=output_root / "codex",
+                        timeout_seconds=1, proxy_policy=policy,
+                    )
+            self.assertEqual(str(caught.exception), "benchmark attempt artifact cleanup failed")
+            self.assertFalse(attempt_root.exists())
+
+        with tempfile.TemporaryDirectory(prefix="agentic-home-cleanup-failure-test-", dir=root / ".tmp") as value:
+            output_root = Path(value)
+            attempt_root = output_root / "attempts/001-fake-target"
+
+            def fake_inner(**_kwargs):
+                (attempt_root / "isolated/home").mkdir(parents=True)
+                return {"status": "valid", "contractPass": True}
+
+            real_remove = benchmark_runner.remove_tmp_directory
+            calls = 0
+
+            def fail_home_once(path: Path, repo: Path):
+                nonlocal calls
+                calls += 1
+                if calls == 1:
+                    raise OSError("private home cleanup detail")
+                return real_remove(path, repo)
+
+            with mock.patch.object(benchmark_runner, "_execute_target_unscrubbed", side_effect=fake_inner), mock.patch.object(
+                benchmark_runner, "remove_tmp_directory", side_effect=fail_home_once
+            ):
+                with self.assertRaises(SystemExit) as caught:
+                    execute_target(
+                        root=root, output_root=output_root, batch={}, target=target, attempt_number=1,
+                        auth_file=output_root / "auth", bwrap=output_root / "bwrap", codex=output_root / "codex",
+                        timeout_seconds=1, proxy_policy=policy,
+                    )
+            self.assertEqual(str(caught.exception), "benchmark attempt artifact cleanup failed")
+            self.assertFalse(attempt_root.exists())
+
+    def test_stale_attempts_are_scrubbed_before_scheduler_recovery(self):
+        root = Path(__file__).resolve().parents[2]
+        proxy = "http://proxy.invalid:8080"
+        policy = resolve_proxy_policy({"HTTP_PROXY": proxy})
+        with tempfile.TemporaryDirectory(prefix="agentic-stale-artifact-test-", dir=root / ".tmp") as value:
+            output_root = Path(value)
+            attempt_root = output_root / "attempts/001-stale"
+            home_cache = attempt_root / "isolated/home/.codex/cache"
+            workspace = attempt_root / "workspace/result.txt"
+            home_cache.parent.mkdir(parents=True)
+            workspace.parent.mkdir(parents=True)
+            home_cache.write_text(proxy, encoding="utf-8")
+            workspace.write_text(proxy, encoding="utf-8")
+            scrub_stale_attempt_artifacts(root, output_root, policy)
+            self.assertFalse((attempt_root / "isolated/home").exists())
+            self.assertEqual(workspace.read_text(encoding="utf-8"), "[REDACTED_PROXY]")
 
     def test_production_child_timeout_escalates_to_bounded_sigkill(self):
         process = subprocess.Popen(
