@@ -82,6 +82,25 @@ run_codex_exec_capture() {
     timeout 300 bash -lc "$cmd" > "$log_file" 2>&1 || true
 }
 
+run_codex_benchmark_capture() {
+    local prompt="$1"
+    local working_dir="$2"
+    local log_file="$3"
+    local codex_working_dir
+    local quoted_prompt
+    local quoted_working_dir
+    local benchmark_cmd="${CODEX_BENCHMARK_CMD:-$codex_cmd}"
+    local benchmark_timeout="${CODEX_BENCHMARK_TIMEOUT_SECONDS:-300}"
+
+    codex_working_dir="$(to_codex_working_dir "$working_dir")"
+    printf -v quoted_prompt '%q' "$prompt"
+    printf -v quoted_working_dir '%q' "$codex_working_dir"
+
+    local cmd="$benchmark_cmd exec --json --color never --sandbox workspace-write --skip-git-repo-check --ephemeral -C $quoted_working_dir $quoted_prompt"
+
+    timeout "$benchmark_timeout" bash -lc "$cmd" > "$log_file" 2>&1
+}
+
 codex_log_mentions_skill() {
     local skill_name="$1"
     local log_file="$2"
