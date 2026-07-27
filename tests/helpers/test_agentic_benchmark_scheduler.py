@@ -13,7 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from agentic_benchmark_scheduler import execute_schedule
+from agentic_benchmark_scheduler import execute_schedule, validate_ledger
 
 
 ARMS = ("baseline-no-aegis", "aegis-auto")
@@ -242,8 +242,8 @@ class SchedulerTest(unittest.TestCase):
         frozen = batch(case_count=2, workers=3, max_attempts=7, wall=6.0, timeout=4.0, failure_limit=3)
         state = ledger(cumulative=5.0)
         state["attempts"] = [
-            attempt_record(frozen["schedule"][0], 1, 1, "valid"),
-            attempt_record(frozen["schedule"][1], 2, 1, "valid"),
+            attempt_record(frozen["schedule"][0], 1, 1, "valid", contractPass=True),
+            attempt_record(frozen["schedule"][1], 2, 1, "valid", contractPass=True),
             attempt_record(frozen["schedule"][2], 3, 2, "launched"),
             attempt_record(frozen["schedule"][3], 4, 2, "launched"),
         ]
@@ -353,12 +353,49 @@ class SchedulerTest(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.execute(unpaired, ledger(), lambda *_args: valid())
 
+    def test_executor_cannot_overwrite_scheduler_owned_identity(self):
+        frozen = batch(case_count=2, workers=2, max_attempts=4)
+        state = ledger()
+
+        def executor(target, _attempt_number, _timeout_seconds):
+            return {**valid(target), "targetId": "forged-target", "attemptNumber": 99}
+
+        with self.assertRaises(SystemExit):
+            self.execute(frozen, state, executor)
+        self.assertEqual(
+            [attempt["targetId"] for attempt in state["attempts"]],
+            [target["targetId"] for target in frozen["schedule"][:2]],
+        )
+        self.assertTrue(all(attempt["status"] == "launched" for attempt in state["attempts"]))
+        self.assertIn("activeWave", state)
+
+    def test_terminal_replay_rejects_wave_and_identity_forgery(self):
+        frozen = batch(case_count=4, workers=3, max_attempts=10, failure_limit=2)
+
+        def executor(_target, attempt_number, _timeout_seconds):
+            if attempt_number in {3, 4}:
+                return {"status": "invalid", "invalidReason": "infrastructure"}
+            return valid()
+
+        state = self.execute(frozen, ledger(), executor)
+        self.assertEqual(state["scheduler"]["reason"], "infrastructure-circuit-open")
+
+        split_failures = copy.deepcopy(state)
+        split_failures["attempts"][3]["waveNumber"] = 3
+        with self.assertRaises(SystemExit):
+            validate_ledger(frozen, split_failures)
+
+        forged_identity = copy.deepcopy(state)
+        forged_identity["attempts"][2]["caseId"] = "forged-case"
+        with self.assertRaises(SystemExit):
+            validate_ledger(frozen, forged_identity)
+
     def test_missing_and_malformed_active_wave_fail_closed(self):
         frozen = batch(case_count=2, workers=3, max_attempts=7, wall=6.0, timeout=4.0, failure_limit=3)
         launched = ledger(cumulative=5.0)
         launched["attempts"] = [
-            attempt_record(frozen["schedule"][0], 1, 1, "valid"),
-            attempt_record(frozen["schedule"][1], 2, 1, "valid"),
+            attempt_record(frozen["schedule"][0], 1, 1, "valid", contractPass=True),
+            attempt_record(frozen["schedule"][1], 2, 1, "valid", contractPass=True),
             attempt_record(frozen["schedule"][2], 3, 2, "launched"),
             attempt_record(frozen["schedule"][3], 4, 2, "launched"),
         ]

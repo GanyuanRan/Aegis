@@ -9,7 +9,7 @@ import os
 import tempfile
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any, Callable
 
 
@@ -40,7 +40,31 @@ ACTIVE_WAVE_FIELDS = {
     "reservedWallSeconds",
     "preWaveCumulativeWallSeconds",
 }
+ATTEMPT_IDENTITY_FIELDS = (
+    "targetId",
+    "caseId",
+    "scenarioClass",
+    "partition",
+    "repetition",
+    "arm",
+)
+SCHEDULER_OWNED_ATTEMPT_FIELDS = {"attemptNumber", "waveNumber", *ATTEMPT_IDENTITY_FIELDS}
+COMMON_RESULT_FIELDS = {"status", "elapsedSeconds", "hostExit"}
+VALID_RESULT_FIELDS = {
+    *COMMON_RESULT_FIELDS,
+    "contractPass",
+    "checkCounts",
+    "triggeredVetoes",
+    "tokens",
+    "costUsd",
+    "observedModels",
+    "artifactRoot",
+}
+INVALID_RESULT_FIELDS = {*COMMON_RESULT_FIELDS, "invalidReason", "errorType"}
 
+# Executors must enforce the supplied timeout and return only after their child
+# process and workspace cleanup have reached a terminal state. Python worker
+# threads are a concurrency primitive here, not a process termination boundary.
 Executor = Callable[[dict[str, Any], int, float], dict[str, Any]]
 MonotonicClock = Callable[[], float]
 
@@ -88,9 +112,11 @@ def _validate_policy(batch: dict[str, Any]) -> None:
     target_ids: list[str] = []
     for target in schedule:
         _require(isinstance(target, dict), "schedule targets must be objects")
-        for field in ("targetId", "caseId", "scenarioClass", "partition", "repetition", "arm"):
+        for field in ATTEMPT_IDENTITY_FIELDS:
             _require(field in target, f"schedule target is missing {field}")
-        _require(isinstance(target["targetId"], str) and target["targetId"], "targetId must be a non-empty string")
+        for field in ("targetId", "caseId", "scenarioClass", "partition", "arm"):
+            _require(isinstance(target[field], str) and target[field], f"{field} must be a non-empty string")
+        _positive_integer(target["repetition"], "repetition")
         target_ids.append(target["targetId"])
     _require(len(target_ids) == len(set(target_ids)), "schedule targetId values must be unique")
 
@@ -106,6 +132,11 @@ def _atomic_json(path: Path, value: Any) -> None:
             handle.flush()
             os.fsync(handle.fileno())
         os.replace(temporary_path, path)
+        directory_descriptor = os.open(path.parent, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+        try:
+            os.fsync(directory_descriptor)
+        finally:
+            os.close(directory_descriptor)
     finally:
         if temporary_path.exists():
             temporary_path.unlink()
@@ -132,17 +163,109 @@ def _attempt_record(target: dict[str, Any], attempt_number: int, wave_number: in
     }
 
 
+def _validate_result(result: dict[str, Any], *, allow_recovery: bool = False) -> dict[str, Any]:
+    _require(isinstance(result, dict), "attempt result must be an object")
+    forbidden = sorted(set(result) & SCHEDULER_OWNED_ATTEMPT_FIELDS)
+    _require(not forbidden, f"attempt result cannot overwrite scheduler-owned fields: {', '.join(forbidden)}")
+    status = result.get("status")
+    _require(status in {"valid", "invalid"}, "attempt result status must be valid or invalid")
+    allowed = VALID_RESULT_FIELDS if status == "valid" else INVALID_RESULT_FIELDS
+    if allow_recovery and status == "invalid":
+        allowed = {*allowed, "recovery"}
+    unknown = sorted(set(result) - allowed)
+    _require(not unknown, f"attempt result fields are invalid: {', '.join(unknown)}")
+    if "elapsedSeconds" in result:
+        elapsed = result["elapsedSeconds"]
+        _require(
+            isinstance(elapsed, (int, float))
+            and not isinstance(elapsed, bool)
+            and math.isfinite(elapsed)
+            and elapsed >= 0,
+            "elapsedSeconds must be a non-negative finite number",
+        )
+    if "hostExit" in result:
+        _require(isinstance(result["hostExit"], int) and not isinstance(result["hostExit"], bool), "hostExit must be an integer")
+    if status == "valid":
+        _require(isinstance(result.get("contractPass"), bool), "valid attempt result requires boolean contractPass")
+        if "checkCounts" in result:
+            counts = result["checkCounts"]
+            _require(isinstance(counts, dict) and set(counts) == {"pass", "fail", "unknown"}, "checkCounts fields are invalid")
+            _require(
+                all(isinstance(value, int) and not isinstance(value, bool) and value >= 0 for value in counts.values()),
+                "checkCounts values must be non-negative integers",
+            )
+        if "triggeredVetoes" in result:
+            vetoes = result["triggeredVetoes"]
+            _require(isinstance(vetoes, list) and all(isinstance(value, str) and value for value in vetoes), "triggeredVetoes must contain non-empty strings")
+        if "tokens" in result:
+            tokens = result["tokens"]
+            _require(isinstance(tokens, dict) and all(isinstance(key, str) and key for key in tokens), "tokens must be an object with string keys")
+            _require(
+                all(isinstance(value, int) and not isinstance(value, bool) and value >= 0 for value in tokens.values()),
+                "token counts must be non-negative integers",
+            )
+        if "costUsd" in result and result["costUsd"] is not None:
+            cost = result["costUsd"]
+            _require(
+                isinstance(cost, (int, float)) and not isinstance(cost, bool) and math.isfinite(cost) and cost >= 0,
+                "costUsd must be null or a non-negative finite number",
+            )
+        if "observedModels" in result:
+            models = result["observedModels"]
+            _require(isinstance(models, list) and all(isinstance(value, str) and value for value in models), "observedModels must contain non-empty strings")
+        if "artifactRoot" in result:
+            artifact_root = result["artifactRoot"]
+            _require(isinstance(artifact_root, str) and artifact_root, "artifactRoot must be a non-empty relative path")
+            artifact_path = PurePosixPath(artifact_root)
+            _require(not artifact_path.is_absolute() and ".." not in artifact_path.parts, "artifactRoot must be a safe relative path")
+    else:
+        _require(result.get("invalidReason") in INVALID_REASONS, "invalid attempt result requires an allowed invalidReason")
+        if "errorType" in result:
+            _require(isinstance(result["errorType"], str) and result["errorType"], "errorType must be a non-empty string")
+        if "recovery" in result:
+            _require(allow_recovery, "executor result cannot set recovery")
+            _require(
+                result["recovery"] == "interrupted-before-final-record"
+                and result["invalidReason"] == "infrastructure",
+                "recovery marker requires an infrastructure-invalid attempt",
+            )
+    return dict(result)
+
+
+def _validate_attempt_identity(attempt: dict[str, Any], target: dict[str, Any]) -> None:
+    for field in ATTEMPT_IDENTITY_FIELDS:
+        _require(
+            type(attempt.get(field)) is type(target[field]) and attempt.get(field) == target[field],
+            f"ledger attempt {field} does not match the frozen target",
+        )
+
+
 def _replay_queue(batch: dict[str, Any], ledger: dict[str, Any]) -> list[dict[str, Any]]:
     queue = list(batch["schedule"])
-    for index, attempt in enumerate(ledger["attempts"], start=1):
-        _require(attempt.get("attemptNumber") == index, "ledger attempt numbers must be contiguous and ordered")
-        _require(queue, "ledger contains more attempts than the frozen schedule can produce")
-        expected = queue.pop(0)
-        _require(attempt.get("targetId") == expected["targetId"], "ledger attempt order does not match deterministic queue replay")
-        _require(attempt.get("status") in {"valid", "invalid"}, "ledger attempt has no terminal status")
-        if attempt["status"] == "invalid":
-            _require(attempt.get("invalidReason") in INVALID_REASONS, "ledger attempt has an invalid reason")
-            queue.append(expected)
+    attempts = ledger["attempts"]
+    _require(len(attempts) <= batch["maxAttempts"], "ledger exceeds the paid attempt ceiling")
+    position = 0
+    wave_number = 1
+    while position < len(attempts):
+        _require(queue, "ledger contains attempts after all frozen targets completed")
+        available_attempts = batch["maxAttempts"] - position
+        wave_size = 2 if position == 0 else min(batch["workers"], len(queue), available_attempts)
+        _require(len(attempts) - position >= wave_size, "ledger ends with an incomplete terminal wave")
+        wave = attempts[position : position + wave_size]
+        targets = queue[:wave_size]
+        queue = queue[wave_size:]
+        for offset, (attempt, target) in enumerate(zip(wave, targets)):
+            _require(isinstance(attempt, dict), "ledger attempts must be objects")
+            _require(attempt.get("attemptNumber") == position + offset + 1, "ledger attempt numbers must be contiguous and ordered")
+            _require(attempt.get("waveNumber") == wave_number, "ledger wave numbers must be contiguous and deterministic")
+            _validate_attempt_identity(attempt, target)
+            result = {key: value for key, value in attempt.items() if key not in SCHEDULER_OWNED_ATTEMPT_FIELDS}
+            _validate_result(result, allow_recovery=True)
+        for target, attempt in zip(targets, wave):
+            if attempt["status"] == "invalid":
+                queue.append(target)
+        position += wave_size
+        wave_number += 1
     return queue
 
 
@@ -172,6 +295,10 @@ def _validate_active_wave(batch: dict[str, Any], ledger: dict[str, Any]) -> dict
     _require(len(active_attempts) == attempt_count, "activeWave attempt count does not match the ledger")
     _require(active_attempts == launched, "activeWave attempts must all remain launched")
     _require(
+        all(set(attempt) == {*SCHEDULER_OWNED_ATTEMPT_FIELDS, "status"} for attempt in active_attempts),
+        "launched attempt fields are invalid",
+    )
+    _require(
         all(attempt.get("attemptNumber") == first_attempt + offset for offset, attempt in enumerate(active_attempts)),
         "activeWave attempt numbers must be contiguous",
     )
@@ -188,11 +315,8 @@ def _validate_active_wave(batch: dict[str, Any], ledger: dict[str, Any]) -> dict
     available_attempts = batch["maxAttempts"] - len(prefix)
     expected_count = 2 if not prefix else min(batch["workers"], len(pending), available_attempts)
     _require(attempt_count == expected_count, "activeWave size does not match the deterministic next wave")
-    _require(
-        [attempt["targetId"] for attempt in active_attempts]
-        == [target["targetId"] for target in pending[:attempt_count]],
-        "activeWave targets do not match deterministic queue replay",
-    )
+    for attempt, target in zip(active_attempts, pending[:attempt_count]):
+        _validate_attempt_identity(attempt, target)
     expected_reservation = min(
         float(batch["perAttemptTimeoutSeconds"]),
         float(batch["wallClockBudgetSeconds"]) - float(pre_wave),
@@ -221,6 +345,25 @@ def _recover_interrupted(batch: dict[str, Any], ledger: dict[str, Any]) -> bool:
         )
     del ledger["activeWave"]
     return True
+
+
+def validate_ledger(batch: dict[str, Any], ledger: dict[str, Any]) -> None:
+    """Fail closed unless persisted attempts match the frozen scheduler contract."""
+
+    _validate_policy(batch)
+    _require(isinstance(ledger, dict), "ledger must be an object")
+    _require(isinstance(ledger.get("attempts"), list), "ledger attempts must be a list")
+    cumulative = ledger.get("cumulativeWallSeconds")
+    _require(
+        isinstance(cumulative, (int, float))
+        and not isinstance(cumulative, bool)
+        and math.isfinite(cumulative)
+        and cumulative >= 0,
+        "ledger cumulativeWallSeconds must be a non-negative finite number",
+    )
+    active = _validate_active_wave(batch, ledger)
+    if active is None:
+        _replay_queue(batch, ledger)
 
 
 def _terminal_transport_count(attempts: list[dict[str, Any]]) -> int:
@@ -267,11 +410,7 @@ def _run_wave(
                     "invalidReason": "infrastructure",
                     "errorType": type(exc).__name__,
                 }
-            _require(isinstance(result, dict), "executor must return an attempt result object")
-            _require(result.get("status") in {"valid", "invalid"}, "executor returned an invalid attempt status")
-            if result["status"] == "invalid":
-                _require(result.get("invalidReason") in INVALID_REASONS, "executor returned an invalid reason")
-            results[attempt_number] = result
+            results[attempt_number] = _validate_result(result)
     return results
 
 
@@ -283,18 +422,9 @@ def execute_schedule(
     *,
     monotonic: MonotonicClock = time.monotonic,
 ) -> dict[str, Any]:
-    """Execute the frozen target queue in deterministic bounded waves."""
+    """Execute waves using an executor that enforces its supplied timeout."""
 
-    _validate_policy(batch)
-    _require(isinstance(ledger.get("attempts"), list), "ledger attempts must be a list")
-    cumulative = ledger.get("cumulativeWallSeconds")
-    _require(
-        isinstance(cumulative, (int, float))
-        and not isinstance(cumulative, bool)
-        and math.isfinite(cumulative)
-        and cumulative >= 0,
-        "ledger cumulativeWallSeconds must be a non-negative finite number",
-    )
+    validate_ledger(batch, ledger)
     if _recover_interrupted(batch, ledger):
         _set_status(ledger, "recovered", "interrupted-launched-attempts-invalidated")
         _atomic_json(ledger_path, ledger)

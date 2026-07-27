@@ -5,8 +5,11 @@ from __future__ import annotations
 
 import copy
 import json
+import signal
+import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 
@@ -16,6 +19,7 @@ from run_agentic_benchmark import (
     ARMS,
     AUTHORITY_BOUNDARY,
     aggregate,
+    communicate_with_timeout,
     initial_ledger,
     parse_codex_jsonl,
     redact_credential_output,
@@ -44,6 +48,11 @@ def fake_batch(*, max_attempts: int | None = None) -> dict:
         "repetitions": 1,
         "targetRunCount": len(schedule),
         "maxAttempts": max_attempts if max_attempts is not None else len(schedule),
+        "profileId": "fake-profile",
+        "workers": 2,
+        "wallClockBudgetSeconds": 100,
+        "perAttemptTimeoutSeconds": 10,
+        "infrastructureFailureLimit": 2,
         "modelPolicy": {"requestedModel": "fake-model"},
         "distributionSnapshot": {"version": "test", "treeHash": "b" * 64, "skillCount": 2},
         "hostVersions": {"codex": "fake-codex", "bwrap": "fake-bwrap"},
@@ -70,6 +79,7 @@ class RunnerContractTest(unittest.TestCase):
         for attempt_number, target in enumerate(batch["schedule"], start=1):
             attempt = {
                 "attemptNumber": attempt_number,
+                "waveNumber": (attempt_number - 1) // batch["workers"] + 1,
                 "targetId": target["targetId"],
                 "caseId": target["caseId"],
                 "scenarioClass": target["scenarioClass"],
@@ -89,6 +99,14 @@ class RunnerContractTest(unittest.TestCase):
         self.assertEqual(report["attempts"]["valid"], 4)
         self.assertEqual(report["overall"]["deltaPercentagePoints"], 100.0)
         self.assertEqual(report["overall"]["arms"]["aegis-auto"]["unsafeOutcomeRate"], 0.0)
+
+    def test_aggregate_rejects_forged_terminal_identity(self):
+        batch = fake_batch()
+        ledger = self.ledger(batch, valid_result)
+        ledger["attempts"][0]["targetId"] = batch["schedule"][1]["targetId"]
+        ledger["attempts"][0]["caseId"] = "forged-case"
+        with self.assertRaises(SystemExit):
+            aggregate(batch, ledger)
 
     def test_schedule_promotes_a_deterministic_paired_canary(self):
         first = schedule_targets(
@@ -194,6 +212,36 @@ class RunnerContractTest(unittest.TestCase):
         self.assertTrue(exposed)
         self.assertNotIn(secret, redacted)
         self.assertIn("[REDACTED_CREDENTIAL]", redacted)
+
+    def test_production_child_timeout_escalates_to_bounded_sigkill(self):
+        process = subprocess.Popen(
+            [
+                sys.executable,
+                "-c",
+                "import signal,time; signal.signal(signal.SIGTERM, signal.SIG_IGN); print('ready', flush=True); time.sleep(60)",
+            ],
+            text=True,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            start_new_session=True,
+        )
+        try:
+            self.assertEqual(process.stdout.readline().strip(), "ready")  # type: ignore[union-attr]
+            started = time.monotonic()
+            _stdout, _stderr, timed_out = communicate_with_timeout(
+                process,
+                0.05,
+                cleanup_timeout_seconds=0.1,
+            )
+            elapsed = time.monotonic() - started
+            self.assertTrue(timed_out)
+            self.assertEqual(process.returncode, -signal.SIGKILL)
+            self.assertLess(elapsed, 1.0)
+        finally:
+            if process.poll() is None:
+                process.kill()
+                process.wait(timeout=1)
 
 
 if __name__ == "__main__":

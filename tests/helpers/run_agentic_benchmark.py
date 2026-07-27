@@ -487,19 +487,58 @@ def write_before_tree(path: Path, workspace: Path) -> None:
     atomic_json(path, {"version": 1, "files": snapshot_workspace(workspace)})
 
 
-def terminate_process(process: subprocess.Popen[str]) -> tuple[str, str]:
+def timeout_output(value: str | bytes | None) -> str:
+    if value is None:
+        return ""
+    return value.decode(errors="replace") if isinstance(value, bytes) else value
+
+
+def terminate_process(
+    process: subprocess.Popen[str],
+    cleanup_timeout_seconds: float = 5.0,
+) -> tuple[str, str]:
+    require(cleanup_timeout_seconds > 0, "process cleanup timeout must be positive")
     try:
         os.killpg(process.pid, signal.SIGTERM)
     except ProcessLookupError:
         pass
     try:
-        return process.communicate(timeout=5)
+        return process.communicate(timeout=cleanup_timeout_seconds)
     except subprocess.TimeoutExpired:
         try:
             os.killpg(process.pid, signal.SIGKILL)
         except ProcessLookupError:
             pass
-        return process.communicate()
+        try:
+            return process.communicate(timeout=cleanup_timeout_seconds)
+        except subprocess.TimeoutExpired as exc:
+            stdout = timeout_output(exc.output)
+            stderr = timeout_output(exc.stderr) + "\nbenchmark process cleanup exceeded its bounded deadline\n"
+            for stream in (process.stdout, process.stderr):
+                if stream is not None:
+                    stream.close()
+            try:
+                process.wait(timeout=cleanup_timeout_seconds)
+            except subprocess.TimeoutExpired:
+                pass
+            return stdout, stderr
+
+
+def communicate_with_timeout(
+    process: subprocess.Popen[str],
+    timeout_seconds: float,
+    *,
+    cleanup_timeout_seconds: float = 5.0,
+) -> tuple[str, str, bool]:
+    """Enforce the production executor's subprocess timeout and bounded cleanup."""
+
+    require(timeout_seconds > 0, "process timeout must be positive")
+    try:
+        stdout, stderr = process.communicate(timeout=timeout_seconds)
+        return stdout, stderr, False
+    except subprocess.TimeoutExpired:
+        stdout, stderr = terminate_process(process, cleanup_timeout_seconds)
+        return stdout, stderr, True
 
 
 def execute_target(
@@ -512,7 +551,7 @@ def execute_target(
     auth_file: Path,
     bwrap: Path,
     codex: Path,
-    timeout_seconds: int,
+    timeout_seconds: float,
 ) -> dict[str, Any]:
     case = find_frozen_case(batch, target["caseId"])
     attempt_root = output_root / "attempts" / f"{attempt_number:03d}-{target['targetId']}"
@@ -542,12 +581,8 @@ def execute_target(
         stderr=subprocess.PIPE,
         start_new_session=True,
     )
-    timed_out = False
-    try:
-        stdout, stderr = process.communicate(timeout=timeout_seconds)
-    except subprocess.TimeoutExpired:
-        timed_out = True
-        stdout, stderr = terminate_process(process)
+    stdout, stderr, timed_out = communicate_with_timeout(process, timeout_seconds)
+    if timed_out:
         stderr += "\nbenchmark attempt timed out\n"
     elapsed = round(time.monotonic() - started, 3)
     stdout, stdout_exposed = redact_credential_output(stdout, auth_file)
@@ -650,6 +685,7 @@ def arm_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def aggregate(batch: dict[str, Any], ledger: dict[str, Any]) -> dict[str, Any]:
+    agentic_benchmark_scheduler.validate_ledger(batch, ledger)
     valid_by_target: dict[str, dict[str, Any]] = {}
     for attempt in ledger["attempts"]:
         if attempt.get("status") == "valid":
