@@ -10,6 +10,7 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -18,6 +19,7 @@ import agentic_benchmark_process_supervisor
 from agentic_benchmark_process_supervisor import MAX_RESULT_BYTES, supervise_attempt, supervise_confidential_cleanup, supervise_operation, supervise_process, supervise_stage
 from agentic_benchmark_scheduler import execute_budgeted_stage
 from agentic_benchmark_provider_preflight import freeze_auth_file
+from agentic_benchmark_isolation import remove_tmp_artifact_entry
 
 
 def fake_batch(wall: float = 1.0) -> dict:
@@ -164,6 +166,38 @@ while True:
         self.assertLessEqual(cleanup_budget, 1 / 3)
         self.assertEqual(result, {"status": "invalid", "invalidReason": "credential-exposure", "elapsedSeconds": 0.5})
 
+    def test_attempt_base_exceptions_always_run_bounded_cleanup_then_reraise(self):
+        for error in (OSError("spawn failed"), SystemExit("worker failed")):
+            cleanup_calls: list[tuple[float, bool]] = []
+
+            def cleanup(seconds: float, uncertain: bool) -> None:
+                cleanup_calls.append((seconds, uncertain))
+
+            with self.subTest(error=type(error).__name__), mock.patch.object(
+                agentic_benchmark_process_supervisor, "supervise_operation", side_effect=error
+            ):
+                with self.assertRaises(type(error)) as caught:
+                    supervise_attempt({}, 0.9, cleanup)
+            self.assertIs(caught.exception, error)
+            self.assertEqual(len(cleanup_calls), 1)
+            self.assertTrue(cleanup_calls[0][1])
+            self.assertGreater(cleanup_calls[0][0], 0)
+            self.assertLessEqual(cleanup_calls[0][0], 0.3)
+
+    def test_attempt_cleanup_failure_has_security_priority_without_exception_chaining(self):
+        operation_error = OSError("private spawn detail")
+        cleanup_error = SystemExit("benchmark attempt artifact cleanup failed")
+
+        def cleanup(_seconds: float, _uncertain: bool) -> None:
+            raise cleanup_error
+
+        with mock.patch.object(agentic_benchmark_process_supervisor, "supervise_operation", side_effect=operation_error):
+            with self.assertRaises(SystemExit) as caught:
+                supervise_attempt({}, 0.9, cleanup)
+        self.assertIs(caught.exception, cleanup_error)
+        self.assertIsNone(caught.exception.__cause__)
+        self.assertNotIn("private spawn detail", str(caught.exception))
+
     def test_stage_cleanup_runs_after_success_and_crash_with_a_reserved_deadline(self):
         for label, side_effect in (("success", None), ("crash", SystemExit("worker crashed"))):
             cleanup_budgets: list[float] = []
@@ -220,7 +254,7 @@ while True:
         with tempfile.TemporaryDirectory(prefix="agentic-stage-cleanup-test-", dir=self.root / ".tmp") as value:
             output_root = Path(value)
             auth = output_root / "auth.json"
-            auth.write_text('{"api_key":"abc"}', encoding="utf-8")
+            auth.write_text('{"OPENAI_API_KEY":"abc"}', encoding="utf-8")
             auth.chmod(0o600)
             report = output_root / "isolation-report.json"
             report.write_text('{"status":"safe"}', encoding="utf-8")
@@ -249,7 +283,7 @@ while True:
                 attempt_root = output_root / "attempts/001-auth-drift"
                 attempt_root.mkdir(parents=True)
                 (attempt_root / "result.txt").write_text("safe", encoding="utf-8")
-                auth.write_text('{"api_key":"rotated"}', encoding="utf-8")
+                auth.write_text('{"OPENAI_API_KEY":"rotated"}', encoding="utf-8")
                 exposure = supervise_confidential_cleanup(
                     {
                         "root": str(self.root),
@@ -264,6 +298,89 @@ while True:
                 self.assertFalse(attempt_root.exists())
             finally:
                 frozen.close()
+
+    def test_purge_untrusted_deletes_only_the_attempt_tree_without_auth_context(self):
+        with tempfile.TemporaryDirectory(prefix="agentic-purge-untrusted-test-", dir=self.root / ".tmp") as value:
+            output_root = Path(value)
+            attempts_root = output_root / "attempts"
+            leaked = attempts_root / "001-unknown/workspace/secret.txt"
+            leaked.parent.mkdir(parents=True)
+            leaked.write_text("unknown prior credential", encoding="utf-8")
+            batch = output_root / "batch.json"
+            batch.write_text('{"trusted":"sibling"}', encoding="utf-8")
+            exposure = supervise_confidential_cleanup(
+                {"root": str(self.root), "treeRoot": str(attempts_root), "mode": "purge-untrusted"},
+                1.0,
+            )
+            self.assertIsNone(exposure)
+            self.assertFalse(attempts_root.exists())
+            self.assertEqual(batch.read_text(encoding="utf-8"), '{"trusted":"sibling"}')
+
+    def test_unverifiable_ledger_deletes_the_entire_untrusted_attempt_tree(self):
+        with tempfile.TemporaryDirectory(prefix="agentic-untrusted-ledger-test-", dir=self.root / ".tmp") as value:
+            output_root = Path(value)
+            attempts_root = output_root / "attempts"
+            leaked = attempts_root / "001-unknown/workspace/secret.txt"
+            leaked.parent.mkdir(parents=True)
+            leaked.write_text("old unknown credential", encoding="utf-8")
+            runner = SimpleNamespace(
+                repo_root=lambda: self.root,
+                resolve_tmp_child=lambda _root, path, _label: path,
+                verify_batch=lambda *_args: object(),
+                validate_auth_mount_file=lambda _path: None,
+                credential_policy_from_markers=lambda _markers: object(),
+                load_batch_and_ledger=mock.Mock(side_effect=SystemExit("ledger invalid")),
+                remove_tmp_artifact_entry=lambda path, root: remove_tmp_artifact_entry(path, root),
+            )
+            request = {
+                "root": str(self.root),
+                "outputRoot": str(output_root),
+                "batch": {},
+                "authFile": "/safe/auth",
+                "credentialMarkers": [],
+            }
+            with self.assertRaises(SystemExit) as caught:
+                agentic_benchmark_process_supervisor._execute_isolation_setup(runner, request)
+            self.assertEqual(str(caught.exception), "ledger invalid")
+            self.assertFalse(attempts_root.exists())
+
+    def test_setup_retention_whitelist_excludes_launched_and_recovered_attempts(self):
+        with tempfile.TemporaryDirectory(prefix="agentic-ledger-whitelist-test-", dir=self.root / ".tmp") as value:
+            output_root = Path(value)
+            batch: dict = {}
+            ledger = {
+                "attempts": [
+                    {"attemptNumber": 1, "targetId": "valid", "status": "valid"},
+                    {"attemptNumber": 2, "targetId": "invalid", "status": "invalid"},
+                    {"attemptNumber": 3, "targetId": "recovered", "status": "invalid", "recovery": "interrupted-before-final-record"},
+                    {"attemptNumber": 4, "targetId": "launched", "status": "launched"},
+                ]
+            }
+            captured: list[set[str]] = []
+
+            def capture(_root, completed, *_args):
+                captured.append(completed)
+                raise SystemExit("captured")
+
+            runner = SimpleNamespace(
+                repo_root=lambda: self.root,
+                resolve_tmp_child=lambda _root, path, _label: path,
+                verify_batch=lambda *_args: object(),
+                validate_auth_mount_file=lambda _path: None,
+                credential_policy_from_markers=lambda _markers: object(),
+                load_batch_and_ledger=lambda _root: (batch, ledger),
+                agentic_benchmark_scheduler=SimpleNamespace(validate_ledger=lambda *_args: None),
+                scrub_stale_confidential_artifacts=capture,
+                remove_tmp_artifact_entry=lambda path, root: remove_tmp_artifact_entry(path, root),
+            )
+            request = {
+                "root": str(self.root), "outputRoot": str(output_root), "batch": batch,
+                "authFile": "/safe/auth", "credentialMarkers": [],
+            }
+            with self.assertRaises(SystemExit) as caught:
+                agentic_benchmark_process_supervisor._execute_isolation_setup(runner, request)
+            self.assertEqual(str(caught.exception), "captured")
+            self.assertEqual(captured, [{"001-valid", "002-invalid"}])
 
 
 if __name__ == "__main__":

@@ -190,7 +190,7 @@ class CommandBoundaryTest(unittest.TestCase):
             self.assertNotIn(forbidden, serialized)
 
     def test_sealed_auth_memfd_is_readable_through_a_real_bwrap_mount(self):
-        self.auth.write_text('{"api_key":"abc"}', encoding="utf-8")
+        self.auth.write_text('{"OPENAI_API_KEY":"abc"}', encoding="utf-8")
         payload = self.auth.read_bytes()
         frozen = freeze_auth_file(self.auth)
         try:

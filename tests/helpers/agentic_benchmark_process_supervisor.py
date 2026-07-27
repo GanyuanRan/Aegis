@@ -191,13 +191,24 @@ def supervise_attempt(
     """Run setup, Codex, parsing, scoring and cleanup in one killable process."""
 
     execution_seconds, cleanup_seconds = _operation_budgets(timeout_seconds)
-    result = supervise_operation("attempt", request, execution_seconds)
-    uncertain = result.get("invalidReason") in {"infrastructure", "timeout"}
-    exposure = final_cleanup(cleanup_seconds, uncertain)
+    result: dict[str, Any] | None = None
+    pending: BaseException | None = None
+    try:
+        result = supervise_operation("attempt", request, execution_seconds)
+    except BaseException as exc:
+        pending = exc
+    uncertain = pending is not None or result is None or result.get("invalidReason") in {"infrastructure", "timeout"}
+    try:
+        exposure = final_cleanup(cleanup_seconds, uncertain)
+    except BaseException as cleanup_error:
+        raise cleanup_error from None
     if exposure == "auth-drift":
         raise SystemExit("Codex auth changed during benchmark execution")
     if exposure in {"credential-exposure", "proxy-exposure"}:
-        return _invalid(exposure, result["elapsedSeconds"])
+        return _invalid(exposure, result.get("elapsedSeconds", 0.0) if result is not None else 0.0)
+    if pending is not None:
+        raise pending
+    _require(result is not None, "attempt supervisor returned no result")
     return result
 
 
@@ -250,11 +261,29 @@ def _execute_isolation_setup(runner: Any, request: dict[str, Any]) -> dict[str, 
     runner.validate_auth_mount_file(auth_file)
     credential_policy = runner.credential_policy_from_markers(request.get("credentialMarkers"))
     attempts_root = runner.resolve_tmp_child(root, output_root / "attempts", "attempts artifact root")
+    try:
+        loaded_batch, ledger = runner.load_batch_and_ledger(output_root)
+        _require(loaded_batch == batch, "supervised setup batch drifted")
+        runner.agentic_benchmark_scheduler.validate_ledger(batch, ledger)
+        completed_attempt_roots: set[str] = set()
+        for attempt in ledger["attempts"]:
+            if attempt.get("status") not in {"valid", "invalid"} or "recovery" in attempt:
+                continue
+            leaf = f"{attempt['attemptNumber']:03d}-{attempt['targetId']}"
+            _require(Path(leaf).name == leaf, "ledger attempt artifact name is invalid")
+            completed_attempt_roots.add(leaf)
+    except BaseException:
+        try:
+            runner.remove_tmp_artifact_entry(attempts_root, root)
+        except BaseException:
+            raise SystemExit("untrusted attempt artifact cleanup failed") from None
+        raise
     runner.scrub_stale_confidential_artifacts(
         attempts_root,
+        completed_attempt_roots,
         proxy_policy,
         credential_policy,
-        lambda path: runner.remove_tmp_directory(path, root),
+        lambda path: runner.remove_tmp_artifact_entry(path, root),
     )
     bwrap = runner.resolve_tool("bwrap", "AEGIS_BENCHMARK_BWRAP")
     codex = runner.resolve_tool("codex", "AEGIS_BENCHMARK_CODEX")
@@ -301,9 +330,13 @@ def _execute_confidential_cleanup(runner: Any, request: dict[str, Any]) -> dict[
     root = _path(request.get("root"), "root")
     _require(root.resolve() == runner.repo_root(), "confidential cleanup root drifted")
     tree_root = runner.resolve_tmp_child(root, _path(request.get("treeRoot"), "treeRoot"), "confidential tree root")
+    mode = request.get("mode")
+    if mode == "purge-untrusted":
+        _require(set(request) == {"root", "treeRoot", "mode", "timeoutSeconds"}, "untrusted cleanup request is invalid")
+        runner.remove_tmp_artifact_entry(tree_root, root)
+        return {"exposure": None}
     credential_policy = runner.credential_policy_from_markers(request.get("credentialMarkers"))
     proxy_policy = runner.resolve_proxy_policy(os.environ)
-    mode = request.get("mode")
     auth_unchanged = runner.auth_source_matches_guard(request.get("authGuard"))
     if mode == "attempt":
         exposure = runner.finalize_confidential_artifacts(

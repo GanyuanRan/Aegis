@@ -31,36 +31,8 @@ MAX_ARTIFACT_TOTAL_BYTES = 256 * 1024 * 1024
 PROXY_KEYS = ("ALL_PROXY", "HTTPS_PROXY", "HTTP_PROXY")
 PROXY_SCHEMES = {"http", "https", "socks5", "socks5h"}
 MAX_AUTH_FILE_BYTES = 4 * 1024 * 1024
-KNOWN_SENSITIVE_AUTH_KEYS = {
-    "access_token",
-    "api_key",
-    "id_token",
-    "openai_api_key",
-    "password",
-    "refresh_token",
-    "secret",
-    "token",
-}
-KNOWN_AUTH_METADATA_KEYS = {
-    "account_id",
-    "auth_mode",
-    "chatgpt_account_id",
-    "expires_at",
-    "last_refresh",
-    "organization_id",
-    "tokens",
-}
-SENSITIVE_AUTH_KEY_PARTS = (
-    "api_key",
-    "apikey",
-    "authorization",
-    "cookie",
-    "credential",
-    "password",
-    "private_key",
-    "secret",
-    "token",
-)
+ROOT_AUTH_FIELDS = {"auth_mode", "OPENAI_API_KEY", "tokens", "last_refresh"}
+TOKEN_AUTH_FIELDS = {"id_token", "access_token", "refresh_token", "account_id"}
 CREDENTIAL_PATTERN_SOURCES = (
     rb"\bsk-[A-Za-z0-9_-]{16,}\b",
     rb"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b",
@@ -113,41 +85,31 @@ class CredentialPolicy:
         return self.__markers
 
 
-def _normalized_auth_key(key: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "_", key.casefold()).strip("_")
-
-
 def _credential_markers_from_auth(value: Any) -> tuple[str, ...]:
     if not isinstance(value, dict):
         raise SystemExit("Codex auth must be a JSON object")
+    if any(not isinstance(key, str) or key not in ROOT_AUTH_FIELDS for key in value):
+        raise SystemExit("Codex auth contains an unknown root field")
+    for key in ("auth_mode", "last_refresh"):
+        if key in value and value[key] is not None and not isinstance(value[key], str):
+            raise SystemExit(f"Codex auth {key} metadata must be a string or null")
+    tokens = value.get("tokens")
+    if tokens is not None and not isinstance(tokens, dict):
+        raise SystemExit("Codex auth tokens must be an object or null")
+    if isinstance(tokens, dict) and any(not isinstance(key, str) or key not in TOKEN_AUTH_FIELDS for key in tokens):
+        raise SystemExit("Codex auth contains an unknown tokens field")
+    if isinstance(tokens, dict) and "account_id" in tokens and tokens["account_id"] is not None and not isinstance(tokens["account_id"], str):
+        raise SystemExit("Codex auth account_id metadata must be a string or null")
+    sensitive_values = [value.get("OPENAI_API_KEY")]
+    if isinstance(tokens, dict):
+        sensitive_values.extend(tokens.get(key) for key in ("id_token", "access_token", "refresh_token"))
     markers: list[str] = []
-
-    def visit(nested: Any) -> None:
-        if isinstance(nested, dict):
-            for raw_key, child in nested.items():
-                if not isinstance(raw_key, str):
-                    raise SystemExit("Codex auth keys must be strings")
-                key = _normalized_auth_key(raw_key)
-                if key in KNOWN_SENSITIVE_AUTH_KEYS:
-                    if child is None:
-                        continue
-                    if not isinstance(child, str) or not child:
-                        raise SystemExit("Codex auth credential values must be non-empty strings or null")
-                    markers.append(child)
-                    continue
-                if key == "tokens":
-                    if not isinstance(child, dict):
-                        raise SystemExit("Codex auth tokens must be an object")
-                    visit(child)
-                    continue
-                if key not in KNOWN_AUTH_METADATA_KEYS and any(part in key for part in SENSITIVE_AUTH_KEY_PARTS):
-                    raise SystemExit("Codex auth contains an unknown credential-like key")
-                visit(child)
-        elif isinstance(nested, list):
-            for child in nested:
-                visit(child)
-
-    visit(value)
+    for child in sensitive_values:
+        if child is None:
+            continue
+        if not isinstance(child, str) or not child:
+            raise SystemExit("Codex auth credential values must be non-empty strings or null")
+        markers.append(child)
     return tuple(markers)
 
 
@@ -436,6 +398,31 @@ def scrub_confidential_artifact_tree(
         return None
     if root.is_symlink() or not root.is_dir():
         raise OSError("artifact root must be an ordinary directory")
+    root_device = root.stat().st_dev
+
+    def scrub_xattrs(candidate: bytes) -> str | None:
+        nonlocal entry_count, total_bytes, proxy_exposed
+        for raw_name in os.listxattr(candidate, follow_symlinks=False):
+            entry_count += 1
+            if entry_count > MAX_ARTIFACT_ENTRIES:
+                raise OSError("artifact entry-count limit exceeded")
+            name = raw_name if isinstance(raw_name, bytes) else os.fsencode(raw_name)
+            value = os.getxattr(candidate, raw_name, follow_symlinks=False)
+            if len(value) > MAX_ARTIFACT_FILE_BYTES:
+                raise OSError("artifact size limit exceeded")
+            total_bytes += len(name) + len(value)
+            if total_bytes > MAX_ARTIFACT_TOTAL_BYTES:
+                raise OSError("artifact size limit exceeded")
+            if _credential_exposed(name, credential_policy) or _credential_exposed(value, credential_policy):
+                return "credential-exposure"
+            if any(marker in name or marker in value for marker in proxy_markers):
+                proxy_exposed = True
+            os.removexattr(candidate, raw_name, follow_symlinks=False)
+        return None
+
+    root_exposure = scrub_xattrs(os.fsencode(root))
+    if root_exposure is not None:
+        return root_exposure
     pending = [os.fsencode(root)]
     while pending:
         directory = pending.pop()
@@ -449,7 +436,20 @@ def scrub_confidential_artifact_tree(
             if _credential_exposed(name, credential_policy):
                 return "credential-exposure"
             candidate = entry.path if isinstance(entry.path, bytes) else os.fsencode(entry.path)
-            if entry.is_symlink():
+            is_symlink = entry.is_symlink()
+            is_directory = entry.is_dir(follow_symlinks=False)
+            is_regular = entry.is_file(follow_symlinks=False)
+            if not (is_symlink or is_directory or is_regular):
+                raise OSError("artifact tree contains an unsupported entry type")
+            metadata = entry.stat(follow_symlinks=False)
+            if metadata.st_dev != root_device:
+                raise OSError("artifact entries must stay on the artifact filesystem")
+            if (is_symlink or is_regular) and metadata.st_nlink != 1:
+                raise OSError("artifact files and symlinks must not be hard-linked")
+            xattr_exposure = scrub_xattrs(candidate)
+            if xattr_exposure is not None:
+                return xattr_exposure
+            if is_symlink:
                 payload = os.readlink(candidate)
                 total_bytes += len(payload)
                 if total_bytes > MAX_ARTIFACT_TOTAL_BYTES:
@@ -465,12 +465,10 @@ def scrub_confidential_artifact_tree(
                         stream.write(redacted)
                     proxy_exposed = True
                 continue
-            if entry.is_dir(follow_symlinks=False):
+            if is_directory:
                 pending.append(candidate)
                 continue
-            if not entry.is_file(follow_symlinks=False):
-                continue
-            size = entry.stat(follow_symlinks=False).st_size
+            size = metadata.st_size
             if size > MAX_ARTIFACT_FILE_BYTES or total_bytes + size > MAX_ARTIFACT_TOTAL_BYTES:
                 raise OSError("artifact size limit exceeded")
             with open(candidate, "rb") as stream:
@@ -598,28 +596,43 @@ def execute_with_confidentiality_boundary(
 
 def scrub_stale_confidential_artifacts(
     attempts_root: Path,
+    completed_attempt_roots: set[str],
     proxy_policy: ProxyPolicy,
     credential_policy: CredentialPolicy,
-    remove_directory: DirectoryRemover,
+    remove_entry: DirectoryRemover,
 ) -> None:
     if not attempts_root.exists():
         return
     if attempts_root.is_symlink() or not attempts_root.is_dir():
         raise SystemExit("attempts artifact root must be an ordinary directory")
-    credential_exposed = False
+    unsafe_completed = False
     for attempt_root in sorted(attempts_root.iterdir()):
+        if attempt_root.name not in completed_attempt_roots:
+            try:
+                remove_entry(attempt_root)
+            except (OSError, SystemExit):
+                unsafe_completed = True
+            continue
         if attempt_root.is_symlink() or not attempt_root.is_dir():
-            raise SystemExit("stale attempt artifact must be an ordinary directory")
-        exposure = finalize_confidential_artifacts(
-            attempt_root,
-            attempt_root / "isolated/home",
-            proxy_policy,
-            credential_policy,
-            remove_directory,
-        )
-        credential_exposed = credential_exposed or exposure == "credential-exposure"
-    if credential_exposed:
-        raise SystemExit("stale benchmark attempts contained credential exposure")
+            try:
+                remove_entry(attempt_root)
+            except (OSError, SystemExit):
+                pass
+            unsafe_completed = True
+            continue
+        try:
+            exposure = finalize_confidential_artifacts(
+                attempt_root,
+                attempt_root / "isolated/home",
+                proxy_policy,
+                credential_policy,
+                remove_entry,
+            )
+            unsafe_completed = unsafe_completed or exposure == "credential-exposure"
+        except SystemExit:
+            unsafe_completed = True
+    if unsafe_completed:
+        raise SystemExit("stale benchmark attempt artifacts were unsafe")
 
 
 def _terminate_process(process: subprocess.Popen[str]) -> None:

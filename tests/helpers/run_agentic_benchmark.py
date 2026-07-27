@@ -19,6 +19,7 @@ from typing import Any
 
 import agentic_benchmark_scheduler
 from agentic_benchmark_process_supervisor import (
+    CONFIDENTIAL_CLEANUP_MAX_SECONDS,
     communicate_with_timeout,
     supervise_attempt,
     supervise_confidential_cleanup,
@@ -36,6 +37,7 @@ from agentic_benchmark_isolation import (
     prepare_arm_layout,
     prepare_distribution_snapshot,
     redact_proxy_output,
+    remove_tmp_artifact_entry,
     remove_tmp_directory,
     resolve_proxy_policy,
     resolve_tmp_child,
@@ -838,10 +840,21 @@ def require_execution_opt_in(profile_id: str, environment: dict[str, str]) -> No
 def run_command(args: argparse.Namespace) -> None:
     root = repo_root()
     output_root = resolve_tmp_child(root, args.output_root, "output-root")
-    batch, ledger = load_batch_and_ledger(output_root)
-    proxy_policy = verify_batch(batch, root, output_root)
-    require_execution_opt_in(batch["profileId"], os.environ)
-    frozen_auth = freeze_auth_file(args.auth_file)
+    attempts_root = resolve_tmp_child(root, output_root / "attempts", "attempts artifact root")
+    try:
+        batch, ledger = load_batch_and_ledger(output_root)
+        proxy_policy = verify_batch(batch, root, output_root)
+        frozen_auth = freeze_auth_file(args.auth_file)
+    except BaseException:
+        try:
+            exposure = supervise_confidential_cleanup(
+                {"root": str(root), "treeRoot": str(attempts_root), "mode": "purge-untrusted"},
+                CONFIDENTIAL_CLEANUP_MAX_SECONDS,
+            )
+            require(exposure is None, "untrusted benchmark artifact purge reported an exposure")
+        except BaseException:
+            raise SystemExit("untrusted benchmark artifact purge failed") from None
+        raise
     auth_file = frozen_auth.mount_path
     credential_policy = frozen_auth.credential_policy
     credential_markers = list(credential_policy.in_memory_markers())
@@ -924,6 +937,7 @@ def run_command(args: argparse.Namespace) -> None:
         )
 
     try:
+        require_execution_opt_in(batch["profileId"], os.environ)
         setup = agentic_benchmark_scheduler.execute_budgeted_stage(
             batch, ledger, ledger_path, "isolation-and-setup", batch["wallClockBudgetSeconds"], isolation_stage,
         )

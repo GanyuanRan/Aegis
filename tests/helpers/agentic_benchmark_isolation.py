@@ -119,6 +119,18 @@ def remove_tmp_directory(path: Path, root: Path) -> None:
     shutil.rmtree(lexical)
 
 
+def remove_tmp_artifact_entry(path: Path, root: Path) -> None:
+    candidate = path if path.is_absolute() else root / path
+    require(candidate.name not in {"", ".", ".."}, "artifact entry must name a strict child")
+    tmp_root = (root / ".tmp").resolve()
+    lexical = candidate.parent.resolve() / candidate.name
+    require(tmp_root in lexical.parents, "artifact entry must be a strict child of repo .tmp")
+    if lexical.is_symlink() or (lexical.exists() and not lexical.is_dir()):
+        lexical.unlink()
+    elif lexical.is_dir():
+        shutil.rmtree(lexical)
+
+
 def prepare_distribution_snapshot(root: Path, destination: Path) -> dict[str, Any]:
     require(not destination.exists(), f"snapshot destination already exists: {destination}")
     source_skills = root / "skills"
