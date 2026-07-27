@@ -119,9 +119,14 @@ elif mutation in {
     "development-valid-run-target",
     "extended-repeat-evidence",
     "extended-repetitions",
+    "profile-integer-as-boolean",
+    "profile-boolean-as-integer",
+    "profile-list-as-string",
     "maximum-supported-workers",
     "missing-run-profile",
     "tier-duplicate-shape",
+    "live-required-evidence",
+    "matrix-top-level-repetitions",
     "legacy-live-tier-alias",
     "live-score-source",
     "live-supports-promotion",
@@ -152,6 +157,12 @@ elif mutation in {
         profiles["extended-held-out"]["supportedEvidence"].remove("repeated-run-evidence")
     elif mutation == "extended-repetitions":
         profiles["extended-held-out"]["repetitionsPerCase"] = 2
+    elif mutation == "profile-integer-as-boolean":
+        profiles["standard-held-out"]["repetitionsPerCase"] = True
+    elif mutation == "profile-boolean-as-integer":
+        profiles["standard-held-out"]["publicationEligible"] = 1
+    elif mutation == "profile-list-as-string":
+        profiles["standard-held-out"]["unsupportedEvidence"] = "repeated-run-evidence"
     elif mutation == "maximum-supported-workers":
         matrix["maximumSupportedWorkers"] = 13
     elif mutation == "missing-run-profile":
@@ -160,6 +171,10 @@ elif mutation in {
         ]
     elif mutation == "tier-duplicate-shape":
         live["workers"] = 8
+    elif mutation == "live-required-evidence":
+        live["requiredEvidence"] = ["held-out-evidence"]
+    elif mutation == "matrix-top-level-repetitions":
+        matrix["repetitions"] = 3
     elif mutation == "legacy-live-tier-alias":
         live["id"] = "opt-in-live-repeated-held-out"
     elif mutation == "live-score-source":
@@ -486,9 +501,14 @@ development-publication|development publication drift|development-pilot.publicat
 development-valid-run-target|development valid-run target drift|development-pilot.validRunTarget must be 2|matrix-only
 extended-repeat-evidence|extended repeated-run evidence drift|extended-held-out.supportedEvidence must be ['held-out-evidence', 'repeated-run-evidence']|matrix-only
 extended-repetitions|extended repetitions drift|extended-held-out.repetitionsPerCase must be 3|matrix-only
+profile-integer-as-boolean|integer profile field encoded as boolean|standard-held-out.repetitionsPerCase must be an integer|matrix-only
+profile-boolean-as-integer|boolean profile field encoded as integer|standard-held-out.publicationEligible must be a boolean|matrix-only
+profile-list-as-string|list profile field encoded as string|standard-held-out.unsupportedEvidence must be a list|matrix-only
 maximum-supported-workers|maximum supported workers drift|maximumSupportedWorkers must be 12|matrix-only
 missing-run-profile|missing exact run profile|runProfiles must define development-pilot, standard-held-out, and extended-held-out exactly|matrix-only
-tier-duplicate-shape|tier duplicate shape owner|live held-out tier must not duplicate matrix-owned run profile fields|matrix-only
+tier-duplicate-shape|tier duplicate shape owner|opt-in-live-held-out must contain exactly the live tier fields|matrix-only
+live-required-evidence|live tier semantic shape alias|opt-in-live-held-out must contain exactly the live tier fields|matrix-only
+matrix-top-level-repetitions|matrix top-level legacy repetitions alias|matrix top-level fields must match the exact v4 schema; unexpected: ['repetitions']|matrix-only
 legacy-live-tier-alias|retired live tier alias|evaluationTiers must define the four-tier contract exactly|matrix-only
 live-score-source|arm-biased live scorer drift|live held-out scorer must remain arm-neutral and outcome-based|matrix-only
 live-supports-promotion|live promotion overclaim|live held-out tier cannot support promotion evidence by itself|matrix-only

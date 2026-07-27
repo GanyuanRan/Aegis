@@ -106,6 +106,33 @@ EXPECTED_PORTFOLIO_PARTITIONS = {
     "held-out-boundary": 10,
 }
 MAXIMUM_SUPPORTED_WORKERS = 12
+MATRIX_FIELDS = {
+    "version",
+    "status",
+    "authorityBoundary",
+    "primaryQuestion",
+    "arms",
+    "primaryMetrics",
+    "supportingMetrics",
+    "coverageSources",
+    "casePortfolio",
+    "evaluationTiers",
+    "maximumSupportedWorkers",
+    "runProfiles",
+    "promotionPolicy",
+    "scenarioClasses",
+    "isolationControls",
+    "reportBoundaries",
+}
+LIVE_TIER_FIELDS = {
+    "id",
+    "implementationStatus",
+    "defaultCi",
+    "optIn",
+    "scoreSource",
+    "requiresFrozenBatch",
+    "supportsPromotionEvidence",
+}
 PROFILE_FIELDS = {
     "id",
     "datasetPartitions",
@@ -124,7 +151,20 @@ PROFILE_FIELDS = {
     "supportedEvidence",
     "unsupportedEvidence",
 }
-PROFILE_SHAPE_FIELDS = PROFILE_FIELDS - {"id"}
+PROFILE_INTEGER_FIELDS = {
+    "caseCount",
+    "repetitionsPerCase",
+    "validRunTarget",
+    "paidAttemptCeiling",
+    "workers",
+    "wallClockBudgetSeconds",
+    "preflightTimeoutSeconds",
+    "perAttemptTimeoutSeconds",
+    "infrastructureFailureLimit",
+}
+PROFILE_BOOLEAN_FIELDS = {"publicationEligible"}
+PROFILE_STRING_FIELDS = {"id", "publicationAuthority"}
+PROFILE_LIST_FIELDS = {"datasetPartitions", "arms", "supportedEvidence", "unsupportedEvidence"}
 EXPECTED_RUN_PROFILES = {
     "development-pilot": {
         "datasetPartitions": ["development"],
@@ -278,6 +318,10 @@ def validate_evaluation_contract(data: dict[str, Any]) -> None:
 
     live = by_id["opt-in-live-held-out"]
     require(
+        set(live) == LIVE_TIER_FIELDS,
+        "opt-in-live-held-out must contain exactly the live tier fields",
+    )
+    require(
         live.get("implementationStatus") == "implemented",
         "live held-out harness must be implemented after its offline gates pass",
     )
@@ -291,10 +335,6 @@ def validate_evaluation_contract(data: dict[str, Any]) -> None:
     )
     require(live.get("requiresFrozenBatch") is True, "live held-out tier must freeze each batch")
     require(live.get("supportsPromotionEvidence") is False, "live held-out tier cannot support promotion evidence by itself")
-    require(
-        PROFILE_SHAPE_FIELDS.isdisjoint(live),
-        "live held-out tier must not duplicate matrix-owned run profile fields",
-    )
 
     blind = by_id["sampled-blind-human-review"]
     require(blind.get("implementationStatus") == "contract-only", "blind human review tier must remain contract-only")
@@ -344,6 +384,11 @@ def validate_case_portfolio_contract(data: dict[str, Any]) -> None:
 
 def validate_run_profiles(data: dict[str, Any]) -> None:
     require(
+        type(data.get("maximumSupportedWorkers")) is int,
+        "maximumSupportedWorkers must be an integer",
+    )
+    require(data["maximumSupportedWorkers"] > 0, "maximumSupportedWorkers must be positive")
+    require(
         data.get("maximumSupportedWorkers") == MAXIMUM_SUPPORTED_WORKERS,
         "maximumSupportedWorkers must be 12",
     )
@@ -364,6 +409,25 @@ def validate_run_profiles(data: dict[str, Any]) -> None:
     for profile in profiles:
         profile_id = profile["id"]
         require(set(profile) == PROFILE_FIELDS, f"{profile_id} must contain exactly the run profile fields")
+        for field in PROFILE_INTEGER_FIELDS:
+            value = profile[field]
+            require(type(value) is int, f"{profile_id}.{field} must be an integer")
+            require(value > 0, f"{profile_id}.{field} must be positive")
+        for field in PROFILE_BOOLEAN_FIELDS:
+            require(type(profile[field]) is bool, f"{profile_id}.{field} must be a boolean")
+        for field in PROFILE_STRING_FIELDS:
+            value = profile[field]
+            require(type(value) is str and bool(value), f"{profile_id}.{field} must be a non-empty string")
+        for field in PROFILE_LIST_FIELDS:
+            value = profile[field]
+            require(type(value) is list, f"{profile_id}.{field} must be a list")
+            require(
+                all(type(item) is str and bool(item) for item in value),
+                f"{profile_id}.{field} must contain non-empty strings",
+            )
+            require(len(value) == len(set(value)), f"{profile_id}.{field} must not contain duplicates")
+        require(profile["datasetPartitions"], f"{profile_id}.datasetPartitions must not be empty")
+        require(profile["arms"], f"{profile_id}.arms must not be empty")
         expected = EXPECTED_RUN_PROFILES[profile_id]
         for field, expected_value in expected.items():
             require(
@@ -580,6 +644,13 @@ def validate_isolation_and_boundary(data: dict[str, Any]) -> None:
 
 def validate_matrix(path: Path) -> None:
     data = load_json(path)
+    unexpected_fields = sorted(set(data) - MATRIX_FIELDS)
+    missing_fields = sorted(MATRIX_FIELDS - set(data))
+    require(
+        not unexpected_fields and not missing_fields,
+        "matrix top-level fields must match the exact v4 schema; "
+        f"unexpected: {unexpected_fields}; missing: {missing_fields}",
+    )
     require(data.get("version") == 4, "version must be 4")
     require(data.get("status") == "draft", "status must be draft")
     require("runtime authority" in data.get("primaryQuestion", ""), "primary question must name runtime authority boundary")
