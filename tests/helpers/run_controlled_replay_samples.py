@@ -49,7 +49,7 @@ EXPECTED_CONTROLLED_REPLAY_MAPPING = {
 REQUIRED_EVALUATION_TIERS = {
     "deterministic-static",
     CONTROLLED_REPLAY_TIER,
-    "opt-in-live-repeated-held-out",
+    "opt-in-live-held-out",
     "sampled-blind-human-review",
 }
 
@@ -103,7 +103,7 @@ def relative_path(root: Path, path: Path) -> str:
 
 def load_benchmark_contract(root: Path, matrix_path: str) -> dict[str, Any]:
     matrix = load_json(resolve_repo_path(root, matrix_path, "benchmarkMatrix"))
-    require(matrix.get("version") == 3, "benchmark matrix version must be 3")
+    require(matrix.get("version") == 4, "benchmark matrix version must be 4")
     require(matrix.get("authorityBoundary") == AUTHORITY_BOUNDARY, "benchmark matrix boundary drifted")
     validate_evaluation_contract(matrix)
     return matrix
@@ -159,18 +159,14 @@ def validate_evaluation_contract(matrix: dict[str, Any]) -> None:
         ),
         "controlled-replay must forbid variance, held-out, blind-review, and promotion claims",
     )
-    live = tiers_by_id["opt-in-live-repeated-held-out"]
+    live = tiers_by_id["opt-in-live-held-out"]
     require(
         live.get("implementationStatus") == "implemented",
-        "live repeated/held-out harness must be implemented after its offline gates pass",
+        "live held-out harness must be implemented after its offline gates pass",
     )
     require(
         live.get("defaultCi") is False and live.get("optIn") is True,
-        "live repeated/held-out tier must be opt-in outside default CI",
-    )
-    require(
-        {"repeated-run-evidence", "held-out-evidence"}.issubset(set(live.get("requiredEvidence", []))),
-        "live repeated/held-out tier must require repeated and held-out evidence",
+        "live held-out tier must be opt-in outside default CI",
     )
     blind = tiers_by_id["sampled-blind-human-review"]
     require(blind.get("implementationStatus") == "contract-only", "blind human review tier must remain contract-only")

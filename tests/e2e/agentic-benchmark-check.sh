@@ -36,6 +36,18 @@ assert_contains() {
     fi
 }
 
+assert_not_contains() {
+    local file="$1"
+    local pattern="$2"
+    local label="$3"
+
+    if grep -qE "$pattern" "$file"; then
+        fail "$label"
+    else
+        pass "$label"
+    fi
+}
+
 make_negative_coverage_case() {
     local mutation="$1"
     local case_dir="$coverage_negative_root/$mutation"
@@ -91,23 +103,69 @@ elif mutation == "controlled-replay-held-out":
     manifest["samples"][0]["datasetPartition"] = "held-out"
 elif mutation == "live-tier-in-progress":
     for tier in matrix["evaluationTiers"]:
-        if tier["id"] == "opt-in-live-repeated-held-out":
+        if tier["id"] == "opt-in-live-held-out":
             tier["implementationStatus"] = "implementation-in-progress"
             break
 elif mutation in {
-    "live-valid-run-target",
-    "live-paid-attempt-ceiling",
+    "standard-valid-run-target",
+    "standard-paid-attempt-ceiling",
+    "standard-workers",
+    "standard-wall-budget",
+    "standard-preflight-timeout",
+    "standard-attempt-timeout",
+    "standard-infrastructure-limit",
+    "standard-repeat-overclaim",
+    "development-publication",
+    "development-valid-run-target",
+    "extended-repeat-evidence",
+    "extended-repetitions",
+    "maximum-supported-workers",
+    "missing-run-profile",
+    "tier-duplicate-shape",
+    "legacy-live-tier-alias",
     "live-score-source",
     "live-supports-promotion",
 }:
-    live = next(tier for tier in matrix["evaluationTiers"] if tier["id"] == "opt-in-live-repeated-held-out")
-    field, value = {
-        "live-valid-run-target": ("validRunTarget", 119),
-        "live-paid-attempt-ceiling": ("paidAttemptCeiling", 120),
-        "live-score-source": ("scoreSource", "static-transcript-contract-analysis"),
-        "live-supports-promotion": ("supportsPromotionEvidence", True),
-    }[mutation]
-    live[field] = value
+    live = next(tier for tier in matrix["evaluationTiers"] if tier["id"] == "opt-in-live-held-out")
+    profiles = {profile["id"]: profile for profile in matrix["runProfiles"]}
+    if mutation == "standard-valid-run-target":
+        profiles["standard-held-out"]["validRunTarget"] = 39
+    elif mutation == "standard-paid-attempt-ceiling":
+        profiles["standard-held-out"]["paidAttemptCeiling"] = 43
+    elif mutation == "standard-workers":
+        profiles["standard-held-out"]["workers"] = 13
+    elif mutation == "standard-wall-budget":
+        profiles["standard-held-out"]["wallClockBudgetSeconds"] = 2699
+    elif mutation == "standard-preflight-timeout":
+        profiles["standard-held-out"]["preflightTimeoutSeconds"] = 31
+    elif mutation == "standard-attempt-timeout":
+        profiles["standard-held-out"]["perAttemptTimeoutSeconds"] = 241
+    elif mutation == "standard-infrastructure-limit":
+        profiles["standard-held-out"]["infrastructureFailureLimit"] = 3
+    elif mutation == "standard-repeat-overclaim":
+        profiles["standard-held-out"]["unsupportedEvidence"] = []
+    elif mutation == "development-publication":
+        profiles["development-pilot"]["publicationEligible"] = True
+    elif mutation == "development-valid-run-target":
+        profiles["development-pilot"]["validRunTarget"] = 1
+    elif mutation == "extended-repeat-evidence":
+        profiles["extended-held-out"]["supportedEvidence"].remove("repeated-run-evidence")
+    elif mutation == "extended-repetitions":
+        profiles["extended-held-out"]["repetitionsPerCase"] = 2
+    elif mutation == "maximum-supported-workers":
+        matrix["maximumSupportedWorkers"] = 13
+    elif mutation == "missing-run-profile":
+        matrix["runProfiles"] = [
+            profile for profile in matrix["runProfiles"] if profile["id"] != "standard-held-out"
+        ]
+    elif mutation == "tier-duplicate-shape":
+        live["workers"] = 8
+    elif mutation == "legacy-live-tier-alias":
+        live["id"] = "opt-in-live-repeated-held-out"
+    elif mutation == "live-score-source":
+        live["scoreSource"] = "static-transcript-contract-analysis"
+    elif mutation == "live-supports-promotion":
+        live["supportsPromotionEvidence"] = True
 elif mutation in {"portfolio-case-count", "portfolio-status"}:
     field, value = {
         "portfolio-case-count": ("caseCount", 29),
@@ -128,7 +186,7 @@ elif mutation in {
 }:
     tier_id, field, value = {
         "controlled-default-ci": ("controlled-replay", "defaultCi", True),
-        "live-default-ci": ("opt-in-live-repeated-held-out", "defaultCi", True),
+        "live-default-ci": ("opt-in-live-held-out", "defaultCi", True),
         "blind-default-ci": ("sampled-blind-human-review", "defaultCi", True),
         "blind-not-sampled": ("sampled-blind-human-review", "sampled", False),
         "deterministic-supports-promotion": ("deterministic-static", "supportsPromotionEvidence", True),
@@ -141,19 +199,12 @@ elif mutation == "promotion-candidate-scope":
 elif mutation == "missing-blind-unsupported-claim":
     controlled = next(tier for tier in matrix["evaluationTiers"] if tier["id"] == "controlled-replay")
     controlled["unsupportedClaims"].remove("blind-review-evidence")
-elif mutation in {"live-missing-required-evidence", "blind-missing-escalation-trigger"}:
-    tier_id, field, value = {
-        "live-missing-required-evidence": (
-            "opt-in-live-repeated-held-out",
-            "requiredEvidence",
-            "held-out-evidence",
-        ),
-        "blind-missing-escalation-trigger": (
-            "sampled-blind-human-review",
-            "escalationTriggers",
-            "non-discriminating-assertions",
-        ),
-    }[mutation]
+elif mutation == "blind-missing-escalation-trigger":
+    tier_id, field, value = (
+        "sampled-blind-human-review",
+        "escalationTriggers",
+        "non-discriminating-assertions",
+    )
     tiers = {tier["id"]: tier for tier in matrix["evaluationTiers"]}
     tiers[tier_id][field].remove(value)
 elif mutation == "previous-arm-in-current-replay":
@@ -255,7 +306,7 @@ elif mutation == "fourth-variant":
 elif mutation == "arm-drift":
     manifest["arms"] = ["baseline-no-aegis", "aegis-explicit"]
 elif mutation == "repetition-drift":
-    manifest["repetitions"] = 2
+    manifest["repetitions"] = 3
 elif mutation == "path-escape":
     manifest["cases"][0]["promptPath"] = "/tmp/agentic-benchmark-prompt.txt"
 elif mutation == "outcome-inside-project":
@@ -375,8 +426,20 @@ assert_contains "$baseline" "live eligibility is not live execution evidence" \
     "benchmark baseline distinguishes eligibility from evidence"
 assert_contains "$baseline" "deterministic-static" \
     "benchmark baseline defines deterministic static tier"
-assert_contains "$baseline" "opt-in-live-repeated-held-out" \
-    "benchmark baseline keeps repeated held-out evaluation opt-in"
+assert_contains "$baseline" "opt-in-live-held-out" \
+    "benchmark baseline keeps held-out evaluation opt-in"
+assert_contains "$baseline" "development-pilot" \
+    "benchmark baseline defines the bounded development profile"
+assert_contains "$baseline" "standard-held-out" \
+    "benchmark baseline defines the standard held-out profile"
+assert_contains "$baseline" "extended-held-out" \
+    "benchmark baseline defines the extended held-out profile"
+assert_contains "$baseline" "repeated-run-evidence.*unsupported" \
+    "benchmark baseline forbids repeated-run claims from the standard profile"
+assert_contains "$baseline" "maximum supported worker count is 12" \
+    "benchmark baseline caps supported concurrency"
+assert_not_contains "$baseline" "opt-in-live-repeated-held-out" \
+    "benchmark baseline retires the old repeated held-out tier name"
 assert_contains "$baseline" "sampled-blind-human-review" \
     "benchmark baseline defines blind human escalation tier"
 assert_contains "$baseline" "previous-aegis" \
@@ -389,7 +452,7 @@ assert_contains "$baseline" "exactly 30 cases" \
     "benchmark baseline defines the concrete thirty-case target"
 assert_contains "$baseline" "arm-neutral and observable-outcome based" \
     "benchmark baseline requires fair live outcome scoring"
-assert_contains "$baseline" "hard ceiling of 132 paid attempts" \
+assert_contains "$baseline" "44- or 132-attempt ceiling" \
     "benchmark baseline bounds paid retry attempts"
 assert_contains "$baseline" "sanitized, path-independent advisory report" \
     "benchmark baseline defines a public-safe report projection"
@@ -410,17 +473,31 @@ coordinated-fourth-replay|coordinated fourth replay drift|controlled replay refs
 coordinated-wrong-scenario|coordinated replay scenario remap|controlled replay refs must match the public baseline
 refs-without-live-eligibility|controlled refs without live eligibility|live replay eligibility must equal controlled replay availability
 controlled-replay-held-out|controlled replay held-out overclaim|must use development partition
-live-tier-in-progress|live harness implementation status regression|live repeated/held-out harness must be implemented after its offline gates pass
-live-valid-run-target|live valid-run target drift|live repeated/held-out valid run target must be 120|matrix-only
-live-paid-attempt-ceiling|live paid-attempt ceiling drift|live repeated/held-out paid attempt ceiling must be 132|matrix-only
-live-score-source|arm-biased live scorer drift|live repeated/held-out scorer must remain arm-neutral and outcome-based|matrix-only
-live-supports-promotion|live promotion overclaim|live repeated/held-out tier cannot support promotion evidence by itself|matrix-only
+live-tier-in-progress|live harness implementation status regression|live held-out harness must be implemented after its offline gates pass
+standard-valid-run-target|standard valid-run target drift|standard-held-out.validRunTarget must be 40|matrix-only
+standard-paid-attempt-ceiling|standard paid-attempt ceiling drift|standard-held-out.paidAttemptCeiling must be 44|matrix-only
+standard-workers|unsupported standard worker count|standard-held-out.workers must be 8|matrix-only
+standard-wall-budget|standard wall budget drift|standard-held-out.wallClockBudgetSeconds must be 2700|matrix-only
+standard-preflight-timeout|standard preflight timeout drift|standard-held-out.preflightTimeoutSeconds must be 30|matrix-only
+standard-attempt-timeout|standard attempt timeout drift|standard-held-out.perAttemptTimeoutSeconds must be 240|matrix-only
+standard-infrastructure-limit|standard infrastructure failure limit drift|standard-held-out.infrastructureFailureLimit must be 2|matrix-only
+standard-repeat-overclaim|standard repeated-run evidence overclaim|standard-held-out.unsupportedEvidence must be ['repeated-run-evidence']|matrix-only
+development-publication|development publication drift|development-pilot.publicationEligible must be False|matrix-only
+development-valid-run-target|development valid-run target drift|development-pilot.validRunTarget must be 2|matrix-only
+extended-repeat-evidence|extended repeated-run evidence drift|extended-held-out.supportedEvidence must be ['held-out-evidence', 'repeated-run-evidence']|matrix-only
+extended-repetitions|extended repetitions drift|extended-held-out.repetitionsPerCase must be 3|matrix-only
+maximum-supported-workers|maximum supported workers drift|maximumSupportedWorkers must be 12|matrix-only
+missing-run-profile|missing exact run profile|runProfiles must define development-pilot, standard-held-out, and extended-held-out exactly|matrix-only
+tier-duplicate-shape|tier duplicate shape owner|live held-out tier must not duplicate matrix-owned run profile fields|matrix-only
+legacy-live-tier-alias|retired live tier alias|evaluationTiers must define the four-tier contract exactly|matrix-only
+live-score-source|arm-biased live scorer drift|live held-out scorer must remain arm-neutral and outcome-based|matrix-only
+live-supports-promotion|live promotion overclaim|live held-out tier cannot support promotion evidence by itself|matrix-only
 portfolio-case-count|portfolio case-count drift|casePortfolio case count must be 30|matrix-only
 portfolio-status|portfolio implementation status regression|casePortfolio must be implemented after concrete manifest validation|matrix-only
 report-authority-overclaim|report authority overclaim|missing forbidden claims: aegis-grants-completion-authority|matrix-only
 automatic-promotion|automatic candidate promotion claim|promotionPolicy must remain advisory-only
 controlled-default-ci|controlled replay default CI drift|controlled-replay must not be the default CI tier
-live-default-ci|live tier default CI drift|live repeated/held-out tier must be opt-in outside default CI
+live-default-ci|live tier default CI drift|live held-out tier must be opt-in outside default CI
 blind-default-ci|blind review default CI drift|blind human review tier must not run in default CI
 blind-not-sampled|blind review sampling drift|human review must be sampled and blind
 promotion-candidate-scope|candidate promotion scope drift|promotionPolicy candidate scope drifted
@@ -430,7 +507,6 @@ previous-arm-implemented|previous Aegis arm implemented early|previous-aegis mus
 current-comparison-drift|current controlled replay comparison drift|current controlled replay comparison must be aegis-auto over baseline-no-aegis
 deterministic-supports-promotion|deterministic promotion evidence overclaim|deterministic-static cannot support promotion evidence
 controlled-score-source|controlled replay score source drift|controlled-replay score source drifted
-live-missing-required-evidence|live tier missing held-out evidence requirement|live repeated/held-out tier must require repeated and held-out evidence
 blind-missing-escalation-trigger|blind review missing assertion escalation|blind human review must cover variance and non-discriminating assertion escalation
 duplicate-previous-arm|duplicate previous Aegis arm|arms must contain unique object ids
 invalid-arm-object|invalid benchmark arm object|each arm must be an object
@@ -448,7 +524,7 @@ duplicate-id|duplicate portfolio case id|case manifest ids must be unique
 wrong-partition|wrong case partition|does not match the fixed scenario/partition case id
 fourth-variant|fourth case variant|variant does not match its partition
 arm-drift|case portfolio arm drift|case manifest arms must be exactly baseline-no-aegis and aegis-auto
-repetition-drift|case portfolio repetition drift|case manifest repetitions must be 3
+repetition-drift|case portfolio duplicate shape owner|case manifest must not define matrix-owned run shape fields: repetitions
 path-escape|case prompt path escape|must be repo-relative
 outcome-inside-project|outcome contract copied into agent project|outcome contract must stay outside the seed project
 metric-outside-scenario|case metric outside scenario contract|benchmark metrics must exactly match its scenario required metrics

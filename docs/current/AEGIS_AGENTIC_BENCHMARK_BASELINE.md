@@ -128,7 +128,7 @@ method-pack verification, not a runtime gate.
 
 ### 7.1 Scenario Coverage Contract
 
-The version 3 matrix maps every minimum scenario class to three distinct
+The version 4 matrix maps every minimum scenario class to three distinct
 coverage signals:
 
 - `workflowQualityFixtureRefs` names one or more existing deterministic
@@ -162,9 +162,10 @@ The benchmark contract separates four evidence tiers:
 
 1. `deterministic-static` is implemented and is the default CI tier.
 2. `controlled-replay` is implemented for the checked-in captured transcripts.
-3. `opt-in-live-repeated-held-out` is implemented and remains explicit opt-in
-   outside default CI. This status describes the offline-verified harness, not
-   live result evidence.
+3. `opt-in-live-held-out` is implemented and remains explicit opt-in outside
+   default CI. It contains matrix-owned development, standard held-out, and
+   extended held-out profiles. This status describes the offline-verified
+   harness, not live result evidence.
 4. `sampled-blind-human-review` is contract-only and is reserved for sampled
    escalation with arm identity hidden from reviewers.
 
@@ -181,16 +182,34 @@ automatically promote a candidate or modify a skill, workflow, or baseline.
 
 ### 7.3 P1 Case Portfolio And Fair-Scoring Contract
 
-Matrix version 3 reserves one concrete portfolio manifest at:
+Matrix version 4 reserves one concrete portfolio manifest at:
 
 `tests/e2e/fixtures/agentic-benchmark-cases.json`
 
 The target portfolio contains exactly 30 cases: one development, one held-out
 normal, and one held-out boundary case for each of the ten required scenario
-classes. The live comparison uses only `baseline-no-aegis` and `aegis-auto`,
-with three repetitions for each of the 20 held-out cases. This yields a target
-of 120 valid runs with a hard ceiling of 132 paid attempts. An incomplete batch
-must not feed public benchmark claims.
+classes. The manifest owns only that concrete portfolio. It does not own
+repetitions, attempt ceilings, concurrency, or time budgets.
+
+The matrix is the only exact run-shape owner. It defines these profiles:
+
+| Profile | Cases | Repetitions | Valid target | Attempt ceiling | Workers | Wall budget | Publication |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| `development-pilot` | 1 development | 1 | 2 | 2 | 2 | 300 seconds | disabled |
+| `standard-held-out` | all 20 held-out | 1 | 40 | 44 | 8 | 2700 seconds | advisory; `repeated-run-evidence` unsupported |
+| `extended-held-out` | all 20 held-out | 3 | 120 | 132 | 8 | 2700 seconds | advisory repeated-run evidence |
+
+Every profile uses both live comparison arms, a 30-second provider preflight,
+a 240-second per-attempt timeout, and an infrastructure failure limit of two
+completed attempts in a wave. The maximum supported worker count is 12. An
+incomplete batch must not feed public benchmark claims.
+
+The standard profile preserves held-out case coverage while bounding normal
+user wait, but one observation per case cannot support repeated-run stability,
+within-case variance, or `repeated-run-evidence` claims. The extended profile
+adds three repetitions per case and may provide advisory repeated-run evidence,
+but it still cannot prove universal quality, external causality, candidate
+promotion, runtime authority, or completion authority.
 
 Held-out scoring must be arm-neutral and observable-outcome based. The same
 contract applies to both arms. Source-edit cases inspect the resulting
@@ -205,17 +224,16 @@ and report projection are implemented and pass their focused offline gates.
 Harness implementation is not live benchmark evidence: no result exists until
 an explicitly authorized, complete held-out batch is executed and reviewed.
 
-The repeated runner is available at `tests/e2e/run-agentic-benchmark.sh`. Its
-offline path freezes the matrix, manifest, prompts, project trees, outcome
-contracts, evaluated method-pack snapshot, harness code, model/tool policy and
-deterministic run order. Attempts execute batch-local frozen copies and
-revalidate them before each launch and final aggregation. Dry-run refuses to
-replace an existing batch, and credential-shaped output is redacted and makes
-the attempt invalid rather than entering preserved logs. Real execution requires
-`AEGIS_AGENTIC_BENCHMARK_LIVE=1`; the complete held-out batch additionally
-requires `AEGIS_AGENTIC_BENCHMARK_FULL=1`. It preserves every paid attempt,
-retries only invalid attempts within the frozen ceiling, aggregates by case
-cluster rather than treating repetitions as independent, and leaves partial or
+The repeated runner entrypoint is `tests/e2e/run-agentic-benchmark.sh`. The
+profile contract requires its offline path to freeze the matrix-selected shape,
+manifest, prompts, project trees, outcome contracts, evaluated method-pack
+snapshot, harness code, model/tool policy and deterministic run order. Attempts
+must execute batch-local frozen copies and revalidate them before each launch
+and final aggregation. A dry-run must refuse to replace an existing batch, and
+credential-shaped output must make an attempt invalid without entering
+preserved logs. Real execution remains explicitly opt-in. It must preserve
+every paid attempt, retry only infrastructure-invalid attempts within the
+selected profile ceiling, aggregate by case cluster, and leave partial or
 unresolved reports unknown. These runner capabilities do not change the tier
 status or create public benchmark evidence before the separate report
 projection gate passes.
@@ -297,16 +315,17 @@ outside the agent-visible filesystem. Authentication may be made available
 read-only through the host's supported path, but credentials must never enter
 fixtures, logs, reports or public artifacts.
 
-Before the first held-out attempt, the matrix, portfolio, prompts, projects,
-outcome contracts, evaluated method-pack snapshot and run policy must be frozen
-and hashed. Semantic changes invalidate the batch. Infrastructure-invalid
-attempts remain in an immutable ledger and consume the 132-attempt ceiling.
+Before the first held-out attempt, the matrix, selected profile, portfolio,
+prompts, projects, outcome contracts, evaluated method-pack snapshot and run
+policy must be frozen and hashed. Semantic changes invalidate the batch.
+Infrastructure-invalid attempts remain in an immutable ledger and consume the
+selected profile's 44- or 132-attempt ceiling.
 
-Repeated results aggregate by held-out case, not by treating three repetitions
-as three independent tasks. Percentage-point deltas and confidence intervals
-must use a deterministic case-cluster method with its seed recorded. Mixed
-within-case outcomes, non-discriminating arm results and scorer unknowns require
-blinded review or remain explicitly unknown.
+Held-out results aggregate by case. The extended profile must not treat its
+three repetitions as three independent tasks. Percentage-point deltas and
+confidence intervals must use a deterministic case-cluster method with its seed
+recorded. Mixed within-case outcomes, non-discriminating arm results and scorer
+unknowns require blinded review or remain explicitly unknown.
 
 Raw logs and workspaces stay under repo-local `.tmp/`. A README publication may
 commit only a sanitized, path-independent advisory report plus a deterministic
@@ -316,8 +335,11 @@ unpublished prompt content. A neutral or negative valid result remains
 publishable; incomplete, contaminated or hand-selected results do not.
 
 `tests/helpers/render_agentic_benchmark.py` is the single public projection
-owner. It recomputes every displayed score from the complete 120-row held-out
-case result set, validates the 30/20/120/132 design and case-cluster interval,
-then produces a zero-based SVG and English/Chinese tables from the same
-sanitized JSON. The repeated runner owns private execution and aggregation only;
-it does not expose a second sanitizer or renderer path.
+owner. It must derive the accepted shape from the frozen profile identifier,
+recompute every displayed score from the complete 40-row standard or 120-row
+extended held-out result set, validate the corresponding 30/20/40/44 or
+30/20/120/132 design and case-cluster interval, then produce a zero-based SVG
+and English/Chinese tables from the same sanitized JSON. Standard reports must
+display the unsupported `repeated-run-evidence` limitation. The repeated runner
+owns private execution and aggregation only; it does not expose a second
+sanitizer or renderer path.

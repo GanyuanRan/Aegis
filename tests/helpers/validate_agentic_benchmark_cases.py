@@ -44,9 +44,19 @@ EXPECTED_TOP_LEVEL_FIELDS = {
     "benchmarkMatrix",
     "authorityBoundary",
     "partitions",
-    "repetitions",
     "arms",
     "cases",
+}
+FORBIDDEN_TOP_LEVEL_SHAPE_FIELDS = {
+    "repetitions",
+    "repetitionsPerCase",
+    "validRunTarget",
+    "paidAttemptCeiling",
+    "workers",
+    "wallClockBudgetSeconds",
+    "preflightTimeoutSeconds",
+    "perAttemptTimeoutSeconds",
+    "infrastructureFailureLimit",
 }
 EXPECTED_CASES = {
     "ambiguous-feature-shaping": {
@@ -225,7 +235,7 @@ def seed_project_digest(project_path: Path) -> str:
 
 
 def matrix_scenarios(matrix: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    require(matrix.get("version") == 3, "benchmark matrix version must be 3")
+    require(matrix.get("version") == 4, "benchmark matrix version must be 4")
     scenarios = matrix.get("scenarioClasses")
     require(isinstance(scenarios, list), "benchmark matrix scenarioClasses must be a list")
     by_id: dict[str, dict[str, Any]] = {}
@@ -313,13 +323,17 @@ def validate_case(
 def validate_manifest(manifest_path: Path, schema_only: bool) -> None:
     root = repo_root()
     manifest = load_json(manifest_path, "case manifest")
+    duplicate_shape_fields = sorted(FORBIDDEN_TOP_LEVEL_SHAPE_FIELDS & set(manifest))
+    require(
+        not duplicate_shape_fields,
+        f"case manifest must not define matrix-owned run shape fields: {', '.join(duplicate_shape_fields)}",
+    )
     require(set(manifest) == EXPECTED_TOP_LEVEL_FIELDS, "case manifest must contain exactly the portfolio fields")
     require(manifest.get("version") == 1, "case manifest version must be 1")
     require(manifest.get("status") == "implemented", "case manifest status must be implemented after fixture completion")
     require(manifest.get("benchmarkMatrix") == BENCHMARK_MATRIX_PATH, "case manifest benchmark matrix path drifted")
     require(manifest.get("authorityBoundary") == AUTHORITY_BOUNDARY, "case manifest authority boundary drifted")
     require(manifest.get("partitions") == EXPECTED_PARTITIONS, "case manifest partitions drifted")
-    require(manifest.get("repetitions") == 3, "case manifest repetitions must be 3")
     require(manifest.get("arms") == EXPECTED_ARMS, "case manifest arms must be exactly baseline-no-aegis and aegis-auto")
 
     matrix_path = resolve_repo_path(root, manifest["benchmarkMatrix"], "benchmarkMatrix")

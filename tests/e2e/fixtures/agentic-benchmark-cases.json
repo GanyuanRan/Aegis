@@ -8,7 +8,6 @@
     "held-out-normal": 10,
     "held-out-boundary": 10
   },
-  "repetitions": 3,
   "arms": [
     "baseline-no-aegis",
     "aegis-auto"
