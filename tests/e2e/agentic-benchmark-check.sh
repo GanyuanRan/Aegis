@@ -225,12 +225,80 @@ assert_negative_coverage_case() {
     fi
 }
 
+make_negative_portfolio_case() {
+    local mutation="$1"
+    local output="$coverage_negative_root/portfolio-$mutation.json"
+
+    cp "$case_manifest" "$output"
+    "${PYTHON_CMD[@]}" - "$mutation" "$output" <<'PY'
+import copy
+import json
+import sys
+from pathlib import Path
+
+mutation, output_arg = sys.argv[1:]
+output = Path(output_arg)
+manifest = json.loads(output.read_text(encoding="utf-8"))
+
+if mutation == "missing-case":
+    manifest["cases"].pop()
+elif mutation == "extra-case":
+    extra = copy.deepcopy(manifest["cases"][-1])
+    extra["id"] = "unexpected-extra-case"
+    manifest["cases"].append(extra)
+elif mutation == "duplicate-id":
+    manifest["cases"][1]["id"] = manifest["cases"][0]["id"]
+elif mutation == "wrong-partition":
+    manifest["cases"][0]["partition"] = "held-out-normal"
+elif mutation == "fourth-variant":
+    manifest["cases"][0]["variant"] = "fourth"
+elif mutation == "arm-drift":
+    manifest["arms"] = ["baseline-no-aegis", "aegis-explicit"]
+elif mutation == "repetition-drift":
+    manifest["repetitions"] = 2
+elif mutation == "path-escape":
+    manifest["cases"][0]["promptPath"] = "/tmp/agentic-benchmark-prompt.txt"
+elif mutation == "outcome-inside-project":
+    case = manifest["cases"][0]
+    case["outcomeContractPath"] = f'{case["seedProjectPath"]}/expected-outcome.json'
+elif mutation == "metric-outside-scenario":
+    manifest["cases"][0]["benchmarkMetrics"].append("diff-size")
+elif mutation == "live-ineligible":
+    manifest["cases"][0]["liveEligible"] = False
+else:
+    raise SystemExit(f"unknown portfolio mutation: {mutation}")
+
+output.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+PY
+
+    printf '%s\n' "$output"
+}
+
+assert_negative_portfolio_case() {
+    local mutation="$1"
+    local label="$2"
+    local expected_error="$3"
+    local mutated_manifest
+    local validator_output
+
+    mutated_manifest="$(make_negative_portfolio_case "$mutation")"
+    if validator_output="$("${PYTHON_CMD[@]}" tests/helpers/validate_agentic_benchmark_cases.py \
+        "$mutated_manifest" --schema-only 2>&1)"; then
+        fail "$label rejected by case portfolio validator"
+    elif grep -qF "$expected_error" <<<"$validator_output"; then
+        pass "$label rejected by case portfolio validator"
+    else
+        fail "$label produced the expected case portfolio rejection"
+    fi
+}
+
 echo "=== Agentic Benchmark Check ==="
 
 baseline="docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md"
 current_index="docs/current/README.md"
 workflow_quality="docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md"
 matrix="tests/e2e/fixtures/agentic-benchmark-matrix.json"
+case_manifest="tests/e2e/fixtures/agentic-benchmark-cases.json"
 replay_manifest="tests/e2e/fixtures/replay-samples.json"
 workflow_matrix="tests/e2e/fixtures/workflow-quality-matrix.json"
 
@@ -244,6 +312,12 @@ if [[ -f "$matrix" ]]; then
     pass "agentic benchmark matrix exists"
 else
     fail "agentic benchmark matrix exists"
+fi
+
+if [[ -f "$case_manifest" ]]; then
+    pass "agentic benchmark case manifest exists"
+else
+    fail "agentic benchmark case manifest exists"
 fi
 
 if [[ -f "$replay_manifest" ]]; then
@@ -315,6 +389,7 @@ assert_contains "$baseline" "sanitized, path-independent advisory report" \
 
 "${PYTHON_CMD[@]}" tests/helpers/validate_workflow_quality_matrix.py "$workflow_matrix"
 "${PYTHON_CMD[@]}" tests/helpers/validate_agentic_benchmark_matrix.py "$matrix"
+"${PYTHON_CMD[@]}" tests/helpers/validate_agentic_benchmark_cases.py "$case_manifest" --schema-only
 "${PYTHON_CMD[@]}" tests/helpers/run_controlled_replay_samples.py --validate-only
 
 mkdir -p "$REPO_ROOT/.tmp"
@@ -356,6 +431,42 @@ missing-required-arm|missing required benchmark arm|missing benchmark arms: aegi
 baseline-expected-pass-true|baseline expected pass drift|baseline-no-aegis expectedContractPass must be false
 aegis-expected-pass-false|Aegis expected pass drift|aegis-auto expectedContractPass must be true
 CASES
+
+while IFS='|' read -r mutation label expected_error; do
+    assert_negative_portfolio_case "$mutation" "$label" "$expected_error"
+done <<'CASES'
+missing-case|29-case portfolio|case manifest must contain exactly 30 cases
+extra-case|31-case portfolio|case manifest must contain exactly 30 cases
+duplicate-id|duplicate portfolio case id|case manifest ids must be unique
+wrong-partition|wrong case partition|does not match the fixed scenario/partition case id
+fourth-variant|fourth case variant|variant does not match its partition
+arm-drift|case portfolio arm drift|case manifest arms must be exactly baseline-no-aegis and aegis-auto
+repetition-drift|case portfolio repetition drift|case manifest repetitions must be 3
+path-escape|case prompt path escape|must be repo-relative
+outcome-inside-project|outcome contract copied into agent project|outcome contract must stay outside the seed project
+metric-outside-scenario|case metric outside scenario contract|benchmark metrics must exactly match its scenario required metrics
+live-ineligible|case silently excluded from live portfolio|must be live eligible
+CASES
+
+route_leak_prompt="$coverage_negative_root/route-leak-prompt.txt"
+"${PYTHON_CMD[@]}" - "$route_leak_prompt" <<'PY'
+import sys
+from pathlib import Path
+
+Path(sys.argv[1]).write_text(
+    "Use Aegis systematic-debugging and satisfy the expected outcome scorer.\n",
+    encoding="utf-8",
+)
+PY
+if route_leak_output="$("${PYTHON_CMD[@]}" tests/helpers/validate_agentic_benchmark_cases.py \
+    --check-prompt-text "$route_leak_prompt" \
+    --scenario-class ambiguous-feature-shaping 2>&1)"; then
+    fail "route-disclosing prompt rejected by case portfolio validator"
+elif grep -qF "discloses hidden route or scoring material" <<<"$route_leak_output"; then
+    pass "route-disclosing prompt rejected by case portfolio validator"
+else
+    fail "route-disclosing prompt produced the expected case portfolio rejection"
+fi
 
 if (( failures > 0 )); then
     echo ""
