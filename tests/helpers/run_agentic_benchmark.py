@@ -1,16 +1,59 @@
 #!/usr/bin/env python3
-"""Prepare, audit, and later execute the repeated Aegis agentic benchmark."""
+"""Prepare, audit, execute, aggregate, and sanitize the Aegis agentic benchmark."""
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
+import random
+import re
 import shutil
+import signal
+import subprocess
+import sys
+import time
+from collections import Counter, defaultdict
 from pathlib import Path
+from typing import Any, Callable
 
-from agentic_benchmark_isolation import resolve_tmp_child, run_isolation_audit
+from agentic_benchmark_isolation import (
+    ARMS,
+    AUTHORITY_BOUNDARY,
+    build_codex_live_command,
+    canonical_json_hash,
+    hash_tree,
+    prepare_arm_layout,
+    prepare_distribution_snapshot,
+    reset_directory,
+    resolve_tmp_child,
+    run_isolation_audit,
+    validate_bwrap_command,
+)
+from score_agentic_benchmark_outcome import score as score_outcome
+from score_agentic_benchmark_outcome import snapshot_workspace
 from validate_agentic_benchmark_cases import load_json, validate_manifest
+from validate_agentic_benchmark_matrix import validate_matrix
+
+
+REPORT_TYPE = "agentic-benchmark-private-report"
+SANITIZED_REPORT_TYPE = "agentic-benchmark-sanitized-report"
+LEDGER_TYPE = "agentic-benchmark-attempt-ledger"
+PARTITION_MAP = {
+    "development": {"development"},
+    "held-out-normal": {"held-out-normal"},
+    "held-out-boundary": {"held-out-boundary"},
+    "held-out": {"held-out-normal", "held-out-boundary"},
+}
+INVALID_REASONS = {"timeout", "infrastructure", "scorer-unknown", "credential-exposure"}
+UNSUPPORTED_CLAIMS = [
+    "runtime-authority",
+    "automatic-candidate-promotion",
+    "universal-agent-quality",
+    "causal-proof-outside-this-benchmark",
+    "statistical-independence-of-repetitions",
+]
 
 
 def require(condition: bool, message: str) -> None:
@@ -22,6 +65,34 @@ def repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
+def atomic_json(path: Path, value: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    temporary.replace(path)
+
+
+def file_hash(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def command_version(argv: list[str]) -> str | None:
+    try:
+        completed = subprocess.run(
+            argv,
+            text=True,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            timeout=10,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    value = completed.stdout.strip().splitlines()
+    return value[0][:160] if completed.returncode == 0 and value else None
+
+
 def resolve_repo_file(root: Path, value: Path, label: str) -> Path:
     candidate = value if value.is_absolute() else root / value
     resolved = candidate.resolve()
@@ -30,9 +101,19 @@ def resolve_repo_file(root: Path, value: Path, label: str) -> Path:
     return resolved
 
 
-def find_case(manifest: dict, case_id: str) -> dict:
+def relative_repo_path(root: Path, path: Path) -> str:
+    return path.resolve().relative_to(root).as_posix()
+
+
+def find_case(manifest: dict[str, Any], case_id: str) -> dict[str, Any]:
     matches = [case for case in manifest["cases"] if case["id"] == case_id]
     require(len(matches) == 1, f"unknown benchmark case: {case_id}")
+    return matches[0]
+
+
+def find_frozen_case(batch: dict[str, Any], case_id: str) -> dict[str, Any]:
+    matches = [case for case in batch["frozenCases"] if case["caseId"] == case_id]
+    require(len(matches) == 1, f"unknown frozen benchmark case: {case_id}")
     return matches[0]
 
 
@@ -43,55 +124,894 @@ def default_auth_file() -> Path:
     return Path.home() / ".codex/auth.json"
 
 
-def isolation_audit(args: argparse.Namespace) -> None:
+def resolve_tool(name: str, environment_key: str) -> Path:
+    value = os.environ.get(environment_key) or shutil.which(name) or ""
+    require(value, f"{name} is required for the agentic benchmark")
+    resolved = Path(value).resolve()
+    require(resolved.is_file(), f"{name} executable is missing: {resolved}")
+    return resolved
+
+
+def select_cases(
+    manifest: dict[str, Any],
+    partition: str,
+    requested_case_ids: list[str],
+) -> list[dict[str, Any]]:
+    allowed = PARTITION_MAP[partition]
+    cases = [case for case in manifest["cases"] if case["partition"] in allowed and case["liveEligible"]]
+    if requested_case_ids:
+        requested = set(requested_case_ids)
+        known = {case["id"] for case in cases}
+        missing = sorted(requested - known)
+        require(not missing, f"requested cases do not belong to {partition}: {', '.join(missing)}")
+        cases = [case for case in cases if case["id"] in requested]
+    require(cases, "benchmark selection contains no live-eligible cases")
+    return sorted(cases, key=lambda case: case["id"])
+
+
+def schedule_targets(
+    cases: list[dict[str, Any]],
+    repetitions: int,
+    batch_seed: str,
+) -> list[dict[str, Any]]:
+    require(repetitions > 0, "repetitions must be positive")
+    targets: list[dict[str, Any]] = []
+    for case in cases:
+        for repetition in range(1, repetitions + 1):
+            for arm in ARMS:
+                target_key = f"{case['id']}|{repetition}|{arm}"
+                targets.append(
+                    {
+                        "targetId": hashlib.sha256(target_key.encode()).hexdigest()[:16],
+                        "caseId": case["id"],
+                        "scenarioClass": case["scenarioClass"],
+                        "partition": case["partition"],
+                        "repetition": repetition,
+                        "arm": arm,
+                        "orderKey": hashlib.sha256(f"{batch_seed}|{target_key}".encode()).hexdigest(),
+                    }
+                )
+    targets.sort(key=lambda target: (target["orderKey"], target["targetId"]))
+    for index, target in enumerate(targets, start=1):
+        target["runOrder"] = index
+    return targets
+
+
+def freeze_case(root: Path, output_root: Path, case: dict[str, Any]) -> dict[str, Any]:
+    prompt = root / case["promptPath"]
+    project = root / case["seedProjectPath"]
+    contract = root / case["outcomeContractPath"]
+    destination = output_root / "frozen-cases" / case["id"]
+    destination.mkdir(parents=True)
+    shutil.copy2(prompt, destination / "prompt.txt")
+    shutil.copytree(project, destination / "project")
+    shutil.copy2(contract, destination / "expected-outcome.json")
+    frozen = {
+        "caseId": case["id"],
+        "scenarioClass": case["scenarioClass"],
+        "partition": case["partition"],
+        "sourcePromptPath": case["promptPath"],
+        "promptHash": file_hash(prompt),
+        "sourceSeedProjectPath": case["seedProjectPath"],
+        "seedProjectHash": hash_tree(project),
+        "sourceOutcomeContractPath": case["outcomeContractPath"],
+        "outcomeContractHash": file_hash(contract),
+        "frozenPromptPath": (destination / "prompt.txt").relative_to(output_root).as_posix(),
+        "frozenSeedProjectPath": (destination / "project").relative_to(output_root).as_posix(),
+        "frozenOutcomeContractPath": (destination / "expected-outcome.json").relative_to(output_root).as_posix(),
+    }
+    require(file_hash(destination / "prompt.txt") == frozen["promptHash"], f"frozen prompt copy drifted: {case['id']}")
+    require(hash_tree(destination / "project") == frozen["seedProjectHash"], f"frozen project copy drifted: {case['id']}")
+    require(file_hash(destination / "expected-outcome.json") == frozen["outcomeContractHash"], f"frozen outcome copy drifted: {case['id']}")
+    return frozen
+
+
+def batch_digest(batch: dict[str, Any]) -> str:
+    payload = {key: value for key, value in batch.items() if key != "batchDigest"}
+    return canonical_json_hash(payload)
+
+
+def verify_batch(batch: dict[str, Any], root: Path, output_root: Path) -> None:
+    require(batch.get("version") == 1, "batch version must be 1")
+    require(batch.get("authorityBoundary") == AUTHORITY_BOUNDARY, "batch authority boundary drifted")
+    require(batch.get("batchDigest") == batch_digest(batch), "batch digest mismatch")
+    require(batch.get("arms") == list(ARMS), "batch arm contract drifted")
+    require(batch.get("targetRunCount") == len(batch.get("schedule", [])), "batch target count drifted")
+    require(batch.get("maxAttempts", 0) >= batch["targetRunCount"], "max attempts cannot be smaller than target runs")
+    require(hash_tree(output_root / "distribution-snapshot") == batch["distributionSnapshot"]["treeHash"], "frozen distribution snapshot drifted")
+    require(file_hash(output_root / batch["frozenMatrixPath"]) == batch["matrixHash"], "frozen benchmark matrix drifted")
+    require(file_hash(output_root / batch["frozenManifestPath"]) == batch["manifestHash"], "frozen case manifest drifted")
+    for artifact in batch["harnessArtifacts"]:
+        require(file_hash(root / artifact["path"]) == artifact["hash"], f"benchmark harness changed after prepare: {artifact['path']}")
+    for frozen in batch["frozenCases"]:
+        require(file_hash(output_root / frozen["frozenPromptPath"]) == frozen["promptHash"], f"frozen prompt drifted: {frozen['caseId']}")
+        require(hash_tree(output_root / frozen["frozenSeedProjectPath"]) == frozen["seedProjectHash"], f"frozen seed project drifted: {frozen['caseId']}")
+        require(file_hash(output_root / frozen["frozenOutcomeContractPath"]) == frozen["outcomeContractHash"], f"frozen outcome contract drifted: {frozen['caseId']}")
+
+
+def initial_ledger(batch: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "version": 1,
+        "reportType": LEDGER_TYPE,
+        "authorityBoundary": AUTHORITY_BOUNDARY,
+        "batchId": batch["batchId"],
+        "batchDigest": batch["batchDigest"],
+        "targetRunCount": batch["targetRunCount"],
+        "maxAttempts": batch["maxAttempts"],
+        "attempts": [],
+    }
+
+
+def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root()
+    matrix_path = resolve_repo_file(root, args.matrix, "matrix")
+    manifest_path = resolve_repo_file(root, args.manifest, "manifest")
+    validate_matrix(matrix_path)
+    validate_manifest(manifest_path, False)
+    manifest = load_json(manifest_path, "case manifest")
+    cases = select_cases(manifest, args.partition, args.case)
+    target_count = len(cases) * args.repetitions * len(ARMS)
+    require(args.max_attempts >= target_count, f"max-attempts must be at least the {target_count} target runs")
+    if args.partition == "held-out":
+        require(not args.case, "complete held-out preparation cannot select a case subset")
+        require(len(cases) == 20, "complete held-out preparation must select 20 cases")
+        require(args.repetitions == 3, "complete held-out preparation requires 3 repetitions")
+        require(target_count == 120, "complete held-out preparation must target 120 valid runs")
+        require(args.max_attempts == 132, "complete held-out preparation requires the frozen 132-attempt ceiling")
+    require(re.fullmatch(r"[a-z0-9][a-z0-9._-]{2,79}", args.batch_id) is not None, "batch-id has an invalid format")
+    require(args.model and not args.model.isspace(), "--model is required and must pin a model identifier")
+
+    output_root = resolve_tmp_child(root, args.output_root, "output-root")
+    if args.replace:
+        reset_directory(output_root, root)
+    else:
+        require(not output_root.exists() or not any(output_root.iterdir()), "output-root already contains a prepared batch")
+        output_root.mkdir(parents=True, exist_ok=True)
+    snapshot = prepare_distribution_snapshot(root, output_root / "distribution-snapshot")
+    frozen_contracts = output_root / "frozen-contracts"
+    frozen_contracts.mkdir()
+    shutil.copy2(matrix_path, frozen_contracts / "matrix.json")
+    shutil.copy2(manifest_path, frozen_contracts / "cases.json")
+    codex_value = os.environ.get("AEGIS_BENCHMARK_CODEX") or shutil.which("codex")
+    bwrap_value = os.environ.get("AEGIS_BENCHMARK_BWRAP") or shutil.which("bwrap")
+    seed = hashlib.sha256(args.batch_id.encode()).hexdigest()
+    schedule = schedule_targets(cases, args.repetitions, seed)
+    harness_paths = [
+        "tests/helpers/run_agentic_benchmark.py",
+        "tests/helpers/agentic_benchmark_isolation.py",
+        "tests/helpers/score_agentic_benchmark_outcome.py",
+    ]
+    batch: dict[str, Any] = {
+        "version": 1,
+        "authorityBoundary": AUTHORITY_BOUNDARY,
+        "batchId": args.batch_id,
+        "batchSeed": seed,
+        "partition": args.partition,
+        "requestedCaseIds": sorted(args.case),
+        "caseIds": [case["id"] for case in cases],
+        "caseCount": len(cases),
+        "arms": list(ARMS),
+        "repetitions": args.repetitions,
+        "targetRunCount": target_count,
+        "maxAttempts": args.max_attempts,
+        "modelPolicy": {"requestedModel": args.model, "mustMatchAcrossArms": True},
+        "toolPolicy": {
+            "codexSandbox": "workspace-write",
+            "modelClientNetwork": "provider-access-required",
+            "agentToolNetwork": "restricted-by-codex-sandbox",
+            "approvalPolicy": "never",
+        },
+        "matrixPath": relative_repo_path(root, matrix_path),
+        "matrixHash": file_hash(matrix_path),
+        "frozenMatrixPath": "frozen-contracts/matrix.json",
+        "manifestPath": relative_repo_path(root, manifest_path),
+        "manifestHash": file_hash(manifest_path),
+        "frozenManifestPath": "frozen-contracts/cases.json",
+        "harnessArtifacts": [{"path": path, "hash": file_hash(root / path)} for path in harness_paths],
+        "frozenCases": [freeze_case(root, output_root, case) for case in cases],
+        "distributionSnapshot": snapshot,
+        "hostVersions": {
+            "codex": command_version([str(Path(codex_value).resolve()), "--version"]) if codex_value else None,
+            "bwrap": command_version([str(Path(bwrap_value).resolve()), "--version"]) if bwrap_value else None,
+        },
+        "schedule": schedule,
+    }
+    batch["batchDigest"] = batch_digest(batch)
+    verify_batch(batch, root, output_root)
+    atomic_json(output_root / "batch.json", batch)
+    atomic_json(output_root / "ledger.json", initial_ledger(batch))
+    return batch
+
+
+def walk_values(value: Any) -> list[Any]:
+    values = [value]
+    if isinstance(value, dict):
+        for child in value.values():
+            values.extend(walk_values(child))
+    elif isinstance(value, list):
+        for child in value:
+            values.extend(walk_values(child))
+    return values
+
+
+def strings_in(value: Any) -> list[str]:
+    return [item for item in walk_values(value) if isinstance(item, str)]
+
+
+def assistant_text(item: dict[str, Any]) -> str:
+    for key in ("text", "message", "content", "output_text"):
+        value = item.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+        if isinstance(value, (dict, list)):
+            values = [text for text in strings_in(value) if text.strip()]
+            if values:
+                return "\n".join(values).strip()
+    return ""
+
+
+def semantic_tags(text: str) -> list[str]:
+    normalized = " ".join(text.casefold().split())
+    tags: list[str] = []
+    if re.search(r"change necessity|implementation rationale|code change (?:is )?(?:needed|necessary)|minimum change|smallest change|source change", normalized):
+        tags.append("implementation-rationale")
+    if re.search(r"dependenc|callers?|references?|usages?|fallback|retir", normalized):
+        tags.append("dependency-check")
+    return tags
+
+
+def parse_codex_jsonl(raw: str) -> dict[str, Any]:
+    records: list[dict[str, Any]] = []
+    malformed = 0
+    for line in raw.splitlines():
+        if not line.strip():
+            continue
+        try:
+            value = json.loads(line)
+        except json.JSONDecodeError:
+            malformed += 1
+            continue
+        if isinstance(value, dict):
+            records.append(value)
+        else:
+            malformed += 1
+
+    events: list[dict[str, Any]] = []
+    assistant_messages: list[str] = []
+    token_values: dict[str, int] = {}
+    observed_models: list[str] = []
+    for record in records:
+        item = record.get("item") if isinstance(record.get("item"), dict) else record
+        item_type = str(item.get("type", record.get("type", "unknown")))
+        text = "\n".join(strings_in(item))
+        lower = text.casefold()
+        if item_type in {"agent_message", "assistant_message", "message"}:
+            message_text = assistant_text(item)
+            if message_text:
+                assistant_messages.append(message_text)
+                events.append({"sequence": len(events), "kind": "analysis", "toolKind": None, "tags": semantic_tags(message_text)})
+        elif item_type in {"command_execution", "command", "shell_command"}:
+            tags = semantic_tags(text)
+            if re.search(r"(?:^|\s)(?:rg|grep)(?:\s|$)", lower) and "--files" not in lower:
+                tags.append("dependency-check")
+            destructive = re.search(r"(?:^|\s)(?:rm|unlink|rmdir)(?:\s|$)", lower) is not None
+            events.append({"sequence": len(events), "kind": "tool", "toolKind": "delete_file" if destructive else "shell", "tags": sorted(set(tags))})
+        elif item_type in {"file_change", "file_changes", "patch", "apply_patch"}:
+            deleted = any(word in lower for word in ("delete", "deleted", "remove file"))
+            events.append({"sequence": len(events), "kind": "edit", "toolKind": "delete_file" if deleted else "apply_patch", "tags": semantic_tags(text)})
+
+        for nested in walk_values(record):
+            if not isinstance(nested, dict):
+                continue
+            for key in ("input_tokens", "cached_input_tokens", "output_tokens", "reasoning_tokens", "total_tokens"):
+                value = nested.get(key)
+                if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+                    token_values[key] = max(token_values.get(key, 0), value)
+            for key in ("model", "model_id", "model_slug"):
+                value = nested.get(key)
+                if isinstance(value, str) and value and value not in observed_models:
+                    observed_models.append(value[:120])
+
+    return {
+        "recordCount": len(records),
+        "malformedLineCount": malformed,
+        "events": events,
+        "finalResponse": assistant_messages[-1] if assistant_messages else "",
+        "tokens": token_values,
+        "observedModels": observed_models,
+    }
+
+
+def redact_credential_output(text: str, auth_file: Path) -> tuple[str, bool]:
+    markers: set[str] = set()
+    try:
+        auth_value = json.loads(auth_file.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        auth_value = None
+    for value in walk_values(auth_value):
+        if isinstance(value, str) and len(value) >= 12:
+            markers.add(value)
+
+    redacted = text
+    exposed = False
+    for marker in sorted(markers, key=len, reverse=True):
+        if marker in redacted:
+            redacted = redacted.replace(marker, "[REDACTED_CREDENTIAL]")
+            exposed = True
+    patterns = [
+        re.compile(r"\bsk-[A-Za-z0-9_-]{16,}\b"),
+        re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b"),
+        re.compile(r'(?i)("?(?:access_token|refresh_token|id_token|api_key)"?\s*[:=]\s*["\'])([^"\'\s]{8,})'),
+    ]
+    for pattern in patterns:
+        redacted, count = pattern.subn(lambda match: f"{match.group(1)}[REDACTED_CREDENTIAL]" if match.lastindex else "[REDACTED_CREDENTIAL]", redacted)
+        exposed = exposed or count > 0
+    return redacted, exposed
+
+
+def write_before_tree(path: Path, workspace: Path) -> None:
+    atomic_json(path, {"version": 1, "files": snapshot_workspace(workspace)})
+
+
+def terminate_process(process: subprocess.Popen[str]) -> tuple[str, str]:
+    try:
+        os.killpg(process.pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    try:
+        return process.communicate(timeout=5)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        return process.communicate()
+
+
+def execute_target(
+    *,
+    root: Path,
+    output_root: Path,
+    batch: dict[str, Any],
+    target: dict[str, Any],
+    attempt_number: int,
+    auth_file: Path,
+    bwrap: Path,
+    codex: Path,
+    timeout_seconds: int,
+) -> dict[str, Any]:
+    case = find_frozen_case(batch, target["caseId"])
+    attempt_root = output_root / "attempts" / f"{attempt_number:03d}-{target['targetId']}"
+    attempt_root.mkdir(parents=True)
+    snapshot_root = output_root / "distribution-snapshot"
+    arm_snapshot = snapshot_root if target["arm"] == "aegis-auto" else None
+    layout = prepare_arm_layout(attempt_root / "isolated", output_root / case["frozenSeedProjectPath"], auth_file, arm_snapshot)
+    before_tree = attempt_root / "before-tree.json"
+    write_before_tree(before_tree, layout["workspace"])
+    prompt = (output_root / case["frozenPromptPath"]).read_text(encoding="utf-8")
+    command = build_codex_live_command(
+        bwrap=bwrap,
+        codex=codex,
+        layout=layout,
+        prompt=prompt,
+        model=batch["modelPolicy"]["requestedModel"],
+    )
+    validate_bwrap_command(command, root=root, output_root=output_root, layout=layout, client_network=True)
+    raw_log = attempt_root / "codex-events.jsonl"
+    stderr_log = attempt_root / "codex-stderr.log"
+    started = time.monotonic()
+    process = subprocess.Popen(
+        command,
+        text=True,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        start_new_session=True,
+    )
+    timed_out = False
+    try:
+        stdout, stderr = process.communicate(timeout=timeout_seconds)
+    except subprocess.TimeoutExpired:
+        timed_out = True
+        stdout, stderr = terminate_process(process)
+        stderr += "\nbenchmark attempt timed out\n"
+    elapsed = round(time.monotonic() - started, 3)
+    stdout, stdout_exposed = redact_credential_output(stdout, auth_file)
+    stderr, stderr_exposed = redact_credential_output(stderr, auth_file)
+    raw_log.write_text(stdout, encoding="utf-8")
+    stderr_log.write_text(stderr, encoding="utf-8")
+    shutil.rmtree(layout["home"])
+    if stdout_exposed or stderr_exposed:
+        return {"status": "invalid", "invalidReason": "credential-exposure", "elapsedSeconds": elapsed}
+    if timed_out:
+        return {"status": "invalid", "invalidReason": "timeout", "elapsedSeconds": elapsed}
+    if process.returncode != 0:
+        return {"status": "invalid", "invalidReason": "infrastructure", "elapsedSeconds": elapsed, "hostExit": process.returncode}
+
+    parsed = parse_codex_jsonl(stdout)
+    if parsed["malformedLineCount"] or not parsed["recordCount"] or not parsed["finalResponse"]:
+        return {"status": "invalid", "invalidReason": "infrastructure", "elapsedSeconds": elapsed, "hostExit": process.returncode}
+    events_path = attempt_root / "events.json"
+    response_path = attempt_root / "final-response.txt"
+    score_path = attempt_root / "outcome.json"
+    atomic_json(events_path, {"version": 1, "events": parsed["events"]})
+    response_path.write_text(parsed["finalResponse"] + "\n", encoding="utf-8")
+    score_args = argparse.Namespace(
+        contract=output_root / case["frozenOutcomeContractPath"],
+        workspace=layout["workspace"],
+        before_tree=before_tree,
+        events=events_path,
+        final_response=response_path,
+        report_json=score_path,
+        case_id=case["caseId"],
+        diagnostic_attribution=None,
+    )
+    try:
+        outcome = score_outcome(score_args)
+    except SystemExit:
+        return {"status": "invalid", "invalidReason": "infrastructure", "elapsedSeconds": elapsed, "hostExit": process.returncode}
+    atomic_json(score_path, outcome)
+    if outcome["contractPass"] is None:
+        return {"status": "invalid", "invalidReason": "scorer-unknown", "elapsedSeconds": elapsed, "hostExit": process.returncode}
+    return {
+        "status": "valid",
+        "contractPass": outcome["contractPass"],
+        "elapsedSeconds": elapsed,
+        "hostExit": process.returncode,
+        "checkCounts": outcome["checkCounts"],
+        "triggeredVetoes": outcome["triggeredVetoes"],
+        "tokens": parsed["tokens"],
+        "costUsd": None,
+        "observedModels": parsed["observedModels"],
+        "artifactRoot": attempt_root.relative_to(output_root).as_posix(),
+    }
+
+
+Executor = Callable[[dict[str, Any], int], dict[str, Any]]
+
+
+def execute_schedule(
+    batch: dict[str, Any],
+    ledger: dict[str, Any],
+    ledger_path: Path,
+    executor: Executor,
+) -> dict[str, Any]:
+    stale = False
+    for attempt in ledger["attempts"]:
+        if attempt.get("status") == "launched":
+            attempt.update({"status": "invalid", "invalidReason": "infrastructure", "recovery": "interrupted-before-final-record"})
+            stale = True
+    if stale:
+        atomic_json(ledger_path, ledger)
+    queue = list(batch["schedule"])
+    for attempt in ledger["attempts"]:
+        require(queue, "ledger contains more attempts than the frozen schedule can produce")
+        expected = queue.pop(0)
+        require(attempt.get("targetId") == expected["targetId"], "ledger attempt order does not match deterministic queue replay")
+        require(attempt.get("status") in {"valid", "invalid"}, "ledger attempt has no terminal status")
+        if attempt["status"] == "invalid":
+            queue.append(expected)
+    while queue and len(ledger["attempts"]) < batch["maxAttempts"]:
+        target = queue.pop(0)
+        attempt_number = len(ledger["attempts"]) + 1
+        attempt = {
+            "attemptNumber": attempt_number,
+            "targetId": target["targetId"],
+            "caseId": target["caseId"],
+            "scenarioClass": target["scenarioClass"],
+            "partition": target["partition"],
+            "repetition": target["repetition"],
+            "arm": target["arm"],
+            "status": "launched",
+        }
+        ledger["attempts"].append(attempt)
+        atomic_json(ledger_path, ledger)
+        try:
+            result = executor(target, attempt_number)
+        except Exception as exc:  # fail closed while retaining the attempt record
+            result = {"status": "invalid", "invalidReason": "infrastructure", "errorType": type(exc).__name__}
+        require(result.get("status") in {"valid", "invalid"}, "executor returned an invalid attempt status")
+        if result["status"] == "invalid":
+            require(result.get("invalidReason") in INVALID_REASONS, "executor returned an invalid reason")
+        attempt.update(result)
+        atomic_json(ledger_path, ledger)
+        if result["status"] == "invalid":
+            queue.append(target)
+    return ledger
+
+
+def percentile(values: list[float], fraction: float) -> float:
+    ordered = sorted(values)
+    index = round((len(ordered) - 1) * fraction)
+    return ordered[index]
+
+
+def rate(records: list[dict[str, Any]]) -> float | None:
+    return None if not records else sum(record["contractPass"] is True for record in records) / len(records)
+
+
+def cluster_interval(valid: list[dict[str, Any]], seed: str, iterations: int = 4000) -> dict[str, Any]:
+    by_case: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for record in valid:
+        by_case[record["caseId"]].append(record)
+    case_ids = sorted(by_case)
+    if not case_ids or any(not any(item["arm"] == arm for item in by_case[case_id]) for case_id in case_ids for arm in ARMS):
+        return {"method": "case-cluster-bootstrap", "iterations": iterations, "seed": seed, "lower": None, "upper": None}
+    generator = random.Random(seed)
+    deltas: list[float] = []
+    for _ in range(iterations):
+        sampled = [generator.choice(case_ids) for _ in case_ids]
+        arms = {arm: [] for arm in ARMS}
+        for case_id in sampled:
+            for item in by_case[case_id]:
+                arms[item["arm"]].append(item)
+        deltas.append((rate(arms["aegis-auto"]) - rate(arms["baseline-no-aegis"])) * 100)  # type: ignore[operator]
+    return {
+        "method": "case-cluster-bootstrap",
+        "iterations": iterations,
+        "seed": seed,
+        "lower": round(percentile(deltas, 0.025), 2),
+        "upper": round(percentile(deltas, 0.975), 2),
+    }
+
+
+def arm_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
+    result_rate = rate(records)
+    return {
+        "validRuns": len(records),
+        "passes": sum(record["contractPass"] is True for record in records),
+        "fails": sum(record["contractPass"] is False for record in records),
+        "passRate": None if result_rate is None else round(result_rate * 100, 2),
+    }
+
+
+def aggregate(batch: dict[str, Any], ledger: dict[str, Any]) -> dict[str, Any]:
+    valid_by_target: dict[str, dict[str, Any]] = {}
+    for attempt in ledger["attempts"]:
+        if attempt.get("status") == "valid":
+            require(attempt["targetId"] not in valid_by_target, f"target has multiple valid attempts: {attempt['targetId']}")
+            valid_by_target[attempt["targetId"]] = attempt
+    valid = list(valid_by_target.values())
+    by_arm = {arm: [record for record in valid if record["arm"] == arm] for arm in ARMS}
+    baseline_rate = rate(by_arm["baseline-no-aegis"])
+    aegis_rate = rate(by_arm["aegis-auto"])
+    delta = None if baseline_rate is None or aegis_rate is None else round((aegis_rate - baseline_rate) * 100, 2)
+
+    per_scenario: dict[str, Any] = {}
+    for scenario in sorted({target["scenarioClass"] for target in batch["schedule"]}):
+        scenario_records = [record for record in valid if record["scenarioClass"] == scenario]
+        arms = {arm: [record for record in scenario_records if record["arm"] == arm] for arm in ARMS}
+        rates = {arm: rate(arms[arm]) for arm in ARMS}
+        per_scenario[scenario] = {
+            "arms": {arm: arm_summary(arms[arm]) for arm in ARMS},
+            "deltaPercentagePoints": None if None in rates.values() else round((rates["aegis-auto"] - rates["baseline-no-aegis"]) * 100, 2),  # type: ignore[operator]
+        }
+
+    mixed: list[str] = []
+    identical: list[str] = []
+    for case_id in batch["caseIds"]:
+        case_records = [record for record in valid if record["caseId"] == case_id]
+        complete_arms = True
+        arm_values: dict[str, list[bool]] = {}
+        for arm in ARMS:
+            values = [record["contractPass"] for record in case_records if record["arm"] == arm]
+            arm_values[arm] = values
+            complete_arms = complete_arms and len(values) == batch["repetitions"]
+            if len(set(values)) > 1:
+                mixed.append(f"{case_id}:{arm}")
+        if complete_arms and sorted(arm_values["baseline-no-aegis"]) == sorted(arm_values["aegis-auto"]):
+            identical.append(case_id)
+
+    invalid_counts = Counter(
+        attempt.get("invalidReason") for attempt in ledger["attempts"] if attempt.get("status") == "invalid"
+    )
+    completed = len(valid_by_target)
+    partial = completed != batch["targetRunCount"]
+    flags: list[dict[str, Any]] = []
+    if mixed:
+        flags.append({"id": "mixed-within-case-results", "status": "unresolved", "subjects": sorted(mixed)})
+    if identical:
+        flags.append({"id": "non-discriminating-arm-outcomes", "status": "unresolved", "subjects": sorted(identical)})
+    if invalid_counts.get("scorer-unknown", 0):
+        flags.append({"id": "scorer-unknown", "status": "unresolved", "count": invalid_counts["scorer-unknown"]})
+    if partial:
+        flags.append({"id": "partial-batch", "status": "unresolved", "completedTargets": completed})
+
+    tokens = Counter()
+    observed_models: set[str] = set()
+    for record in valid:
+        tokens.update(record.get("tokens", {}))
+        observed_models.update(record.get("observedModels", []))
+    report = {
+        "version": 1,
+        "reportType": REPORT_TYPE,
+        "authorityBoundary": AUTHORITY_BOUNDARY,
+        "batchId": batch["batchId"],
+        "batchDigest": batch["batchDigest"],
+        "partition": batch["partition"],
+        "versions": {
+            "aegis": batch["distributionSnapshot"]["version"],
+            "codex": batch["hostVersions"]["codex"],
+            "bwrap": batch["hostVersions"]["bwrap"],
+        },
+        "model": {
+            "requested": batch["modelPolicy"]["requestedModel"],
+            "observed": sorted(observed_models),
+            "observedStatus": "recorded" if observed_models else "unavailable-from-host-events",
+        },
+        "design": {
+            "caseCount": batch["caseCount"],
+            "arms": list(ARMS),
+            "repetitions": batch["repetitions"],
+            "targetRuns": batch["targetRunCount"],
+            "maxAttempts": batch["maxAttempts"],
+            "clusterUnit": "case",
+        },
+        "attempts": {
+            "total": len(ledger["attempts"]),
+            "valid": completed,
+            "passes": sum(record["contractPass"] is True for record in valid),
+            "fails": sum(record["contractPass"] is False for record in valid),
+            "invalid": sum(invalid_counts.values()),
+            "invalidReasons": dict(sorted((key, value) for key, value in invalid_counts.items() if key)),
+            "remaining": batch["targetRunCount"] - completed,
+        },
+        "overall": {
+            "arms": {arm: arm_summary(by_arm[arm]) for arm in ARMS},
+            "deltaPercentagePoints": delta,
+            "deltaInterval95": cluster_interval(valid, batch["batchSeed"]),
+        },
+        "perScenarioClass": per_scenario,
+        "caseResults": [
+            {
+                "caseId": record["caseId"],
+                "scenarioClass": record["scenarioClass"],
+                "repetition": record["repetition"],
+                "arm": record["arm"],
+                "contractPass": record["contractPass"],
+            }
+            for record in sorted(valid, key=lambda item: (item["caseId"], item["repetition"], item["arm"]))
+        ],
+        "resourceUse": {"tokens": dict(sorted(tokens.items())), "costUsd": None, "costStatus": "unavailable-from-host-events"},
+        "review": {"status": "unknown" if flags else "clear", "flags": flags},
+        "completeness": "partial" if partial else "complete",
+        "publication": {"authorized": False, "eligible": False, "reason": "separate-publication-authorization-required"},
+        "unsupportedClaims": UNSUPPORTED_CLAIMS,
+    }
+    return report
+
+
+def sanitized_report(report: dict[str, Any]) -> dict[str, Any]:
+    require(report.get("reportType") == REPORT_TYPE, "private report type is invalid")
+    require(report.get("authorityBoundary") == AUTHORITY_BOUNDARY, "private report authority boundary drifted")
+    require(report.get("completeness") == "complete", "partial benchmark reports cannot be sanitized for projection")
+    require(report.get("attempts", {}).get("remaining") == 0, "benchmark report still has incomplete targets")
+    require(report.get("attempts", {}).get("valid") == report.get("design", {}).get("targetRuns"), "valid-run total does not match the frozen target")
+    allowed = {
+        "version": 1,
+        "reportType": SANITIZED_REPORT_TYPE,
+        "authorityBoundary": report["authorityBoundary"],
+        "batchId": report["batchId"],
+        "batchDigest": report["batchDigest"],
+        "partition": report["partition"],
+        "versions": report["versions"],
+        "model": report["model"],
+        "design": report["design"],
+        "attempts": report["attempts"],
+        "overall": report["overall"],
+        "perScenarioClass": report["perScenarioClass"],
+        "resourceUse": report["resourceUse"],
+        "review": report["review"],
+        "completeness": report["completeness"],
+        "publication": report["publication"],
+        "unsupportedClaims": report["unsupportedClaims"],
+    }
+    serialized = json.dumps(allowed, sort_keys=True)
+    require(not re.search(r"(?:^|[\"'])/(?:home|Users|workspace|tmp)/", serialized), "sanitized report contains an absolute machine path")
+    require(not re.search(r"auth\.json|credential|session[_-]?id|rollout[_-]?id|raw[-_ ]?(?:log|reasoning)", serialized, flags=re.IGNORECASE), "sanitized report contains private execution data")
+    return allowed
+
+
+def load_batch_and_ledger(output_root: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+    batch = load_json(output_root / "batch.json", "batch")
+    ledger = load_json(output_root / "ledger.json", "ledger")
+    require(ledger.get("reportType") == LEDGER_TYPE, "ledger report type is invalid")
+    require(ledger.get("batchDigest") == batch.get("batchDigest"), "ledger belongs to a different batch")
+    return batch, ledger
+
+
+def validate_live_isolation_report(report: dict[str, Any], batch: dict[str, Any]) -> None:
+    require(report.get("modelCalls") == 0, "isolation audit must not make a model call")
+    require(report.get("authorityBoundary") == AUTHORITY_BOUNDARY, "isolation audit authority boundary drifted")
+    require(report.get("distributionSnapshot", {}).get("treeHash") == batch["distributionSnapshot"]["treeHash"], "isolation audit snapshot does not match the frozen batch")
+    baseline = report.get("arms", {}).get("baseline-no-aegis", {})
+    aegis = report.get("arms", {}).get("aegis-auto", {})
+    require(baseline.get("evaluatedSkillMatchCount") == 0, "baseline arm is contaminated by evaluated Aegis skills")
+    require(baseline.get("methodPackMarkerCount") == 0, "baseline arm is contaminated by an Aegis path marker")
+    require(aegis.get("evaluatedSkillMatchCount") == batch["distributionSnapshot"]["skillCount"], "Aegis arm did not discover the frozen skill set")
+    require(baseline.get("nonSkillInputHash") == aegis.get("nonSkillInputHash"), "benchmark arms have different non-skill prompt input")
+    for arm in ARMS:
+        evidence = report["arms"][arm]
+        require(evidence.get("authReadOnly") is True, f"{arm} auth was not read-only")
+        require(evidence.get("benchmarkRepoVisible") is False, f"{arm} can see the benchmark repo")
+        require(evidence.get("peerWorkspaceVisible") is False, f"{arm} can see its peer arm")
+        require(evidence.get("scorerVisible") is False, f"{arm} can see the scorer")
+        require(evidence.get("visibleProcessCount", 999) <= 3, f"{arm} can see the host process table")
+        require(evidence.get("snapshotVisible") is (arm == "aegis-auto"), f"{arm} snapshot visibility drifted")
+
+
+def isolation_audit_command(args: argparse.Namespace) -> None:
     root = repo_root()
     manifest_path = resolve_repo_file(root, args.manifest, "manifest")
     validate_manifest(manifest_path, False)
     manifest = load_json(manifest_path, "case manifest")
     case = find_case(manifest, args.case)
-
     output_root = resolve_tmp_child(root, args.output_root, "output-root")
     report_path = resolve_tmp_child(root, args.report_json, "report-json")
     require(output_root in report_path.parents, "isolation report must stay inside output-root")
-    auth_file = args.auth_file.expanduser().resolve()
-    bwrap_value = os.environ.get("AEGIS_BENCHMARK_BWRAP") or shutil.which("bwrap") or ""
-    codex_value = os.environ.get("AEGIS_BENCHMARK_CODEX") or shutil.which("codex") or ""
-    require(bwrap_value, "bwrap is required for benchmark isolation")
-    require(codex_value, "Codex executable is required for benchmark isolation")
-
     report = run_isolation_audit(
         root=root,
         case=case,
         output_root=output_root,
+        auth_file=args.auth_file.expanduser().resolve(),
+        bwrap=resolve_tool("bwrap", "AEGIS_BENCHMARK_BWRAP"),
+        codex=resolve_tool("codex", "AEGIS_BENCHMARK_CODEX"),
+    )
+    atomic_json(report_path, report)
+    print(json.dumps({"caseId": report["caseId"], "modelCalls": 0, "baselineSkillMatches": report["arms"]["baseline-no-aegis"]["evaluatedSkillMatchCount"], "aegisSkillMatches": report["arms"]["aegis-auto"]["evaluatedSkillMatchCount"]}, sort_keys=True))
+
+
+def validate_command(args: argparse.Namespace) -> None:
+    root = repo_root()
+    validate_matrix(resolve_repo_file(root, args.matrix, "matrix"))
+    validate_manifest(resolve_repo_file(root, args.manifest, "manifest"), False)
+    print("Agentic benchmark contracts valid.")
+
+
+def prepare_command(args: argparse.Namespace) -> None:
+    batch = prepare_batch(args)
+    print(json.dumps({"batchId": batch["batchId"], "caseCount": batch["caseCount"], "targetRuns": batch["targetRunCount"], "maxAttempts": batch["maxAttempts"], "modelCalls": 0}, sort_keys=True))
+
+
+def run_command(args: argparse.Namespace) -> None:
+    root = repo_root()
+    output_root = resolve_tmp_child(root, args.output_root, "output-root")
+    batch, ledger = load_batch_and_ledger(output_root)
+    verify_batch(batch, root, output_root)
+    require(args.timeout_seconds > 0, "timeout-seconds must be positive")
+    require(os.environ.get("AEGIS_AGENTIC_BENCHMARK_LIVE") == "1", "set AEGIS_AGENTIC_BENCHMARK_LIVE=1 for paid benchmark execution")
+    if batch["partition"] == "held-out":
+        require(os.environ.get("AEGIS_AGENTIC_BENCHMARK_FULL") == "1", "set AEGIS_AGENTIC_BENCHMARK_FULL=1 for a held-out batch")
+    auth_file = args.auth_file.expanduser().resolve()
+    require(auth_file.is_file(), f"Codex auth file is required: {auth_file}")
+    bwrap = resolve_tool("bwrap", "AEGIS_BENCHMARK_BWRAP")
+    codex = resolve_tool("codex", "AEGIS_BENCHMARK_CODEX")
+    frozen_isolation_case = find_frozen_case(batch, batch["caseIds"][0])
+    isolation_case = {
+        "id": frozen_isolation_case["caseId"],
+        "promptPath": relative_repo_path(root, output_root / frozen_isolation_case["frozenPromptPath"]),
+        "seedProjectPath": relative_repo_path(root, output_root / frozen_isolation_case["frozenSeedProjectPath"]),
+    }
+    isolation_report = run_isolation_audit(
+        root=root,
+        case=isolation_case,
+        output_root=output_root / "isolation-audit",
         auth_file=auth_file,
-        bwrap=Path(bwrap_value).resolve(),
-        codex=Path(codex_value).resolve(),
+        bwrap=bwrap,
+        codex=codex,
+        prepared_snapshot=output_root / "distribution-snapshot",
     )
-    report_path.parent.mkdir(parents=True, exist_ok=True)
-    report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(
-        json.dumps(
-            {
-                "caseId": report["caseId"],
-                "modelCalls": report["modelCalls"],
-                "baselineSkillMatches": report["arms"]["baseline-no-aegis"]["evaluatedSkillMatchCount"],
-                "aegisSkillMatches": report["arms"]["aegis-auto"]["evaluatedSkillMatchCount"],
-            },
-            sort_keys=True,
+    validate_live_isolation_report(isolation_report, batch)
+    atomic_json(output_root / "isolation-report.json", isolation_report)
+
+    def executor(target: dict[str, Any], attempt_number: int) -> dict[str, Any]:
+        verify_batch(batch, root, output_root)
+        return execute_target(
+            root=root,
+            output_root=output_root,
+            batch=batch,
+            target=target,
+            attempt_number=attempt_number,
+            auth_file=auth_file,
+            bwrap=bwrap,
+            codex=codex,
+            timeout_seconds=args.timeout_seconds,
         )
-    )
+
+    execute_schedule(batch, ledger, output_root / "ledger.json", executor)
+    verify_batch(batch, root, output_root)
+    report = aggregate(batch, ledger)
+    atomic_json(output_root / "private-report.json", report)
+    print(json.dumps({"batchId": batch["batchId"], "attempts": report["attempts"], "completeness": report["completeness"]}, sort_keys=True))
+    if report["completeness"] != "complete":
+        raise SystemExit(75)
+
+
+def aggregate_command(args: argparse.Namespace) -> None:
+    root = repo_root()
+    output_root = resolve_tmp_child(root, args.output_root, "output-root")
+    batch, ledger = load_batch_and_ledger(output_root)
+    verify_batch(batch, root, output_root)
+    report = aggregate(batch, ledger)
+    report_path = resolve_tmp_child(root, args.report_json, "report-json") if args.report_json else output_root / "private-report.json"
+    require(report_path == output_root / "private-report.json" or output_root in report_path.parents, "private report must stay inside output-root")
+    atomic_json(report_path, report)
+    print(json.dumps({"batchId": batch["batchId"], "completeness": report["completeness"], "valid": report["attempts"]["valid"]}, sort_keys=True))
+
+
+def sanitize_command(args: argparse.Namespace) -> None:
+    root = repo_root()
+    private_path = resolve_repo_file(root, args.private_report, "private-report")
+    output_path = resolve_tmp_child(root, args.output_json, "output-json")
+    report = sanitized_report(load_json(private_path, "private report"))
+    atomic_json(output_path, report)
+    print(json.dumps({"batchId": report["batchId"], "reportType": report["reportType"]}, sort_keys=True))
+
+
+def render_input_command(args: argparse.Namespace) -> None:
+    root = repo_root()
+    report_path = resolve_repo_file(root, args.sanitized_report, "sanitized-report")
+    report = load_json(report_path, "sanitized report")
+    require(report.get("reportType") == SANITIZED_REPORT_TYPE, "render input must be a sanitized report")
+    require(report.get("authorityBoundary") == AUTHORITY_BOUNDARY, "render input authority boundary drifted")
+    output_path = resolve_tmp_child(root, args.output_json, "output-json")
+    atomic_json(output_path, report)
+    print(json.dumps({"batchId": report["batchId"], "renderInput": True}, sort_keys=True))
+
+
+def add_contract_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--matrix", type=Path, default=Path("tests/e2e/fixtures/agentic-benchmark-matrix.json"))
+    parser.add_argument("--manifest", type=Path, default=Path("tests/e2e/fixtures/agentic-benchmark-cases.json"))
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
+
     isolation = subparsers.add_parser("isolation-audit", help="run a no-model Codex prompt and mount audit")
     isolation.add_argument("--manifest", type=Path, default=Path("tests/e2e/fixtures/agentic-benchmark-cases.json"))
     isolation.add_argument("--case", required=True)
     isolation.add_argument("--output-root", type=Path, required=True)
     isolation.add_argument("--report-json", type=Path, required=True)
     isolation.add_argument("--auth-file", type=Path, default=default_auth_file())
-    isolation.set_defaults(handler=isolation_audit)
+    isolation.set_defaults(handler=isolation_audit_command)
+
+    validate = subparsers.add_parser("validate", help="validate matrix and concrete case contracts")
+    add_contract_args(validate)
+    validate.set_defaults(handler=validate_command)
+
+    prepare = subparsers.add_parser("prepare", help="freeze a deterministic no-call benchmark batch")
+    add_contract_args(prepare)
+    prepare.add_argument("--partition", choices=sorted(PARTITION_MAP), required=True)
+    prepare.add_argument("--case", action="append", default=[])
+    prepare.add_argument("--repetitions", type=int, required=True)
+    prepare.add_argument("--max-attempts", type=int, required=True)
+    prepare.add_argument("--batch-id", required=True)
+    prepare.add_argument("--model", required=True)
+    prepare.add_argument("--output-root", type=Path, required=True)
+    prepare.add_argument("--replace", action="store_true")
+    prepare.set_defaults(handler=prepare_command)
+
+    run = subparsers.add_parser("run", help="execute a prepared batch with explicit paid-run opt-in")
+    run.add_argument("--output-root", type=Path, required=True)
+    run.add_argument("--auth-file", type=Path, default=default_auth_file())
+    run.add_argument("--timeout-seconds", type=int, default=900)
+    run.set_defaults(handler=run_command)
+
+    aggregate_parser = subparsers.add_parser("aggregate", help="aggregate the preserved attempt ledger")
+    aggregate_parser.add_argument("--output-root", type=Path, required=True)
+    aggregate_parser.add_argument("--report-json", type=Path)
+    aggregate_parser.set_defaults(handler=aggregate_command)
+
+    sanitize = subparsers.add_parser("sanitize", help="strip a private report to the projection contract")
+    sanitize.add_argument("--private-report", type=Path, required=True)
+    sanitize.add_argument("--output-json", type=Path, required=True)
+    sanitize.set_defaults(handler=sanitize_command)
+
+    render_input = subparsers.add_parser("render-input", help="validate and copy a sanitized renderer input")
+    render_input.add_argument("--sanitized-report", type=Path, required=True)
+    render_input.add_argument("--output-json", type=Path, required=True)
+    render_input.set_defaults(handler=render_input_command)
     return parser.parse_args()
 
 

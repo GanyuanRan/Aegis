@@ -301,6 +301,7 @@ matrix="tests/e2e/fixtures/agentic-benchmark-matrix.json"
 case_manifest="tests/e2e/fixtures/agentic-benchmark-cases.json"
 replay_manifest="tests/e2e/fixtures/replay-samples.json"
 workflow_matrix="tests/e2e/fixtures/workflow-quality-matrix.json"
+repeated_runner="tests/e2e/run-agentic-benchmark.sh"
 
 if [[ -f "$baseline" ]]; then
     pass "agentic benchmark baseline exists"
@@ -324,6 +325,12 @@ if [[ -f "$replay_manifest" ]]; then
     pass "controlled replay manifest exists"
 else
     fail "controlled replay manifest exists"
+fi
+
+if [[ -x "$repeated_runner" ]]; then
+    pass "repeated benchmark runner exists and is executable"
+else
+    fail "repeated benchmark runner exists and is executable"
 fi
 
 assert_contains "$current_index" "AEGIS_AGENTIC_BENCHMARK_BASELINE.md" \
@@ -466,6 +473,103 @@ elif grep -qF "discloses hidden route or scoring material" <<<"$route_leak_outpu
     pass "route-disclosing prompt rejected by case portfolio validator"
 else
     fail "route-disclosing prompt produced the expected case portfolio rejection"
+fi
+
+if "${PYTHON_CMD[@]}" tests/helpers/test_run_agentic_benchmark.py >/dev/null; then
+    pass "repeated runner fake-host contracts"
+else
+    fail "repeated runner fake-host contracts"
+fi
+
+if held_out_shape_output="$("${PYTHON_CMD[@]}" tests/helpers/run_agentic_benchmark.py prepare \
+    --partition held-out \
+    --repetitions 1 \
+    --max-attempts 40 \
+    --batch-id invalid-held-out-shape \
+    --model dry-run-model \
+    --output-root "$coverage_negative_root/invalid-held-out" 2>&1)"; then
+    fail "held-out runner rejects a non-120 target shape"
+elif grep -qF "complete held-out preparation requires 3 repetitions" <<<"$held_out_shape_output"; then
+    pass "held-out runner rejects a non-120 target shape"
+else
+    fail "held-out shape rejection emits the expected diagnostic"
+fi
+
+dry_run_root="$coverage_negative_root/repeated-dry-run"
+if bash "$repeated_runner" --dry-run \
+    --partition held-out \
+    --repetitions 3 \
+    --max-attempts 132 \
+    --batch-id offline-contract \
+    --output-root "$dry_run_root" >/dev/null \
+    && "${PYTHON_CMD[@]}" - "$dry_run_root/batch.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+batch = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert batch["caseCount"] == 20
+assert batch["targetRunCount"] == 120
+assert batch["maxAttempts"] == 132
+assert len({target["targetId"] for target in batch["schedule"]}) == 120
+PY
+then
+    pass "held-out dry-run plans 120 valid targets within 132 attempts"
+else
+    fail "held-out dry-run plans 120 valid targets within 132 attempts"
+fi
+
+dry_run_batch_hash="$("${PYTHON_CMD[@]}" - "$dry_run_root/batch.json" <<'PY'
+import hashlib
+import sys
+from pathlib import Path
+
+print(hashlib.sha256(Path(sys.argv[1]).read_bytes()).hexdigest())
+PY
+)"
+if bash "$repeated_runner" --dry-run \
+    --partition held-out \
+    --repetitions 3 \
+    --max-attempts 132 \
+    --batch-id offline-contract \
+    --output-root "$dry_run_root" >/dev/null 2>&1; then
+    fail "dry-run refuses to replace preserved batch evidence"
+elif [[ "$dry_run_batch_hash" == "$("${PYTHON_CMD[@]}" - "$dry_run_root/batch.json" <<'PY'
+import hashlib
+import sys
+from pathlib import Path
+
+print(hashlib.sha256(Path(sys.argv[1]).read_bytes()).hexdigest())
+PY
+)" ]]; then
+    pass "dry-run refuses to replace preserved batch evidence"
+else
+    fail "dry-run refusal preserves the existing batch bytes"
+fi
+
+frozen_prompt="$("${PYTHON_CMD[@]}" - "$dry_run_root/batch.json" "$dry_run_root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+batch = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+print(Path(sys.argv[2]) / batch["frozenCases"][0]["frozenPromptPath"])
+PY
+)"
+"${PYTHON_CMD[@]}" - "$frozen_prompt" <<'PY'
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+path.write_text(path.read_text(encoding="utf-8") + "\nfrozen-drift\n", encoding="utf-8")
+PY
+if frozen_drift_output="$("${PYTHON_CMD[@]}" tests/helpers/run_agentic_benchmark.py aggregate \
+    --output-root "$dry_run_root" 2>&1)"; then
+    fail "frozen batch input drift is rejected before aggregation"
+elif grep -qF "frozen prompt drifted" <<<"$frozen_drift_output"; then
+    pass "frozen batch input drift is rejected before aggregation"
+else
+    fail "frozen batch input drift emits the expected diagnostic"
 fi
 
 if (( failures > 0 )); then

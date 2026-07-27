@@ -9,6 +9,7 @@ import json
 import os
 import shutil
 import signal
+import stat
 import subprocess
 from collections import Counter
 from pathlib import Path
@@ -20,7 +21,13 @@ VIRTUAL_HOME = Path("/home/benchmark")
 VIRTUAL_CODEX_HOME = VIRTUAL_HOME / ".codex"
 VIRTUAL_WORKSPACE = Path("/workspace")
 VIRTUAL_SNAPSHOT = Path("/opt/aegis")
-NEUTRAL_CONFIG = "project_doc_max_bytes = 0\n\n[features]\nmulti_agent = false\n"
+NEUTRAL_CONFIG = (
+    'approval_policy = "never"\n'
+    'sandbox_mode = "workspace-write"\n'
+    "project_doc_max_bytes = 0\n\n"
+    "[features]\n"
+    "multi_agent = false\n"
+)
 AUTHORITY_BOUNDARY = "advisory-method-pack-evidence-not-completion-authority"
 IGNORED_TREE_PARTS = {".git", ".pytest_cache", "__pycache__"}
 
@@ -51,9 +58,12 @@ def hash_tree(path: Path, *, reject_symlinks: bool = True) -> str:
             digest.update(f"symlink:{relative.as_posix()}:{os.readlink(candidate)}\n".encode())
             continue
         if candidate.is_dir():
+            digest.update(f"dir:{relative.as_posix()}:mode:{stat.S_IMODE(candidate.stat().st_mode):04o}\n".encode())
             continue
         require(candidate.is_file(), f"tree contains unsupported file type: {relative.as_posix()}")
         digest.update(relative.as_posix().encode())
+        digest.update(b"\0")
+        digest.update(f"mode:{stat.S_IMODE(candidate.stat().st_mode):04o}".encode())
         digest.update(b"\0")
         digest.update(candidate.read_bytes())
         digest.update(b"\0")
@@ -90,6 +100,12 @@ def prepare_distribution_snapshot(root: Path, destination: Path) -> dict[str, An
     (destination / ".codex-plugin").mkdir(parents=True)
     shutil.copytree(source_skills, destination / "skills")
     shutil.copy2(plugin_manifest, destination / ".codex-plugin/plugin.json")
+    return distribution_snapshot_metadata(destination)
+
+
+def distribution_snapshot_metadata(destination: Path) -> dict[str, Any]:
+    plugin_manifest = destination / ".codex-plugin/plugin.json"
+    require(plugin_manifest.is_file(), "Codex plugin manifest is missing from the distribution snapshot")
     plugin = json.loads(plugin_manifest.read_text(encoding="utf-8"))
     skill_ids = sorted(path.parent.name for path in (destination / "skills").glob("*/SKILL.md"))
     require(skill_ids, "Aegis snapshot contains no discoverable skills")
@@ -115,6 +131,44 @@ def prepare_arm_layout(
     discovery.mkdir(parents=True)
     shutil.copytree(seed_project, workspace)
     require(not any(workspace.rglob("AGENTS.md")), "benchmark seed project must not contain AGENTS.md")
+    git_environment = {
+        "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+        "HOME": str(home),
+        "GIT_CONFIG_NOSYSTEM": "1",
+    }
+    git_commands = [
+        ["git", "-c", "init.defaultBranch=main", "init", "-q"],
+        ["git", "-c", "core.hooksPath=/dev/null", "add", "-A"],
+        [
+            "git",
+            "-c",
+            "core.hooksPath=/dev/null",
+            "-c",
+            "user.name=Aegis Benchmark",
+            "-c",
+            "user.email=benchmark.invalid@example.invalid",
+            "-c",
+            "commit.gpgsign=false",
+            "commit",
+            "-q",
+            "--no-verify",
+            "-m",
+            "seed benchmark workspace",
+        ],
+    ]
+    for command in git_commands:
+        completed = subprocess.run(
+            command,
+            cwd=workspace,
+            env=git_environment,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        require(completed.returncode == 0, f"cannot initialize benchmark git workspace: {completed.stderr[:300]}")
     (home_codex / "config.toml").write_text(NEUTRAL_CONFIG, encoding="utf-8")
     (home_codex / "auth.json").touch(mode=0o600)
     if snapshot is not None:
@@ -143,12 +197,12 @@ def build_bwrap_command(
     layout: dict[str, Path],
     prompt: str,
     debug_prompt: bool,
+    isolate_network: bool = True,
 ) -> list[str]:
     command = [
         str(bwrap),
         "--die-with-parent",
         "--new-session",
-        "--unshare-net",
         "--unshare-pid",
         "--unshare-ipc",
         "--unshare-uts",
@@ -185,6 +239,8 @@ def build_bwrap_command(
         str(layout["auth"]),
         str(VIRTUAL_CODEX_HOME / "auth.json"),
     ]
+    if isolate_network:
+        command.insert(3, "--unshare-net")
     command.extend(system_mount_args())
     command.extend(["--dev", "/dev", "--proc", "/proc"])
     if layout["snapshot"] is not None:
@@ -218,6 +274,46 @@ def build_bwrap_command(
     return command
 
 
+def build_codex_live_command(
+    *,
+    bwrap: Path,
+    codex: Path,
+    layout: dict[str, Path],
+    prompt: str,
+    model: str,
+) -> list[str]:
+    command = build_bwrap_command(
+        bwrap=bwrap,
+        codex=codex,
+        layout=layout,
+        prompt=prompt,
+        debug_prompt=False,
+        isolate_network=False,
+    )
+    separator = command.index("--")
+    return [
+        *command[: separator + 1],
+        str(codex),
+        "exec",
+        "--json",
+        "--color",
+        "never",
+        "--sandbox",
+        "workspace-write",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "--strict-config",
+        "--ignore-rules",
+        "--disable",
+        "shell_snapshot",
+        "--model",
+        model,
+        "-C",
+        str(VIRTUAL_WORKSPACE),
+        prompt,
+    ]
+
+
 def command_mounts(command: list[str]) -> list[tuple[str, str, str]]:
     mounts: list[tuple[str, str, str]] = []
     for index, value in enumerate(command):
@@ -232,6 +328,7 @@ def validate_bwrap_command(
     root: Path,
     output_root: Path,
     layout: dict[str, Path],
+    client_network: bool = False,
 ) -> None:
     mounts = command_mounts(command)
     auth_target = str(VIRTUAL_CODEX_HOME / "auth.json")
@@ -257,7 +354,10 @@ def validate_bwrap_command(
         require(source in allowed_sources, f"unexpected benchmark mount source: {source}")
         if kind == "--bind":
             require(target in {str(VIRTUAL_HOME), str(VIRTUAL_WORKSPACE)}, f"unexpected writable benchmark mount: {target}")
-    require("--unshare-net" in command, "benchmark command must disable network during prompt audit")
+    if client_network:
+        require("--unshare-net" not in command, "live Codex client must be able to reach the configured model provider")
+    else:
+        require("--unshare-net" in command, "benchmark command must disable network during prompt audit")
     require("--unshare-pid" in command, "benchmark command must isolate the host process table")
     require(str(output_root.resolve()) not in {target for _, _, target in mounts}, "benchmark output root must not be mounted as a whole")
 
@@ -391,6 +491,7 @@ def run_isolation_audit(
     auth_file: Path,
     bwrap: Path,
     codex: Path,
+    prepared_snapshot: Path | None = None,
 ) -> dict[str, Any]:
     require(bwrap.is_file(), f"bwrap is required for benchmark isolation: {bwrap}")
     require(codex.exists(), f"Codex executable is missing: {codex}")
@@ -400,7 +501,13 @@ def run_isolation_audit(
     reset_directory(output_root, root)
 
     snapshot_root = output_root / "distribution-snapshot"
-    snapshot = prepare_distribution_snapshot(root, snapshot_root)
+    if prepared_snapshot is None:
+        snapshot = prepare_distribution_snapshot(root, snapshot_root)
+    else:
+        require(prepared_snapshot.is_dir(), "prepared Aegis snapshot is missing")
+        hash_tree(prepared_snapshot)
+        shutil.copytree(prepared_snapshot, snapshot_root)
+        snapshot = distribution_snapshot_metadata(snapshot_root)
     seed_project = (root / case["seedProjectPath"]).resolve()
     prompt = (root / case["promptPath"]).read_text(encoding="utf-8")
     layouts = {

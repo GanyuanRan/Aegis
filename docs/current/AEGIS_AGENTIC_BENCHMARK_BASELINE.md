@@ -205,6 +205,21 @@ remains `implementation-in-progress` until the outcome scorer, isolated runner,
 aggregation and report projection pass their offline gates. Portfolio
 implementation is not live benchmark evidence.
 
+The repeated runner is available at `tests/e2e/run-agentic-benchmark.sh`. Its
+offline path freezes the matrix, manifest, prompts, project trees, outcome
+contracts, evaluated method-pack snapshot, harness code, model/tool policy and
+deterministic run order. Attempts execute batch-local frozen copies and
+revalidate them before each launch and final aggregation. Dry-run refuses to
+replace an existing batch, and credential-shaped output is redacted and makes
+the attempt invalid rather than entering preserved logs. Real execution requires
+`AEGIS_AGENTIC_BENCHMARK_LIVE=1`; the complete held-out batch additionally
+requires `AEGIS_AGENTIC_BENCHMARK_FULL=1`. It preserves every paid attempt,
+retries only invalid attempts within the frozen ceiling, aggregates by case
+cluster rather than treating repetitions as independent, and leaves partial or
+unresolved reports unknown. These runner capabilities do not change the tier
+status or create public benchmark evidence before the separate report
+projection gate passes.
+
 ## 8. Controlled Replay Samples
 
 Controlled replay samples are the first sample layer below the benchmark
