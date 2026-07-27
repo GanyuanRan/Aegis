@@ -16,6 +16,7 @@ from typing import Any, Callable
 MAX_REQUEST_BYTES = 1_048_576
 MAX_RESULT_BYTES = 65_536
 PROCESS_CLEANUP_SECONDS = 1.0
+CONFIDENTIAL_CLEANUP_MAX_SECONDS = 2.0
 
 
 def _require(condition: bool, message: str) -> None:
@@ -78,7 +79,13 @@ def _invalid(reason: str, elapsed: float) -> dict[str, Any]:
     return {"status": "invalid", "invalidReason": reason, "elapsedSeconds": round(max(0.0, elapsed), 3)}
 
 
-def supervise_process(command: list[str], payload: str, timeout_seconds: float) -> dict[str, Any]:
+def supervise_process(
+    command: list[str],
+    payload: str,
+    timeout_seconds: float,
+    *,
+    pass_fds: tuple[int, ...] = (),
+) -> dict[str, Any]:
     """Execute one local worker tree with a deadline that includes cleanup."""
 
     _require(command and all(isinstance(item, str) and item for item in command), "supervisor command is invalid")
@@ -94,6 +101,7 @@ def supervise_process(command: list[str], payload: str, timeout_seconds: float) 
         stdout=subprocess.PIPE,
         stderr=subprocess.DEVNULL,
         start_new_session=True,
+        pass_fds=pass_fds,
     )
     try:
         stdout, _stderr = process.communicate(input=payload, timeout=execution_seconds)
@@ -120,61 +128,111 @@ def supervise_operation(
     operation: str,
     request: dict[str, Any],
     timeout_seconds: float,
-    failure_cleanup: Callable[[], str | None] | None = None,
 ) -> Any:
     """Run a complete active-run stage in one killable process."""
 
-    _require(operation in {"attempt", "isolation-setup", "provider-preflight"}, "unknown supervised operation")
+    _require(operation in {"attempt", "confidential-cleanup", "isolation-setup", "provider-preflight"}, "unknown supervised operation")
     worker_request = dict(request)
     worker_request["timeoutSeconds"] = timeout_seconds
     payload = json.dumps({"operation": operation, "request": worker_request}, separators=(",", ":"))
-    outcome = supervise_process(
-        [sys.executable, str(Path(__file__).resolve()), "--worker"],
-        payload,
-        timeout_seconds,
-    )
+    auth_fd = request.get("authFd")
+    if auth_fd is None:
+        pass_fds: tuple[int, ...] = ()
+    else:
+        _require(isinstance(auth_fd, int) and not isinstance(auth_fd, bool) and auth_fd >= 0, "auth fd is invalid")
+        _require(request.get("authFile") == f"/proc/self/fd/{auth_fd}", "auth fd path is invalid")
+        try:
+            os.fstat(auth_fd)
+        except OSError as exc:
+            raise SystemExit("auth fd is unavailable") from exc
+        pass_fds = (auth_fd,)
+    command = [sys.executable, str(Path(__file__).resolve()), "--worker"]
+    outcome = supervise_process(command, payload, timeout_seconds, pass_fds=pass_fds) if pass_fds else supervise_process(command, payload, timeout_seconds)
     elapsed = outcome["elapsedSeconds"]
-
-    def invalid_attempt(default_reason: str) -> dict[str, Any]:
-        exposure = failure_cleanup() if failure_cleanup is not None else None
-        reason = exposure if exposure in {"credential-exposure", "proxy-exposure"} else default_reason
-        return _invalid(reason, elapsed)
 
     if outcome["timedOut"]:
         if operation == "attempt":
-            return invalid_attempt("timeout")
+            return _invalid("timeout", elapsed)
         raise SystemExit(f"benchmark {operation} exceeded the remaining wall-clock budget")
     if outcome["returncode"] != 0:
         if operation == "attempt":
-            return invalid_attempt("infrastructure")
+            return _invalid("infrastructure", elapsed)
         raise SystemExit(f"benchmark {operation} failed")
     if outcome["outputExceeded"]:
         if operation == "attempt":
-            return invalid_attempt("infrastructure")
+            return _invalid("infrastructure", elapsed)
         raise SystemExit(f"benchmark {operation} result is too large")
     try:
         result = json.loads(outcome["stdout"])
     except (TypeError, json.JSONDecodeError):
         if operation == "attempt":
-            return invalid_attempt("infrastructure")
+            return _invalid("infrastructure", elapsed)
         raise SystemExit(f"benchmark {operation} returned an invalid result")
     if not isinstance(result, dict):
         if operation == "attempt":
-            return invalid_attempt("infrastructure")
+            return _invalid("infrastructure", elapsed)
         raise SystemExit(f"benchmark {operation} returned an invalid result")
     if operation == "attempt":
         result["elapsedSeconds"] = round(elapsed, 3)
     return result
 
 
+def _operation_budgets(timeout_seconds: float) -> tuple[float, float]:
+    _require(timeout_seconds > 0, "bounded operation timeout must be positive")
+    cleanup = min(CONFIDENTIAL_CLEANUP_MAX_SECONDS, timeout_seconds / 3)
+    return timeout_seconds - cleanup, cleanup
+
+
 def supervise_attempt(
     request: dict[str, Any],
     timeout_seconds: float,
-    failure_cleanup: Callable[[], str | None] | None = None,
+    final_cleanup: Callable[[float, bool], str | None],
 ) -> dict[str, Any]:
     """Run setup, Codex, parsing, scoring and cleanup in one killable process."""
 
-    return supervise_operation("attempt", request, timeout_seconds, failure_cleanup)
+    execution_seconds, cleanup_seconds = _operation_budgets(timeout_seconds)
+    result = supervise_operation("attempt", request, execution_seconds)
+    uncertain = result.get("invalidReason") in {"infrastructure", "timeout"}
+    exposure = final_cleanup(cleanup_seconds, uncertain)
+    if exposure == "auth-drift":
+        raise SystemExit("Codex auth changed during benchmark execution")
+    if exposure in {"credential-exposure", "proxy-exposure"}:
+        return _invalid(exposure, result["elapsedSeconds"])
+    return result
+
+
+def supervise_stage(
+    operation: str,
+    request: dict[str, Any],
+    timeout_seconds: float,
+    final_cleanup: Callable[[float], str | None],
+) -> Any:
+    """Run a stage and its parent-owned confidentiality cleanup within one budget."""
+
+    _require(operation in {"isolation-setup", "provider-preflight"}, "unknown supervised stage")
+    execution_seconds, cleanup_seconds = _operation_budgets(timeout_seconds)
+    result: Any = None
+    pending: BaseException | None = None
+    try:
+        result = supervise_operation(operation, request, execution_seconds)
+    except BaseException as exc:
+        pending = exc
+    exposure = final_cleanup(cleanup_seconds)
+    if exposure == "auth-drift":
+        raise SystemExit("Codex auth changed during benchmark execution")
+    if exposure in {"credential-exposure", "proxy-exposure"}:
+        raise SystemExit(f"benchmark {operation} confidentiality exposure detected")
+    if pending is not None:
+        raise pending
+    return result
+
+
+def supervise_confidential_cleanup(request: dict[str, Any], timeout_seconds: float) -> str | None:
+    result = supervise_operation("confidential-cleanup", request, timeout_seconds)
+    _require(isinstance(result, dict) and set(result) == {"exposure"}, "confidential cleanup result is invalid")
+    exposure = result["exposure"]
+    _require(exposure in {None, "auth-drift", "credential-exposure", "proxy-exposure"}, "confidential cleanup exposure is invalid")
+    return exposure
 
 
 def _path(value: Any, label: str) -> Path:
@@ -188,7 +246,8 @@ def _execute_isolation_setup(runner: Any, request: dict[str, Any]) -> dict[str, 
     output_root = runner.resolve_tmp_child(root, _path(request.get("outputRoot"), "outputRoot"), "output-root")
     batch = request.get("batch")
     proxy_policy = runner.verify_batch(batch, root, output_root)
-    auth_file = runner.resolve_auth_file(_path(request.get("authFile"), "authFile"))
+    auth_file = _path(request.get("authFile"), "authFile")
+    runner.validate_auth_mount_file(auth_file)
     credential_policy = runner.credential_policy_from_markers(request.get("credentialMarkers"))
     attempts_root = runner.resolve_tmp_child(root, output_root / "attempts", "attempts artifact root")
     runner.scrub_stale_confidential_artifacts(
@@ -229,13 +288,52 @@ def _execute_provider_preflight(runner: Any, request: dict[str, Any]) -> dict[st
     return runner.run_provider_preflight(
         root=root,
         batch_root=output_root,
-        auth_file=runner.resolve_auth_file(_path(request.get("authFile"), "authFile")),
+        auth_file=_path(request.get("authFile"), "authFile"),
         bwrap=_path(request.get("bwrap"), "bwrap"),
         codex=_path(request.get("codex"), "codex"),
         requested_model=batch["modelPolicy"]["requestedModel"],
         timeout_seconds=request["timeoutSeconds"] + PROCESS_CLEANUP_SECONDS,
         proxy_policy=proxy_policy,
     )
+
+
+def _execute_confidential_cleanup(runner: Any, request: dict[str, Any]) -> dict[str, Any]:
+    root = _path(request.get("root"), "root")
+    _require(root.resolve() == runner.repo_root(), "confidential cleanup root drifted")
+    tree_root = runner.resolve_tmp_child(root, _path(request.get("treeRoot"), "treeRoot"), "confidential tree root")
+    credential_policy = runner.credential_policy_from_markers(request.get("credentialMarkers"))
+    proxy_policy = runner.resolve_proxy_policy(os.environ)
+    mode = request.get("mode")
+    auth_unchanged = runner.auth_source_matches_guard(request.get("authGuard"))
+    if mode == "attempt":
+        exposure = runner.finalize_confidential_artifacts(
+            tree_root,
+            tree_root / "isolated/home",
+            proxy_policy,
+            credential_policy,
+            lambda path: runner.remove_tmp_directory(path, root),
+        )
+    elif mode == "stage":
+        exposure = runner.finalize_confidential_stage(
+            tree_root,
+            proxy_policy,
+            credential_policy,
+            lambda path: runner.remove_tmp_directory(path, root),
+        )
+    elif mode == "auth-check":
+        exposure = None
+    else:
+        raise SystemExit("confidential cleanup mode is invalid")
+    if not auth_unchanged:
+        if mode == "auth-check":
+            runner.finalize_confidential_stage(
+                tree_root,
+                proxy_policy,
+                credential_policy,
+                lambda path: runner.remove_tmp_directory(path, root),
+            )
+        exposure = "auth-drift"
+    return {"exposure": exposure}
 
 
 def _worker() -> int:
@@ -273,6 +371,8 @@ def _worker() -> int:
         result = _execute_isolation_setup(runner, request)
     elif operation == "provider-preflight":
         result = _execute_provider_preflight(runner, request)
+    elif operation == "confidential-cleanup":
+        result = _execute_confidential_cleanup(runner, request)
     else:
         raise SystemExit("worker operation is invalid")
     rendered = json.dumps(result, separators=(",", ":"))

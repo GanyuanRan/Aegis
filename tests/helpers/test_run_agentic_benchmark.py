@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import copy
 import json
 import os
@@ -29,11 +30,12 @@ from run_agentic_benchmark import (
     parse_codex_jsonl,
     require_execution_opt_in,
     resolve_auth_file,
+    run_command,
     schedule_targets,
     validate_live_isolation_report,
 )
 from agentic_benchmark_isolation import resolve_proxy_policy
-from agentic_benchmark_provider_preflight import CredentialPolicy, freeze_credential_policy, redact_credential_output
+from agentic_benchmark_provider_preflight import CredentialPolicy, freeze_auth_file, freeze_credential_policy, redact_credential_output
 
 
 EMPTY_CREDENTIAL_POLICY = CredentialPolicy(())
@@ -271,6 +273,7 @@ class RunnerContractTest(unittest.TestCase):
             auth = Path(value) / "auth.json"
             secret = "private-refresh-token-value"
             auth.write_text(json.dumps({"tokens": {"refresh_token": secret}}), encoding="utf-8")
+            auth.chmod(0o600)
             redacted, exposed = redact_credential_output(f"debug: {secret}", freeze_credential_policy(auth))
         self.assertTrue(exposed)
         self.assertNotIn(secret, redacted)
@@ -283,6 +286,7 @@ class RunnerContractTest(unittest.TestCase):
             original = "private-original-token-value"
             replacement = "private-replacement-token-value"
             auth.write_text(json.dumps({"tokens": {"refresh_token": original}}), encoding="utf-8")
+            auth.chmod(0o600)
             policy = freeze_credential_policy(auth)
             auth.write_text(json.dumps({"tokens": {"refresh_token": replacement}}), encoding="utf-8")
             redacted, exposed = redact_credential_output(original, policy)
@@ -292,6 +296,82 @@ class RunnerContractTest(unittest.TestCase):
         self.assertNotIn(replacement, repr(policy))
         with self.assertRaises(TypeError):
             json.dumps(policy)
+
+    def test_auth_schema_protects_short_secrets_without_treating_metadata_as_credentials(self):
+        root = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory(prefix="agentic-auth-schema-test-", dir=root / ".tmp") as value:
+            auth = Path(value) / "auth.json"
+            auth.write_text(
+                json.dumps(
+                    {
+                        "auth_mode": "chatgpt-account-login",
+                        "last_refresh": "2026-07-27T00:00:00Z",
+                        "tokens": {"account_id": "account-metadata-value", "access_token": "abc"},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            auth.chmod(0o600)
+            policy = freeze_credential_policy(auth)
+        redacted, exposed = redact_credential_output("token=abc", policy)
+        self.assertTrue(exposed)
+        self.assertNotIn("abc", redacted)
+        metadata, metadata_exposed = redact_credential_output("account-metadata-value chatgpt-account-login", policy)
+        self.assertFalse(metadata_exposed)
+        self.assertEqual(metadata, "account-metadata-value chatgpt-account-login")
+
+    def test_unknown_credential_like_auth_key_fails_before_a_frozen_mount_exists(self):
+        root = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory(prefix="agentic-auth-unknown-key-test-", dir=root / ".tmp") as value:
+            auth = Path(value) / "auth.json"
+            auth.write_text(json.dumps({"session_token": "private-value"}), encoding="utf-8")
+            auth.chmod(0o600)
+            with self.assertRaises(SystemExit) as caught:
+                freeze_auth_file(auth)
+        self.assertEqual(str(caught.exception), "Codex auth contains an unknown credential-like key")
+        self.assertNotIn("private-value", str(caught.exception))
+
+    def test_unpaired_surrogate_auth_fails_safely_without_creating_an_artifact(self):
+        root = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory(prefix="agentic-auth-surrogate-test-", dir=root / ".tmp") as value:
+            directory = Path(value)
+            auth = directory / "auth.json"
+            auth.write_bytes(b'{"api_key":"\\ud800"}')
+            auth.chmod(0o600)
+            before = set(Path("/proc/self/fd").iterdir())
+            with self.assertRaises(SystemExit) as caught:
+                freeze_auth_file(auth)
+            after = set(Path("/proc/self/fd").iterdir())
+            self.assertEqual(before, after)
+            self.assertEqual(list(directory.iterdir()), [auth])
+        self.assertEqual(str(caught.exception), "credential markers contain invalid Unicode")
+
+    def test_frozen_auth_memfd_crosses_a_worker_boundary_and_detects_source_rotation(self):
+        root = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory(prefix="agentic-auth-memfd-test-", dir=root / ".tmp") as value:
+            auth = Path(value) / "auth.json"
+            original = b'{"api_key":"abc"}'
+            auth.write_bytes(original)
+            auth.chmod(0o600)
+            frozen = freeze_auth_file(auth)
+            mount_path = frozen.mount_path
+            try:
+                completed = subprocess.run(
+                    [sys.executable, "-c", "import pathlib,sys; raise SystemExit(pathlib.Path(sys.argv[1]).read_bytes()!=sys.stdin.buffer.read())", str(mount_path)],
+                    input=original,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    pass_fds=(frozen.descriptor,),
+                    check=False,
+                )
+                self.assertEqual(completed.returncode, 0)
+                auth.write_bytes(b'{"api_key":"rotated"}')
+                self.assertEqual(mount_path.read_bytes(), original)
+                with self.assertRaises(SystemExit):
+                    frozen.assert_source_unchanged()
+            finally:
+                frozen.close()
+            self.assertFalse(mount_path.exists())
 
     def test_auth_cli_path_rejects_a_symlink_before_resolve(self):
         root = Path(__file__).resolve().parents[2]
@@ -304,6 +384,27 @@ class RunnerContractTest(unittest.TestCase):
             with self.assertRaises(SystemExit) as caught:
                 resolve_auth_file(link)
         self.assertEqual(str(caught.exception), "Codex auth file must not be a symlink")
+
+    def test_run_closes_frozen_auth_when_setup_aborts(self):
+        root = Path(__file__).resolve().parents[2]
+        batch = fake_batch()
+        batch["profileId"] = "development-pilot"
+        ledger = initial_ledger(batch)
+        frozen = mock.Mock()
+        frozen.mount_path = Path("/proc/1/fd/9")
+        frozen.credential_policy = EMPTY_CREDENTIAL_POLICY
+        frozen.drift_guard.return_value = {"source": "/safe/auth", "fingerprint": "a" * 64}
+        args = argparse.Namespace(output_root=root / ".tmp/fake-run", auth_file=Path("/safe/auth"))
+        with mock.patch.object(benchmark_runner, "load_batch_and_ledger", return_value=(batch, ledger)), mock.patch.object(
+            benchmark_runner, "verify_batch", return_value=resolve_proxy_policy({})
+        ), mock.patch.object(benchmark_runner, "require_execution_opt_in"), mock.patch.object(
+            benchmark_runner, "freeze_auth_file", return_value=frozen
+        ), mock.patch.object(
+            benchmark_runner.agentic_benchmark_scheduler, "execute_budgeted_stage", side_effect=SystemExit("setup aborted")
+        ):
+            with self.assertRaises(SystemExit):
+                run_command(args)
+        frozen.close.assert_called_once_with()
 
     def test_attempt_artifacts_are_scrubbed_before_any_result_returns(self):
         root = Path(__file__).resolve().parents[2]
@@ -682,10 +783,15 @@ class RunnerContractTest(unittest.TestCase):
         secret = "private-refresh-token-value"
         with tempfile.TemporaryDirectory(prefix="agentic-stale-credential-test-", dir=root / ".tmp") as value:
             output_root = Path(value)
-            attempt_root = output_root / "attempts/001-stale"
-            artifact = attempt_root / "workspace/result.txt"
-            artifact.parent.mkdir(parents=True)
-            artifact.write_text(secret, encoding="utf-8")
+            leaking_roots = [output_root / f"attempts/{number:03d}-stale" for number in (1, 2)]
+            for attempt_root in leaking_roots:
+                artifact = attempt_root / "workspace/result.txt"
+                artifact.parent.mkdir(parents=True)
+                artifact.write_text(secret, encoding="utf-8")
+            safe_root = output_root / "attempts/003-safe"
+            safe_artifact = safe_root / "workspace/result.txt"
+            safe_artifact.parent.mkdir(parents=True)
+            safe_artifact.write_text("safe", encoding="utf-8")
             with self.assertRaises(SystemExit) as caught:
                 agentic_benchmark_provider_preflight.scrub_stale_confidential_artifacts(
                     output_root / "attempts",
@@ -693,9 +799,10 @@ class RunnerContractTest(unittest.TestCase):
                     CredentialPolicy((secret,)),
                     lambda path: benchmark_runner.remove_tmp_directory(path, root),
                 )
-            self.assertEqual(str(caught.exception), "stale benchmark attempt contained credential exposure")
+            self.assertEqual(str(caught.exception), "stale benchmark attempts contained credential exposure")
             self.assertNotIn(secret, str(caught.exception))
-            self.assertFalse(attempt_root.exists())
+            self.assertTrue(all(not attempt_root.exists() for attempt_root in leaking_roots))
+            self.assertEqual(safe_artifact.read_text(encoding="utf-8"), "safe")
 
     def test_production_child_timeout_escalates_to_bounded_sigkill(self):
         process = subprocess.Popen(

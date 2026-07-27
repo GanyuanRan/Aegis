@@ -5,10 +5,12 @@ from __future__ import annotations
 
 import json
 import hashlib
+import fcntl
 import ipaddress
 import os
 import re
 import signal
+import stat
 import subprocess
 import time
 from collections.abc import Callable
@@ -28,7 +30,37 @@ MAX_ARTIFACT_FILE_BYTES = 64 * 1024 * 1024
 MAX_ARTIFACT_TOTAL_BYTES = 256 * 1024 * 1024
 PROXY_KEYS = ("ALL_PROXY", "HTTPS_PROXY", "HTTP_PROXY")
 PROXY_SCHEMES = {"http", "https", "socks5", "socks5h"}
-CREDENTIAL_MARKER_MIN_LENGTH = 12
+MAX_AUTH_FILE_BYTES = 4 * 1024 * 1024
+KNOWN_SENSITIVE_AUTH_KEYS = {
+    "access_token",
+    "api_key",
+    "id_token",
+    "openai_api_key",
+    "password",
+    "refresh_token",
+    "secret",
+    "token",
+}
+KNOWN_AUTH_METADATA_KEYS = {
+    "account_id",
+    "auth_mode",
+    "chatgpt_account_id",
+    "expires_at",
+    "last_refresh",
+    "organization_id",
+    "tokens",
+}
+SENSITIVE_AUTH_KEY_PARTS = (
+    "api_key",
+    "apikey",
+    "authorization",
+    "cookie",
+    "credential",
+    "password",
+    "private_key",
+    "secret",
+    "token",
+)
 CREDENTIAL_PATTERN_SOURCES = (
     rb"\bsk-[A-Za-z0-9_-]{16,}\b",
     rb"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b",
@@ -62,8 +94,13 @@ class CredentialPolicy:
     __slots__ = ("__markers",)
 
     def __init__(self, markers: tuple[str, ...]) -> None:
-        if any(not isinstance(marker, str) or len(marker) < CREDENTIAL_MARKER_MIN_LENGTH for marker in markers):
+        if any(not isinstance(marker, str) or not marker for marker in markers):
             raise SystemExit("credential markers are invalid")
+        try:
+            for marker in markers:
+                marker.encode("utf-8")
+        except UnicodeEncodeError as exc:
+            raise SystemExit("credential markers contain invalid Unicode") from exc
         object.__setattr__(self, "_CredentialPolicy__markers", tuple(sorted(set(markers), key=len, reverse=True)))
 
     def __setattr__(self, _name: str, _value: object) -> None:
@@ -76,28 +113,193 @@ class CredentialPolicy:
         return self.__markers
 
 
-def _walk_json_strings(value: Any) -> list[str]:
-    values: list[str] = []
-    if isinstance(value, dict):
-        for nested in value.values():
-            values.extend(_walk_json_strings(nested))
-    elif isinstance(value, list):
-        for nested in value:
-            values.extend(_walk_json_strings(nested))
-    elif isinstance(value, str):
-        values.append(value)
-    return values
+def _normalized_auth_key(key: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "_", key.casefold()).strip("_")
+
+
+def _credential_markers_from_auth(value: Any) -> tuple[str, ...]:
+    if not isinstance(value, dict):
+        raise SystemExit("Codex auth must be a JSON object")
+    markers: list[str] = []
+
+    def visit(nested: Any) -> None:
+        if isinstance(nested, dict):
+            for raw_key, child in nested.items():
+                if not isinstance(raw_key, str):
+                    raise SystemExit("Codex auth keys must be strings")
+                key = _normalized_auth_key(raw_key)
+                if key in KNOWN_SENSITIVE_AUTH_KEYS:
+                    if child is None:
+                        continue
+                    if not isinstance(child, str) or not child:
+                        raise SystemExit("Codex auth credential values must be non-empty strings or null")
+                    markers.append(child)
+                    continue
+                if key == "tokens":
+                    if not isinstance(child, dict):
+                        raise SystemExit("Codex auth tokens must be an object")
+                    visit(child)
+                    continue
+                if key not in KNOWN_AUTH_METADATA_KEYS and any(part in key for part in SENSITIVE_AUTH_KEY_PARTS):
+                    raise SystemExit("Codex auth contains an unknown credential-like key")
+                visit(child)
+        elif isinstance(nested, list):
+            for child in nested:
+                visit(child)
+
+    visit(value)
+    return tuple(markers)
+
+
+def _read_auth_bytes(auth_file: Path) -> bytes:
+    path = auth_file.expanduser().absolute()
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as exc:
+        raise SystemExit("Codex auth file could not be opened safely") from exc
+    try:
+        metadata = os.fstat(descriptor)
+        if not stat.S_ISREG(metadata.st_mode) or metadata.st_mode & 0o022:
+            raise SystemExit("Codex auth file must be a private regular file")
+        chunks: list[bytes] = []
+        remaining = MAX_AUTH_FILE_BYTES + 1
+        while remaining:
+            chunk = os.read(descriptor, min(65_536, remaining))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            remaining -= len(chunk)
+        payload = b"".join(chunks)
+        if len(payload) > MAX_AUTH_FILE_BYTES:
+            raise SystemExit("Codex auth file is too large")
+        return payload
+    finally:
+        os.close(descriptor)
+
+
+def _policy_from_auth_bytes(payload: bytes) -> CredentialPolicy:
+    try:
+        auth_value = json.loads(payload)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise SystemExit("Codex auth file could not be read safely") from exc
+    return CredentialPolicy(_credential_markers_from_auth(auth_value))
+
+
+class FrozenAuth:
+    """A sealed in-memory auth snapshot plus its source-drift detector."""
+
+    __slots__ = ("__descriptor", "__fingerprint", "__policy", "__source")
+
+    def __init__(self, source: Path, payload: bytes) -> None:
+        if not hasattr(os, "memfd_create"):
+            raise SystemExit("sealed in-memory auth requires memfd support")
+        policy = _policy_from_auth_bytes(payload)
+        descriptor = os.memfd_create("aegis-benchmark-auth", os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING)
+        try:
+            os.fchmod(descriptor, 0o400)
+            view = memoryview(payload)
+            while view:
+                written = os.write(descriptor, view)
+                if written <= 0:
+                    raise OSError("short memfd write")
+                view = view[written:]
+            os.lseek(descriptor, 0, os.SEEK_SET)
+            seals = fcntl.F_SEAL_SEAL | fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_GROW | fcntl.F_SEAL_WRITE
+            fcntl.fcntl(descriptor, fcntl.F_ADD_SEALS, seals)
+        except BaseException:
+            os.close(descriptor)
+            raise
+        object.__setattr__(self, "_FrozenAuth__descriptor", descriptor)
+        object.__setattr__(self, "_FrozenAuth__fingerprint", hashlib.sha256(payload).digest())
+        object.__setattr__(self, "_FrozenAuth__policy", policy)
+        object.__setattr__(self, "_FrozenAuth__source", source.expanduser().absolute())
+
+    def __repr__(self) -> str:
+        return "FrozenAuth(sealed=True)"
+
+    @property
+    def credential_policy(self) -> CredentialPolicy:
+        return self.__policy
+
+    @property
+    def mount_path(self) -> Path:
+        return Path(f"/proc/self/fd/{self.__descriptor}")
+
+    @property
+    def descriptor(self) -> int:
+        return self.__descriptor
+
+    def assert_source_unchanged(self) -> None:
+        if hashlib.sha256(_read_auth_bytes(self.__source)).digest() != self.__fingerprint:
+            raise SystemExit("Codex auth changed after benchmark execution started")
+
+    def drift_guard(self) -> dict[str, str]:
+        return {"source": str(self.__source), "fingerprint": self.__fingerprint.hex()}
+
+    def close(self) -> None:
+        descriptor = self.__descriptor
+        if descriptor >= 0:
+            os.close(descriptor)
+            object.__setattr__(self, "_FrozenAuth__descriptor", -1)
+
+
+def freeze_auth_file(auth_file: Path) -> FrozenAuth:
+    """Securely read auth once and seal that exact content for every mount."""
+
+    path = auth_file.expanduser().absolute()
+    return FrozenAuth(path, _read_auth_bytes(path))
 
 
 def freeze_credential_policy(auth_file: Path) -> CredentialPolicy:
-    """Read auth once and retain candidate values only in process memory."""
+    """Freeze credential markers without creating a mount snapshot."""
+
+    return _policy_from_auth_bytes(_read_auth_bytes(auth_file))
+
+
+def auth_source_matches_guard(guard: Any) -> bool:
+    if not isinstance(guard, dict) or set(guard) != {"source", "fingerprint"}:
+        raise SystemExit("auth drift guard is invalid")
+    source = guard["source"]
+    fingerprint = guard["fingerprint"]
+    if not isinstance(source, str) or not source or not isinstance(fingerprint, str) or not re.fullmatch(r"[0-9a-f]{64}", fingerprint):
+        raise SystemExit("auth drift guard is invalid")
+    try:
+        current = hashlib.sha256(_read_auth_bytes(Path(source))).hexdigest()
+    except SystemExit:
+        return False
+    return current == fingerprint
+
+
+def validate_auth_mount_file(auth_file: Path) -> None:
+    """Accept a private regular file or the benchmark's sealed memfd path."""
 
     try:
-        auth_value = json.loads(auth_file.read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise SystemExit("Codex auth file could not be read safely") from exc
-    markers = tuple(value for value in _walk_json_strings(auth_value) if len(value) >= CREDENTIAL_MARKER_MIN_LENGTH)
-    return CredentialPolicy(markers)
+        metadata = auth_file.stat()
+        target = os.readlink(auth_file) if auth_file.is_symlink() else ""
+    except OSError as exc:
+        raise SystemExit("benchmark auth mount is unavailable") from exc
+    is_frozen_memfd = bool(re.fullmatch(r"/proc/self/fd/[0-9]+", str(auth_file))) and target.startswith(
+        "/memfd:aegis-benchmark-auth"
+    )
+    if auth_file.is_symlink() and not is_frozen_memfd:
+        raise SystemExit("benchmark auth mount must not be a symlink")
+    if not stat.S_ISREG(metadata.st_mode) or metadata.st_mode & 0o022:
+        raise SystemExit("benchmark auth mount must be a private regular file")
+
+
+def command_memfd_descriptors(command: list[str]) -> tuple[int, ...]:
+    descriptors = {
+        int(match.group(1))
+        for value in command
+        if (match := re.fullmatch(r"/proc/self/fd/([0-9]+)", value)) is not None
+    }
+    descriptors.update(
+        int(command[index + 1])
+        for index, value in enumerate(command[:-1])
+        if value == "--ro-bind-data" and command[index + 1].isdigit()
+    )
+    return tuple(sorted(descriptors))
 
 
 def credential_policy_from_markers(markers: Any) -> CredentialPolicy:
@@ -325,6 +527,33 @@ def finalize_confidential_artifacts(
     return exposure
 
 
+def finalize_confidential_stage(
+    stage_root: Path,
+    proxy_policy: ProxyPolicy,
+    credential_policy: CredentialPolicy,
+    remove_directory: DirectoryRemover,
+) -> str | None:
+    """Scan a disposable writable stage tree, then remove it on every path."""
+
+    try:
+        exposure = scrub_confidential_artifact_tree(stage_root, proxy_policy, credential_policy)
+    except (OSError, SystemExit) as exc:
+        try:
+            remove_directory(stage_root)
+        except (OSError, SystemExit):
+            pass
+        raise SystemExit("benchmark stage confidentiality cleanup failed") from exc
+    try:
+        remove_directory(stage_root)
+    except (OSError, SystemExit) as exc:
+        try:
+            remove_directory(stage_root)
+        except (OSError, SystemExit):
+            pass
+        raise SystemExit("benchmark stage confidentiality cleanup failed") from exc
+    return exposure
+
+
 def execute_with_confidentiality_boundary(
     attempt_root: Path,
     isolated_home: Path,
@@ -377,6 +606,7 @@ def scrub_stale_confidential_artifacts(
         return
     if attempts_root.is_symlink() or not attempts_root.is_dir():
         raise SystemExit("attempts artifact root must be an ordinary directory")
+    credential_exposed = False
     for attempt_root in sorted(attempts_root.iterdir()):
         if attempt_root.is_symlink() or not attempt_root.is_dir():
             raise SystemExit("stale attempt artifact must be an ordinary directory")
@@ -387,8 +617,9 @@ def scrub_stale_confidential_artifacts(
             credential_policy,
             remove_directory,
         )
-        if exposure == "credential-exposure":
-            raise SystemExit("stale benchmark attempt contained credential exposure")
+        credential_exposed = credential_exposed or exposure == "credential-exposure"
+    if credential_exposed:
+        raise SystemExit("stale benchmark attempts contained credential exposure")
 
 
 def _terminate_process(process: subprocess.Popen[str]) -> None:
@@ -425,6 +656,7 @@ def _default_command_runner(command: list[str], timeout_seconds: float) -> subpr
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         start_new_session=True,
+        pass_fds=command_memfd_descriptors(command),
     )
     try:
         stdout, stderr = process.communicate(timeout=timeout_seconds)

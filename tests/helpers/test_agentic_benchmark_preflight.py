@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import shutil
 import subprocess
 import sys
@@ -27,7 +28,7 @@ from agentic_benchmark_isolation import (
     run_provider_preflight,
     validate_bwrap_command,
 )
-from agentic_benchmark_provider_preflight import run_sanitized_provider_preflight
+from agentic_benchmark_provider_preflight import freeze_auth_file, run_sanitized_provider_preflight
 import agentic_benchmark_provider_preflight
 
 
@@ -187,6 +188,49 @@ class CommandBoundaryTest(unittest.TestCase):
         serialized = json.dumps(result, sort_keys=True)
         for forbidden in ("requested-model", "other-model", "raw catalog", "proxy.invalid"):
             self.assertNotIn(forbidden, serialized)
+
+    def test_sealed_auth_memfd_is_readable_through_a_real_bwrap_mount(self):
+        self.auth.write_text('{"api_key":"abc"}', encoding="utf-8")
+        payload = self.auth.read_bytes()
+        frozen = freeze_auth_file(self.auth)
+        try:
+            layout = prepare_provider_preflight_layout(self.scratch / "memfd-layout", frozen.mount_path)
+            command = build_provider_preflight_command(
+                bwrap=Path(shutil.which("bwrap") or "/missing/bwrap"),
+                codex=self.codex,
+                layout=layout,
+                proxy_policy=self.policy,
+            )
+            validate_bwrap_command(
+                command,
+                root=self.root,
+                output_root=self.scratch,
+                layout=layout,  # type: ignore[arg-type]
+                client_network=True,
+                proxy_policy=self.policy,
+            )
+            prefix = command[: command.index("--")]
+            self.assertIn("--ro-bind-data", prefix)
+            self.assertIn(str(frozen.descriptor), prefix)
+            bwrap = Path(shutil.which("bwrap") or "/missing/bwrap")
+            mount = subprocess.run(
+                [
+                    str(bwrap), "--die-with-parent", "--unshare-net", "--ro-bind", "/usr", "/usr",
+                    "--ro-bind", "/bin", "/bin", "--ro-bind", "/lib", "/lib", "--ro-bind", "/lib64", "/lib64",
+                    "--proc", "/proc", "--dev", "/dev", "--ro-bind-data", str(frozen.descriptor), "/auth.json",
+                    "--", "/usr/bin/sha256sum", "/auth.json",
+                ],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=5,
+                pass_fds=(frozen.descriptor,),
+                check=False,
+            )
+            self.assertEqual(mount.returncode, 0, mount.stderr)
+            self.assertEqual(mount.stdout.split()[0], hashlib.sha256(payload).hexdigest())
+        finally:
+            frozen.close()
 
     def test_failure_timeout_and_exception_remove_the_entire_isolated_root(self):
         for status in ("failure", "timeout", "exception"):

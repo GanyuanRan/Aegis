@@ -7,6 +7,7 @@ import copy
 import hashlib
 import json
 import os
+import re
 import shutil
 import signal
 import stat
@@ -17,12 +18,14 @@ from pathlib import Path
 from typing import Any
 
 from agentic_benchmark_provider_preflight import CommandRunner
+from agentic_benchmark_provider_preflight import command_memfd_descriptors
 from agentic_benchmark_provider_preflight import PROXY_KEYS
 from agentic_benchmark_provider_preflight import ProxyPolicy
 from agentic_benchmark_provider_preflight import network_policy_metadata
 from agentic_benchmark_provider_preflight import redact_proxy_output
 from agentic_benchmark_provider_preflight import resolve_proxy_policy
 from agentic_benchmark_provider_preflight import run_sanitized_provider_preflight
+from agentic_benchmark_provider_preflight import validate_auth_mount_file
 
 
 ARMS = ("baseline-no-aegis", "aegis-auto")
@@ -245,6 +248,11 @@ def build_bwrap_command(
     proxy_policy: ProxyPolicy | None = None,
 ) -> list[str]:
     require(isolate_network or proxy_policy is not None, "network-enabled benchmark command requires a validated proxy policy")
+    auth_source = str(layout["auth"])
+    auth_fd = re.fullmatch(r"/proc/self/fd/([0-9]+)", auth_source)
+    auth_mount = ["--ro-bind-data", auth_fd.group(1), str(VIRTUAL_CODEX_HOME / "auth.json")] if auth_fd else [
+        "--ro-bind", auth_source, str(VIRTUAL_CODEX_HOME / "auth.json")
+    ]
     command = [
         str(bwrap),
         "--die-with-parent",
@@ -281,9 +289,7 @@ def build_bwrap_command(
         "--bind",
         str(layout["workspace"]),
         str(VIRTUAL_WORKSPACE),
-        "--ro-bind",
-        str(layout["auth"]),
-        str(VIRTUAL_CODEX_HOME / "auth.json"),
+        *auth_mount,
     ]
     if isolate_network:
         command.insert(3, "--unshare-net")
@@ -389,7 +395,7 @@ def command_mounts(command: list[str]) -> list[tuple[str, str, str]]:
     mounts: list[tuple[str, str, str]] = []
     prefix = command[: command.index("--")]
     for index, value in enumerate(prefix):
-        if value in {"--bind", "--ro-bind"} and index + 2 < len(prefix):
+        if value in {"--bind", "--ro-bind", "--ro-bind-data"} and index + 2 < len(prefix):
             mounts.append((value, prefix[index + 1], prefix[index + 2]))
     return mounts
 
@@ -406,7 +412,9 @@ def validate_bwrap_command(
     mounts = command_mounts(command)
     auth_target = str(VIRTUAL_CODEX_HOME / "auth.json")
     auth_mounts = [mount for mount in mounts if mount[2] == auth_target]
-    require(auth_mounts == [("--ro-bind", str(layout["auth"]), auth_target)], "benchmark auth must be mounted exactly once and read-only")
+    auth_match = re.fullmatch(r"/proc/self/fd/([0-9]+)", str(layout["auth"]))
+    expected_auth = ("--ro-bind-data", auth_match.group(1), auth_target) if auth_match else ("--ro-bind", str(layout["auth"]), auth_target)
+    require(auth_mounts == [expected_auth], "benchmark auth must be mounted exactly once and read-only")
     require(
         [(kind, target) for kind, source, target in mounts if target == str(VIRTUAL_WORKSPACE)]
         == [("--bind", str(VIRTUAL_WORKSPACE))],
@@ -418,7 +426,7 @@ def validate_bwrap_command(
     )
     forbidden_targets = {str(root.resolve()), "/benchmark-repo", "/peer-workspace"}
     require(not any(target in forbidden_targets for _, _, target in mounts), "benchmark repo or peer workspace must not be mounted")
-    allowed_sources = {str(layout["home"]), str(layout["workspace"]), str(layout["auth"])}
+    allowed_sources = {str(layout["home"]), str(layout["workspace"]), expected_auth[1]}
     if layout["snapshot"] is not None:
         allowed_sources.add(str(layout["snapshot"]))
     for kind, source, target in mounts:
@@ -471,9 +479,7 @@ def run_provider_preflight(
 ) -> dict[str, Any]:
     require(bwrap.is_file(), "bwrap is required for provider preflight")
     require(codex.is_file(), "Codex executable is required for provider preflight")
-    require(auth_file.is_file(), "Codex auth file is required for provider preflight")
-    require(not auth_file.is_symlink(), "Codex auth file must not be a symlink")
-    require(auth_file.stat().st_mode & 0o022 == 0, "Codex auth file must not be group/world writable")
+    validate_auth_mount_file(auth_file)
     batch_root = resolve_tmp_child(root, batch_root, "provider preflight batch root")
     require(batch_root.is_dir(), "provider preflight batch root must be an ordinary directory")
     output_root = batch_root / "provider-preflight-isolated"
@@ -517,6 +523,7 @@ def run_command(command: list[str], label: str, timeout: float = 60.0) -> str:
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         start_new_session=True,
+        pass_fds=command_memfd_descriptors(command),
     )
     try:
         stdout, stderr = process.communicate(timeout=timeout)
@@ -651,9 +658,7 @@ def run_isolation_audit(
 
     require(bwrap.is_file(), f"bwrap is required for benchmark isolation: {bwrap}")
     require(codex.exists(), f"Codex executable is missing: {codex}")
-    require(auth_file.is_file(), f"Codex auth file is required: {auth_file}")
-    require(not auth_file.is_symlink(), "Codex auth file must not be a symlink")
-    require(auth_file.stat().st_mode & 0o022 == 0, "Codex auth file must not be group/world writable")
+    validate_auth_mount_file(auth_file)
     reset_directory(output_root, root)
 
     snapshot_root = output_root / "distribution-snapshot"
