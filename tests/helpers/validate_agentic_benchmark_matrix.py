@@ -124,14 +124,50 @@ MATRIX_FIELDS = {
     "isolationControls",
     "reportBoundaries",
 }
-LIVE_TIER_FIELDS = {
-    "id",
+CASE_PORTFOLIO_FIELDS = {
+    "manifestPath",
     "implementationStatus",
-    "defaultCi",
-    "optIn",
-    "scoreSource",
-    "requiresFrozenBatch",
-    "supportsPromotionEvidence",
+    "schemaVersion",
+    "caseCount",
+    "scenarioClassCount",
+    "partitions",
+    "arms",
+}
+EVALUATION_TIER_FIELDS = {
+    "deterministic-static": {
+        "id",
+        "implementationStatus",
+        "defaultCi",
+        "executionShape",
+        "supportsPromotionEvidence",
+    },
+    "controlled-replay": {
+        "id",
+        "implementationStatus",
+        "defaultCi",
+        "executionShape",
+        "datasetPartitions",
+        "scoreSource",
+        "supportsPromotionEvidence",
+        "unsupportedClaims",
+    },
+    "opt-in-live-held-out": {
+        "id",
+        "implementationStatus",
+        "defaultCi",
+        "optIn",
+        "scoreSource",
+        "requiresFrozenBatch",
+        "supportsPromotionEvidence",
+    },
+    "sampled-blind-human-review": {
+        "id",
+        "implementationStatus",
+        "defaultCi",
+        "sampled",
+        "armIdentityBlinded",
+        "escalationTriggers",
+    },
 }
 PROFILE_FIELDS = {
     "id",
@@ -294,6 +330,11 @@ def validate_evaluation_contract(data: dict[str, Any]) -> None:
     by_id = {tier.get("id"): tier for tier in tiers if isinstance(tier, dict)}
     require(len(by_id) == len(tiers), "evaluationTiers must contain unique object ids")
     require(set(by_id) == REQUIRED_EVALUATION_TIERS, "evaluationTiers must define the four-tier contract exactly")
+    for tier_id, tier in by_id.items():
+        require(
+            set(tier) == EVALUATION_TIER_FIELDS[tier_id],
+            f"{tier_id} must contain exactly its canonical evaluation tier fields",
+        )
 
     deterministic = by_id["deterministic-static"]
     require(deterministic.get("implementationStatus") == "implemented", "deterministic-static must be implemented")
@@ -317,10 +358,6 @@ def validate_evaluation_contract(data: dict[str, Any]) -> None:
     )
 
     live = by_id["opt-in-live-held-out"]
-    require(
-        set(live) == LIVE_TIER_FIELDS,
-        "opt-in-live-held-out must contain exactly the live tier fields",
-    )
     require(
         live.get("implementationStatus") == "implemented",
         "live held-out harness must be implemented after its offline gates pass",
@@ -366,6 +403,10 @@ def validate_evaluation_contract(data: dict[str, Any]) -> None:
 def validate_case_portfolio_contract(data: dict[str, Any]) -> None:
     portfolio = data.get("casePortfolio")
     require(isinstance(portfolio, dict), "casePortfolio must be an object")
+    require(
+        set(portfolio) == CASE_PORTFOLIO_FIELDS,
+        "casePortfolio must contain exactly the canonical portfolio fields",
+    )
     manifest_path = portfolio.get("manifestPath")
     require(
         manifest_path == "tests/e2e/fixtures/agentic-benchmark-cases.json",

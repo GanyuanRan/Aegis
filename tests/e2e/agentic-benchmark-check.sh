@@ -181,10 +181,12 @@ elif mutation in {
         live["scoreSource"] = "static-transcript-contract-analysis"
     elif mutation == "live-supports-promotion":
         live["supportsPromotionEvidence"] = True
-elif mutation in {"portfolio-case-count", "portfolio-status"}:
+elif mutation in {"portfolio-case-count", "portfolio-status", "portfolio-repetitions", "portfolio-workers"}:
     field, value = {
         "portfolio-case-count": ("caseCount", 29),
         "portfolio-status": ("implementationStatus", "contract-only"),
+        "portfolio-repetitions": ("repetitions", 3),
+        "portfolio-workers": ("workers", 8),
     }[mutation]
     matrix["casePortfolio"][field] = value
 elif mutation == "report-authority-overclaim":
@@ -198,6 +200,7 @@ elif mutation in {
     "blind-not-sampled",
     "deterministic-supports-promotion",
     "controlled-score-source",
+    "controlled-repetitions-per-case",
 }:
     tier_id, field, value = {
         "controlled-default-ci": ("controlled-replay", "defaultCi", True),
@@ -206,6 +209,7 @@ elif mutation in {
         "blind-not-sampled": ("sampled-blind-human-review", "sampled", False),
         "deterministic-supports-promotion": ("deterministic-static", "supportsPromotionEvidence", True),
         "controlled-score-source": ("controlled-replay", "scoreSource", "inferred-score"),
+        "controlled-repetitions-per-case": ("controlled-replay", "repetitionsPerCase", 1),
     }[mutation]
     tiers = {tier["id"]: tier for tier in matrix["evaluationTiers"]}
     tiers[tier_id][field] = value
@@ -506,14 +510,16 @@ profile-boolean-as-integer|boolean profile field encoded as integer|standard-hel
 profile-list-as-string|list profile field encoded as string|standard-held-out.unsupportedEvidence must be a list|matrix-only
 maximum-supported-workers|maximum supported workers drift|maximumSupportedWorkers must be 12|matrix-only
 missing-run-profile|missing exact run profile|runProfiles must define development-pilot, standard-held-out, and extended-held-out exactly|matrix-only
-tier-duplicate-shape|tier duplicate shape owner|opt-in-live-held-out must contain exactly the live tier fields|matrix-only
-live-required-evidence|live tier semantic shape alias|opt-in-live-held-out must contain exactly the live tier fields|matrix-only
+tier-duplicate-shape|tier duplicate shape owner|opt-in-live-held-out must contain exactly its canonical evaluation tier fields|matrix-only
+live-required-evidence|live tier semantic shape alias|opt-in-live-held-out must contain exactly its canonical evaluation tier fields|matrix-only
 matrix-top-level-repetitions|matrix top-level legacy repetitions alias|matrix top-level fields must match the exact v4 schema; unexpected: ['repetitions']|matrix-only
 legacy-live-tier-alias|retired live tier alias|evaluationTiers must define the four-tier contract exactly|matrix-only
 live-score-source|arm-biased live scorer drift|live held-out scorer must remain arm-neutral and outcome-based|matrix-only
 live-supports-promotion|live promotion overclaim|live held-out tier cannot support promotion evidence by itself|matrix-only
 portfolio-case-count|portfolio case-count drift|casePortfolio case count must be 30|matrix-only
 portfolio-status|portfolio implementation status regression|casePortfolio must be implemented after concrete manifest validation|matrix-only
+portfolio-repetitions|case portfolio repetitions alias|casePortfolio must contain exactly the canonical portfolio fields|matrix-only
+portfolio-workers|case portfolio workers alias|casePortfolio must contain exactly the canonical portfolio fields|matrix-only
 report-authority-overclaim|report authority overclaim|missing forbidden claims: aegis-grants-completion-authority|matrix-only
 automatic-promotion|automatic candidate promotion claim|promotionPolicy must remain advisory-only
 controlled-default-ci|controlled replay default CI drift|controlled-replay must not be the default CI tier
@@ -527,6 +533,7 @@ previous-arm-implemented|previous Aegis arm implemented early|previous-aegis mus
 current-comparison-drift|current controlled replay comparison drift|current controlled replay comparison must be aegis-auto over baseline-no-aegis
 deterministic-supports-promotion|deterministic promotion evidence overclaim|deterministic-static cannot support promotion evidence
 controlled-score-source|controlled replay score source drift|controlled-replay score source drifted
+controlled-repetitions-per-case|controlled replay repetitions alias|controlled-replay must contain exactly its canonical evaluation tier fields|matrix-only
 blind-missing-escalation-trigger|blind review missing assertion escalation|blind human review must cover variance and non-discriminating assertion escalation
 duplicate-previous-arm|duplicate previous Aegis arm|arms must contain unique object ids
 invalid-arm-object|invalid benchmark arm object|each arm must be an object
