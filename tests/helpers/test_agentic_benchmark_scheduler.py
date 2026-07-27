@@ -13,7 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from agentic_benchmark_scheduler import execute_schedule, validate_ledger
+from agentic_benchmark_scheduler import execute_budgeted_stage, execute_schedule, validate_ledger
 
 
 ARMS = ("baseline-no-aegis", "aegis-auto")
@@ -308,7 +308,7 @@ class SchedulerTest(unittest.TestCase):
         self.assertEqual([timeouts[number] for number in (1, 2)], [4.0, 4.0])
         self.assertEqual([timeouts[number] for number in (3, 4)], [2.0, 2.0])
         self.assertEqual(len(state["attempts"]), 4)
-        self.assertEqual(state["cumulativeWallSeconds"], 6.0)
+        self.assertEqual(state["cumulativeWallSeconds"], 5.0)
         self.assertEqual(state["scheduler"]["reason"], "cumulative-wall-budget-exhausted")
 
         stopped = ledger(cumulative=5.0)
@@ -316,6 +316,61 @@ class SchedulerTest(unittest.TestCase):
         stopped = self.execute(frozen, stopped, lambda *_args: calls.append(True) or valid())
         self.assertEqual(calls, [])
         self.assertEqual(stopped["scheduler"]["reason"], "cumulative-wall-budget-exhausted")
+
+    def test_setup_stage_is_persistently_charged_before_fanout(self):
+        frozen = batch(case_count=2, wall=5.0, timeout=4.0)
+        state = ledger()
+        calls = []
+        with tempfile.TemporaryDirectory(prefix="agentic-scheduler-setup-", dir=self.root / ".tmp") as value:
+            ledger_path = Path(value) / "ledger.json"
+            result = execute_budgeted_stage(
+                frozen,
+                state,
+                ledger_path,
+                "isolation-and-setup",
+                5.0,
+                lambda remaining: calls.append(remaining) or "ready",
+                monotonic=TickClock(step=2.0),
+            )
+            state = execute_schedule(
+                frozen,
+                state,
+                ledger_path,
+                lambda _target, _number, _timeout: valid(),
+                monotonic=TickClock(step=3.0),
+            )
+        self.assertEqual(result, "ready")
+        self.assertEqual(calls, [5.0])
+        self.assertEqual(state["cumulativeWallSeconds"], 5.0)
+        self.assertEqual(state["scheduler"]["reason"], "cumulative-wall-budget-exhausted")
+
+    def test_interrupted_setup_reservation_is_consumed_on_resume(self):
+        frozen = batch(case_count=2, wall=5.0, timeout=4.0)
+        state = ledger(cumulative=3.0)
+        state["activeBudgetStage"] = {
+            "stage": "provider-preflight",
+            "maximumWallSeconds": 3.0,
+            "reservedWallSeconds": 3.0,
+            "preStageCumulativeWallSeconds": 0.0,
+        }
+        with tempfile.TemporaryDirectory(prefix="agentic-scheduler-resume-", dir=self.root / ".tmp") as value:
+            ledger_path = Path(value) / "ledger.json"
+            execute_budgeted_stage(
+                frozen,
+                state,
+                ledger_path,
+                "provider-preflight",
+                3.0,
+                lambda remaining: self.assertEqual(remaining, 2.0),
+                monotonic=TickClock(step=1.0),
+            )
+        self.assertEqual(state["cumulativeWallSeconds"], 4.0)
+        self.assertNotIn("activeBudgetStage", state)
+
+    def test_ledger_wall_total_cannot_exceed_profile_ceiling(self):
+        frozen = batch(wall=5.0)
+        with self.assertRaises(SystemExit):
+            validate_ledger(frozen, ledger(cumulative=5.001))
 
     def test_infrastructure_failure_limit_opens_after_completed_wave(self):
         frozen = batch(case_count=4, workers=3, max_attempts=10, failure_limit=2)

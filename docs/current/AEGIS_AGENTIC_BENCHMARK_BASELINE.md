@@ -204,6 +204,12 @@ a 240-second per-attempt timeout, and an infrastructure failure limit of two
 completed attempts in a wave. The maximum supported worker count is 12. An
 incomplete batch must not feed public benchmark claims.
 
+The profile wall-clock budget is an end-to-end active-run ceiling. It includes
+isolation and setup, provider preflight, paired canary and fan-out, plus each
+attempt's Codex execution, parsing, scoring and artifact cleanup. Reservations
+are persisted before work starts, resume cannot reset consumed time, and no
+ledger may record cumulative wall time above the selected profile ceiling.
+
 The preflight proves only that Codex returned a sanitized, non-empty catalog,
 that the requested model was present, and that no visible refresh failure was
 reported. It does not independently prove provider reachability when an

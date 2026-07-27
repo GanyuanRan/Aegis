@@ -42,6 +42,12 @@ ACTIVE_WAVE_FIELDS = {
     "reservedWallSeconds",
     "preWaveCumulativeWallSeconds",
 }
+ACTIVE_BUDGET_STAGE_FIELDS = {
+    "stage",
+    "maximumWallSeconds",
+    "reservedWallSeconds",
+    "preStageCumulativeWallSeconds",
+}
 ATTEMPT_IDENTITY_FIELDS = (
     "targetId",
     "caseId",
@@ -69,6 +75,7 @@ INVALID_RESULT_FIELDS = {*COMMON_RESULT_FIELDS, "invalidReason", "errorType"}
 # threads are a concurrency primitive here, not a process termination boundary.
 Executor = Callable[[dict[str, Any], int, float], dict[str, Any]]
 MonotonicClock = Callable[[], float]
+BudgetedStage = Callable[[float], Any]
 
 
 def _require(condition: bool, message: str) -> None:
@@ -360,6 +367,34 @@ def _validate_active_wave(batch: dict[str, Any], ledger: dict[str, Any]) -> dict
     return active
 
 
+def _validate_active_budget_stage(batch: dict[str, Any], ledger: dict[str, Any]) -> dict[str, Any] | None:
+    active = ledger.get("activeBudgetStage")
+    if active is None:
+        return None
+    _require("activeWave" not in ledger, "active budget stage cannot overlap an active wave")
+    _require(isinstance(active, dict), "activeBudgetStage must be an object")
+    _require(set(active) == ACTIVE_BUDGET_STAGE_FIELDS, "activeBudgetStage fields are invalid")
+    _require(isinstance(active["stage"], str) and active["stage"], "activeBudgetStage.stage must be non-empty")
+    maximum = _positive_number(active["maximumWallSeconds"], "activeBudgetStage.maximumWallSeconds")
+    reserved = _positive_number(active["reservedWallSeconds"], "activeBudgetStage.reservedWallSeconds")
+    pre_stage = active["preStageCumulativeWallSeconds"]
+    _require(
+        isinstance(pre_stage, (int, float))
+        and not isinstance(pre_stage, bool)
+        and math.isfinite(pre_stage)
+        and pre_stage >= 0,
+        "activeBudgetStage.preStageCumulativeWallSeconds must be a non-negative finite number",
+    )
+    expected = min(maximum, float(batch["wallClockBudgetSeconds"]) - float(pre_stage))
+    _require(expected > 0, "activeBudgetStage cannot reserve an exhausted wall budget")
+    _require(reserved == expected, "activeBudgetStage reservation does not match its bounded timeout")
+    _require(
+        float(ledger["cumulativeWallSeconds"]) == float(pre_stage) + reserved,
+        "activeBudgetStage reservation does not match cumulativeWallSeconds",
+    )
+    return active
+
+
 def _recover_interrupted(batch: dict[str, Any], ledger: dict[str, Any]) -> bool:
     active = _validate_active_wave(batch, ledger)
     if active is None:
@@ -391,9 +426,83 @@ def validate_ledger(batch: dict[str, Any], ledger: dict[str, Any]) -> None:
         and cumulative >= 0,
         "ledger cumulativeWallSeconds must be a non-negative finite number",
     )
+    _require(
+        float(cumulative) <= float(batch["wallClockBudgetSeconds"]),
+        "ledger cumulativeWallSeconds exceeds the wall-clock budget",
+    )
+    _validate_active_budget_stage(batch, ledger)
     active = _validate_active_wave(batch, ledger)
     if active is None:
         _replay_queue(batch, ledger)
+
+
+def execute_budgeted_stage(
+    batch: dict[str, Any],
+    ledger: dict[str, Any],
+    ledger_path: Path,
+    stage: str,
+    maximum_seconds: float,
+    callback: BudgetedStage,
+    *,
+    monotonic: MonotonicClock = time.monotonic,
+) -> Any:
+    """Persistently reserve and settle one pre-schedule active-run stage."""
+
+    validate_ledger(batch, ledger)
+    _require(isinstance(stage, str) and stage, "budget stage name must be non-empty")
+    maximum = _positive_number(maximum_seconds, "budget stage maximum")
+    if _recover_interrupted(batch, ledger):
+        _set_status(ledger, "recovered", "interrupted-launched-attempts-invalidated")
+        _atomic_json(ledger_path, ledger)
+        _queue, stop_reason = _replay_queue(batch, ledger)
+        if stop_reason is not None:
+            _set_status(ledger, "stopped", stop_reason)
+            _atomic_json(ledger_path, ledger)
+            raise SystemExit("benchmark cannot resume setup after a terminal interrupted wave")
+    interrupted = _validate_active_budget_stage(batch, ledger)
+    if interrupted is not None:
+        del ledger["activeBudgetStage"]
+        _set_status(ledger, "recovered", "interrupted-budget-stage-reservation-consumed")
+        _atomic_json(ledger_path, ledger)
+    remaining = float(batch["wallClockBudgetSeconds"]) - float(ledger["cumulativeWallSeconds"])
+    if remaining <= 0:
+        _set_status(ledger, "stopped", "cumulative-wall-budget-exhausted")
+        _atomic_json(ledger_path, ledger)
+        raise SystemExit("benchmark cumulative wall-clock budget is exhausted")
+    reservation = min(maximum, remaining)
+    pre_stage = float(ledger["cumulativeWallSeconds"])
+    ledger["activeBudgetStage"] = {
+        "stage": stage,
+        "maximumWallSeconds": maximum,
+        "reservedWallSeconds": reservation,
+        "preStageCumulativeWallSeconds": pre_stage,
+    }
+    ledger["cumulativeWallSeconds"] = pre_stage + reservation
+    _set_status(ledger, "running", f"{stage}-reserved")
+    _atomic_json(ledger_path, ledger)
+    started = monotonic()
+    try:
+        result = callback(reservation)
+    except BaseException:
+        finished = monotonic()
+        _require(finished >= started, "monotonic clock moved backwards")
+        ledger["cumulativeWallSeconds"] = pre_stage + min(finished - started, reservation)
+        del ledger["activeBudgetStage"]
+        _set_status(ledger, "stopped", f"{stage}-failed")
+        _atomic_json(ledger_path, ledger)
+        raise
+    finished = monotonic()
+    _require(finished >= started, "monotonic clock moved backwards")
+    elapsed = finished - started
+    ledger["cumulativeWallSeconds"] = pre_stage + min(elapsed, reservation)
+    del ledger["activeBudgetStage"]
+    _set_status(ledger, "running", f"{stage}-complete")
+    _atomic_json(ledger_path, ledger)
+    if elapsed >= reservation:
+        _set_status(ledger, "stopped", "cumulative-wall-budget-exhausted")
+        _atomic_json(ledger_path, ledger)
+        raise SystemExit(f"benchmark {stage} exceeded the remaining wall-clock budget")
+    return result
 
 
 def _run_wave(
@@ -487,7 +596,7 @@ def execute_schedule(
         _require(finished >= started, "monotonic clock moved backwards")
         for attempt in attempts:
             attempt.update(results[attempt["attemptNumber"]])
-        ledger["cumulativeWallSeconds"] = pre_wave_cumulative + (finished - started)
+        ledger["cumulativeWallSeconds"] = pre_wave_cumulative + min(finished - started, timeout_seconds)
         del ledger["activeWave"]
         _set_status(ledger, "running", "wave-committed")
         _atomic_json(ledger_path, ledger)

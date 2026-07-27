@@ -22,6 +22,9 @@ CommandRunner = Callable[[list[str], float], subprocess.CompletedProcess[str]]
 AttemptCallback = Callable[..., dict[str, Any]]
 DirectoryRemover = Callable[[Path], None]
 PREFLIGHT_CLEANUP_TIMEOUT_SECONDS = 5.0
+MAX_ARTIFACT_ENTRIES = 4_096
+MAX_ARTIFACT_FILE_BYTES = 64 * 1024 * 1024
+MAX_ARTIFACT_TOTAL_BYTES = 256 * 1024 * 1024
 PROXY_KEYS = ("ALL_PROXY", "HTTPS_PROXY", "HTTP_PROXY")
 PROXY_SCHEMES = {"http", "https", "socks5", "socks5h"}
 
@@ -131,14 +134,20 @@ def redact_proxy_output(text: str, policy: ProxyPolicy) -> tuple[str, bool]:
 
 def scrub_proxy_artifact_tree(root: Path, policy: ProxyPolicy) -> bool:
     exposed = False
+    entry_count = 0
+    total_bytes = 0
     markers = sorted({os.fsencode(value) for value in policy.child_environment().values()}, key=len, reverse=True)
     if not root.exists():
         return False
     if root.is_symlink() or not root.is_dir():
         raise OSError("artifact root must be an ordinary directory")
     for candidate in root.rglob("*"):
+        entry_count += 1
+        if entry_count > MAX_ARTIFACT_ENTRIES:
+            raise OSError("artifact entry-count limit exceeded")
         if candidate.is_symlink():
             payload = os.readlink(os.fsencode(candidate))
+            total_bytes += len(payload)
             redacted = payload
             for marker in markers:
                 redacted = redacted.replace(marker, b"[REDACTED_PROXY]")
@@ -149,6 +158,10 @@ def scrub_proxy_artifact_tree(root: Path, policy: ProxyPolicy) -> bool:
             continue
         if not candidate.is_file():
             continue
+        size = candidate.stat().st_size
+        total_bytes += size
+        if size > MAX_ARTIFACT_FILE_BYTES or total_bytes > MAX_ARTIFACT_TOTAL_BYTES:
+            raise OSError("artifact size limit exceeded")
         payload = candidate.read_bytes()
         redacted = payload
         for marker in markers:

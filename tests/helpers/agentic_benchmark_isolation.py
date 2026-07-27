@@ -11,6 +11,7 @@ import shutil
 import signal
 import stat
 import subprocess
+import time
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -508,7 +509,7 @@ def run_provider_preflight(
         require(not output_root.exists(), "provider preflight isolated root cleanup failed")
 
 
-def run_command(command: list[str], label: str, timeout: int = 60) -> str:
+def run_command(command: list[str], label: str, timeout: float = 60.0) -> str:
     process = subprocess.Popen(
         command,
         text=True,
@@ -638,7 +639,16 @@ def run_isolation_audit(
     bwrap: Path,
     codex: Path,
     prepared_snapshot: Path | None = None,
+    timeout_seconds: float = 60.0,
 ) -> dict[str, Any]:
+    require(timeout_seconds > 0, "isolation audit timeout must be positive")
+    deadline = time.monotonic() + timeout_seconds
+
+    def remaining_timeout() -> float:
+        remaining = deadline - time.monotonic()
+        require(remaining > 0, "isolation audit exceeded the remaining wall-clock budget")
+        return remaining
+
     require(bwrap.is_file(), f"bwrap is required for benchmark isolation: {bwrap}")
     require(codex.exists(), f"Codex executable is missing: {codex}")
     require(auth_file.is_file(), f"Codex auth file is required: {auth_file}")
@@ -673,7 +683,7 @@ def run_isolation_audit(
             debug_prompt=True,
         )
         validate_bwrap_command(command, root=root, output_root=output_root, layout=layouts[arm])
-        raw = run_command(command, f"{arm} Codex prompt-input audit")
+        raw = run_command(command, f"{arm} Codex prompt-input audit", remaining_timeout())
         try:
             data = json.loads(raw)
         except json.JSONDecodeError as exc:
@@ -682,7 +692,7 @@ def run_isolation_audit(
 
         audit_command = mount_audit_command(bwrap=bwrap, codex=codex, layout=layouts[arm])
         validate_bwrap_command(audit_command, root=root, output_root=output_root, layout=layouts[arm])
-        mount_audits[arm] = json.loads(run_command(audit_command, f"{arm} mount audit"))
+        mount_audits[arm] = json.loads(run_command(audit_command, f"{arm} mount audit", remaining_timeout()))
 
     baseline = summaries["baseline-no-aegis"]
     aegis = summaries["aegis-auto"]

@@ -10,7 +10,6 @@ import os
 import random
 import re
 import shutil
-import signal
 import subprocess
 import sys
 import time
@@ -19,6 +18,7 @@ from pathlib import Path
 from typing import Any
 
 import agentic_benchmark_scheduler
+from agentic_benchmark_process_supervisor import communicate_with_timeout, supervise_attempt, supervise_operation
 
 from agentic_benchmark_isolation import (
     ARMS,
@@ -299,6 +299,7 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
     harness_paths = [
         "tests/helpers/run_agentic_benchmark.py",
         "tests/helpers/agentic_benchmark_scheduler.py",
+        "tests/helpers/agentic_benchmark_process_supervisor.py",
         "tests/helpers/agentic_benchmark_isolation.py",
         "tests/helpers/agentic_benchmark_provider_preflight.py",
         "tests/helpers/score_agentic_benchmark_outcome.py",
@@ -470,60 +471,6 @@ def redact_credential_output(text: str, auth_file: Path) -> tuple[str, bool]:
     return redacted, exposed
 
 
-def timeout_output(value: str | bytes | None) -> str:
-    if value is None:
-        return ""
-    return value.decode(errors="replace") if isinstance(value, bytes) else value
-
-
-def terminate_process(
-    process: subprocess.Popen[str],
-    cleanup_timeout_seconds: float = 5.0,
-) -> tuple[str, str]:
-    require(cleanup_timeout_seconds > 0, "process cleanup timeout must be positive")
-    try:
-        os.killpg(process.pid, signal.SIGTERM)
-    except ProcessLookupError:
-        pass
-    try:
-        return process.communicate(timeout=cleanup_timeout_seconds)
-    except subprocess.TimeoutExpired:
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-        try:
-            return process.communicate(timeout=cleanup_timeout_seconds)
-        except subprocess.TimeoutExpired as exc:
-            stdout = timeout_output(exc.output)
-            stderr = timeout_output(exc.stderr) + "\nbenchmark process cleanup exceeded its bounded deadline\n"
-            for stream in (process.stdout, process.stderr):
-                if stream is not None:
-                    stream.close()
-            try:
-                process.wait(timeout=cleanup_timeout_seconds)
-            except subprocess.TimeoutExpired:
-                pass
-            return stdout, stderr
-
-
-def communicate_with_timeout(
-    process: subprocess.Popen[str],
-    timeout_seconds: float,
-    *,
-    cleanup_timeout_seconds: float = 5.0,
-) -> tuple[str, str, bool]:
-    """Enforce the production executor's subprocess timeout and bounded cleanup."""
-
-    require(timeout_seconds > 0, "process timeout must be positive")
-    try:
-        stdout, stderr = process.communicate(timeout=timeout_seconds)
-        return stdout, stderr, False
-    except subprocess.TimeoutExpired:
-        stdout, stderr = terminate_process(process, cleanup_timeout_seconds)
-        return stdout, stderr, True
-
-
 def _execute_target_unscrubbed(
     *,
     root: Path,
@@ -536,6 +483,7 @@ def _execute_target_unscrubbed(
     codex: Path,
     timeout_seconds: float,
     proxy_policy: ProxyPolicy,
+    process_group_supervised: bool = False,
 ) -> dict[str, Any]:
     case = find_case(batch["frozenCases"], "caseId", target["caseId"], "frozen benchmark")
     attempt_root = output_root / "attempts" / f"{attempt_number:03d}-{target['targetId']}"
@@ -571,7 +519,7 @@ def _execute_target_unscrubbed(
         stdin=subprocess.DEVNULL,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        start_new_session=True,
+        start_new_session=not process_group_supervised,
     )
     stdout, stderr, timed_out = communicate_with_timeout(process, timeout_seconds)
     if timed_out:
@@ -643,6 +591,7 @@ def execute_target(
     codex: Path,
     timeout_seconds: float,
     proxy_policy: ProxyPolicy,
+    process_group_supervised: bool = False,
 ) -> dict[str, Any]:
     callback_arguments = locals()
     leaf = f"{attempt_number:03d}-{target['targetId']}"
@@ -901,57 +850,77 @@ def run_command(args: argparse.Namespace) -> None:
     batch, ledger = load_batch_and_ledger(output_root)
     proxy_policy = verify_batch(batch, root, output_root)
     require_execution_opt_in(batch["profileId"], os.environ)
-    auth_file = resolve_auth_file(args.auth_file)
-    attempts_root = resolve_tmp_child(root, output_root / "attempts", "attempts artifact root")
-    scrub_stale_proxy_artifacts(attempts_root, proxy_policy, lambda path: remove_tmp_directory(path, root))
-    bwrap = resolve_tool("bwrap", "AEGIS_BENCHMARK_BWRAP")
-    codex = resolve_tool("codex", "AEGIS_BENCHMARK_CODEX")
-    frozen_isolation_case = find_case(batch["frozenCases"], "caseId", batch["caseIds"][0], "frozen benchmark")
-    isolation_case = {
-        "id": frozen_isolation_case["caseId"],
-        "promptPath": relative_repo_path(root, output_root / frozen_isolation_case["frozenPromptPath"]),
-        "seedProjectPath": relative_repo_path(root, output_root / frozen_isolation_case["frozenSeedProjectPath"]),
-    }
-    isolation_report = run_isolation_audit(
-        root=root,
-        case=isolation_case,
-        output_root=output_root / "isolation-audit",
-        auth_file=auth_file,
-        bwrap=bwrap,
-        codex=codex,
-        prepared_snapshot=output_root / "distribution-snapshot",
+    ledger_path = output_root / "ledger.json"
+
+    def isolation_stage(remaining_seconds: float) -> dict[str, Any]:
+        return supervise_operation(
+            "isolation-setup",
+            {
+                "root": str(root),
+                "outputRoot": str(output_root),
+                "batch": batch,
+                "authFile": str(args.auth_file),
+            },
+            remaining_seconds,
+        )
+
+    setup = agentic_benchmark_scheduler.execute_budgeted_stage(
+        batch,
+        ledger,
+        ledger_path,
+        "isolation-and-setup",
+        batch["wallClockBudgetSeconds"],
+        isolation_stage,
     )
-    validate_live_isolation_report(isolation_report, batch)
-    atomic_json(output_root / "isolation-report.json", isolation_report)
-    preflight = run_provider_preflight(
-        root=root,
-        batch_root=output_root,
-        auth_file=auth_file,
-        bwrap=bwrap,
-        codex=codex,
-        requested_model=batch["modelPolicy"]["requestedModel"],
-        timeout_seconds=batch["preflightTimeoutSeconds"],
-        proxy_policy=proxy_policy,
+    auth_file, bwrap, codex = (Path(setup[key]) for key in ("authFile", "bwrap", "codex"))
+
+    def preflight_stage(remaining_seconds: float) -> dict[str, Any]:
+        return supervise_operation(
+            "provider-preflight",
+            {
+                "root": str(root),
+                "outputRoot": str(output_root),
+                "batch": batch,
+                "authFile": str(auth_file),
+                "bwrap": str(bwrap),
+                "codex": str(codex),
+            },
+            remaining_seconds,
+        )
+
+    preflight = agentic_benchmark_scheduler.execute_budgeted_stage(
+        batch,
+        ledger,
+        ledger_path,
+        "provider-preflight",
+        batch["preflightTimeoutSeconds"],
+        preflight_stage,
     )
     atomic_json(output_root / "provider-preflight.json", preflight)
     require(preflight["status"] == "ready", f"provider preflight is not ready: {preflight['status']}")
 
     def executor(target: dict[str, Any], attempt_number: int, timeout_seconds: float) -> dict[str, Any]:
         current_proxy_policy = verify_batch(batch, root, output_root)
-        return execute_target(
-            root=root,
-            output_root=output_root,
-            batch=batch,
-            target=target,
-            attempt_number=attempt_number,
-            auth_file=auth_file,
-            bwrap=bwrap,
-            codex=codex,
-            timeout_seconds=timeout_seconds,
-            proxy_policy=current_proxy_policy,
+        require(
+            network_policy_metadata(current_proxy_policy) == network_policy_metadata(proxy_policy),
+            "benchmark proxy policy drifted",
+        )
+        return supervise_attempt(
+            {
+                "root": str(root),
+                "outputRoot": str(output_root),
+                "batch": batch,
+                "target": target,
+                "attemptNumber": attempt_number,
+                "authFile": str(auth_file),
+                "bwrap": str(bwrap),
+                "codex": str(codex),
+                "timeoutSeconds": timeout_seconds,
+            },
+            timeout_seconds,
         )
 
-    agentic_benchmark_scheduler.execute_schedule(batch, ledger, output_root / "ledger.json", executor)
+    agentic_benchmark_scheduler.execute_schedule(batch, ledger, ledger_path, executor)
     verify_batch(batch, root, output_root)
     report = aggregate(batch, ledger)
     atomic_json(output_root / "private-report.json", report)
