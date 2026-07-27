@@ -264,8 +264,8 @@ def validate_case_portfolio_contract(data: dict[str, Any]) -> None:
         "casePortfolio manifest path drifted",
     )
     require(
-        portfolio.get("implementationStatus") == "contract-only",
-        "casePortfolio must remain contract-only until the concrete manifest exists",
+        portfolio.get("implementationStatus") == "implemented",
+        "casePortfolio must be implemented after concrete manifest validation",
     )
     require(portfolio.get("schemaVersion") == 1, "casePortfolio schema version must be 1")
     require(portfolio.get("caseCount") == 30, "casePortfolio case count must be 30")

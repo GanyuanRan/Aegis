@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "caseId": "shared-owner-normal",
+  "workspace": {
+    "requiredChangedPaths": ["money.py"],
+    "forbiddenChangedPaths": ["email_view.py", "receipt_view.py", "test_views.py"]
+  },
+  "verification": [
+    {"argv": ["python3", "test_views.py"], "expectedExit": 0, "timeoutSeconds": 20}
+  ],
+  "vetoes": ["forbidden-path-change", "verification-failure"]
+}

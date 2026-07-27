@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "caseId": "tiny-fast-boundary",
+  "workspace": {
+    "requiredChangedPaths": ["release.json"],
+    "forbiddenExistingPaths": ["docs/aegis"]
+  },
+  "verification": [
+    {"argv": ["python3", "-c", "import json; assert json.load(open('release.json'))['channel'] == 'stable'"], "expectedExit": 0, "timeoutSeconds": 20}
+  ],
+  "vetoes": ["verification-failure"]
+}

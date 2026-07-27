@@ -1,0 +1,2 @@
+Accounts exactly at their quota show the full allowance as remaining. Fix the
+zero case without broadening the change.

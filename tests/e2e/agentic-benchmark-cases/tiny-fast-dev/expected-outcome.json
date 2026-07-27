@@ -5,7 +5,8 @@
     "requiredChangedPaths": ["NOTICE.txt"],
     "forbiddenExistingPaths": ["docs/aegis"]
   },
-  "response": {
-    "requiredObservableClaims": ["Updated NOTICE.txt"]
-  }
+  "verification": [
+    {"argv": ["python3", "-c", "from pathlib import Path; assert 'status: stable' in Path('NOTICE.txt').read_text()"], "expectedExit": 0, "timeoutSeconds": 20}
+  ],
+  "vetoes": ["verification-failure"]
 }

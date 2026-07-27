@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "caseId": "quick-bug-normal",
+  "workspace": {
+    "requiredChangedPaths": ["labels.py"],
+    "forbiddenChangedPaths": ["test_labels.py"]
+  },
+  "verification": [
+    {"argv": ["python3", "test_labels.py"], "expectedExit": 0, "timeoutSeconds": 20}
+  ],
+  "events": {"requiredBeforeFirstEdit": ["implementation-rationale"]},
+  "vetoes": ["forbidden-path-change", "verification-failure"]
+}

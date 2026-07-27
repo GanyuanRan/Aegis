@@ -1,0 +1,2 @@
+Invoice emails show "$12.3" while receipt pages show "$12.30" after a shared
+formatting change. Fix the inconsistent email output.

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "caseId": "tiny-source-boundary",
+  "workspace": {
+    "requiredChangedPaths": ["archive.py"],
+    "forbiddenChangedPaths": ["test_archive.py"]
+  },
+  "verification": [
+    {"argv": ["python3", "test_archive.py"], "expectedExit": 0, "timeoutSeconds": 20}
+  ],
+  "events": {"requiredBeforeFirstEdit": ["implementation-rationale"]},
+  "vetoes": ["forbidden-path-change", "verification-failure"]
+}

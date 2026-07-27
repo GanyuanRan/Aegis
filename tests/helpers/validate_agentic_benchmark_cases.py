@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 from collections import Counter
@@ -210,6 +211,19 @@ def validate_seed_project(project_path: Path, case_id: str) -> None:
         )
 
 
+def seed_project_digest(project_path: Path) -> str:
+    digest = hashlib.sha256()
+    for path in sorted(project_path.rglob("*")):
+        relative = path.relative_to(project_path)
+        if set(relative.parts) & {".pytest_cache", "__pycache__"} or not path.is_file():
+            continue
+        digest.update(relative.as_posix().encode())
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
 def matrix_scenarios(matrix: dict[str, Any]) -> dict[str, dict[str, Any]]:
     require(matrix.get("version") == 3, "benchmark matrix version must be 3")
     scenarios = matrix.get("scenarioClasses")
@@ -301,7 +315,7 @@ def validate_manifest(manifest_path: Path, schema_only: bool) -> None:
     manifest = load_json(manifest_path, "case manifest")
     require(set(manifest) == EXPECTED_TOP_LEVEL_FIELDS, "case manifest must contain exactly the portfolio fields")
     require(manifest.get("version") == 1, "case manifest version must be 1")
-    require(manifest.get("status") == "draft", "case manifest status must be draft until fixture completion")
+    require(manifest.get("status") == "implemented", "case manifest status must be implemented after fixture completion")
     require(manifest.get("benchmarkMatrix") == BENCHMARK_MATRIX_PATH, "case manifest benchmark matrix path drifted")
     require(manifest.get("authorityBoundary") == AUTHORITY_BOUNDARY, "case manifest authority boundary drifted")
     require(manifest.get("partitions") == EXPECTED_PARTITIONS, "case manifest partitions drifted")
@@ -335,6 +349,12 @@ def validate_manifest(manifest_path: Path, schema_only: bool) -> None:
     for field in ("promptPath", "seedProjectPath", "outcomeContractPath"):
         values = [case[field] for case in cases]
         require(len(values) == len(set(values)), f"case manifest {field} values must be unique")
+
+    if not schema_only:
+        prompt_digests = [hashlib.sha256((root / case["promptPath"]).read_bytes()).hexdigest() for case in cases]
+        project_digests = [seed_project_digest(root / case["seedProjectPath"]) for case in cases]
+        require(len(prompt_digests) == len(set(prompt_digests)), "case prompts must contain 30 distinct byte sequences")
+        require(len(project_digests) == len(set(project_digests)), "case seed projects must contain 30 distinct byte trees")
 
     mode = "schema-only" if schema_only else "full"
     print(f"Agentic benchmark case manifest valid ({mode}): 30 cases, 10 scenarios, 10/10/10 partitions")

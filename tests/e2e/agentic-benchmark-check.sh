@@ -111,7 +111,7 @@ elif mutation in {
 elif mutation in {"portfolio-case-count", "portfolio-status"}:
     field, value = {
         "portfolio-case-count": ("caseCount", 29),
-        "portfolio-status": ("implementationStatus", "implemented"),
+        "portfolio-status": ("implementationStatus", "contract-only"),
     }[mutation]
     matrix["casePortfolio"][field] = value
 elif mutation == "report-authority-overclaim":
@@ -389,7 +389,7 @@ assert_contains "$baseline" "sanitized, path-independent advisory report" \
 
 "${PYTHON_CMD[@]}" tests/helpers/validate_workflow_quality_matrix.py "$workflow_matrix"
 "${PYTHON_CMD[@]}" tests/helpers/validate_agentic_benchmark_matrix.py "$matrix"
-"${PYTHON_CMD[@]}" tests/helpers/validate_agentic_benchmark_cases.py "$case_manifest" --schema-only
+"${PYTHON_CMD[@]}" tests/helpers/validate_agentic_benchmark_cases.py "$case_manifest"
 "${PYTHON_CMD[@]}" tests/helpers/run_controlled_replay_samples.py --validate-only
 
 mkdir -p "$REPO_ROOT/.tmp"
@@ -409,7 +409,7 @@ live-paid-attempt-ceiling|live paid-attempt ceiling drift|live repeated/held-out
 live-score-source|arm-biased live scorer drift|live repeated/held-out scorer must remain arm-neutral and outcome-based|matrix-only
 live-supports-promotion|in-progress live promotion overclaim|in-progress live tier cannot support promotion evidence|matrix-only
 portfolio-case-count|portfolio case-count drift|casePortfolio case count must be 30|matrix-only
-portfolio-status|portfolio implementation overclaim|casePortfolio must remain contract-only until the concrete manifest exists|matrix-only
+portfolio-status|portfolio implementation status regression|casePortfolio must be implemented after concrete manifest validation|matrix-only
 report-authority-overclaim|report authority overclaim|missing forbidden claims: aegis-grants-completion-authority|matrix-only
 automatic-promotion|automatic candidate promotion claim|promotionPolicy must remain advisory-only
 controlled-default-ci|controlled replay default CI drift|controlled-replay must not be the default CI tier

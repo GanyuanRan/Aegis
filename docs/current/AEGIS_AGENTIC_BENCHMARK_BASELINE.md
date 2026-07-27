@@ -200,10 +200,10 @@ claims and event order. Aegis skill names, routes, artifact names, or semantic
 aliases may be diagnostic attribution only; they cannot make a task pass and
 must not be required from the no-Aegis arm.
 
-The portfolio remains `contract-only` until its concrete manifest and validator
-exist. The repeated-live tier remains `implementation-in-progress` until the
-case validator, outcome scorer, isolated runner, aggregation and report
-projection pass their offline gates. Neither status is live benchmark evidence.
+The concrete portfolio and validator are implemented. The repeated-live tier
+remains `implementation-in-progress` until the outcome scorer, isolated runner,
+aggregation and report projection pass their offline gates. Portfolio
+implementation is not live benchmark evidence.
 
 ## 8. Controlled Replay Samples
 

@@ -55,7 +55,7 @@
   },
   "casePortfolio": {
     "manifestPath": "tests/e2e/fixtures/agentic-benchmark-cases.json",
-    "implementationStatus": "contract-only",
+    "implementationStatus": "implemented",
     "schemaVersion": 1,
     "caseCount": 30,
     "scenarioClassCount": 10,

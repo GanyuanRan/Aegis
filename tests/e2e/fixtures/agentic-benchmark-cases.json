@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "status": "draft",
+  "status": "implemented",
   "benchmarkMatrix": "tests/e2e/fixtures/agentic-benchmark-matrix.json",
   "authorityBoundary": "advisory-method-pack-evidence-not-completion-authority",
   "partitions": {

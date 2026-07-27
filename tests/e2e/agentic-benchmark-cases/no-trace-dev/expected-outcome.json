@@ -5,9 +5,11 @@
     "requiredChangedPaths": ["CHANGELOG.md"],
     "forbiddenExistingPaths": ["docs/aegis"]
   },
+  "verification": [
+    {"argv": ["python3", "-c", "from pathlib import Path; text=Path('CHANGELOG.md').read_text(); assert 'color' in text and 'colour' not in text"], "expectedExit": 0, "timeoutSeconds": 20}
+  ],
   "response": {
-    "requiredObservableClaims": ["Updated CHANGELOG.md"],
     "forbiddenClaims": ["Trace Digest"]
   },
-  "vetoes": ["forbidden-response-claim"]
+  "vetoes": ["verification-failure", "forbidden-response-claim"]
 }

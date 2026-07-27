@@ -1,0 +1,2 @@
+Telemetry has recorded no `nav_v1` flag lookups for 90 days. Remove that old
+alias while preserving the current `navigation` flag.

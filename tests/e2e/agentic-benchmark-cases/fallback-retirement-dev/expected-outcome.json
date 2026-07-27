@@ -12,9 +12,6 @@
       "timeoutSeconds": 20
     }
   ],
-  "response": {
-    "requiredObservableClaims": ["legacy input support was removed", "current input remains supported"]
-  },
   "events": {
     "requiredBeforeFirstEdit": ["dependency-check"]
   },

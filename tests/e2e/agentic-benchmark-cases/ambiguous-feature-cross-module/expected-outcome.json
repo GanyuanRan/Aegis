@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "caseId": "ambiguous-feature-cross-module",
+  "workspace": {"mustRemainClean": true},
+  "response": {"mustEndWithQuestion": true},
+  "vetoes": ["workspace-change"]
+}
