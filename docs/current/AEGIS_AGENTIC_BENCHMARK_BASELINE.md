@@ -214,7 +214,12 @@ authentication freeze, report persistence, summary output and authentication
 close. Before active child work starts, `activeInvocation` fsyncs a reservation
 for all remaining time. An interrupted active invocation consumes that complete
 reservation on the next start and requires a new batch; restart is not a way to
-regain wall-clock budget.
+regain wall-clock budget. The active child may checkpoint total elapsed time
+after authentication close and summary output, but it cannot delete the
+reservation. Only the outer supervisor may settle it after a zero exit and a
+clean reap of the whole child tree. Timeout or any nonzero exit retains the
+reservation while a remaining-budget cleanup attempts to purge untrusted
+attempt artifacts.
 
 The preflight proves only that Codex returned a sanitized, non-empty catalog,
 that the requested model was present, and that no visible refresh failure was

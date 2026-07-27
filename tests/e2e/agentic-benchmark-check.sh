@@ -431,6 +431,10 @@ assert_contains "$baseline" "activeInvocation.*reservation|reservation.*active i
     "benchmark baseline makes the full remaining invocation reservation explicit"
 assert_contains "$baseline" "requires a new batch" \
     "benchmark baseline refuses wall-budget recovery after interruption"
+assert_contains "$baseline" "Only the outer supervisor may settle.*zero exit" \
+    "benchmark baseline keeps settlement behind clean zero-exit supervision"
+assert_contains "$baseline" "Timeout or any nonzero exit retains" \
+    "benchmark baseline retains invocation reservations on every nonzero exit"
 assert_contains "$baseline" "sampled artifact" \
     "benchmark baseline labels aggregate artifact monitoring as sampled"
 assert_contains "$baseline" "sampling does not guarantee detection" \

@@ -140,20 +140,32 @@ from pathlib import Path
 
 mode, helper_root, events_path = sys.argv[1:]
 request = json.loads(sys.stdin.read())
-if mode == "timeout":
-    time.sleep(60)
-    raise SystemExit(0)
 sys.path.insert(0, helper_root)
 import agentic_benchmark_scheduler as scheduler
 output_root = Path(request["outputRoot"])
 batch = json.loads((output_root / "batch.json").read_text(encoding="utf-8"))
 ledger = json.loads((output_root / "ledger.json").read_text(encoding="utf-8"))
 events = Path(events_path)
+if mode == "timeout":
+    scheduler.checkpoint_invocation(
+        batch,
+        ledger,
+        output_root / "ledger.json",
+        request["invocationId"],
+        time.monotonic() - request["startedMonotonicSeconds"],
+    )
+    secret = output_root / "attempts/001-timeout/workspace/secret.txt"
+    secret.parent.mkdir(parents=True)
+    secret.write_text("transient credential", encoding="utf-8")
+    events.write_text("checkpoint\\n", encoding="utf-8")
+    time.sleep(60)
+    raise SystemExit(0)
 events.write_text("auth-close\\n", encoding="utf-8")
-print(json.dumps({"batchId": batch["batchId"], "completeness": "complete"}), flush=True)
+completeness = "incomplete" if mode == "incomplete" else "complete"
+print(json.dumps({"batchId": batch["batchId"], "completeness": completeness}), flush=True)
 with events.open("a", encoding="utf-8") as stream:
     stream.write("summary\\n")
-scheduler.settle_invocation(
+scheduler.checkpoint_invocation(
     batch,
     ledger,
     output_root / "ledger.json",
@@ -161,7 +173,12 @@ scheduler.settle_invocation(
     time.monotonic() - request["startedMonotonicSeconds"],
 )
 with events.open("a", encoding="utf-8") as stream:
-    stream.write("settle\\n")
+    stream.write("checkpoint\\n")
+if mode == "incomplete":
+    secret = output_root / "attempts/001-incomplete/workspace/secret.txt"
+    secret.parent.mkdir(parents=True)
+    secret.write_text("transient credential", encoding="utf-8")
+    raise SystemExit(75)
 """.strip()
             + "\n",
             encoding="utf-8",
@@ -384,6 +401,8 @@ with events.open("a", encoding="utf-8") as stream:
             self.assertLessEqual(elapsed, wall_seconds + 0.05)
             persisted = json.loads((output_root / "ledger.json").read_text(encoding="utf-8"))
             self.assertIn("activeInvocation", persisted)
+            self.assertEqual(events.read_text(encoding="utf-8").splitlines(), ["checkpoint"])
+            self.assertFalse((output_root / "attempts").exists())
             with self.assertRaises(SystemExit) as caught:
                 process_supervisor._execute_reserve_invocation(
                     benchmark_runner,
@@ -415,12 +434,12 @@ with events.open("a", encoding="utf-8") as stream:
                 active_run.run_supervised(args)
             outer_elapsed = time.monotonic() - started
             persisted = json.loads((output_root / "ledger.json").read_text(encoding="utf-8"))
-            self.assertEqual(events.read_text(encoding="utf-8").splitlines(), ["auth-close", "summary", "settle"])
+            self.assertEqual(events.read_text(encoding="utf-8").splitlines(), ["auth-close", "summary", "checkpoint"])
             self.assertNotIn("activeInvocation", persisted)
             self.assertGreater(persisted["cumulativeWallSeconds"], 0)
             self.assertLessEqual(abs(persisted["cumulativeWallSeconds"] - outer_elapsed), 0.08)
 
-    def test_active_worker_logic_closes_and_prints_before_total_settlement(self):
+    def test_active_worker_logic_closes_and_prints_then_checkpoints_without_settlement(self):
         wall_seconds = 1.0
         with tempfile.TemporaryDirectory(prefix="agentic-worker-settle-", dir=self.root / ".tmp") as value:
             output_root = Path(value)
@@ -444,14 +463,14 @@ with events.open("a", encoding="utf-8") as stream:
                     return {"batchId": "fake", "attempts": {}, "completeness": "complete"}
                 self.fail(f"unexpected stage {stage}")
 
-            def settle(*args):
-                scheduler_owner.settle_invocation(*args)
-                events.append("settle")
+            def checkpoint(*args):
+                scheduler_owner.checkpoint_invocation(*args)
+                events.append("checkpoint")
 
             scheduler = SimpleNamespace(
                 validate_ledger=scheduler_owner.validate_ledger,
-                checkpoint_invocation=scheduler_owner.checkpoint_invocation,
-                settle_invocation=settle,
+                checkpoint_invocation=checkpoint,
+                settle_invocation=lambda *_args: self.fail("active child must never settle its reservation"),
                 execute_budgeted_stage=execute_stage,
                 execute_schedule=lambda *_args: None,
             )
@@ -467,8 +486,8 @@ with events.open("a", encoding="utf-8") as stream:
                     reserved_wall_seconds=wall_seconds,
                 )
             persisted = json.loads((output_root / "ledger.json").read_text(encoding="utf-8"))
-            self.assertEqual(events[-3:], ["auth-close", "summary", "settle"])
-            self.assertNotIn("activeInvocation", persisted)
+            self.assertEqual(events[-3:], ["auth-close", "summary", "checkpoint"])
+            self.assertIn("activeInvocation", persisted)
             self.assertGreaterEqual(persisted["cumulativeWallSeconds"], 0.05)
 
     def test_bootstrap_prior_cumulative_tightens_reservation_deadline(self):
@@ -496,6 +515,54 @@ with events.open("a", encoding="utf-8") as stream:
                 active_run.run_supervised(args)
             self.assertLess(captured[0], wall_seconds - 0.05)
             self.assertLessEqual(time.monotonic() - started, wall_seconds)
+
+    def test_incomplete_exit_75_keeps_reservation_and_purges_attempt_secrets(self):
+        with tempfile.TemporaryDirectory(prefix="agentic-outer-incomplete-", dir=self.root / ".tmp") as value:
+            output_root = Path(value)
+            self.prepare_short_batch(output_root, 1.0)
+            worker = self.write_outer_worker(output_root)
+            events = output_root / "events.txt"
+            args = argparse.Namespace(output_root=output_root, auth_file=output_root / "unused-auth.json")
+            command = [sys.executable, str(worker), "incomplete", str(Path(__file__).resolve().parent), str(events)]
+            with mock.patch.dict(os.environ, {"AEGIS_AGENTIC_BENCHMARK_LIVE": "1"}), mock.patch.object(
+                active_run, "_active_worker_command", return_value=command
+            ), self.assertRaises(SystemExit) as caught:
+                active_run.run_supervised(args)
+            self.assertEqual(caught.exception.code, 75)
+            persisted = json.loads((output_root / "ledger.json").read_text(encoding="utf-8"))
+            self.assertIn("activeInvocation", persisted)
+            self.assertFalse((output_root / "attempts").exists())
+
+    def test_cleanup_failure_returns_safe_error_without_settling_reservation(self):
+        with tempfile.TemporaryDirectory(prefix="agentic-outer-cleanup-fail-", dir=self.root / ".tmp") as value:
+            output_root = Path(value)
+            self.prepare_short_batch(output_root, 0.5)
+            worker = self.write_outer_worker(output_root)
+            events = output_root / "events.txt"
+            args = argparse.Namespace(output_root=output_root, auth_file=output_root / "unused-auth.json")
+            command = [sys.executable, str(worker), "timeout", str(Path(__file__).resolve().parent), str(events)]
+            with mock.patch.dict(os.environ, {"AEGIS_AGENTIC_BENCHMARK_LIVE": "1"}), mock.patch.object(
+                active_run, "_active_worker_command", return_value=command
+            ), mock.patch.object(
+                active_run, "supervise_confidential_cleanup", side_effect=SystemExit("private cleanup detail")
+            ), self.assertRaises(SystemExit) as caught:
+                active_run.run_supervised(args)
+            self.assertEqual(str(caught.exception), "benchmark active invocation cleanup failed")
+            persisted = json.loads((output_root / "ledger.json").read_text(encoding="utf-8"))
+            self.assertIn("activeInvocation", persisted)
+            self.assertTrue((output_root / "attempts/001-timeout/workspace/secret.txt").exists())
+            with self.assertRaises(SystemExit) as replacement:
+                process_supervisor._execute_reserve_invocation(
+                    benchmark_runner,
+                    {
+                        "root": str(self.root),
+                        "outputRoot": str(output_root),
+                        "invocationId": "replacement-after-cleanup-failure",
+                        "timeoutSeconds": 0.5,
+                    },
+                )
+            self.assertIn("new batch", str(replacement.exception))
+            self.assertFalse((output_root / "attempts").exists())
 
 
 if __name__ == "__main__":

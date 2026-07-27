@@ -472,6 +472,7 @@ def supervise_operation(
             "isolation-setup",
             "provider-preflight",
             "reserve-invocation",
+            "settle-invocation",
         },
         "unknown supervised operation",
     )
@@ -767,12 +768,21 @@ def _execute_reserve_invocation(runner: Any, request: dict[str, Any]) -> dict[st
     output_root = runner.resolve_tmp_child(root, _path(request.get("outputRoot"), "outputRoot"), "output-root")
     batch, ledger = runner.load_batch_and_ledger(output_root)
     runner.agentic_benchmark_scheduler.validate_ledger(batch, ledger)
-    active = runner.agentic_benchmark_scheduler.reserve_invocation(
-        batch,
-        ledger,
-        output_root / "ledger.json",
-        request.get("invocationId"),
-    )
+    had_interrupted_invocation = "activeInvocation" in ledger
+    try:
+        active = runner.agentic_benchmark_scheduler.reserve_invocation(
+            batch,
+            ledger,
+            output_root / "ledger.json",
+            request.get("invocationId"),
+        )
+    except BaseException:
+        if had_interrupted_invocation:
+            try:
+                runner.remove_tmp_artifact_entry(output_root / "attempts", root)
+            except BaseException:
+                raise SystemExit("interrupted invocation artifact cleanup failed") from None
+        raise
     try:
         runner.verify_batch(batch, root, output_root)
         runner.require_execution_opt_in(batch["profileId"], os.environ)
@@ -788,6 +798,29 @@ def _execute_reserve_invocation(runner: Any, request: dict[str, Any]) -> dict[st
         "batchDigest": batch["batchDigest"],
         "reservedWallSeconds": active["reservedWallSeconds"],
     }
+
+
+def _execute_settle_invocation(runner: Any, request: dict[str, Any]) -> dict[str, Any]:
+    root = _path(request.get("root"), "root")
+    _require(root.resolve() == runner.repo_root(), "invocation settlement root drifted")
+    output_root = runner.resolve_tmp_child(root, _path(request.get("outputRoot"), "outputRoot"), "output-root")
+    batch, ledger = runner.load_batch_and_ledger(output_root)
+    runner.verify_batch(batch, root, output_root)
+    started = request.get("startedMonotonicSeconds")
+    _require(
+        isinstance(started, (int, float))
+        and not isinstance(started, bool)
+        and 0 < float(started) <= time.monotonic(),
+        "invocation settlement monotonic start is invalid",
+    )
+    runner.agentic_benchmark_scheduler.settle_invocation(
+        batch,
+        ledger,
+        output_root / "ledger.json",
+        request.get("invocationId"),
+        time.monotonic() - float(started),
+    )
+    return {"invocationId": request.get("invocationId"), "status": "settled"}
 
 
 def _worker() -> int:
@@ -843,6 +876,8 @@ def _worker() -> int:
         result = _execute_finalize(runner, request)
     elif operation == "reserve-invocation":
         result = _execute_reserve_invocation(runner, request)
+    elif operation == "settle-invocation":
+        result = _execute_settle_invocation(runner, request)
     else:
         raise SystemExit("worker operation is invalid")
     rendered = json.dumps(result, separators=(",", ":"))

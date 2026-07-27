@@ -130,7 +130,7 @@ def run_supervised(args: Any) -> None:
     bootstrap_cumulative = _load_bootstrap_cumulative(output_root, envelope)
     invocation_budget = wall - bootstrap_cumulative
     _require(invocation_budget > 0, "benchmark cumulative wall-clock budget is exhausted")
-    return_reserve = min(MAX_PARENT_RETURN_RESERVE_SECONDS, max(0.01, invocation_budget / 4))
+    return_reserve = min(0.05, max(0.005, invocation_budget / 20))
 
     def remaining() -> float:
         value = invocation_budget - (time.monotonic() - started) - return_reserve
@@ -152,7 +152,8 @@ def run_supervised(args: Any) -> None:
     )
     reserved = reservation.get("reservedWallSeconds")
     _require(isinstance(reserved, (int, float)) and not isinstance(reserved, bool) and 0 < float(reserved) <= invocation_budget, "benchmark invocation reservation is invalid")
-    child_remaining = float(reserved) - (time.monotonic() - started) - return_reserve
+    post_child_reserve = min(2.0, max(0.1, float(reserved) / 4))
+    child_remaining = float(reserved) - (time.monotonic() - started) - post_child_reserve - return_reserve
     _require(child_remaining > 0, "benchmark absolute wall-clock deadline is exhausted")
     payload = json.dumps(
         {
@@ -164,17 +165,44 @@ def run_supervised(args: Any) -> None:
         },
         separators=(",", ":"),
     )
-    outcome = supervise_inherited_process(
-        _active_worker_command(),
-        payload,
-        child_remaining,
-    )
+    def purge_untrusted() -> None:
+        try:
+            supervise_confidential_cleanup(
+                {"root": str(root), "treeRoot": str(output_root / "attempts"), "mode": "purge-untrusted"},
+                remaining(),
+            )
+        except BaseException:
+            raise SystemExit("benchmark active invocation cleanup failed") from None
+
+    try:
+        outcome = supervise_inherited_process(
+            _active_worker_command(),
+            payload,
+            child_remaining,
+        )
+    except BaseException:
+        purge_untrusted()
+        raise
+
     if outcome["timedOut"]:
+        purge_untrusted()
         raise SystemExit("benchmark active invocation exceeded the remaining wall-clock budget")
     returncode = outcome["returncode"]
-    if returncode == 75:
-        raise SystemExit(75)
-    _require(returncode == 0, "benchmark active invocation failed")
+    if returncode != 0:
+        purge_untrusted()
+        if returncode == 75:
+            raise SystemExit(75)
+        raise SystemExit("benchmark active invocation failed")
+    supervise_operation(
+        "settle-invocation",
+        {
+            "root": str(root),
+            "outputRoot": str(output_root),
+            "invocationId": invocation_id,
+            "startedMonotonicSeconds": started,
+        },
+        remaining(),
+    )
 
 
 def run_active(
@@ -336,14 +364,6 @@ def run_active(
     summary: dict[str, Any] | None = None
     pending: BaseException | None = None
     try:
-        if invocation_id is not None:
-            runner.agentic_benchmark_scheduler.checkpoint_invocation(
-                batch,
-                ledger,
-                ledger_path,
-                invocation_id,
-                time.monotonic() - started,
-            )
         setup = runner.agentic_benchmark_scheduler.execute_budgeted_stage(
             batch, ledger, ledger_path, "isolation-and-setup", remaining(return_reserve=True), isolation_stage,
         )
@@ -377,22 +397,26 @@ def run_active(
         )
     except BaseException as exc:
         pending = exc
+    auth_closed = False
     try:
         frozen_auth.close()
+        auth_closed = True
     except BaseException as exc:
         if pending is None:
             pending = exc
+    summary_emitted = False
     if summary is not None:
         try:
             print(json.dumps(summary, sort_keys=True))
+            summary_emitted = True
             if summary["completeness"] != "complete" and pending is None:
                 pending = SystemExit(75)
         except BaseException as exc:
             if pending is None:
                 pending = exc
-    if invocation_id is not None:
+    if invocation_id is not None and auth_closed and summary_emitted:
         try:
-            runner.agentic_benchmark_scheduler.settle_invocation(
+            runner.agentic_benchmark_scheduler.checkpoint_invocation(
                 batch,
                 ledger,
                 ledger_path,
