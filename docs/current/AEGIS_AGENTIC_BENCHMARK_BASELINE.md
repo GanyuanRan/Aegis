@@ -204,6 +204,12 @@ a 240-second per-attempt timeout, and an infrastructure failure limit of two
 completed attempts in a wave. The maximum supported worker count is 12. An
 incomplete batch must not feed public benchmark claims.
 
+The preflight proves only that Codex returned a sanitized, non-empty catalog,
+that the requested model was present, and that no visible refresh failure was
+reported. It does not independently prove provider reachability when an
+upstream client silently serves cached metadata. The paired real-attempt canary
+is the transport truth before wider fan-out.
+
 The standard profile preserves held-out case coverage while bounding normal
 user wait, but one observation per case cannot support repeated-run stability,
 within-case variance, or `repeated-run-evidence` claims. The extended profile

@@ -158,6 +158,20 @@ class SchedulerTest(unittest.TestCase):
         self.assertEqual(len(state["attempts"]), 2)
         self.assertEqual(state["scheduler"]["reason"], "paired-canary-transport-failure")
 
+    def test_proxy_exposure_stops_paired_canary_without_active_wave_orphan(self):
+        frozen = batch(case_count=3)
+
+        def executor(_target, attempt_number, _timeout_seconds):
+            if attempt_number == 1:
+                return {"status": "invalid", "invalidReason": "proxy-exposure"}
+            return valid()
+
+        state = self.execute(frozen, ledger(), executor)
+        self.assertEqual(len(state["attempts"]), 2)
+        self.assertEqual(state["attempts"][0]["invalidReason"], "proxy-exposure")
+        self.assertEqual(state["scheduler"]["reason"], "paired-canary-transport-failure")
+        self.assertNotIn("activeWave", state)
+
     def test_scorer_unknown_canary_does_not_block_fanout(self):
         frozen = batch(case_count=2, workers=2, max_attempts=5)
 
@@ -315,6 +329,20 @@ class SchedulerTest(unittest.TestCase):
         self.assertEqual(len(state["attempts"]), 5)
         self.assertEqual(state["scheduler"]["reason"], "infrastructure-circuit-open")
         self.assertEqual([item["attemptNumber"] for item in state["attempts"]], [1, 2, 3, 4, 5])
+
+    def test_proxy_exposure_opens_non_canary_circuit_without_active_wave_orphan(self):
+        frozen = batch(case_count=4, workers=3, max_attempts=10, failure_limit=2)
+
+        def executor(_target, attempt_number, _timeout_seconds):
+            if attempt_number in {3, 4}:
+                return {"status": "invalid", "invalidReason": "proxy-exposure"}
+            return valid()
+
+        state = self.execute(frozen, ledger(), executor)
+        self.assertEqual([item["attemptNumber"] for item in state["attempts"]], [1, 2, 3, 4, 5])
+        self.assertTrue(all(state["attempts"][index]["invalidReason"] == "proxy-exposure" for index in (2, 3)))
+        self.assertEqual(state["scheduler"]["reason"], "infrastructure-circuit-open")
+        self.assertNotIn("activeWave", state)
 
     def test_missing_and_invalid_policy_fail_closed(self):
         complete = batch()

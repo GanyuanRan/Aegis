@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -120,9 +121,17 @@ class CommandBoundaryTest(unittest.TestCase):
 
     def test_preflight_command_is_exact_and_neutral(self):
         captured: list[list[str]] = []
+        isolated_root = self.scratch / "isolated"
 
         def fake_runner(command: list[str], _timeout: float) -> subprocess.CompletedProcess[str]:
             captured.append(command)
+            codex_home = isolated_root / "home/.codex"
+            (codex_home / "models_cache.json").write_text("private raw catalog", encoding="utf-8")
+            (codex_home / "log").mkdir()
+            (codex_home / "log/debug.log").write_text(
+                "provider used http://proxy.invalid:8080",
+                encoding="utf-8",
+            )
             raw = json.dumps(
                 {
                     "models": [
@@ -135,7 +144,7 @@ class CommandBoundaryTest(unittest.TestCase):
 
         result = run_provider_preflight(
             root=self.root,
-            output_root=self.scratch / "isolated",
+            output_root=isolated_root,
             auth_file=self.auth,
             bwrap=self.bwrap,
             codex=self.codex,
@@ -154,7 +163,7 @@ class CommandBoundaryTest(unittest.TestCase):
         self.assertNotIn("NO_PROXY", setenv_keys(command))
         self.assertEqual(sorted(set(setenv_keys(command)) & set(PROXY_KEYS)), ["HTTP_PROXY"])
         self.assertFalse(any("/opt/aegis" in value for value in command))
-        self.assertFalse((self.scratch / "isolated/home/.agents").exists())
+        self.assertFalse(isolated_root.exists())
         self.assertEqual(set(result), {"status", "elapsedSeconds", "requestedModelAvailable", "catalogCount"})
         self.assertEqual(result["status"], "ready")
         self.assertTrue(result["requestedModelAvailable"])
@@ -162,6 +171,76 @@ class CommandBoundaryTest(unittest.TestCase):
         serialized = json.dumps(result, sort_keys=True)
         for forbidden in ("requested-model", "other-model", "raw catalog", "proxy.invalid"):
             self.assertNotIn(forbidden, serialized)
+
+    def test_failure_timeout_and_exception_remove_the_entire_isolated_root(self):
+        for status in ("failure", "timeout", "exception"):
+            with self.subTest(status=status):
+                isolated_root = self.scratch / f"isolated-{status}"
+
+                def fake_runner(command: list[str], timeout: float) -> subprocess.CompletedProcess[str]:
+                    codex_home = isolated_root / "home/.codex"
+                    (codex_home / "models_cache.json").write_text("private raw catalog", encoding="utf-8")
+                    (codex_home / "debug.log").write_text("http://proxy.invalid:8080", encoding="utf-8")
+                    if status == "timeout":
+                        raise subprocess.TimeoutExpired(command[0], timeout, output="raw", stderr="private")
+                    if status == "exception":
+                        raise RuntimeError("private provider exception")
+                    return subprocess.CompletedProcess(command, 9, "raw catalog", "private stderr")
+
+                arguments = {
+                    "root": self.root,
+                    "output_root": isolated_root,
+                    "auth_file": self.auth,
+                    "bwrap": self.bwrap,
+                    "codex": self.codex,
+                    "requested_model": "requested-model",
+                    "timeout_seconds": 30,
+                    "proxy_policy": self.policy,
+                    "command_runner": fake_runner,
+                }
+                if status == "exception":
+                    with self.assertRaises(RuntimeError):
+                        run_provider_preflight(**arguments)
+                    result = {}
+                else:
+                    result = run_provider_preflight(**arguments)
+                    self.assertEqual(result["status"], "timeout" if status == "timeout" else "command-failed")
+                self.assertFalse(isolated_root.exists())
+                serialized = json.dumps(result, sort_keys=True)
+                for forbidden in ("raw catalog", "private stderr", "proxy.invalid"):
+                    self.assertNotIn(forbidden, serialized)
+
+    def test_cleanup_failure_fails_closed_without_disclosure(self):
+        isolated_root = self.scratch / "isolated-cleanup-failure"
+        patcher = mock.patch(
+            "agentic_benchmark_isolation.shutil.rmtree",
+            side_effect=OSError("private cleanup detail http://proxy.invalid:8080"),
+        )
+
+        def fake_runner(command: list[str], _timeout: float) -> subprocess.CompletedProcess[str]:
+            (isolated_root / "home/.codex/models_cache.json").write_text("raw catalog", encoding="utf-8")
+            patcher.start()
+            return subprocess.CompletedProcess(command, 0, '{"models":[{"slug":"requested-model"}]}', "")
+
+        try:
+            with self.assertRaises(SystemExit) as caught:
+                run_provider_preflight(
+                    root=self.root,
+                    output_root=isolated_root,
+                    auth_file=self.auth,
+                    bwrap=self.bwrap,
+                    codex=self.codex,
+                    requested_model="requested-model",
+                    timeout_seconds=30,
+                    proxy_policy=self.policy,
+                    command_runner=fake_runner,
+                )
+        finally:
+            patcher.stop()
+            if isolated_root.exists():
+                shutil.rmtree(isolated_root)
+        self.assertEqual(str(caught.exception), "provider preflight isolated root cleanup failed")
+        self.assertNotIn("proxy.invalid", str(caught.exception))
 
     def test_prompt_audit_never_receives_proxy(self):
         layout = prepare_provider_preflight_layout(self.scratch / "prompt-layout", self.auth)

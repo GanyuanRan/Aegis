@@ -545,28 +545,35 @@ def run_provider_preflight(
     require(not auth_file.is_symlink(), "Codex auth file must not be a symlink")
     require(auth_file.stat().st_mode & 0o022 == 0, "Codex auth file must not be group/world writable")
     reset_directory(output_root, root)
-    layout = prepare_provider_preflight_layout(output_root, auth_file)
-    command = build_provider_preflight_command(
-        bwrap=bwrap,
-        codex=codex,
-        layout=layout,
-        proxy_policy=proxy_policy,
-    )
-    validate_bwrap_command(
-        command,
-        root=root,
-        output_root=output_root,
-        layout=layout,  # type: ignore[arg-type]
-        client_network=True,
-        proxy_policy=proxy_policy,
-    )
-    require(command[command.index("--") + 1 :] == [str(codex), "debug", "models"], "provider preflight command drifted")
-    return run_sanitized_provider_preflight(
-        command,
-        requested_model,
-        timeout_seconds,
-        command_runner=command_runner,
-    )
+    try:
+        layout = prepare_provider_preflight_layout(output_root, auth_file)
+        command = build_provider_preflight_command(
+            bwrap=bwrap,
+            codex=codex,
+            layout=layout,
+            proxy_policy=proxy_policy,
+        )
+        validate_bwrap_command(
+            command,
+            root=root,
+            output_root=output_root,
+            layout=layout,  # type: ignore[arg-type]
+            client_network=True,
+            proxy_policy=proxy_policy,
+        )
+        require(command[command.index("--") + 1 :] == [str(codex), "debug", "models"], "provider preflight command drifted")
+        return run_sanitized_provider_preflight(
+            command,
+            requested_model,
+            timeout_seconds,
+            command_runner=command_runner,
+        )
+    finally:
+        try:
+            shutil.rmtree(output_root)
+        except OSError as exc:
+            raise SystemExit("provider preflight isolated root cleanup failed") from exc
+        require(not output_root.exists(), "provider preflight isolated root cleanup failed")
 
 
 def run_command(command: list[str], label: str, timeout: int = 60) -> str:

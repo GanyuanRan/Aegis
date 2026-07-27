@@ -18,11 +18,13 @@ INVALID_REASONS = {
     "infrastructure",
     "scorer-unknown",
     "credential-exposure",
+    "proxy-exposure",
 }
 TRANSPORT_INVALID_REASONS = {
     "timeout",
     "infrastructure",
     "credential-exposure",
+    "proxy-exposure",
 }
 POLICY_FIELDS = (
     "profileId",
