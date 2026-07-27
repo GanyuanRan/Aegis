@@ -16,7 +16,6 @@ from run_agentic_benchmark import (
     ARMS,
     AUTHORITY_BOUNDARY,
     aggregate,
-    execute_schedule,
     initial_ledger,
     parse_codex_jsonl,
     redact_credential_output,
@@ -66,82 +65,53 @@ def valid_result(target: dict, *, reverse: bool = False) -> dict:
 
 
 class RunnerContractTest(unittest.TestCase):
-    def execute(self, batch: dict, executor):
+    def ledger(self, batch: dict, result_for_target):
         ledger = initial_ledger(batch)
-        root = Path(__file__).resolve().parents[2]
-        (root / ".tmp").mkdir(exist_ok=True)
-        with tempfile.TemporaryDirectory(prefix="agentic-runner-test-", dir=root / ".tmp") as value:
-            execute_schedule(batch, ledger, Path(value) / "ledger.json", executor)
+        for attempt_number, target in enumerate(batch["schedule"], start=1):
+            attempt = {
+                "attemptNumber": attempt_number,
+                "targetId": target["targetId"],
+                "caseId": target["caseId"],
+                "scenarioClass": target["scenarioClass"],
+                "partition": target["partition"],
+                "repetition": target["repetition"],
+                "arm": target["arm"],
+            }
+            attempt.update(result_for_target(target))
+            ledger["attempts"].append(attempt)
         return ledger
 
     def test_full_success(self):
         batch = fake_batch()
-        ledger = self.execute(batch, lambda target, _: valid_result(target))
+        ledger = self.ledger(batch, valid_result)
         report = aggregate(batch, ledger)
         self.assertEqual(report["completeness"], "complete")
         self.assertEqual(report["attempts"]["valid"], 4)
         self.assertEqual(report["overall"]["deltaPercentagePoints"], 100.0)
         self.assertEqual(report["overall"]["arms"]["aegis-auto"]["unsafeOutcomeRate"], 0.0)
 
-    def test_timeout_retry(self):
-        batch = fake_batch(max_attempts=5)
-        calls = 0
-
-        def executor(target, _):
-            nonlocal calls
-            calls += 1
-            if calls == 1:
-                return {"status": "invalid", "invalidReason": "timeout"}
-            return valid_result(target)
-
-        ledger = self.execute(batch, executor)
-        report = aggregate(batch, ledger)
-        self.assertEqual(report["completeness"], "complete")
-        self.assertEqual(report["attempts"]["total"], 5)
-        self.assertEqual(report["attempts"]["invalidReasons"], {"timeout": 1})
-
-    def test_resume_replays_the_same_retry_queue(self):
-        batch = fake_batch(max_attempts=5)
-        calls = 0
-
-        def uninterrupted_executor(target, _):
-            nonlocal calls
-            calls += 1
-            if calls == 1:
-                return {"status": "invalid", "invalidReason": "timeout"}
-            return valid_result(target)
-
-        uninterrupted = self.execute(batch, uninterrupted_executor)
-        first = batch["schedule"][0]
-        resumed = initial_ledger(batch)
-        resumed["attempts"].append(
-            {
-                "attemptNumber": 1,
-                "targetId": first["targetId"],
-                "caseId": first["caseId"],
-                "scenarioClass": first["scenarioClass"],
-                "partition": first["partition"],
-                "repetition": first["repetition"],
-                "arm": first["arm"],
-                "status": "invalid",
-                "invalidReason": "timeout",
-            }
+    def test_schedule_promotes_a_deterministic_paired_canary(self):
+        first = schedule_targets(
+            [
+                {"id": "case-one", "scenarioClass": "scenario-one", "partition": "development"},
+                {"id": "case-two", "scenarioClass": "scenario-two", "partition": "development"},
+            ],
+            2,
+            "pair-seed",
         )
-        root = Path(__file__).resolve().parents[2]
-        with tempfile.TemporaryDirectory(prefix="agentic-resume-test-", dir=root / ".tmp") as value:
-            execute_schedule(batch, resumed, Path(value) / "ledger.json", lambda target, _: valid_result(target))
-        self.assertEqual(
-            [attempt["targetId"] for attempt in resumed["attempts"]],
-            [attempt["targetId"] for attempt in uninterrupted["attempts"]],
+        second = schedule_targets(
+            [
+                {"id": "case-one", "scenarioClass": "scenario-one", "partition": "development"},
+                {"id": "case-two", "scenarioClass": "scenario-two", "partition": "development"},
+            ],
+            2,
+            "pair-seed",
         )
-
-    def test_ceiling_exhaustion(self):
-        batch = fake_batch()
-        ledger = self.execute(batch, lambda _target, _number: {"status": "invalid", "invalidReason": "timeout"})
-        report = aggregate(batch, ledger)
-        self.assertEqual(report["completeness"], "partial")
-        self.assertEqual(report["attempts"]["total"], batch["maxAttempts"])
-        self.assertEqual(report["attempts"]["valid"], 0)
+        self.assertEqual(first, second)
+        self.assertEqual(first[0]["caseId"], first[1]["caseId"])
+        self.assertEqual(first[0]["repetition"], first[1]["repetition"])
+        self.assertEqual([target["arm"] for target in first[:2]], list(ARMS))
+        self.assertEqual(len({target["targetId"] for target in first}), 8)
 
     def test_arm_contamination_is_refused(self):
         batch = fake_batch()
@@ -172,9 +142,9 @@ class RunnerContractTest(unittest.TestCase):
 
     def test_partial_batch_flag(self):
         batch = fake_batch(max_attempts=4)
-        ledger = self.execute(
+        ledger = self.ledger(
             batch,
-            lambda target, _: valid_result(target) if target["caseId"] == "case-one" else {"status": "invalid", "invalidReason": "infrastructure"},
+            lambda target: valid_result(target) if target["caseId"] == "case-one" else {"status": "invalid", "invalidReason": "infrastructure"},
         )
         report = aggregate(batch, ledger)
         flags = {flag["id"] for flag in report["review"]["flags"]}
@@ -183,15 +153,15 @@ class RunnerContractTest(unittest.TestCase):
 
     def test_negative_delta_is_preserved(self):
         batch = fake_batch()
-        ledger = self.execute(batch, lambda target, _: valid_result(target, reverse=True))
+        ledger = self.ledger(batch, lambda target: valid_result(target, reverse=True))
         report = aggregate(batch, ledger)
         self.assertEqual(report["overall"]["deltaPercentagePoints"], -100.0)
 
     def test_scorer_unknown_requires_review(self):
         batch = fake_batch(max_attempts=4)
-        ledger = self.execute(
+        ledger = self.ledger(
             batch,
-            lambda target, _: valid_result(target) if target["caseId"] == "case-one" else {"status": "invalid", "invalidReason": "scorer-unknown"},
+            lambda target: valid_result(target) if target["caseId"] == "case-one" else {"status": "invalid", "invalidReason": "scorer-unknown"},
         )
         report = aggregate(batch, ledger)
         flags = {flag["id"] for flag in report["review"]["flags"]}

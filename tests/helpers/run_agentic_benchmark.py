@@ -16,7 +16,9 @@ import sys
 import time
 from collections import Counter, defaultdict
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
+
+import agentic_benchmark_scheduler
 
 from agentic_benchmark_isolation import (
     ARMS,
@@ -45,7 +47,6 @@ PARTITION_MAP = {
     "held-out-boundary": {"held-out-boundary"},
     "held-out": {"held-out-normal", "held-out-boundary"},
 }
-INVALID_REASONS = {"timeout", "infrastructure", "scorer-unknown", "credential-exposure"}
 UNSUPPORTED_CLAIMS = [
     "runtime-authority",
     "automatic-candidate-promotion",
@@ -171,6 +172,17 @@ def schedule_targets(
                     }
                 )
     targets.sort(key=lambda target: (target["orderKey"], target["targetId"]))
+    canary_key = (targets[0]["caseId"], targets[0]["repetition"])
+    canary = [
+        target
+        for target in targets
+        if (target["caseId"], target["repetition"]) == canary_key
+    ]
+    require(len(canary) == len(ARMS), "schedule could not promote an exact paired canary")
+    arm_order = {arm: index for index, arm in enumerate(ARMS)}
+    canary.sort(key=lambda target: arm_order[target["arm"]])
+    canary_ids = {target["targetId"] for target in canary}
+    targets = canary + [target for target in targets if target["targetId"] not in canary_ids]
     for index, target in enumerate(targets, start=1):
         target["runOrder"] = index
     return targets
@@ -237,6 +249,7 @@ def initial_ledger(batch: dict[str, Any]) -> dict[str, Any]:
         "batchDigest": batch["batchDigest"],
         "targetRunCount": batch["targetRunCount"],
         "maxAttempts": batch["maxAttempts"],
+        "cumulativeWallSeconds": 0.0,
         "attempts": [],
     }
 
@@ -247,6 +260,7 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
     manifest_path = resolve_repo_file(root, args.manifest, "manifest")
     validate_matrix(matrix_path)
     validate_manifest(manifest_path, False)
+    matrix = load_json(matrix_path, "matrix")
     manifest = load_json(manifest_path, "case manifest")
     cases = select_cases(manifest, args.partition, args.case)
     target_count = len(cases) * args.repetitions * len(ARMS)
@@ -254,9 +268,22 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
     if args.partition == "held-out":
         require(not args.case, "complete held-out preparation cannot select a case subset")
         require(len(cases) == 20, "complete held-out preparation must select 20 cases")
-        require(args.repetitions == 3, "complete held-out preparation requires 3 repetitions")
-        require(target_count == 120, "complete held-out preparation must target 120 valid runs")
-        require(args.max_attempts == 132, "complete held-out preparation requires the frozen 132-attempt ceiling")
+    selected_partitions = sorted({case["partition"] for case in cases})
+    matching_profiles = [
+        profile
+        for profile in matrix["runProfiles"]
+        if sorted(profile["datasetPartitions"]) == selected_partitions
+        and profile["caseCount"] == len(cases)
+        and profile["arms"] == list(ARMS)
+        and profile["repetitionsPerCase"] == args.repetitions
+        and profile["validRunTarget"] == target_count
+        and profile["paidAttemptCeiling"] == args.max_attempts
+    ]
+    require(
+        len(matching_profiles) == 1,
+        "batch shape must match exactly one matrix run profile; complete held-out preparation requires 3 repetitions or the exact matrix-owned run profile",
+    )
+    profile = matching_profiles[0]
     require(re.fullmatch(r"[a-z0-9][a-z0-9._-]{2,79}", args.batch_id) is not None, "batch-id has an invalid format")
     require(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,79}", args.model or "") is not None, "--model is required and must pin a safe model identifier")
 
@@ -277,6 +304,7 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
     schedule = schedule_targets(cases, args.repetitions, seed)
     harness_paths = [
         "tests/helpers/run_agentic_benchmark.py",
+        "tests/helpers/agentic_benchmark_scheduler.py",
         "tests/helpers/agentic_benchmark_isolation.py",
         "tests/helpers/score_agentic_benchmark_outcome.py",
         "tests/helpers/render_agentic_benchmark.py",
@@ -295,6 +323,11 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
         "repetitions": args.repetitions,
         "targetRunCount": target_count,
         "maxAttempts": args.max_attempts,
+        "profileId": profile["id"],
+        "workers": profile["workers"],
+        "wallClockBudgetSeconds": profile["wallClockBudgetSeconds"],
+        "perAttemptTimeoutSeconds": profile["perAttemptTimeoutSeconds"],
+        "infrastructureFailureLimit": profile["infrastructureFailureLimit"],
         "modelPolicy": {"requestedModel": args.model, "mustMatchAcrossArms": True},
         "toolPolicy": {
             "codexSandbox": "workspace-write",
@@ -568,59 +601,6 @@ def execute_target(
     }
 
 
-Executor = Callable[[dict[str, Any], int], dict[str, Any]]
-
-
-def execute_schedule(
-    batch: dict[str, Any],
-    ledger: dict[str, Any],
-    ledger_path: Path,
-    executor: Executor,
-) -> dict[str, Any]:
-    stale = False
-    for attempt in ledger["attempts"]:
-        if attempt.get("status") == "launched":
-            attempt.update({"status": "invalid", "invalidReason": "infrastructure", "recovery": "interrupted-before-final-record"})
-            stale = True
-    if stale:
-        atomic_json(ledger_path, ledger)
-    queue = list(batch["schedule"])
-    for attempt in ledger["attempts"]:
-        require(queue, "ledger contains more attempts than the frozen schedule can produce")
-        expected = queue.pop(0)
-        require(attempt.get("targetId") == expected["targetId"], "ledger attempt order does not match deterministic queue replay")
-        require(attempt.get("status") in {"valid", "invalid"}, "ledger attempt has no terminal status")
-        if attempt["status"] == "invalid":
-            queue.append(expected)
-    while queue and len(ledger["attempts"]) < batch["maxAttempts"]:
-        target = queue.pop(0)
-        attempt_number = len(ledger["attempts"]) + 1
-        attempt = {
-            "attemptNumber": attempt_number,
-            "targetId": target["targetId"],
-            "caseId": target["caseId"],
-            "scenarioClass": target["scenarioClass"],
-            "partition": target["partition"],
-            "repetition": target["repetition"],
-            "arm": target["arm"],
-            "status": "launched",
-        }
-        ledger["attempts"].append(attempt)
-        atomic_json(ledger_path, ledger)
-        try:
-            result = executor(target, attempt_number)
-        except Exception as exc:  # fail closed while retaining the attempt record
-            result = {"status": "invalid", "invalidReason": "infrastructure", "errorType": type(exc).__name__}
-        require(result.get("status") in {"valid", "invalid"}, "executor returned an invalid attempt status")
-        if result["status"] == "invalid":
-            require(result.get("invalidReason") in INVALID_REASONS, "executor returned an invalid reason")
-        attempt.update(result)
-        atomic_json(ledger_path, ledger)
-        if result["status"] == "invalid":
-            queue.append(target)
-    return ledger
-
-
 def percentile(values: list[float], fraction: float) -> float:
     ordered = sorted(values)
     index = round((len(ordered) - 1) * fraction)
@@ -879,7 +859,7 @@ def run_command(args: argparse.Namespace) -> None:
     validate_live_isolation_report(isolation_report, batch)
     atomic_json(output_root / "isolation-report.json", isolation_report)
 
-    def executor(target: dict[str, Any], attempt_number: int) -> dict[str, Any]:
+    def executor(target: dict[str, Any], attempt_number: int, timeout_seconds: float) -> dict[str, Any]:
         verify_batch(batch, root, output_root)
         return execute_target(
             root=root,
@@ -890,10 +870,10 @@ def run_command(args: argparse.Namespace) -> None:
             auth_file=auth_file,
             bwrap=bwrap,
             codex=codex,
-            timeout_seconds=args.timeout_seconds,
+            timeout_seconds=timeout_seconds,
         )
 
-    execute_schedule(batch, ledger, output_root / "ledger.json", executor)
+    agentic_benchmark_scheduler.execute_schedule(batch, ledger, output_root / "ledger.json", executor)
     verify_batch(batch, root, output_root)
     report = aggregate(batch, ledger)
     atomic_json(output_root / "private-report.json", report)
