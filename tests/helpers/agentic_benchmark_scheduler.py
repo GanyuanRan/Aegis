@@ -240,12 +240,32 @@ def _validate_attempt_identity(attempt: dict[str, Any], target: dict[str, Any]) 
         )
 
 
-def _replay_queue(batch: dict[str, Any], ledger: dict[str, Any]) -> list[dict[str, Any]]:
+def _terminal_transport_count(attempts: list[dict[str, Any]]) -> int:
+    return sum(
+        attempt.get("status") == "invalid" and attempt.get("invalidReason") in TRANSPORT_INVALID_REASONS
+        for attempt in attempts
+    )
+
+
+def _wave_stop_reason(batch: dict[str, Any], wave_number: int, wave: list[dict[str, Any]]) -> str | None:
+    transport_failures = _terminal_transport_count(wave)
+    if wave_number == 1 and transport_failures:
+        return "paired-canary-transport-failure"
+    if wave_number > 1 and transport_failures >= batch["infrastructureFailureLimit"]:
+        return "infrastructure-circuit-open"
+    return None
+
+
+def _replay_queue(
+    batch: dict[str, Any],
+    ledger: dict[str, Any],
+) -> tuple[list[dict[str, Any]], str | None]:
     queue = list(batch["schedule"])
     attempts = ledger["attempts"]
     _require(len(attempts) <= batch["maxAttempts"], "ledger exceeds the paid attempt ceiling")
     position = 0
     wave_number = 1
+    terminal_stop: str | None = None
     while position < len(attempts):
         _require(queue, "ledger contains attempts after all frozen targets completed")
         available_attempts = batch["maxAttempts"] - position
@@ -264,9 +284,16 @@ def _replay_queue(batch: dict[str, Any], ledger: dict[str, Any]) -> list[dict[st
         for target, attempt in zip(targets, wave):
             if attempt["status"] == "invalid":
                 queue.append(target)
+        stop_reason = _wave_stop_reason(batch, wave_number, wave)
+        if stop_reason is not None:
+            _require(
+                position + wave_size == len(attempts),
+                "ledger contains terminal attempts after a scheduler stop condition",
+            )
+            terminal_stop = stop_reason
         position += wave_size
         wave_number += 1
-    return queue
+    return queue, terminal_stop
 
 
 def _validate_active_wave(batch: dict[str, Any], ledger: dict[str, Any]) -> dict[str, Any] | None:
@@ -311,7 +338,8 @@ def _validate_active_wave(batch: dict[str, Any], ledger: dict[str, Any]) -> dict
         default=0,
     )
     _require(wave_number == prior_wave + 1, "activeWave wave number is not sequential")
-    pending = _replay_queue(batch, {"attempts": prefix})
+    pending, prefix_stop = _replay_queue(batch, {"attempts": prefix})
+    _require(prefix_stop is None, "activeWave cannot follow a terminal scheduler stop condition")
     available_attempts = batch["maxAttempts"] - len(prefix)
     expected_count = 2 if not prefix else min(batch["workers"], len(pending), available_attempts)
     _require(attempt_count == expected_count, "activeWave size does not match the deterministic next wave")
@@ -366,27 +394,6 @@ def validate_ledger(batch: dict[str, Any], ledger: dict[str, Any]) -> None:
         _replay_queue(batch, ledger)
 
 
-def _terminal_transport_count(attempts: list[dict[str, Any]]) -> int:
-    return sum(
-        attempt.get("status") == "invalid" and attempt.get("invalidReason") in TRANSPORT_INVALID_REASONS
-        for attempt in attempts
-    )
-
-
-def _existing_stop_reason(batch: dict[str, Any], ledger: dict[str, Any]) -> tuple[str, str] | None:
-    attempts = ledger["attempts"]
-    if len(attempts) >= 2 and _terminal_transport_count(attempts[:2]):
-        return "stopped", "paired-canary-transport-failure"
-    waves: dict[int, list[dict[str, Any]]] = {}
-    for attempt in attempts[2:]:
-        wave_number = attempt.get("waveNumber")
-        if isinstance(wave_number, int) and wave_number > 1:
-            waves.setdefault(wave_number, []).append(attempt)
-    if any(_terminal_transport_count(wave) >= batch["infrastructureFailureLimit"] for wave in waves.values()):
-        return "stopped", "infrastructure-circuit-open"
-    return None
-
-
 def _run_wave(
     executor: Executor,
     attempts: list[dict[str, Any]],
@@ -429,10 +436,9 @@ def execute_schedule(
         _set_status(ledger, "recovered", "interrupted-launched-attempts-invalidated")
         _atomic_json(ledger_path, ledger)
 
-    queue = _replay_queue(batch, ledger)
-    existing_stop = _existing_stop_reason(batch, ledger)
+    queue, existing_stop = _replay_queue(batch, ledger)
     if existing_stop is not None:
-        _set_status(ledger, *existing_stop)
+        _set_status(ledger, "stopped", existing_stop)
         _atomic_json(ledger_path, ledger)
         return ledger
     if queue and 0 < len(ledger["attempts"]) < 2:
@@ -488,13 +494,9 @@ def execute_schedule(
             if attempt["status"] == "invalid":
                 queue.append(target)
 
-        transport_failures = _terminal_transport_count(attempts)
-        if wave_number == 1 and transport_failures:
-            _set_status(ledger, "stopped", "paired-canary-transport-failure")
-            _atomic_json(ledger_path, ledger)
-            return ledger
-        if wave_number > 1 and transport_failures >= batch["infrastructureFailureLimit"]:
-            _set_status(ledger, "stopped", "infrastructure-circuit-open")
+        stop_reason = _wave_stop_reason(batch, wave_number, attempts)
+        if stop_reason is not None:
+            _set_status(ledger, "stopped", stop_reason)
             _atomic_json(ledger_path, ledger)
             return ledger
 

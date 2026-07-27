@@ -108,6 +108,31 @@ class RunnerContractTest(unittest.TestCase):
         with self.assertRaises(SystemExit):
             aggregate(batch, ledger)
 
+    def test_aggregate_rejects_terminal_attempts_after_circuit_stop(self):
+        batch = fake_batch(max_attempts=6)
+        ledger = self.ledger(
+            batch,
+            lambda target: valid_result(target)
+            if target["caseId"] == "case-one"
+            else {"status": "invalid", "invalidReason": "infrastructure"},
+        )
+        for attempt_number, target in enumerate(batch["schedule"][2:4], start=5):
+            ledger["attempts"].append(
+                {
+                    "attemptNumber": attempt_number,
+                    "waveNumber": 3,
+                    "targetId": target["targetId"],
+                    "caseId": target["caseId"],
+                    "scenarioClass": target["scenarioClass"],
+                    "partition": target["partition"],
+                    "repetition": target["repetition"],
+                    "arm": target["arm"],
+                    **valid_result(target),
+                }
+            )
+        with self.assertRaises(SystemExit):
+            aggregate(batch, ledger)
+
     def test_schedule_promotes_a_deterministic_paired_canary(self):
         first = schedule_targets(
             [

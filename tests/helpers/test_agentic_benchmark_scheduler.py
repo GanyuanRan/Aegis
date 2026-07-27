@@ -390,6 +390,33 @@ class SchedulerTest(unittest.TestCase):
         with self.assertRaises(SystemExit):
             validate_ledger(frozen, forged_identity)
 
+        continued = copy.deepcopy(state)
+        continued_targets = [
+            *frozen["schedule"][5:8],
+            frozen["schedule"][2],
+            frozen["schedule"][3],
+        ]
+        for offset, target in enumerate(continued_targets, start=6):
+            wave = 3 if offset <= 8 else 4
+            continued["attempts"].append(attempt_record(target, offset, wave, "valid", contractPass=True))
+        with self.assertRaises(SystemExit):
+            validate_ledger(frozen, continued)
+
+        active_after_stop = copy.deepcopy(state)
+        pre_wave = active_after_stop["cumulativeWallSeconds"]
+        for offset, target in enumerate(frozen["schedule"][5:8], start=6):
+            active_after_stop["attempts"].append(attempt_record(target, offset, 3, "launched"))
+        active_after_stop["activeWave"] = active_wave(
+            wave=3,
+            first_attempt=6,
+            count=3,
+            reserved=10.0,
+            pre_wave=pre_wave,
+        )
+        active_after_stop["cumulativeWallSeconds"] = pre_wave + 10.0
+        with self.assertRaises(SystemExit):
+            validate_ledger(frozen, active_after_stop)
+
     def test_missing_and_malformed_active_wave_fail_closed(self):
         frozen = batch(case_count=2, workers=3, max_attempts=7, wall=6.0, timeout=4.0, failure_limit=3)
         launched = ledger(cumulative=5.0)
