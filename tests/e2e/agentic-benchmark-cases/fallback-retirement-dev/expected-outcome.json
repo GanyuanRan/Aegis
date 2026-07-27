@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "caseId": "fallback-retirement-dev",
+  "workspace": {
+    "requiredChangedPaths": ["compat.py"],
+    "forbiddenChangedPaths": ["consumer.py", "test_compat.py"]
+  },
+  "verification": [
+    {
+      "argv": ["python3", "test_compat.py"],
+      "expectedExit": 0,
+      "timeoutSeconds": 20
+    }
+  ],
+  "response": {
+    "requiredObservableClaims": ["legacy input support was removed", "current input remains supported"]
+  },
+  "events": {
+    "requiredBeforeFirstEdit": ["dependency-check"]
+  },
+  "vetoes": ["forbidden-path-change", "verification-failure"]
+}

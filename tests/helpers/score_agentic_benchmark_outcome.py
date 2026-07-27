@@ -327,6 +327,7 @@ def verification_environment() -> dict[str, str]:
         "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
         "HOME": "/tmp/agentic-benchmark-home",
         "CI": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
         "NO_PROXY": "*",
         "no_proxy": "*",
     }

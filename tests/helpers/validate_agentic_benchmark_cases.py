@@ -10,6 +10,8 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+from score_agentic_benchmark_outcome import validate_contract as validate_outcome_contract
+
 
 AUTHORITY_BOUNDARY = "advisory-method-pack-evidence-not-completion-authority"
 BENCHMARK_MATRIX_PATH = "tests/e2e/fixtures/agentic-benchmark-matrix.json"
@@ -132,6 +134,13 @@ FORBIDDEN_PROMPT_PATTERNS = {
     "gate-decision artifact": r"gate[- ]decision",
     "policy-snapshot artifact": r"policy[- ]snapshot",
 }
+FORBIDDEN_PROJECT_PATTERN = re.compile(
+    r"\baegis\b|baseline-no-aegis|aegis-auto|expected[-_ ]outcome|"
+    r"benchmarkMetrics|contractPass|scoreSource|systematic[- ]debugging|"
+    r"verification[- ]before[- ]completion|anti[- ]entropy[- ]governance",
+    flags=re.IGNORECASE,
+)
+PROJECT_FILE_SIZE_LIMIT = 65536
 
 
 def require(condition: bool, message: str) -> None:
@@ -162,20 +171,42 @@ def resolve_repo_path(root: Path, value: Any, label: str) -> Path:
 
 
 def validate_prompt_text(text: str, label: str, scenario_class: str | None) -> None:
+    normalized_text = " ".join(text.split())
     for term_label, pattern in FORBIDDEN_PROMPT_PATTERNS.items():
         require(
-            re.search(pattern, text, flags=re.IGNORECASE) is None,
+            re.search(pattern, normalized_text, flags=re.IGNORECASE) is None,
             f"{label} discloses hidden route or scoring material: {term_label}",
         )
     if scenario_class != "requested-white-box-trace-digest":
         require(
-            re.search(r"trace[- ]digest", text, flags=re.IGNORECASE) is None,
+            re.search(r"trace[- ]digest", normalized_text, flags=re.IGNORECASE) is None,
             f"{label} discloses hidden route or scoring material: trace digest",
         )
     else:
         require(
-            re.search(r"trace[- ]digest", text, flags=re.IGNORECASE) is not None,
+            re.search(r"trace[- ]digest", normalized_text, flags=re.IGNORECASE) is not None,
             f"{label} must explicitly request the trace digest being evaluated",
+        )
+
+
+def validate_seed_project(project_path: Path, case_id: str) -> None:
+    for path in sorted(project_path.rglob("*")):
+        relative_path = path.relative_to(project_path)
+        if set(relative_path.parts) & {".pytest_cache", "__pycache__"}:
+            continue
+        relative = relative_path.as_posix()
+        require(not path.is_symlink(), f"{case_id} seed project must not contain symlinks: {relative}")
+        if path.is_dir():
+            continue
+        require(path.is_file(), f"{case_id} seed project contains unsupported file type: {relative}")
+        require(path.stat().st_size <= PROJECT_FILE_SIZE_LIMIT, f"{case_id} seed project file exceeds size limit: {relative}")
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError as exc:
+            raise SystemExit(f"{case_id} seed project files must be UTF-8 text: {relative}") from exc
+        require(
+            FORBIDDEN_PROJECT_PATTERN.search(" ".join(text.split())) is None,
+            f"{case_id} seed project exposes hidden route or scoring material: {relative}",
         )
 
 
@@ -261,6 +292,8 @@ def validate_case(
     require(project_path.is_dir(), f"{case_id} seed project directory is missing: {case['seedProjectPath']}")
     require(outcome_path.is_file(), f"{case_id} outcome contract is missing: {case['outcomeContractPath']}")
     validate_prompt_text(prompt_path.read_text(encoding="utf-8"), f"{case_id} prompt", scenario_class)
+    validate_seed_project(project_path, case_id)
+    validate_outcome_contract(load_json(outcome_path, f"{case_id} outcome contract"), case_id)
 
 
 def validate_manifest(manifest_path: Path, schema_only: bool) -> None:

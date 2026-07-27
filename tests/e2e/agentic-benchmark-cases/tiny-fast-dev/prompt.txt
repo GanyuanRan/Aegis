@@ -1,0 +1,1 @@
+Change the user-facing status word in NOTICE.txt from "preview" to "stable".

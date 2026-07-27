@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "caseId": "tiny-fast-dev",
+  "workspace": {
+    "requiredChangedPaths": ["NOTICE.txt"],
+    "forbiddenExistingPaths": ["docs/aegis"]
+  },
+  "response": {
+    "requiredObservableClaims": ["Updated NOTICE.txt"]
+  }
+}

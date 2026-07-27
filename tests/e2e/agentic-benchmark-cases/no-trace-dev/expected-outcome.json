@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "caseId": "no-trace-dev",
+  "workspace": {
+    "requiredChangedPaths": ["CHANGELOG.md"],
+    "forbiddenExistingPaths": ["docs/aegis"]
+  },
+  "response": {
+    "requiredObservableClaims": ["Updated CHANGELOG.md"],
+    "forbiddenClaims": ["Trace Digest"]
+  },
+  "vetoes": ["forbidden-response-claim"]
+}

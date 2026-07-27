@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "caseId": "trace-digest-dev",
+  "workspace": {
+    "mustRemainClean": true
+  },
+  "response": {
+    "requiredObservableClaims": ["Execution trace", "Evidence chain", "Verification gaps", "Confidence"]
+  },
+  "vetoes": ["workspace-change"]
+}

@@ -1,0 +1,1 @@
+Reject blank slugs before they reach storage. Keep the change small.
