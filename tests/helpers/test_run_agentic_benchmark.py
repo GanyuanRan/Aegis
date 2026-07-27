@@ -27,13 +27,16 @@ from run_agentic_benchmark import (
     execute_target,
     initial_ledger,
     parse_codex_jsonl,
-    redact_credential_output,
     require_execution_opt_in,
     resolve_auth_file,
     schedule_targets,
     validate_live_isolation_report,
 )
 from agentic_benchmark_isolation import resolve_proxy_policy
+from agentic_benchmark_provider_preflight import CredentialPolicy, freeze_credential_policy, redact_credential_output
+
+
+EMPTY_CREDENTIAL_POLICY = CredentialPolicy(())
 
 
 def fake_batch(*, max_attempts: int | None = None) -> dict:
@@ -268,10 +271,27 @@ class RunnerContractTest(unittest.TestCase):
             auth = Path(value) / "auth.json"
             secret = "private-refresh-token-value"
             auth.write_text(json.dumps({"tokens": {"refresh_token": secret}}), encoding="utf-8")
-            redacted, exposed = redact_credential_output(f"debug: {secret}", auth)
+            redacted, exposed = redact_credential_output(f"debug: {secret}", freeze_credential_policy(auth))
         self.assertTrue(exposed)
         self.assertNotIn(secret, redacted)
         self.assertIn("[REDACTED_CREDENTIAL]", redacted)
+
+    def test_credential_policy_is_frozen_in_memory_without_secret_representation(self):
+        root = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory(prefix="agentic-credential-freeze-test-", dir=root / ".tmp") as value:
+            auth = Path(value) / "auth.json"
+            original = "private-original-token-value"
+            replacement = "private-replacement-token-value"
+            auth.write_text(json.dumps({"tokens": {"refresh_token": original}}), encoding="utf-8")
+            policy = freeze_credential_policy(auth)
+            auth.write_text(json.dumps({"tokens": {"refresh_token": replacement}}), encoding="utf-8")
+            redacted, exposed = redact_credential_output(original, policy)
+        self.assertTrue(exposed)
+        self.assertEqual(redacted, "[REDACTED_CREDENTIAL]")
+        self.assertNotIn(original, repr(policy))
+        self.assertNotIn(replacement, repr(policy))
+        with self.assertRaises(TypeError):
+            json.dumps(policy)
 
     def test_auth_cli_path_rejects_a_symlink_before_resolve(self):
         root = Path(__file__).resolve().parents[2]
@@ -313,6 +333,7 @@ class RunnerContractTest(unittest.TestCase):
                     codex=output_root / "codex",
                     timeout_seconds=1,
                     proxy_policy=policy,
+                    credential_policy=EMPTY_CREDENTIAL_POLICY,
                 )
             self.assertEqual(result, {"status": "invalid", "invalidReason": "proxy-exposure", "elapsedSeconds": 2.5})
             self.assertFalse((attempt_root / "isolated/home").exists())
@@ -330,9 +351,172 @@ class RunnerContractTest(unittest.TestCase):
                 result = execute_target(
                     root=root, output_root=output_root, batch={}, target=target, attempt_number=1,
                     auth_file=output_root / "auth", bwrap=output_root / "bwrap", codex=output_root / "codex",
-                    timeout_seconds=1, proxy_policy=policy,
+                    timeout_seconds=1, proxy_policy=policy, credential_policy=EMPTY_CREDENTIAL_POLICY,
                 )
             self.assertEqual(result, {"status": "invalid", "invalidReason": "proxy-exposure", "elapsedSeconds": 0.0})
+
+    def test_credential_exposure_deletes_attempt_for_every_retained_artifact_surface(self):
+        root = Path(__file__).resolve().parents[2]
+        proxy_policy = resolve_proxy_policy({})
+        secret = "private-refresh-token-value"
+        credential_policy = CredentialPolicy((secret,))
+        target = {"targetId": "credential-target"}
+        for surface in ("workspace", "filename", "symlink", "event-log", "outcome", "exception"):
+            with self.subTest(surface=surface), tempfile.TemporaryDirectory(
+                prefix="agentic-credential-artifact-test-", dir=root / ".tmp"
+            ) as value:
+                output_root = Path(value)
+                attempt_root = output_root / "attempts/001-credential-target"
+
+                def fake_inner(**_kwargs):
+                    workspace = attempt_root / "workspace"
+                    workspace.mkdir(parents=True)
+                    if surface == "workspace":
+                        (workspace / "result.bin").write_bytes(b"prefix\xff" + secret.encode())
+                    elif surface == "filename":
+                        (workspace / f"result-{secret}").write_text("safe", encoding="utf-8")
+                    elif surface == "symlink":
+                        os.symlink(b"prefix-" + secret.encode() + b"-\xff", os.fsencode(workspace / "result-link"))
+                    elif surface == "event-log":
+                        (attempt_root / "codex-events.jsonl").write_text(secret, encoding="utf-8")
+                    elif surface == "outcome":
+                        (attempt_root / "outcome.json").write_text(secret, encoding="utf-8")
+                    else:
+                        raise RuntimeError(f"private child detail {secret}")
+                    return {"status": "valid", "contractPass": True, "elapsedSeconds": 1.5}
+
+                with mock.patch.object(benchmark_runner, "_execute_target_unscrubbed", side_effect=fake_inner):
+                    result = execute_target(
+                        root=root, output_root=output_root, batch={}, target=target, attempt_number=1,
+                        auth_file=output_root / "auth", bwrap=output_root / "bwrap", codex=output_root / "codex",
+                        timeout_seconds=1, proxy_policy=proxy_policy, credential_policy=credential_policy,
+                    )
+                self.assertEqual(result["invalidReason"], "credential-exposure")
+                self.assertNotIn(secret, json.dumps(result, sort_keys=True))
+                self.assertFalse(attempt_root.exists())
+
+    def test_generic_credential_shapes_and_non_utf8_artifacts_are_deleted(self):
+        root = Path(__file__).resolve().parents[2]
+        proxy_policy = resolve_proxy_policy({})
+        target = {"targetId": "generic-target"}
+        payloads = (
+            b"\xffsk-abcdefghijklmnopQRSTUV",
+            b"\xffeyJabcdefgh.ijklmnop.qrstuvwx",
+            b"\xffapi_key=generic-secret-value",
+        )
+        for payload in payloads:
+            with self.subTest(payload=payload[:8]), tempfile.TemporaryDirectory(
+                prefix="agentic-generic-credential-test-", dir=root / ".tmp"
+            ) as value:
+                output_root = Path(value)
+                attempt_root = output_root / "attempts/001-generic-target"
+
+                def fake_inner(**_kwargs):
+                    artifact = attempt_root / "workspace/result.bin"
+                    artifact.parent.mkdir(parents=True)
+                    artifact.write_bytes(payload)
+                    return {"status": "valid", "contractPass": True, "elapsedSeconds": 0.5}
+
+                with mock.patch.object(benchmark_runner, "_execute_target_unscrubbed", side_effect=fake_inner):
+                    result = execute_target(
+                        root=root, output_root=output_root, batch={}, target=target, attempt_number=1,
+                        auth_file=output_root / "auth", bwrap=output_root / "bwrap", codex=output_root / "codex",
+                        timeout_seconds=1, proxy_policy=proxy_policy, credential_policy=EMPTY_CREDENTIAL_POLICY,
+                    )
+                self.assertEqual(result["invalidReason"], "credential-exposure")
+                self.assertFalse(attempt_root.exists())
+
+    def test_safe_retained_artifacts_are_not_removed(self):
+        root = Path(__file__).resolve().parents[2]
+        target = {"targetId": "safe-target"}
+        with tempfile.TemporaryDirectory(prefix="agentic-safe-artifact-test-", dir=root / ".tmp") as value:
+            output_root = Path(value)
+            attempt_root = output_root / "attempts/001-safe-target"
+            expected = {"status": "valid", "contractPass": True, "elapsedSeconds": 0.25}
+
+            def fake_inner(**_kwargs):
+                artifact = attempt_root / "workspace/result.bin"
+                artifact.parent.mkdir(parents=True)
+                artifact.write_bytes(b"safe\xffartifact")
+                return expected
+
+            with mock.patch.object(benchmark_runner, "_execute_target_unscrubbed", side_effect=fake_inner):
+                result = execute_target(
+                    root=root, output_root=output_root, batch={}, target=target, attempt_number=1,
+                    auth_file=output_root / "auth", bwrap=output_root / "bwrap", codex=output_root / "codex",
+                    timeout_seconds=1, proxy_policy=resolve_proxy_policy({}), credential_policy=EMPTY_CREDENTIAL_POLICY,
+                )
+            self.assertIs(result, expected)
+            self.assertEqual((attempt_root / "workspace/result.bin").read_bytes(), b"safe\xffartifact")
+
+    def test_credential_cleanup_failure_retries_deletion_and_fails_without_secret(self):
+        root = Path(__file__).resolve().parents[2]
+        secret = "private-refresh-token-value"
+        target = {"targetId": "cleanup-target"}
+        with tempfile.TemporaryDirectory(prefix="agentic-credential-cleanup-test-", dir=root / ".tmp") as value:
+            output_root = Path(value)
+            attempt_root = output_root / "attempts/001-cleanup-target"
+
+            def fake_inner(**_kwargs):
+                artifact = attempt_root / "workspace/result.txt"
+                artifact.parent.mkdir(parents=True)
+                artifact.write_text(secret, encoding="utf-8")
+                return {"status": "valid", "contractPass": True, "elapsedSeconds": 0.1}
+
+            real_remove = benchmark_runner.remove_tmp_directory
+            attempt_removals = 0
+
+            def fail_attempt_once(path: Path, repo: Path):
+                nonlocal attempt_removals
+                if path == attempt_root:
+                    attempt_removals += 1
+                    if attempt_removals == 1:
+                        raise OSError(f"private cleanup detail {secret}")
+                return real_remove(path, repo)
+
+            with mock.patch.object(benchmark_runner, "_execute_target_unscrubbed", side_effect=fake_inner), mock.patch.object(
+                benchmark_runner, "remove_tmp_directory", side_effect=fail_attempt_once
+            ):
+                with self.assertRaises(SystemExit) as caught:
+                    execute_target(
+                        root=root, output_root=output_root, batch={}, target=target, attempt_number=1,
+                        auth_file=output_root / "auth", bwrap=output_root / "bwrap", codex=output_root / "codex",
+                        timeout_seconds=1, proxy_policy=resolve_proxy_policy({}),
+                        credential_policy=CredentialPolicy((secret,)),
+                    )
+            self.assertEqual(str(caught.exception), "benchmark attempt artifact cleanup failed")
+            self.assertNotIn(secret, str(caught.exception))
+            self.assertEqual(attempt_removals, 2)
+            self.assertFalse(attempt_root.exists())
+
+    def test_confidentiality_scan_preserves_entry_and_file_size_caps(self):
+        root = Path(__file__).resolve().parents[2]
+        target = {"targetId": "limit-target"}
+        for limit_name in ("MAX_ARTIFACT_ENTRIES", "MAX_ARTIFACT_FILE_BYTES"):
+            with self.subTest(limit=limit_name), tempfile.TemporaryDirectory(
+                prefix="agentic-artifact-limit-test-", dir=root / ".tmp"
+            ) as value:
+                output_root = Path(value)
+                attempt_root = output_root / "attempts/001-limit-target"
+
+                def fake_inner(**_kwargs):
+                    artifact = attempt_root / "workspace/result.bin"
+                    artifact.parent.mkdir(parents=True)
+                    artifact.write_bytes(b"safe-artifact")
+                    return {"status": "valid", "contractPass": True, "elapsedSeconds": 0.1}
+
+                with mock.patch.object(benchmark_runner, "_execute_target_unscrubbed", side_effect=fake_inner), mock.patch.object(
+                    agentic_benchmark_provider_preflight, limit_name, 0
+                ):
+                    with self.assertRaises(SystemExit) as caught:
+                        execute_target(
+                            root=root, output_root=output_root, batch={}, target=target, attempt_number=1,
+                            auth_file=output_root / "auth", bwrap=output_root / "bwrap", codex=output_root / "codex",
+                            timeout_seconds=1, proxy_policy=resolve_proxy_policy({}),
+                            credential_policy=EMPTY_CREDENTIAL_POLICY,
+                        )
+                self.assertEqual(str(caught.exception), "benchmark attempt artifact cleanup failed")
+                self.assertFalse(attempt_root.exists())
 
     def test_attempt_cleanup_preserves_normal_result_and_reraises_original_errors(self):
         root = Path(__file__).resolve().parents[2]
@@ -353,7 +537,7 @@ class RunnerContractTest(unittest.TestCase):
                 result = execute_target(
                     root=root, output_root=output_root, batch={}, target=target, attempt_number=1,
                     auth_file=output_root / "auth", bwrap=output_root / "bwrap", codex=output_root / "codex",
-                    timeout_seconds=1, proxy_policy=policy,
+                    timeout_seconds=1, proxy_policy=policy, credential_policy=EMPTY_CREDENTIAL_POLICY,
                 )
             self.assertIs(result, expected)
             self.assertFalse((attempt_root / "isolated/home").exists())
@@ -374,7 +558,7 @@ class RunnerContractTest(unittest.TestCase):
                         execute_target(
                             root=root, output_root=output_root, batch={}, target=target, attempt_number=1,
                             auth_file=output_root / "auth", bwrap=output_root / "bwrap", codex=output_root / "codex",
-                            timeout_seconds=1, proxy_policy=policy,
+                            timeout_seconds=1, proxy_policy=policy, credential_policy=EMPTY_CREDENTIAL_POLICY,
                         )
                 self.assertIs(caught.exception, error)
                 self.assertFalse((attempt_root / "isolated/home").exists())
@@ -400,7 +584,7 @@ class RunnerContractTest(unittest.TestCase):
                 result = execute_target(
                     root=root, output_root=output_root, batch={}, target=target, attempt_number=1,
                     auth_file=output_root / "auth", bwrap=output_root / "bwrap", codex=output_root / "codex",
-                    timeout_seconds=1, proxy_policy=policy,
+                    timeout_seconds=1, proxy_policy=policy, credential_policy=EMPTY_CREDENTIAL_POLICY,
                 )
             self.assertEqual(result, {"status": "invalid", "invalidReason": "proxy-exposure", "elapsedSeconds": 1.25})
             self.assertFalse(proxy_link.is_symlink())
@@ -422,13 +606,13 @@ class RunnerContractTest(unittest.TestCase):
                 return {"status": "valid", "contractPass": True}
 
             with mock.patch.object(benchmark_runner, "_execute_target_unscrubbed", side_effect=fake_inner), mock.patch.object(
-                agentic_benchmark_provider_preflight, "scrub_proxy_artifact_tree", side_effect=OSError("private proxy detail")
+                agentic_benchmark_provider_preflight, "scrub_confidential_artifact_tree", side_effect=OSError("private proxy detail")
             ):
                 with self.assertRaises(SystemExit) as caught:
                     execute_target(
                         root=root, output_root=output_root, batch={}, target=target, attempt_number=1,
                         auth_file=output_root / "auth", bwrap=output_root / "bwrap", codex=output_root / "codex",
-                        timeout_seconds=1, proxy_policy=policy,
+                        timeout_seconds=1, proxy_policy=policy, credential_policy=EMPTY_CREDENTIAL_POLICY,
                     )
             self.assertEqual(str(caught.exception), "benchmark attempt artifact cleanup failed")
             self.assertFalse(attempt_root.exists())
@@ -458,7 +642,7 @@ class RunnerContractTest(unittest.TestCase):
                     execute_target(
                         root=root, output_root=output_root, batch={}, target=target, attempt_number=1,
                         auth_file=output_root / "auth", bwrap=output_root / "bwrap", codex=output_root / "codex",
-                        timeout_seconds=1, proxy_policy=policy,
+                        timeout_seconds=1, proxy_policy=policy, credential_policy=EMPTY_CREDENTIAL_POLICY,
                     )
             self.assertEqual(str(caught.exception), "benchmark attempt artifact cleanup failed")
             self.assertFalse(attempt_root.exists())
@@ -480,9 +664,10 @@ class RunnerContractTest(unittest.TestCase):
             workspace.write_text(proxy, encoding="utf-8")
             os.symlink(b"prefix-" + proxy.encode() + b"-\xff", os.fsencode(proxy_link))
             safe_link.symlink_to("unrelated-target")
-            agentic_benchmark_provider_preflight.scrub_stale_proxy_artifacts(
+            agentic_benchmark_provider_preflight.scrub_stale_confidential_artifacts(
                 output_root / "attempts",
                 policy,
+                EMPTY_CREDENTIAL_POLICY,
                 lambda path: benchmark_runner.remove_tmp_directory(path, root),
             )
             self.assertFalse((attempt_root / "isolated/home").exists())
@@ -491,6 +676,26 @@ class RunnerContractTest(unittest.TestCase):
             self.assertEqual(proxy_link.read_bytes(), b"prefix-[REDACTED_PROXY]-\xff")
             self.assertTrue(safe_link.is_symlink())
             self.assertEqual(os.readlink(os.fsencode(safe_link)), b"unrelated-target")
+
+    def test_stale_credential_attempt_is_deleted_and_cannot_resume_as_valid(self):
+        root = Path(__file__).resolve().parents[2]
+        secret = "private-refresh-token-value"
+        with tempfile.TemporaryDirectory(prefix="agentic-stale-credential-test-", dir=root / ".tmp") as value:
+            output_root = Path(value)
+            attempt_root = output_root / "attempts/001-stale"
+            artifact = attempt_root / "workspace/result.txt"
+            artifact.parent.mkdir(parents=True)
+            artifact.write_text(secret, encoding="utf-8")
+            with self.assertRaises(SystemExit) as caught:
+                agentic_benchmark_provider_preflight.scrub_stale_confidential_artifacts(
+                    output_root / "attempts",
+                    resolve_proxy_policy({}),
+                    CredentialPolicy((secret,)),
+                    lambda path: benchmark_runner.remove_tmp_directory(path, root),
+                )
+            self.assertEqual(str(caught.exception), "stale benchmark attempt contained credential exposure")
+            self.assertNotIn(secret, str(caught.exception))
+            self.assertFalse(attempt_root.exists())
 
     def test_production_child_timeout_escalates_to_bounded_sigkill(self):
         process = subprocess.Popen(

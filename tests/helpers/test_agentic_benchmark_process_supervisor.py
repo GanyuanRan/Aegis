@@ -10,10 +10,12 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from agentic_benchmark_process_supervisor import MAX_RESULT_BYTES, supervise_process
+import agentic_benchmark_process_supervisor
+from agentic_benchmark_process_supervisor import MAX_RESULT_BYTES, supervise_operation, supervise_process
 from agentic_benchmark_scheduler import execute_budgeted_stage
 
 
@@ -133,6 +135,46 @@ while True:
         self.assertFalse(outcome["timedOut"])
         self.assertTrue(outcome["outputExceeded"])
         self.assertEqual(outcome["stdout"], "")
+
+    def test_parent_timeout_cleanup_promotes_residual_credential_exposure(self):
+        cleanup_calls = 0
+
+        def cleanup() -> str:
+            nonlocal cleanup_calls
+            cleanup_calls += 1
+            return "credential-exposure"
+
+        outcome = {
+            "returncode": -9,
+            "stdout": "",
+            "elapsedSeconds": 0.5,
+            "timedOut": True,
+            "outputExceeded": False,
+        }
+        with mock.patch.object(agentic_benchmark_process_supervisor, "supervise_process", return_value=outcome):
+            result = supervise_operation("attempt", {"safe": True}, 1.0, cleanup)
+        self.assertEqual(cleanup_calls, 1)
+        self.assertEqual(result, {"status": "invalid", "invalidReason": "credential-exposure", "elapsedSeconds": 0.5})
+
+    def test_credential_markers_use_worker_stdin_and_never_argv_or_result(self):
+        secret = "private-refresh-token-value"
+        captured: dict[str, object] = {}
+
+        def fake_supervise(command: list[str], payload: str, timeout_seconds: float) -> dict:
+            captured.update(command=command, payload=payload, timeout=timeout_seconds)
+            return {
+                "returncode": 0,
+                "stdout": '{"status":"valid","contractPass":true}',
+                "elapsedSeconds": 0.1,
+                "timedOut": False,
+                "outputExceeded": False,
+            }
+
+        with mock.patch.object(agentic_benchmark_process_supervisor, "supervise_process", side_effect=fake_supervise):
+            result = supervise_operation("attempt", {"credentialMarkers": [secret]}, 1.0)
+        self.assertNotIn(secret, " ".join(captured["command"]))  # type: ignore[arg-type]
+        self.assertIn(secret, captured["payload"])  # type: ignore[operator]
+        self.assertNotIn(secret, json.dumps(result, sort_keys=True))
 
 
 if __name__ == "__main__":

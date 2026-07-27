@@ -38,8 +38,13 @@ from agentic_benchmark_isolation import (
     run_provider_preflight,
     validate_bwrap_command,
 )
-from agentic_benchmark_provider_preflight import execute_with_proxy_artifact_boundary
-from agentic_benchmark_provider_preflight import scrub_stale_proxy_artifacts
+from agentic_benchmark_provider_preflight import CredentialPolicy
+from agentic_benchmark_provider_preflight import credential_policy_from_markers
+from agentic_benchmark_provider_preflight import execute_with_confidentiality_boundary
+from agentic_benchmark_provider_preflight import finalize_confidential_artifacts
+from agentic_benchmark_provider_preflight import freeze_credential_policy
+from agentic_benchmark_provider_preflight import redact_credential_output
+from agentic_benchmark_provider_preflight import scrub_stale_confidential_artifacts
 from score_agentic_benchmark_outcome import score as score_outcome
 from score_agentic_benchmark_outcome import snapshot_workspace
 from validate_agentic_benchmark_cases import load_json, validate_manifest
@@ -444,33 +449,6 @@ def parse_codex_jsonl(raw: str) -> dict[str, Any]:
     }
 
 
-def redact_credential_output(text: str, auth_file: Path) -> tuple[str, bool]:
-    markers: set[str] = set()
-    try:
-        auth_value = json.loads(auth_file.read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
-        auth_value = None
-    for value in walk_values(auth_value):
-        if isinstance(value, str) and len(value) >= 12:
-            markers.add(value)
-
-    redacted = text
-    exposed = False
-    for marker in sorted(markers, key=len, reverse=True):
-        if marker in redacted:
-            redacted = redacted.replace(marker, "[REDACTED_CREDENTIAL]")
-            exposed = True
-    patterns = [
-        re.compile(r"\bsk-[A-Za-z0-9_-]{16,}\b"),
-        re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b"),
-        re.compile(r'(?i)("?(?:access_token|refresh_token|id_token|api_key)"?\s*[:=]\s*["\'])([^"\'\s]{8,})'),
-    ]
-    for pattern in patterns:
-        redacted, count = pattern.subn(lambda match: f"{match.group(1)}[REDACTED_CREDENTIAL]" if match.lastindex else "[REDACTED_CREDENTIAL]", redacted)
-        exposed = exposed or count > 0
-    return redacted, exposed
-
-
 def _execute_target_unscrubbed(
     *,
     root: Path,
@@ -483,6 +461,7 @@ def _execute_target_unscrubbed(
     codex: Path,
     timeout_seconds: float,
     proxy_policy: ProxyPolicy,
+    credential_policy: CredentialPolicy,
     process_group_supervised: bool = False,
 ) -> dict[str, Any]:
     case = find_case(batch["frozenCases"], "caseId", target["caseId"], "frozen benchmark")
@@ -525,8 +504,8 @@ def _execute_target_unscrubbed(
     if timed_out:
         stderr += "\nbenchmark attempt timed out\n"
     elapsed = round(time.monotonic() - started, 3)
-    stdout, stdout_exposed = redact_credential_output(stdout, auth_file)
-    stderr, stderr_exposed = redact_credential_output(stderr, auth_file)
+    stdout, stdout_exposed = redact_credential_output(stdout, credential_policy)
+    stderr, stderr_exposed = redact_credential_output(stderr, credential_policy)
     stdout, stdout_proxy_exposed = redact_proxy_output(stdout, proxy_policy)
     stderr, stderr_proxy_exposed = redact_proxy_output(stderr, proxy_policy)
     raw_log.write_text(stdout, encoding="utf-8")
@@ -591,16 +570,18 @@ def execute_target(
     codex: Path,
     timeout_seconds: float,
     proxy_policy: ProxyPolicy,
+    credential_policy: CredentialPolicy,
     process_group_supervised: bool = False,
 ) -> dict[str, Any]:
     callback_arguments = locals()
     leaf = f"{attempt_number:03d}-{target['targetId']}"
     require(Path(leaf).name == leaf, "attempt targetId must not contain path separators")
     attempt_root = resolve_tmp_child(root, output_root / "attempts" / leaf, "attempt artifact root")
-    return execute_with_proxy_artifact_boundary(
+    return execute_with_confidentiality_boundary(
         attempt_root,
         attempt_root / "isolated/home",
         proxy_policy,
+        credential_policy,
         _execute_target_unscrubbed,
         callback_arguments,
         lambda path: remove_tmp_directory(path, root),
@@ -850,6 +831,9 @@ def run_command(args: argparse.Namespace) -> None:
     batch, ledger = load_batch_and_ledger(output_root)
     proxy_policy = verify_batch(batch, root, output_root)
     require_execution_opt_in(batch["profileId"], os.environ)
+    auth_file = resolve_auth_file(args.auth_file)
+    credential_policy = freeze_credential_policy(auth_file)
+    credential_markers = list(credential_policy.in_memory_markers())
     ledger_path = output_root / "ledger.json"
 
     def isolation_stage(remaining_seconds: float) -> dict[str, Any]:
@@ -859,7 +843,8 @@ def run_command(args: argparse.Namespace) -> None:
                 "root": str(root),
                 "outputRoot": str(output_root),
                 "batch": batch,
-                "authFile": str(args.auth_file),
+                "authFile": str(auth_file),
+                "credentialMarkers": credential_markers,
             },
             remaining_seconds,
         )
@@ -905,6 +890,18 @@ def run_command(args: argparse.Namespace) -> None:
             network_policy_metadata(current_proxy_policy) == network_policy_metadata(proxy_policy),
             "benchmark proxy policy drifted",
         )
+        def recover_attempt_artifacts() -> str | None:
+            leaf = f"{attempt_number:03d}-{target['targetId']}"
+            require(Path(leaf).name == leaf, "attempt targetId must not contain path separators")
+            attempt_root = resolve_tmp_child(root, output_root / "attempts" / leaf, "attempt artifact root")
+            return finalize_confidential_artifacts(
+                attempt_root,
+                attempt_root / "isolated/home",
+                current_proxy_policy,
+                credential_policy,
+                lambda path: remove_tmp_directory(path, root),
+            )
+
         return supervise_attempt(
             {
                 "root": str(root),
@@ -915,9 +912,11 @@ def run_command(args: argparse.Namespace) -> None:
                 "authFile": str(auth_file),
                 "bwrap": str(bwrap),
                 "codex": str(codex),
+                "credentialMarkers": credential_markers,
                 "timeoutSeconds": timeout_seconds,
             },
             timeout_seconds,
+            recover_attempt_artifacts,
         )
 
     agentic_benchmark_scheduler.execute_schedule(batch, ledger, ledger_path, executor)

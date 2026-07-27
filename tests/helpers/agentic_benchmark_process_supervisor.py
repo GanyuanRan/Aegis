@@ -10,7 +10,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 
 MAX_REQUEST_BYTES = 1_048_576
@@ -116,7 +116,12 @@ def supervise_process(command: list[str], payload: str, timeout_seconds: float) 
     }
 
 
-def supervise_operation(operation: str, request: dict[str, Any], timeout_seconds: float) -> Any:
+def supervise_operation(
+    operation: str,
+    request: dict[str, Any],
+    timeout_seconds: float,
+    failure_cleanup: Callable[[], str | None] | None = None,
+) -> Any:
     """Run a complete active-run stage in one killable process."""
 
     _require(operation in {"attempt", "isolation-setup", "provider-preflight"}, "unknown supervised operation")
@@ -129,37 +134,47 @@ def supervise_operation(operation: str, request: dict[str, Any], timeout_seconds
         timeout_seconds,
     )
     elapsed = outcome["elapsedSeconds"]
+
+    def invalid_attempt(default_reason: str) -> dict[str, Any]:
+        exposure = failure_cleanup() if failure_cleanup is not None else None
+        reason = exposure if exposure in {"credential-exposure", "proxy-exposure"} else default_reason
+        return _invalid(reason, elapsed)
+
     if outcome["timedOut"]:
         if operation == "attempt":
-            return _invalid("timeout", elapsed)
+            return invalid_attempt("timeout")
         raise SystemExit(f"benchmark {operation} exceeded the remaining wall-clock budget")
     if outcome["returncode"] != 0:
         if operation == "attempt":
-            return _invalid("infrastructure", elapsed)
+            return invalid_attempt("infrastructure")
         raise SystemExit(f"benchmark {operation} failed")
     if outcome["outputExceeded"]:
         if operation == "attempt":
-            return _invalid("infrastructure", elapsed)
+            return invalid_attempt("infrastructure")
         raise SystemExit(f"benchmark {operation} result is too large")
     try:
         result = json.loads(outcome["stdout"])
     except (TypeError, json.JSONDecodeError):
         if operation == "attempt":
-            return _invalid("infrastructure", elapsed)
+            return invalid_attempt("infrastructure")
         raise SystemExit(f"benchmark {operation} returned an invalid result")
     if not isinstance(result, dict):
         if operation == "attempt":
-            return _invalid("infrastructure", elapsed)
+            return invalid_attempt("infrastructure")
         raise SystemExit(f"benchmark {operation} returned an invalid result")
     if operation == "attempt":
         result["elapsedSeconds"] = round(elapsed, 3)
     return result
 
 
-def supervise_attempt(request: dict[str, Any], timeout_seconds: float) -> dict[str, Any]:
+def supervise_attempt(
+    request: dict[str, Any],
+    timeout_seconds: float,
+    failure_cleanup: Callable[[], str | None] | None = None,
+) -> dict[str, Any]:
     """Run setup, Codex, parsing, scoring and cleanup in one killable process."""
 
-    return supervise_operation("attempt", request, timeout_seconds)
+    return supervise_operation("attempt", request, timeout_seconds, failure_cleanup)
 
 
 def _path(value: Any, label: str) -> Path:
@@ -174,10 +189,12 @@ def _execute_isolation_setup(runner: Any, request: dict[str, Any]) -> dict[str, 
     batch = request.get("batch")
     proxy_policy = runner.verify_batch(batch, root, output_root)
     auth_file = runner.resolve_auth_file(_path(request.get("authFile"), "authFile"))
+    credential_policy = runner.credential_policy_from_markers(request.get("credentialMarkers"))
     attempts_root = runner.resolve_tmp_child(root, output_root / "attempts", "attempts artifact root")
-    runner.scrub_stale_proxy_artifacts(
+    runner.scrub_stale_confidential_artifacts(
         attempts_root,
         proxy_policy,
+        credential_policy,
         lambda path: runner.remove_tmp_directory(path, root),
     )
     bwrap = runner.resolve_tool("bwrap", "AEGIS_BENCHMARK_BWRAP")
@@ -237,6 +254,7 @@ def _worker() -> int:
 
     if operation == "attempt":
         policy = runner.resolve_proxy_policy(os.environ)
+        credential_policy = runner.credential_policy_from_markers(request.get("credentialMarkers"))
         result = runner.execute_target(
             root=_path(request.get("root"), "root"),
             output_root=_path(request.get("outputRoot"), "outputRoot"),
@@ -248,6 +266,7 @@ def _worker() -> int:
             codex=_path(request.get("codex"), "codex"),
             timeout_seconds=request.get("timeoutSeconds") + PROCESS_CLEANUP_SECONDS,
             proxy_policy=policy,
+            credential_policy=credential_policy,
             process_group_supervised=True,
         )
     elif operation == "isolation-setup":

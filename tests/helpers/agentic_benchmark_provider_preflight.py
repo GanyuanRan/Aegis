@@ -7,6 +7,7 @@ import json
 import hashlib
 import ipaddress
 import os
+import re
 import signal
 import subprocess
 import time
@@ -27,6 +28,14 @@ MAX_ARTIFACT_FILE_BYTES = 64 * 1024 * 1024
 MAX_ARTIFACT_TOTAL_BYTES = 256 * 1024 * 1024
 PROXY_KEYS = ("ALL_PROXY", "HTTPS_PROXY", "HTTP_PROXY")
 PROXY_SCHEMES = {"http", "https", "socks5", "socks5h"}
+CREDENTIAL_MARKER_MIN_LENGTH = 12
+CREDENTIAL_PATTERN_SOURCES = (
+    rb"\bsk-[A-Za-z0-9_-]{16,}\b",
+    rb"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b",
+    rb'''(?ix)(?:["']?(?:access_token|refresh_token|id_token|api_key|apikey|access_key|secret|password)["']?\s*[:=]\s*["']?)[^"'\s,}]{8,}''',
+)
+CREDENTIAL_BYTE_PATTERNS = tuple(re.compile(source) for source in CREDENTIAL_PATTERN_SOURCES)
+CREDENTIAL_TEXT_PATTERNS = tuple(re.compile(source.decode("ascii")) for source in CREDENTIAL_PATTERN_SOURCES)
 
 
 class ProxyPolicy:
@@ -45,6 +54,69 @@ class ProxyPolicy:
 
     def child_environment(self) -> dict[str, str]:
         return dict(self.__mapping)
+
+
+class CredentialPolicy:
+    """Frozen credential markers whose representation never contains a value."""
+
+    __slots__ = ("__markers",)
+
+    def __init__(self, markers: tuple[str, ...]) -> None:
+        if any(not isinstance(marker, str) or len(marker) < CREDENTIAL_MARKER_MIN_LENGTH for marker in markers):
+            raise SystemExit("credential markers are invalid")
+        object.__setattr__(self, "_CredentialPolicy__markers", tuple(sorted(set(markers), key=len, reverse=True)))
+
+    def __setattr__(self, _name: str, _value: object) -> None:
+        raise AttributeError("CredentialPolicy is immutable")
+
+    def __repr__(self) -> str:
+        return f"CredentialPolicy(marker_count={len(self.__markers)})"
+
+    def in_memory_markers(self) -> tuple[str, ...]:
+        return self.__markers
+
+
+def _walk_json_strings(value: Any) -> list[str]:
+    values: list[str] = []
+    if isinstance(value, dict):
+        for nested in value.values():
+            values.extend(_walk_json_strings(nested))
+    elif isinstance(value, list):
+        for nested in value:
+            values.extend(_walk_json_strings(nested))
+    elif isinstance(value, str):
+        values.append(value)
+    return values
+
+
+def freeze_credential_policy(auth_file: Path) -> CredentialPolicy:
+    """Read auth once and retain candidate values only in process memory."""
+
+    try:
+        auth_value = json.loads(auth_file.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise SystemExit("Codex auth file could not be read safely") from exc
+    markers = tuple(value for value in _walk_json_strings(auth_value) if len(value) >= CREDENTIAL_MARKER_MIN_LENGTH)
+    return CredentialPolicy(markers)
+
+
+def credential_policy_from_markers(markers: Any) -> CredentialPolicy:
+    if not isinstance(markers, list) or any(not isinstance(marker, str) for marker in markers):
+        raise SystemExit("credential marker transfer is invalid")
+    return CredentialPolicy(tuple(markers))
+
+
+def redact_credential_output(text: str, policy: CredentialPolicy) -> tuple[str, bool]:
+    redacted = text
+    exposed = False
+    for marker in policy.in_memory_markers():
+        if marker in redacted:
+            redacted = redacted.replace(marker, "[REDACTED_CREDENTIAL]")
+            exposed = True
+    for pattern in CREDENTIAL_TEXT_PATTERNS:
+        redacted, count = pattern.subn("[REDACTED_CREDENTIAL]", redacted)
+        exposed = exposed or count > 0
+    return redacted, exposed
 
 
 def _proxy_error(key: str, reason: str) -> None:
@@ -132,56 +204,95 @@ def redact_proxy_output(text: str, policy: ProxyPolicy) -> tuple[str, bool]:
     return redacted, exposed
 
 
-def scrub_proxy_artifact_tree(root: Path, policy: ProxyPolicy) -> bool:
-    exposed = False
+def _credential_exposed(payload: bytes, policy: CredentialPolicy) -> bool:
+    markers = (marker.encode("utf-8") for marker in policy.in_memory_markers())
+    return any(marker in payload for marker in markers) or any(pattern.search(payload) for pattern in CREDENTIAL_BYTE_PATTERNS)
+
+
+def _proxy_markers(policy: ProxyPolicy) -> tuple[bytes, ...]:
+    return tuple(sorted({os.fsencode(value) for value in policy.child_environment().values()}, key=len, reverse=True))
+
+
+def classify_confidential_payload(payload: bytes, proxy_policy: ProxyPolicy, credential_policy: CredentialPolicy) -> str | None:
+    if _credential_exposed(payload, credential_policy):
+        return "credential-exposure"
+    if any(marker in payload for marker in _proxy_markers(proxy_policy)):
+        return "proxy-exposure"
+    return None
+
+
+def scrub_confidential_artifact_tree(
+    root: Path,
+    proxy_policy: ProxyPolicy,
+    credential_policy: CredentialPolicy,
+) -> str | None:
+    proxy_exposed = False
     entry_count = 0
     total_bytes = 0
-    markers = sorted({os.fsencode(value) for value in policy.child_environment().values()}, key=len, reverse=True)
+    proxy_markers = _proxy_markers(proxy_policy)
     if not root.exists():
-        return False
+        return None
     if root.is_symlink() or not root.is_dir():
         raise OSError("artifact root must be an ordinary directory")
-    for candidate in root.rglob("*"):
-        entry_count += 1
-        if entry_count > MAX_ARTIFACT_ENTRIES:
-            raise OSError("artifact entry-count limit exceeded")
-        if candidate.is_symlink():
-            payload = os.readlink(os.fsencode(candidate))
+    pending = [os.fsencode(root)]
+    while pending:
+        directory = pending.pop()
+        with os.scandir(directory) as iterator:
+            entries = sorted(iterator, key=lambda entry: entry.name)
+        for entry in entries:
+            entry_count += 1
+            if entry_count > MAX_ARTIFACT_ENTRIES:
+                raise OSError("artifact entry-count limit exceeded")
+            name = entry.name if isinstance(entry.name, bytes) else os.fsencode(entry.name)
+            if _credential_exposed(name, credential_policy):
+                return "credential-exposure"
+            candidate = entry.path if isinstance(entry.path, bytes) else os.fsencode(entry.path)
+            if entry.is_symlink():
+                payload = os.readlink(candidate)
+                total_bytes += len(payload)
+                if total_bytes > MAX_ARTIFACT_TOTAL_BYTES:
+                    raise OSError("artifact size limit exceeded")
+                if _credential_exposed(payload, credential_policy):
+                    return "credential-exposure"
+                redacted = payload
+                for marker in proxy_markers:
+                    redacted = redacted.replace(marker, b"[REDACTED_PROXY]")
+                if redacted != payload:
+                    os.unlink(candidate)
+                    with open(candidate, "xb") as stream:
+                        stream.write(redacted)
+                    proxy_exposed = True
+                continue
+            if entry.is_dir(follow_symlinks=False):
+                pending.append(candidate)
+                continue
+            if not entry.is_file(follow_symlinks=False):
+                continue
+            size = entry.stat(follow_symlinks=False).st_size
+            if size > MAX_ARTIFACT_FILE_BYTES or total_bytes + size > MAX_ARTIFACT_TOTAL_BYTES:
+                raise OSError("artifact size limit exceeded")
+            with open(candidate, "rb") as stream:
+                payload = stream.read(MAX_ARTIFACT_FILE_BYTES + 1)
+            if len(payload) > MAX_ARTIFACT_FILE_BYTES:
+                raise OSError("artifact size limit exceeded")
             total_bytes += len(payload)
+            if total_bytes > MAX_ARTIFACT_TOTAL_BYTES:
+                raise OSError("artifact size limit exceeded")
+            if _credential_exposed(payload, credential_policy):
+                return "credential-exposure"
             redacted = payload
-            for marker in markers:
+            for marker in proxy_markers:
                 redacted = redacted.replace(marker, b"[REDACTED_PROXY]")
             if redacted != payload:
-                candidate.unlink()
-                candidate.write_bytes(redacted)
-                exposed = True
-            continue
-        if not candidate.is_file():
-            continue
-        size = candidate.stat().st_size
-        total_bytes += size
-        if size > MAX_ARTIFACT_FILE_BYTES or total_bytes > MAX_ARTIFACT_TOTAL_BYTES:
-            raise OSError("artifact size limit exceeded")
-        payload = candidate.read_bytes()
-        redacted = payload
-        for marker in markers:
-            if marker in redacted:
-                redacted = redacted.replace(marker, b"[REDACTED_PROXY]")
-                exposed = True
-        if redacted != payload:
-            candidate.write_bytes(redacted)
-    return exposed
+                with open(candidate, "wb") as stream:
+                    stream.write(redacted)
+                proxy_exposed = True
+    return "proxy-exposure" if proxy_exposed else None
 
 
-def finalize_proxy_artifacts(
-    attempt_root: Path,
-    isolated_home: Path,
-    policy: ProxyPolicy,
-    remove_directory: DirectoryRemover,
-) -> bool:
+def _remove_attempt_or_fail(attempt_root: Path, remove_directory: DirectoryRemover) -> None:
     try:
-        remove_directory(isolated_home)
-        return scrub_proxy_artifact_tree(attempt_root, policy)
+        remove_directory(attempt_root)
     except (OSError, SystemExit) as exc:
         try:
             remove_directory(attempt_root)
@@ -190,10 +301,35 @@ def finalize_proxy_artifacts(
         raise SystemExit("benchmark attempt artifact cleanup failed") from exc
 
 
-def execute_with_proxy_artifact_boundary(
+def finalize_confidential_artifacts(
     attempt_root: Path,
     isolated_home: Path,
-    policy: ProxyPolicy,
+    proxy_policy: ProxyPolicy,
+    credential_policy: CredentialPolicy,
+    remove_directory: DirectoryRemover,
+    *,
+    force_credential_removal: bool = False,
+) -> str | None:
+    try:
+        remove_directory(isolated_home)
+        exposure = scrub_confidential_artifact_tree(attempt_root, proxy_policy, credential_policy)
+    except (OSError, SystemExit) as exc:
+        try:
+            remove_directory(attempt_root)
+        except (OSError, SystemExit):
+            pass
+        raise SystemExit("benchmark attempt artifact cleanup failed") from exc
+    if exposure == "credential-exposure" or force_credential_removal:
+        _remove_attempt_or_fail(attempt_root, remove_directory)
+        return "credential-exposure"
+    return exposure
+
+
+def execute_with_confidentiality_boundary(
+    attempt_root: Path,
+    isolated_home: Path,
+    proxy_policy: ProxyPolicy,
+    credential_policy: CredentialPolicy,
     callback: AttemptCallback,
     callback_arguments: dict[str, Any],
     remove_directory: DirectoryRemover,
@@ -204,10 +340,26 @@ def execute_with_proxy_artifact_boundary(
         result = callback(**callback_arguments)
     except BaseException as exc:
         pending_error = exc
-    exposed = finalize_proxy_artifacts(attempt_root, isolated_home, policy, remove_directory)
-    if exposed:
+    result_reason = result.get("invalidReason") if result is not None else None
+    error_reason = (
+        classify_confidential_payload(str(pending_error).encode("utf-8", errors="surrogatepass"), proxy_policy, credential_policy)
+        if pending_error is not None
+        else None
+    )
+    exposed = finalize_confidential_artifacts(
+        attempt_root,
+        isolated_home,
+        proxy_policy,
+        credential_policy,
+        remove_directory,
+        force_credential_removal=result_reason == "credential-exposure" or error_reason == "credential-exposure",
+    )
+    reason = "credential-exposure" if "credential-exposure" in {exposed, result_reason, error_reason} else None
+    if reason is None and "proxy-exposure" in {exposed, result_reason, error_reason}:
+        reason = "proxy-exposure"
+    if reason is not None:
         elapsed = result.get("elapsedSeconds", 0.0) if result is not None else 0.0
-        return {"status": "invalid", "invalidReason": "proxy-exposure", "elapsedSeconds": elapsed}
+        return {"status": "invalid", "invalidReason": reason, "elapsedSeconds": elapsed}
     if pending_error is not None:
         raise pending_error
     if result is None:
@@ -215,9 +367,10 @@ def execute_with_proxy_artifact_boundary(
     return result
 
 
-def scrub_stale_proxy_artifacts(
+def scrub_stale_confidential_artifacts(
     attempts_root: Path,
-    policy: ProxyPolicy,
+    proxy_policy: ProxyPolicy,
+    credential_policy: CredentialPolicy,
     remove_directory: DirectoryRemover,
 ) -> None:
     if not attempts_root.exists():
@@ -227,7 +380,15 @@ def scrub_stale_proxy_artifacts(
     for attempt_root in sorted(attempts_root.iterdir()):
         if attempt_root.is_symlink() or not attempt_root.is_dir():
             raise SystemExit("stale attempt artifact must be an ordinary directory")
-        finalize_proxy_artifacts(attempt_root, attempt_root / "isolated/home", policy, remove_directory)
+        exposure = finalize_confidential_artifacts(
+            attempt_root,
+            attempt_root / "isolated/home",
+            proxy_policy,
+            credential_policy,
+            remove_directory,
+        )
+        if exposure == "credential-exposure":
+            raise SystemExit("stale benchmark attempt contained credential exposure")
 
 
 def _terminate_process(process: subprocess.Popen[str]) -> None:
