@@ -4,10 +4,12 @@
 from __future__ import annotations
 
 import argparse
+import functools
 import hashlib
 import html
 import json
 import math
+import os
 import random
 import re
 import tempfile
@@ -42,6 +44,8 @@ UNSUPPORTED_CLAIMS = (
 )
 PROFILE_CONTRACTS = {
     "standard-held-out": {
+        "caseCount": 20,
+        "arms": list(ARMS),
         "repetitions": 1,
         "targetRuns": 40,
         "maxAttempts": 44,
@@ -51,6 +55,8 @@ PROFILE_CONTRACTS = {
         ],
     },
     "extended-held-out": {
+        "caseCount": 20,
+        "arms": list(ARMS),
         "repetitions": 3,
         "targetRuns": 120,
         "maxAttempts": 132,
@@ -116,9 +122,17 @@ def load_json(path: Path, label: str) -> dict[str, Any]:
 
 def atomic_text(path: Path, value: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(value, encoding="utf-8")
-    temporary.replace(path)
+    descriptor, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+            stream.write(value)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    except BaseException:
+        temporary.unlink(missing_ok=True)
+        raise
 
 
 def canonical_json(value: Any) -> str:
@@ -204,7 +218,42 @@ def cluster_interval(records: list[dict[str, Any]], seed: str, iterations: int =
     }
 
 
+def validate_matrix_profile_contracts_value(matrix: dict[str, Any]) -> None:
+    require(matrix.get("version") == 4, "renderer requires benchmark matrix version 4")
+    run_profiles = matrix.get("runProfiles")
+    require(isinstance(run_profiles, list), "benchmark matrix runProfiles must be a list")
+    profiles = {
+        item.get("id"): item
+        for item in run_profiles
+        if isinstance(item, dict) and isinstance(item.get("id"), str)
+    }
+    field_map = {
+        "caseCount": "caseCount",
+        "arms": "arms",
+        "repetitions": "repetitionsPerCase",
+        "targetRuns": "validRunTarget",
+        "maxAttempts": "paidAttemptCeiling",
+    }
+    for profile_id, contract in PROFILE_CONTRACTS.items():
+        require(sum(isinstance(item, dict) and item.get("id") == profile_id for item in run_profiles) == 1, f"renderer profile must appear exactly once in matrix v4: {profile_id}")
+        require(profile_id in profiles, f"renderer profile is missing from matrix v4: {profile_id}")
+        matrix_profile = profiles[profile_id]
+        for contract_field, matrix_field in field_map.items():
+            actual = matrix_profile.get(matrix_field)
+            expected = contract[contract_field]
+            if type(expected) is int:
+                require(type(actual) is int, f"matrix {profile_id}.{matrix_field} must be an integer")
+            require(actual == expected, f"renderer profile contract drifted from matrix v4: {profile_id}.{matrix_field}")
+
+
+@functools.lru_cache(maxsize=1)
+def validate_matrix_profile_contracts() -> None:
+    matrix = load_json(repo_root() / "tests/e2e/fixtures/agentic-benchmark-matrix.json", "benchmark matrix")
+    validate_matrix_profile_contracts_value(matrix)
+
+
 def profile_contract(report: dict[str, Any]) -> dict[str, Any]:
+    validate_matrix_profile_contracts()
     profile_id = report.get("profileId")
     require(isinstance(profile_id, str) and profile_id in PROFILE_CONTRACTS, "only standard-held-out or extended-held-out reports can be projected")
     return PROFILE_CONTRACTS[profile_id]
@@ -304,8 +353,8 @@ def validate_common(report: dict[str, Any], expected_type: str) -> dict[str, Any
     require(isinstance(design["clusterUnit"], str), "design.clusterUnit must be a string")
     expected_design = {
         "portfolioCaseCount": 30,
-        "caseCount": 20,
-        "arms": list(ARMS),
+        "caseCount": profile["caseCount"],
+        "arms": profile["arms"],
         "repetitions": profile["repetitions"],
         "targetRuns": profile["targetRuns"],
         "maxAttempts": profile["maxAttempts"],
@@ -350,6 +399,7 @@ def validate_common(report: dict[str, Any], expected_type: str) -> dict[str, Any
             require(type(flag[count_field]) is int and flag[count_field] > 0, f"review.flags[{index}].{count_field} must be a positive integer")
     unresolved = any(flag["status"] == "unresolved" for flag in review["flags"])
     require((review["status"] == "unknown") is unresolved, "review status must reflect unresolved flags")
+    require(review["status"] == "clear" and not unresolved, "public projection requires a clear review with no unresolved flags")
     resource = report.get("resourceUse")
     require(isinstance(resource, dict) and set(resource) == {"tokens", "costUsd", "costStatus"}, "resourceUse fields drifted")
     require(isinstance(resource["tokens"], dict) and all(re.fullmatch(r"[a-z][a-z0-9_]{0,39}", key) is not None and type(value) is int and value >= 0 for key, value in resource["tokens"].items()), "resource token counts must use safe names and non-negative integers")
@@ -682,14 +732,22 @@ def self_test(print_golden: bool = False) -> None:
     public = sanitize_private(synthetic_private("positive"))
     public["review"] = {
         "status": "unknown",
-        "flags": [{"id": "scorer-unknown", "status": "unresolved", "count": 1, "notes": "unpublished held-out prompt"}],
+        "flags": [{"id": "scorer-unknown", "status": "unresolved", "count": 1}],
     }
     try:
         validate_public(public)
     except SystemExit:
         pass
     else:
-        raise SystemExit("hand-edited public review flag was accepted")
+        raise SystemExit("unresolved public review was accepted")
+
+    resolved = synthetic_private("positive")
+    resolved["review"] = {
+        "status": "clear",
+        "flags": [{"id": "mixed-within-case-results", "status": "resolved", "subjects": [resolved["caseResults"][0]["caseId"]]}],
+    }
+    resolved_public = sanitize_private(resolved)
+    require(resolved_public["review"]["flags"] == [{"id": "mixed-within-case-results", "status": "resolved", "subjectCount": 1}], "resolved review flag projection drifted")
 
     for label, mutation in (
         ("profile", lambda value: value.update({"profileId": "standard-held-out"})),
@@ -713,6 +771,16 @@ def self_test(print_golden: bool = False) -> None:
             continue
         raise SystemExit(f"canonical JSON accepted {label}")
 
+    matrix = load_json(repo_root() / "tests/e2e/fixtures/agentic-benchmark-matrix.json", "benchmark matrix")
+    drifted_matrix = json.loads(json.dumps(matrix))
+    next(item for item in drifted_matrix["runProfiles"] if item["id"] == "standard-held-out")["validRunTarget"] = 41
+    try:
+        validate_matrix_profile_contracts_value(drifted_matrix)
+    except SystemExit:
+        pass
+    else:
+        raise SystemExit("renderer accepted matrix/profile shape drift")
+
     temporary_root = repo_root() / ".tmp"
     temporary_root.mkdir(exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="agentic-render-self-test-", dir=temporary_root) as value:
@@ -722,7 +790,49 @@ def self_test(print_golden: bool = False) -> None:
         for name, content in zip(("result.json", "result.svg", "result.en.md", "result.zh.md"), outputs):
             atomic_text(root / name, content)
         require(not any(OUTPUT_PRIVATE_PATTERN.search(path.read_text(encoding="utf-8")) for path in root.iterdir()), "projection contains private execution material")
-    print("Agentic benchmark renderer self-test passed: 6 profile goldens, 26 negative cases.")
+
+        unresolved = synthetic_private("positive")
+        unresolved["review"] = {"status": "unknown", "flags": [{"id": "scorer-unknown", "status": "unresolved", "count": 1}]}
+        private_path = root / "unresolved-private.json"
+        public_path = root / "unresolved-public.json"
+        atomic_text(private_path, canonical_json(unresolved))
+        try:
+            sanitize_command(argparse.Namespace(private_report=private_path, output_json=public_path))
+        except SystemExit:
+            require(not public_path.exists(), "unresolved review created a public output")
+        else:
+            raise SystemExit("sanitize command accepted an unresolved review")
+
+        unresolved_public = sanitize_private(synthetic_private("positive"))
+        unresolved_public["review"] = {"status": "unknown", "flags": [{"id": "scorer-unknown", "status": "unresolved", "count": 1}]}
+        public_input = root / "unresolved-input.json"
+        render_outputs = (root / "unresolved.svg", root / "unresolved.en.md", root / "unresolved.zh.md")
+        atomic_text(public_input, canonical_json(unresolved_public))
+        try:
+            render_command(argparse.Namespace(report=public_input, svg=render_outputs[0], markdown_en=render_outputs[1], markdown_zh=render_outputs[2]))
+        except SystemExit:
+            require(not any(path.exists() for path in render_outputs), "unresolved review created rendered outputs")
+        else:
+            raise SystemExit("render command accepted an unresolved review")
+
+        with tempfile.TemporaryDirectory(prefix="agentic-render-victim-") as external_value:
+            victim = Path(external_value) / "victim.txt"
+            victim.write_text("outside-safe\n", encoding="utf-8")
+            output = root / "atomic-output.json"
+            output.with_suffix(output.suffix + ".tmp").symlink_to(victim)
+            atomic_text(output, "repo-safe\n")
+            require(victim.read_text(encoding="utf-8") == "outside-safe\n", "fixed temporary symlink overwrote an external victim")
+            require(not output.is_symlink() and output.read_text(encoding="utf-8") == "repo-safe\n", "atomic output was not safely replaced")
+
+        blocked = root / "blocked-output"
+        blocked.mkdir()
+        try:
+            atomic_text(blocked, "must-fail\n")
+        except OSError:
+            require(not list(root.glob(".blocked-output.*.tmp")), "failed atomic write left a temporary file")
+        else:
+            raise SystemExit("atomic write unexpectedly replaced a directory")
+    print("Agentic benchmark renderer self-test passed: 6 profile goldens, 31 negative cases.")
 
 
 def sanitize_command(args: argparse.Namespace) -> None:
