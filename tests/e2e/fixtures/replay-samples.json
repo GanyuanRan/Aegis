@@ -1,9 +1,10 @@
 {
-  "version": 1,
+  "version": 2,
   "status": "draft",
   "authorityBoundary": "advisory-method-pack-evidence-not-completion-authority",
   "sourceProjectPolicy": "controlled-fixture-projects-only",
   "workspacePolicy": "copy-seed-to-temp-per-arm",
+  "coverageMappingPolicy": "exact-bidirectional-with-benchmark-matrix",
   "liveExecution": {
     "status": "opt-in",
     "entrypoint": "tests/e2e/live-replay-capture.sh",
@@ -18,6 +19,8 @@
     {
       "id": "change-necessity-before-edit",
       "scenarioClass": "quick-bug-change-necessity",
+      "evaluationTier": "controlled-replay",
+      "datasetPartition": "development",
       "promptPath": "tests/e2e/replay-samples/change-necessity-before-edit/prompt.txt",
       "seedProjectPath": "tests/e2e/fixtures/replay-projects/change-necessity-before-edit",
       "isolationControls": [
@@ -58,6 +61,8 @@
     {
       "id": "shared-owner-bug-repair",
       "scenarioClass": "shared-owner-bug-repair",
+      "evaluationTier": "controlled-replay",
+      "datasetPartition": "development",
       "promptPath": "tests/e2e/replay-samples/shared-owner-bug-repair/prompt.txt",
       "seedProjectPath": "tests/e2e/fixtures/replay-projects/shared-owner-bug-repair",
       "isolationControls": [
@@ -97,6 +102,8 @@
     {
       "id": "completion-evidence-boundary",
       "scenarioClass": "completion-claim-with-missing-evidence",
+      "evaluationTier": "controlled-replay",
+      "datasetPartition": "development",
       "promptPath": "tests/e2e/replay-samples/completion-evidence-boundary/prompt.txt",
       "seedProjectPath": "tests/e2e/fixtures/replay-projects/completion-evidence-boundary",
       "isolationControls": [

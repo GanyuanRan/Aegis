@@ -126,12 +126,69 @@ The machine-checkable benchmark fixture lives at:
 The fixture is a design contract for the benchmark harness. It is advisory
 method-pack verification, not a runtime gate.
 
+### 7.1 Scenario Coverage Contract
+
+The version 2 matrix maps every minimum scenario class to three distinct
+coverage signals:
+
+- `workflowQualityFixtureRefs` names one or more existing deterministic
+  workflow-quality fixtures
+- `controlledReplaySampleRefs` names zero or more samples in the controlled
+  replay manifest
+- `liveReplayEligible` states whether the current live replay entrypoint can
+  prepare that scenario through a controlled replay sample
+
+These fields describe available verification paths. A fixture reference is not
+evidence that a benchmark run passed, an empty controlled replay list is an
+explicit coverage gap, and live eligibility is not live execution evidence.
+
+All ten minimum scenario classes have deterministic workflow-quality fixture
+references. Current controlled replay and live eligibility are limited to these
+exact mappings:
+
+- `quick-bug-change-necessity` -> `change-necessity-before-edit`
+- `shared-owner-bug-repair` -> `shared-owner-bug-repair`
+- `completion-claim-with-missing-evidence` ->
+  `completion-evidence-boundary`
+
+The other seven minimum scenario classes intentionally use empty
+`controlledReplaySampleRefs` and set `liveReplayEligible` to `false`. The matrix
+and replay manifest must agree bidirectionally on sample ID and scenario class;
+validation must reject missing, extra, or mismatched mappings.
+
+### 7.2 Evaluation Tiers And Candidate Comparison
+
+The benchmark contract separates four evidence tiers:
+
+1. `deterministic-static` is implemented and is the default CI tier.
+2. `controlled-replay` is implemented for the checked-in captured transcripts.
+3. `opt-in-live-repeated-held-out` is contract-only and remains outside default
+   CI.
+4. `sampled-blind-human-review` is contract-only and is reserved for sampled
+   escalation with arm identity hidden from reviewers.
+
+The matrix also defines a conditional `previous-aegis` arm. It is used only
+when evaluating a candidate skill or workflow revision against the immediately
+previous revision. Current development controlled replay samples must not carry
+this arm. It becomes eligible only after a separate candidate-revision metadata
+and comparison design is defined.
+
+Candidate promotion remains advisory. It requires held-out evidence, repeated
+run evidence, no regression in a primary metric, and review of high-variance
+results or non-discriminating assertions. Benchmark output must not
+automatically promote a candidate or modify a skill, workflow, or baseline.
+
 ## 8. Controlled Replay Samples
 
 Controlled replay samples are the first sample layer below the benchmark
 contract. They use seeded fixture projects, the same prompt per arm, and
 per-arm temporary workspaces so replay evidence is not taken from local user
 projects.
+
+Each current sample declares `evaluationTier=controlled-replay` and
+`datasetPartition=development`. A single replay of a checked-in static
+transcript does not provide variance, held-out, blind-review, or candidate
+promotion evidence.
 
 The replay manifest lives at:
 
@@ -148,6 +205,11 @@ The replay runner:
 This layer is benchmark-ready evidence plumbing. It does not run a live host agent.
 It does not prove host adapter compatibility, and it does not grant final
 evidence sufficiency or completion authority.
+
+The runner may write a versioned structured advisory report under repo-local
+`.tmp/`. That report records contract results and comparison scores from the
+static transcript analyzer. Unknown token, cost, variance, held-out, and blind
+review evidence must remain explicitly unknown rather than being inferred.
 
 ## 9. Live Replay Capture
 
@@ -173,6 +235,10 @@ The live capture path:
 The live capture path must not fabricate a no-Aegis baseline. A trustworthy
 `baseline-no-aegis` live arm requires isolated host configuration and plugin
 discovery boundaries, and should be added only when that isolation is explicit.
+
+The current single-arm live capture is not the contract-only repeated/held-out
+tier. It does not provide repeated-run, variance, held-out, or promotion
+evidence.
 
 Live capture output is environment-bound benchmark evidence. It is not part of
 the default Layer 1 offline gate, does not prove host compatibility on its own,

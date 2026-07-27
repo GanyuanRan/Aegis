@@ -1,5 +1,60 @@
 # Aegis Release Notes
 
+## v2.5.3 (2026-07-27)
+
+### Benchmark Coverage Contract
+
+- Reconciled the ten documented agentic benchmark scenario classes with the
+  deterministic workflow-quality fixtures and the three checked-in controlled
+  replay samples.
+- Made deterministic coverage, controlled replay references, live eligibility,
+  and actual pass evidence separate machine-checkable concepts so fixture
+  presence can no longer be reported as evaluation success.
+- Hard-cut the benchmark matrix and replay manifest to schema version 2 without
+  retaining a legacy compatibility path.
+
+### Tiered Comparative Evaluation
+
+- Added an explicit four-tier evaluation contract covering deterministic static
+  checks, controlled transcript replay, opt-in repeated held-out live
+  evaluation, and sampled blind human review.
+- Kept the current implementation deliberately bounded to deterministic checks
+  and single-transcript development replays. Repeated live runs, variance,
+  held-out execution, and blind review remain contract-only follow-up work.
+- Defined exact current comparison arms for `baseline-no-aegis` and
+  `aegis-auto`, while keeping `previous-aegis` conditional on a future candidate
+  revision evaluation rather than a universal runtime arm.
+- Added a versioned advisory JSON report with top-level and per-sample
+  `overallPass`, structured failures, arm outcomes, comparison deltas, preserved
+  unknowns, and a non-authoritative promotion status.
+
+### Validation And Safety
+
+- Added independent matrix and replay validation for scenario mappings,
+  evaluation tiers, arm structure, expected pass semantics, promotion limits,
+  and unsupported evidence claims.
+- Added adversarial negative cases that reject coordinated fixture drift,
+  duplicate or missing arms, premature `previous-aegis` use, held-out or live
+  overclaims, automatic promotion, and comparison results that would otherwise
+  hide an arm contract failure.
+- Restricted generated replay workspaces and reports to strict children of the
+  repository-local `.tmp` directory, including a sentinel regression proving
+  that the `.tmp` root cannot be deleted.
+
+### Verification And Release Boundary
+
+- Fresh `bash tests/e2e/run-all.sh --full --host-profile fast` verification
+  passed all four aggregate suites before release. Layer 1 passed `40/40`;
+  Layer 2 and Layer 3 each passed `6/6`. The benchmark, controlled replay,
+  boundary, context-budget, trigger-health, workflow-quality, and version-audit
+  checks also passed.
+- Bumped all declared package and host manifest versions from `2.5.2` to
+  `2.5.3` with no undeclared version references found by the version audit.
+- This release remains `Aegis Method Pack (runtime-ready)`, preserves
+  multi-host plugin-installable distribution, and does not add authoritative
+  `GateDecision`, `PolicySnapshot`, candidate promotion, or completion
+  authority.
+
 ## v2.5.2 (2026-07-25)
 
 ### Global User-Rule Profiles
