@@ -23,14 +23,19 @@ import agentic_benchmark_scheduler
 from agentic_benchmark_isolation import (
     ARMS,
     AUTHORITY_BOUNDARY,
+    ProxyPolicy,
     build_codex_live_command,
     canonical_json_hash,
     hash_tree,
+    network_policy_metadata,
     prepare_arm_layout,
     prepare_distribution_snapshot,
+    redact_proxy_output,
     reset_directory,
+    resolve_proxy_policy,
     resolve_tmp_child,
     run_isolation_audit,
+    run_provider_preflight,
     validate_bwrap_command,
 )
 from score_agentic_benchmark_outcome import score as score_outcome
@@ -222,13 +227,15 @@ def batch_digest(batch: dict[str, Any]) -> str:
     return canonical_json_hash(payload)
 
 
-def verify_batch(batch: dict[str, Any], root: Path, output_root: Path) -> None:
+def verify_batch(batch: dict[str, Any], root: Path, output_root: Path) -> ProxyPolicy:
     require(batch.get("version") == 1, "batch version must be 1")
     require(batch.get("authorityBoundary") == AUTHORITY_BOUNDARY, "batch authority boundary drifted")
     require(batch.get("batchDigest") == batch_digest(batch), "batch digest mismatch")
     require(batch.get("arms") == list(ARMS), "batch arm contract drifted")
     require(batch.get("targetRunCount") == len(batch.get("schedule", [])), "batch target count drifted")
     require(batch.get("maxAttempts", 0) >= batch["targetRunCount"], "max attempts cannot be smaller than target runs")
+    proxy_policy = resolve_proxy_policy(os.environ)
+    require(batch.get("networkPolicy") == network_policy_metadata(proxy_policy), "host proxy policy does not match the frozen batch metadata")
     require(hash_tree(output_root / "distribution-snapshot") == batch["distributionSnapshot"]["treeHash"], "frozen distribution snapshot drifted")
     require(file_hash(output_root / batch["frozenMatrixPath"]) == batch["matrixHash"], "frozen benchmark matrix drifted")
     require(file_hash(output_root / batch["frozenManifestPath"]) == batch["manifestHash"], "frozen case manifest drifted")
@@ -238,6 +245,7 @@ def verify_batch(batch: dict[str, Any], root: Path, output_root: Path) -> None:
         require(file_hash(output_root / frozen["frozenPromptPath"]) == frozen["promptHash"], f"frozen prompt drifted: {frozen['caseId']}")
         require(hash_tree(output_root / frozen["frozenSeedProjectPath"]) == frozen["seedProjectHash"], f"frozen seed project drifted: {frozen['caseId']}")
         require(file_hash(output_root / frozen["frozenOutcomeContractPath"]) == frozen["outcomeContractHash"], f"frozen outcome contract drifted: {frozen['caseId']}")
+    return proxy_policy
 
 
 def initial_ledger(batch: dict[str, Any]) -> dict[str, Any]:
@@ -306,9 +314,11 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
         "tests/helpers/run_agentic_benchmark.py",
         "tests/helpers/agentic_benchmark_scheduler.py",
         "tests/helpers/agentic_benchmark_isolation.py",
+        "tests/helpers/agentic_benchmark_provider_preflight.py",
         "tests/helpers/score_agentic_benchmark_outcome.py",
         "tests/helpers/render_agentic_benchmark.py",
     ]
+    proxy_policy = resolve_proxy_policy(os.environ)
     batch: dict[str, Any] = {
         "version": 1,
         "authorityBoundary": AUTHORITY_BOUNDARY,
@@ -328,7 +338,9 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
         "wallClockBudgetSeconds": profile["wallClockBudgetSeconds"],
         "perAttemptTimeoutSeconds": profile["perAttemptTimeoutSeconds"],
         "infrastructureFailureLimit": profile["infrastructureFailureLimit"],
+        "preflightTimeoutSeconds": profile["preflightTimeoutSeconds"],
         "modelPolicy": {"requestedModel": args.model, "mustMatchAcrossArms": True},
+        "networkPolicy": network_policy_metadata(proxy_policy),
         "toolPolicy": {
             "codexSandbox": "workspace-write",
             "modelClientNetwork": "provider-access-required",
@@ -552,6 +564,7 @@ def execute_target(
     bwrap: Path,
     codex: Path,
     timeout_seconds: float,
+    proxy_policy: ProxyPolicy,
 ) -> dict[str, Any]:
     case = find_frozen_case(batch, target["caseId"])
     attempt_root = output_root / "attempts" / f"{attempt_number:03d}-{target['targetId']}"
@@ -568,8 +581,16 @@ def execute_target(
         layout=layout,
         prompt=prompt,
         model=batch["modelPolicy"]["requestedModel"],
+        proxy_policy=proxy_policy,
     )
-    validate_bwrap_command(command, root=root, output_root=output_root, layout=layout, client_network=True)
+    validate_bwrap_command(
+        command,
+        root=root,
+        output_root=output_root,
+        layout=layout,
+        client_network=True,
+        proxy_policy=proxy_policy,
+    )
     raw_log = attempt_root / "codex-events.jsonl"
     stderr_log = attempt_root / "codex-stderr.log"
     started = time.monotonic()
@@ -587,11 +608,15 @@ def execute_target(
     elapsed = round(time.monotonic() - started, 3)
     stdout, stdout_exposed = redact_credential_output(stdout, auth_file)
     stderr, stderr_exposed = redact_credential_output(stderr, auth_file)
+    stdout, stdout_proxy_exposed = redact_proxy_output(stdout, proxy_policy)
+    stderr, stderr_proxy_exposed = redact_proxy_output(stderr, proxy_policy)
     raw_log.write_text(stdout, encoding="utf-8")
     stderr_log.write_text(stderr, encoding="utf-8")
     shutil.rmtree(layout["home"])
     if stdout_exposed or stderr_exposed:
         return {"status": "invalid", "invalidReason": "credential-exposure", "elapsedSeconds": elapsed}
+    if stdout_proxy_exposed or stderr_proxy_exposed:
+        return {"status": "invalid", "invalidReason": "proxy-exposure", "elapsedSeconds": elapsed}
     if timed_out:
         return {"status": "invalid", "invalidReason": "timeout", "elapsedSeconds": elapsed}
     if process.returncode != 0:
@@ -868,7 +893,7 @@ def run_command(args: argparse.Namespace) -> None:
     root = repo_root()
     output_root = resolve_tmp_child(root, args.output_root, "output-root")
     batch, ledger = load_batch_and_ledger(output_root)
-    verify_batch(batch, root, output_root)
+    proxy_policy = verify_batch(batch, root, output_root)
     require(args.timeout_seconds > 0, "timeout-seconds must be positive")
     require(os.environ.get("AEGIS_AGENTIC_BENCHMARK_LIVE") == "1", "set AEGIS_AGENTIC_BENCHMARK_LIVE=1 for paid benchmark execution")
     if batch["partition"] == "held-out":
@@ -894,9 +919,21 @@ def run_command(args: argparse.Namespace) -> None:
     )
     validate_live_isolation_report(isolation_report, batch)
     atomic_json(output_root / "isolation-report.json", isolation_report)
+    preflight = run_provider_preflight(
+        root=root,
+        output_root=output_root / "provider-preflight-isolated",
+        auth_file=auth_file,
+        bwrap=bwrap,
+        codex=codex,
+        requested_model=batch["modelPolicy"]["requestedModel"],
+        timeout_seconds=batch["preflightTimeoutSeconds"],
+        proxy_policy=proxy_policy,
+    )
+    atomic_json(output_root / "provider-preflight.json", preflight)
+    require(preflight["status"] == "ready", f"provider preflight is not ready: {preflight['status']}")
 
     def executor(target: dict[str, Any], attempt_number: int, timeout_seconds: float) -> dict[str, Any]:
-        verify_batch(batch, root, output_root)
+        current_proxy_policy = verify_batch(batch, root, output_root)
         return execute_target(
             root=root,
             output_root=output_root,
@@ -907,6 +944,7 @@ def run_command(args: argparse.Namespace) -> None:
             bwrap=bwrap,
             codex=codex,
             timeout_seconds=timeout_seconds,
+            proxy_policy=current_proxy_policy,
         )
 
     agentic_benchmark_scheduler.execute_schedule(batch, ledger, output_root / "ledger.json", executor)

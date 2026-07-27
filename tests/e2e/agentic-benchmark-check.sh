@@ -607,6 +607,7 @@ if bash "$repeated_runner" --dry-run \
     --output-root "$dry_run_root" >/dev/null \
     && "${PYTHON_CMD[@]}" - "$dry_run_root/batch.json" <<'PY'
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -614,12 +615,41 @@ batch = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 assert batch["caseCount"] == 20
 assert batch["targetRunCount"] == 120
 assert batch["maxAttempts"] == 132
+assert batch["preflightTimeoutSeconds"] == 30
+assert set(batch["networkPolicy"]) == {"mode", "keys", "schemes", "fingerprint"}
+assert batch["networkPolicy"]["mode"] in {"direct", "proxy"}
+assert batch["networkPolicy"]["keys"] == sorted(batch["networkPolicy"]["keys"])
+assert set(batch["networkPolicy"]["keys"]) <= {"HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY"}
+assert batch["networkPolicy"]["schemes"] == sorted(batch["networkPolicy"]["schemes"])
+assert len(batch["networkPolicy"]["fingerprint"]) == 64
 assert len({target["targetId"] for target in batch["schedule"]}) == 120
+def strings(value):
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, list):
+        return [item for child in value for item in strings(child)]
+    if isinstance(value, dict):
+        return [item for child in value.values() for item in strings(child)]
+    return []
+stored_strings = set(strings(batch))
+for key in ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "http_proxy", "https_proxy", "all_proxy", "NO_PROXY", "no_proxy"):
+    value = os.environ.get(key)
+    if value:
+        assert value not in stored_strings
 PY
 then
     pass "held-out dry-run plans 120 valid targets within 132 attempts"
 else
     fail "held-out dry-run plans 120 valid targets within 132 attempts"
+fi
+
+if proxy_drift_output="$(HTTP_PROXY=http://drift.invalid:8080 http_proxy=http://drift.invalid:8080 "${PYTHON_CMD[@]}" tests/helpers/run_agentic_benchmark.py aggregate \
+    --output-root "$dry_run_root" 2>&1)"; then
+    fail "frozen batch rejects host proxy drift"
+elif grep -qF "host proxy policy does not match the frozen batch metadata" <<<"$proxy_drift_output"; then
+    pass "frozen batch rejects host proxy drift without exposing values"
+else
+    fail "proxy drift rejection emits the expected safe diagnostic"
 fi
 
 dry_run_batch_hash="$("${PYTHON_CMD[@]}" - "$dry_run_root/batch.json" <<'PY'
