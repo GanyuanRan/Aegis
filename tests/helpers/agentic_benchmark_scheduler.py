@@ -33,6 +33,13 @@ POLICY_FIELDS = (
     "maxAttempts",
     "schedule",
 )
+ACTIVE_WAVE_FIELDS = {
+    "waveNumber",
+    "firstAttemptNumber",
+    "attemptCount",
+    "reservedWallSeconds",
+    "preWaveCumulativeWallSeconds",
+}
 
 Executor = Callable[[dict[str, Any], int, float], dict[str, Any]]
 MonotonicClock = Callable[[], float]
@@ -125,21 +132,6 @@ def _attempt_record(target: dict[str, Any], attempt_number: int, wave_number: in
     }
 
 
-def _recover_interrupted(ledger: dict[str, Any]) -> bool:
-    recovered = False
-    for attempt in ledger["attempts"]:
-        if attempt.get("status") == "launched":
-            attempt.update(
-                {
-                    "status": "invalid",
-                    "invalidReason": "infrastructure",
-                    "recovery": "interrupted-before-final-record",
-                }
-            )
-            recovered = True
-    return recovered
-
-
 def _replay_queue(batch: dict[str, Any], ledger: dict[str, Any]) -> list[dict[str, Any]]:
     queue = list(batch["schedule"])
     for index, attempt in enumerate(ledger["attempts"], start=1):
@@ -152,6 +144,83 @@ def _replay_queue(batch: dict[str, Any], ledger: dict[str, Any]) -> list[dict[st
             _require(attempt.get("invalidReason") in INVALID_REASONS, "ledger attempt has an invalid reason")
             queue.append(expected)
     return queue
+
+
+def _validate_active_wave(batch: dict[str, Any], ledger: dict[str, Any]) -> dict[str, Any] | None:
+    launched = [attempt for attempt in ledger["attempts"] if attempt.get("status") == "launched"]
+    active = ledger.get("activeWave")
+    if active is None:
+        _require(not launched, "launched attempts require an activeWave reservation")
+        return None
+    _require(isinstance(active, dict), "activeWave must be an object")
+    _require(set(active) == ACTIVE_WAVE_FIELDS, "activeWave fields are invalid")
+    wave_number = _positive_integer(active["waveNumber"], "activeWave.waveNumber")
+    first_attempt = _positive_integer(active["firstAttemptNumber"], "activeWave.firstAttemptNumber")
+    attempt_count = _positive_integer(active["attemptCount"], "activeWave.attemptCount")
+    reserved = _positive_number(active["reservedWallSeconds"], "activeWave.reservedWallSeconds")
+    pre_wave = active["preWaveCumulativeWallSeconds"]
+    _require(
+        isinstance(pre_wave, (int, float))
+        and not isinstance(pre_wave, bool)
+        and math.isfinite(pre_wave)
+        and pre_wave >= 0,
+        "activeWave.preWaveCumulativeWallSeconds must be a non-negative finite number",
+    )
+    _require(first_attempt + attempt_count - 1 == len(ledger["attempts"]), "activeWave must describe the final attempt records")
+    prefix = ledger["attempts"][: first_attempt - 1]
+    active_attempts = ledger["attempts"][first_attempt - 1 :]
+    _require(len(active_attempts) == attempt_count, "activeWave attempt count does not match the ledger")
+    _require(active_attempts == launched, "activeWave attempts must all remain launched")
+    _require(
+        all(attempt.get("attemptNumber") == first_attempt + offset for offset, attempt in enumerate(active_attempts)),
+        "activeWave attempt numbers must be contiguous",
+    )
+    _require(
+        all(attempt.get("waveNumber") == wave_number for attempt in active_attempts),
+        "activeWave wave number does not match its attempts",
+    )
+    prior_wave = max(
+        (attempt.get("waveNumber", 0) for attempt in prefix if isinstance(attempt.get("waveNumber"), int)),
+        default=0,
+    )
+    _require(wave_number == prior_wave + 1, "activeWave wave number is not sequential")
+    pending = _replay_queue(batch, {"attempts": prefix})
+    available_attempts = batch["maxAttempts"] - len(prefix)
+    expected_count = 2 if not prefix else min(batch["workers"], len(pending), available_attempts)
+    _require(attempt_count == expected_count, "activeWave size does not match the deterministic next wave")
+    _require(
+        [attempt["targetId"] for attempt in active_attempts]
+        == [target["targetId"] for target in pending[:attempt_count]],
+        "activeWave targets do not match deterministic queue replay",
+    )
+    expected_reservation = min(
+        float(batch["perAttemptTimeoutSeconds"]),
+        float(batch["wallClockBudgetSeconds"]) - float(pre_wave),
+    )
+    _require(expected_reservation > 0, "activeWave cannot reserve an exhausted wall budget")
+    _require(reserved == expected_reservation, "activeWave reservation does not match the bounded executor timeout")
+    _require(
+        float(ledger["cumulativeWallSeconds"]) == float(pre_wave) + reserved,
+        "activeWave reservation does not match cumulativeWallSeconds",
+    )
+    return active
+
+
+def _recover_interrupted(batch: dict[str, Any], ledger: dict[str, Any]) -> bool:
+    active = _validate_active_wave(batch, ledger)
+    if active is None:
+        return False
+    first_attempt = active["firstAttemptNumber"]
+    for attempt in ledger["attempts"][first_attempt - 1 :]:
+        attempt.update(
+            {
+                "status": "invalid",
+                "invalidReason": "infrastructure",
+                "recovery": "interrupted-before-final-record",
+            }
+        )
+    del ledger["activeWave"]
+    return True
 
 
 def _terminal_transport_count(attempts: list[dict[str, Any]]) -> int:
@@ -226,7 +295,7 @@ def execute_schedule(
         and cumulative >= 0,
         "ledger cumulativeWallSeconds must be a non-negative finite number",
     )
-    if _recover_interrupted(ledger):
+    if _recover_interrupted(batch, ledger):
         _set_status(ledger, "recovered", "interrupted-launched-attempts-invalidated")
         _atomic_json(ledger_path, ledger)
 
@@ -259,19 +328,29 @@ def execute_schedule(
             _attempt_record(target, first_attempt_number + offset, wave_number)
             for offset, target in enumerate(targets)
         ]
+        timeout_seconds = min(float(batch["perAttemptTimeoutSeconds"]), remaining_wall)
+        _require(timeout_seconds > 0, "executor timeout must be positive")
+        pre_wave_cumulative = float(ledger["cumulativeWallSeconds"])
         ledger["attempts"].extend(attempts)
+        ledger["activeWave"] = {
+            "waveNumber": wave_number,
+            "firstAttemptNumber": first_attempt_number,
+            "attemptCount": len(attempts),
+            "reservedWallSeconds": timeout_seconds,
+            "preWaveCumulativeWallSeconds": pre_wave_cumulative,
+        }
+        ledger["cumulativeWallSeconds"] = pre_wave_cumulative + timeout_seconds
         _set_status(ledger, "running", "wave-frozen")
         _atomic_json(ledger_path, ledger)
 
-        timeout_seconds = min(float(batch["perAttemptTimeoutSeconds"]), remaining_wall)
-        _require(timeout_seconds > 0, "executor timeout must be positive")
         started = monotonic()
         results = _run_wave(executor, attempts, targets, timeout_seconds, batch["workers"])
         finished = monotonic()
         _require(finished >= started, "monotonic clock moved backwards")
         for attempt in attempts:
             attempt.update(results[attempt["attemptNumber"]])
-        ledger["cumulativeWallSeconds"] = float(ledger["cumulativeWallSeconds"]) + (finished - started)
+        ledger["cumulativeWallSeconds"] = pre_wave_cumulative + (finished - started)
+        del ledger["activeWave"]
         _set_status(ledger, "running", "wave-committed")
         _atomic_json(ledger_path, ledger)
 

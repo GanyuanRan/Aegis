@@ -92,6 +92,16 @@ def attempt_record(target: dict, number: int, wave: int, status: str, **extra) -
     return record
 
 
+def active_wave(*, wave: int, first_attempt: int, count: int, reserved: float, pre_wave: float) -> dict:
+    return {
+        "waveNumber": wave,
+        "firstAttemptNumber": first_attempt,
+        "attemptCount": count,
+        "reservedWallSeconds": reserved,
+        "preWaveCumulativeWallSeconds": pre_wave,
+    }
+
+
 class SchedulerTest(unittest.TestCase):
     def setUp(self):
         self.root = Path(__file__).resolve().parents[2]
@@ -174,7 +184,10 @@ class SchedulerTest(unittest.TestCase):
                 if attempt_number >= 3:
                     persisted = json.loads(ledger_path.read_text(encoding="utf-8"))
                     wave = persisted["attempts"][-min(3, len(persisted["attempts"])) :]
-                    frozen_wave_observations.append(all(item["status"] == "launched" for item in wave))
+                    frozen_wave_observations.append(
+                        all(item["status"] == "launched" for item in wave)
+                        and persisted["activeWave"]["waveNumber"] == wave[0]["waveNumber"]
+                    )
                 if attempt_number == 3:
                     self.assertTrue(fourth_completed.wait(2))
                     completion_order.append(3)
@@ -210,17 +223,45 @@ class SchedulerTest(unittest.TestCase):
 
     def test_interrupted_launched_wave_is_recovered_as_terminal_invalid(self):
         frozen = batch(case_count=3)
-        state = ledger()
+        state = ledger(cumulative=10.0)
         state["attempts"] = [
             attempt_record(frozen["schedule"][0], 1, 1, "launched"),
             attempt_record(frozen["schedule"][1], 2, 1, "launched"),
         ]
+        state["activeWave"] = active_wave(wave=1, first_attempt=1, count=2, reserved=10.0, pre_wave=0.0)
         calls = []
         state = self.execute(frozen, state, lambda *_args: calls.append(True) or valid())
         self.assertEqual(calls, [])
         self.assertTrue(all(item["invalidReason"] == "infrastructure" for item in state["attempts"]))
         self.assertTrue(all(item["recovery"] == "interrupted-before-final-record" for item in state["attempts"]))
+        self.assertEqual(state["cumulativeWallSeconds"], 10.0)
+        self.assertNotIn("activeWave", state)
         self.assertEqual(state["scheduler"]["reason"], "paired-canary-transport-failure")
+
+    def test_non_canary_recovery_keeps_reservation_and_bounds_next_wave(self):
+        frozen = batch(case_count=2, workers=3, max_attempts=7, wall=6.0, timeout=4.0, failure_limit=3)
+        state = ledger(cumulative=5.0)
+        state["attempts"] = [
+            attempt_record(frozen["schedule"][0], 1, 1, "valid"),
+            attempt_record(frozen["schedule"][1], 2, 1, "valid"),
+            attempt_record(frozen["schedule"][2], 3, 2, "launched"),
+            attempt_record(frozen["schedule"][3], 4, 2, "launched"),
+        ]
+        state["activeWave"] = active_wave(wave=2, first_attempt=3, count=2, reserved=4.0, pre_wave=1.0)
+        timeouts = []
+
+        def executor(_target, attempt_number, timeout_seconds):
+            timeouts.append(timeout_seconds)
+            if attempt_number == 5:
+                return {"status": "invalid", "invalidReason": "scorer-unknown"}
+            return valid()
+
+        state = self.execute(frozen, state, executor, clock=TickClock(step=1.0))
+        self.assertEqual(timeouts, [1.0, 1.0])
+        self.assertEqual(state["cumulativeWallSeconds"], 6.0)
+        self.assertEqual(state["scheduler"]["reason"], "cumulative-wall-budget-exhausted")
+        self.assertTrue(all(item["recovery"] == "interrupted-before-final-record" for item in state["attempts"][2:4]))
+        self.assertNotIn("activeWave", state)
 
     def test_resume_matches_attempt_order_and_preserves_cumulative_wall(self):
         frozen = batch(case_count=2, workers=2, max_attempts=5)
@@ -311,6 +352,38 @@ class SchedulerTest(unittest.TestCase):
         unpaired["schedule"][1]["caseId"] = "different-case"
         with self.assertRaises(SystemExit):
             self.execute(unpaired, ledger(), lambda *_args: valid())
+
+    def test_missing_and_malformed_active_wave_fail_closed(self):
+        frozen = batch(case_count=2, workers=3, max_attempts=7, wall=6.0, timeout=4.0, failure_limit=3)
+        launched = ledger(cumulative=5.0)
+        launched["attempts"] = [
+            attempt_record(frozen["schedule"][0], 1, 1, "valid"),
+            attempt_record(frozen["schedule"][1], 2, 1, "valid"),
+            attempt_record(frozen["schedule"][2], 3, 2, "launched"),
+            attempt_record(frozen["schedule"][3], 4, 2, "launched"),
+        ]
+        with self.assertRaises(SystemExit):
+            self.execute(frozen, copy.deepcopy(launched), lambda *_args: valid())
+
+        canonical = copy.deepcopy(launched)
+        canonical["activeWave"] = active_wave(wave=2, first_attempt=3, count=2, reserved=4.0, pre_wave=1.0)
+        mutations = (
+            lambda state: state["activeWave"].update({"reservedWallSeconds": 3.0}),
+            lambda state: state.update({"cumulativeWallSeconds": 4.0}),
+            lambda state: state["activeWave"].update({"attemptCount": 1}),
+            lambda state: state["activeWave"].update({"unexpected": True}),
+        )
+        for index, mutate in enumerate(mutations):
+            with self.subTest(mutation=index):
+                malformed = copy.deepcopy(canonical)
+                mutate(malformed)
+                with self.assertRaises(SystemExit):
+                    self.execute(frozen, malformed, lambda *_args: valid())
+
+        orphaned = ledger(cumulative=4.0)
+        orphaned["activeWave"] = active_wave(wave=1, first_attempt=1, count=2, reserved=4.0, pre_wave=0.0)
+        with self.assertRaises(SystemExit):
+            self.execute(frozen, orphaned, lambda *_args: valid())
 
 
 if __name__ == "__main__":
