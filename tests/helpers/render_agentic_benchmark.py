@@ -44,22 +44,32 @@ UNSUPPORTED_CLAIMS = (
 )
 PROFILE_CONTRACTS = {
     "standard-held-out": {
+        "datasetPartitions": ["held-out-normal", "held-out-boundary"],
         "caseCount": 20,
         "arms": list(ARMS),
         "repetitions": 1,
         "targetRuns": 40,
         "maxAttempts": 44,
+        "publicationEligible": True,
+        "publicationAuthority": "advisory-only",
+        "supportedEvidence": ["held-out-evidence"],
+        "unsupportedEvidence": ["repeated-run-evidence"],
         "limitations": [
             "repeated-run-evidence-unsupported",
             "not-independent-universal-causal-promotion-runtime-or-completion-authority",
         ],
     },
     "extended-held-out": {
+        "datasetPartitions": ["held-out-normal", "held-out-boundary"],
         "caseCount": 20,
         "arms": list(ARMS),
         "repetitions": 3,
         "targetRuns": 120,
         "maxAttempts": 132,
+        "publicationEligible": True,
+        "publicationAuthority": "advisory-only",
+        "supportedEvidence": ["held-out-evidence", "repeated-run-evidence"],
+        "unsupportedEvidence": [],
         "limitations": [
             "bounded-advisory-repeated-run-evidence",
             "repetitions-case-clustered-not-statistically-independent",
@@ -228,11 +238,16 @@ def validate_matrix_profile_contracts_value(matrix: dict[str, Any]) -> None:
         if isinstance(item, dict) and isinstance(item.get("id"), str)
     }
     field_map = {
+        "datasetPartitions": "datasetPartitions",
         "caseCount": "caseCount",
         "arms": "arms",
         "repetitions": "repetitionsPerCase",
         "targetRuns": "validRunTarget",
         "maxAttempts": "paidAttemptCeiling",
+        "publicationEligible": "publicationEligible",
+        "publicationAuthority": "publicationAuthority",
+        "supportedEvidence": "supportedEvidence",
+        "unsupportedEvidence": "unsupportedEvidence",
     }
     for profile_id, contract in PROFILE_CONTRACTS.items():
         require(sum(isinstance(item, dict) and item.get("id") == profile_id for item in run_profiles) == 1, f"renderer profile must appear exactly once in matrix v4: {profile_id}")
@@ -243,6 +258,12 @@ def validate_matrix_profile_contracts_value(matrix: dict[str, Any]) -> None:
             expected = contract[contract_field]
             if type(expected) is int:
                 require(type(actual) is int, f"matrix {profile_id}.{matrix_field} must be an integer")
+            elif type(expected) is bool:
+                require(type(actual) is bool, f"matrix {profile_id}.{matrix_field} must be a boolean")
+            elif isinstance(expected, list):
+                require(isinstance(actual, list) and all(isinstance(item, str) for item in actual), f"matrix {profile_id}.{matrix_field} must be a string list")
+            elif isinstance(expected, str):
+                require(isinstance(actual, str), f"matrix {profile_id}.{matrix_field} must be a string")
             require(actual == expected, f"renderer profile contract drifted from matrix v4: {profile_id}.{matrix_field}")
 
 
@@ -772,14 +793,22 @@ def self_test(print_golden: bool = False) -> None:
         raise SystemExit(f"canonical JSON accepted {label}")
 
     matrix = load_json(repo_root() / "tests/e2e/fixtures/agentic-benchmark-matrix.json", "benchmark matrix")
-    drifted_matrix = json.loads(json.dumps(matrix))
-    next(item for item in drifted_matrix["runProfiles"] if item["id"] == "standard-held-out")["validRunTarget"] = 41
-    try:
-        validate_matrix_profile_contracts_value(drifted_matrix)
-    except SystemExit:
-        pass
-    else:
-        raise SystemExit("renderer accepted matrix/profile shape drift")
+    matrix_mutations = (
+        ("shape", lambda profiles: profiles["standard-held-out"].update({"validRunTarget": 41})),
+        ("standard unsupported evidence", lambda profiles: profiles["standard-held-out"].update({"unsupportedEvidence": []})),
+        ("extended supported evidence", lambda profiles: profiles["extended-held-out"].update({"supportedEvidence": ["held-out-evidence"]})),
+        ("publication eligibility", lambda profiles: profiles["standard-held-out"].update({"publicationEligible": False})),
+        ("dataset partition", lambda profiles: profiles["extended-held-out"].update({"datasetPartitions": ["held-out-normal"]})),
+    )
+    for label, mutation in matrix_mutations:
+        drifted_matrix = json.loads(json.dumps(matrix))
+        profiles = {item["id"]: item for item in drifted_matrix["runProfiles"]}
+        mutation(profiles)
+        try:
+            validate_matrix_profile_contracts_value(drifted_matrix)
+        except SystemExit:
+            continue
+        raise SystemExit(f"renderer accepted matrix/profile {label} drift")
 
     temporary_root = repo_root() / ".tmp"
     temporary_root.mkdir(exist_ok=True)
@@ -832,7 +861,7 @@ def self_test(print_golden: bool = False) -> None:
             require(not list(root.glob(".blocked-output.*.tmp")), "failed atomic write left a temporary file")
         else:
             raise SystemExit("atomic write unexpectedly replaced a directory")
-    print("Agentic benchmark renderer self-test passed: 6 profile goldens, 31 negative cases.")
+    print("Agentic benchmark renderer self-test passed: 6 profile goldens, 35 negative cases.")
 
 
 def sanitize_command(args: argparse.Namespace) -> None:
