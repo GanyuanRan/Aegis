@@ -399,11 +399,33 @@ def build_codex_live_command(
         "--ignore-rules",
         "--disable",
         "shell_snapshot",
+        "--enable",
+        "use_legacy_landlock",
         "--model",
         model,
         "-C",
         str(VIRTUAL_WORKSPACE),
         prompt,
+    ]
+
+
+def tool_sandbox_audit_command(*, bwrap: Path, codex: Path, layout: dict[str, Path]) -> list[str]:
+    command = build_bwrap_command(
+        bwrap=bwrap,
+        codex=codex,
+        layout=layout,
+        prompt="unused",
+        debug_prompt=False,
+    )
+    separator = command.index("--")
+    return [
+        *command[: separator + 1],
+        str(codex),
+        "sandbox",
+        "--enable",
+        "use_legacy_landlock",
+        "--",
+        "/bin/true",
     ]
 
 
@@ -726,6 +748,7 @@ def run_isolation_audit(
 
     summaries: dict[str, Any] = {}
     mount_audits: dict[str, Any] = {}
+    tool_sandbox_audits: dict[str, Any] = {}
     for arm in ARMS:
         command = build_bwrap_command(
             bwrap=bwrap,
@@ -772,6 +795,15 @@ def run_isolation_audit(
                 process_group_supervised=process_group_supervised,
             )
         )
+        sandbox_command = tool_sandbox_audit_command(bwrap=bwrap, codex=codex, layout=layouts[arm])
+        validate_bwrap_command(sandbox_command, root=root, output_root=output_root, layout=layouts[arm])
+        run_command(
+            sandbox_command,
+            f"{arm} tool sandbox audit",
+            remaining_timeout(),
+            process_group_supervised=process_group_supervised,
+        )
+        tool_sandbox_audits[arm] = {"backend": "legacy-landlock", "status": "ready"}
 
     baseline = summaries["baseline-no-aegis"]
     aegis = summaries["aegis-auto"]
@@ -813,6 +845,7 @@ def run_isolation_audit(
                 "scorerVisible": mount_audits[arm]["scorerVisible"],
                 "visibleProcessCount": mount_audits[arm]["visibleProcessCount"],
                 "snapshotVisible": mount_audits[arm]["snapshotVisible"],
+                "toolSandbox": tool_sandbox_audits[arm],
             }
             for arm in ARMS
         },

@@ -47,6 +47,8 @@ assert baseline["peerWorkspaceVisible"] is False and aegis["peerWorkspaceVisible
 assert baseline["scorerVisible"] is False and aegis["scorerVisible"] is False
 assert baseline["visibleProcessCount"] <= 3 and aegis["visibleProcessCount"] <= 3
 assert baseline["snapshotVisible"] is False and aegis["snapshotVisible"] is True
+assert baseline["toolSandbox"] == {"backend": "legacy-landlock", "status": "ready"}
+assert aegis["toolSandbox"] == {"backend": "legacy-landlock", "status": "ready"}
 assert report["distributionSnapshot"]["version"]
 assert len(report["distributionSnapshot"]["treeHash"]) == 64
 

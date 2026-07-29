@@ -24,6 +24,7 @@ import agentic_benchmark_provider_preflight
 from agentic_benchmark_isolation import (
     PROXY_KEYS,
     build_bwrap_command,
+    build_codex_live_command,
     build_provider_preflight_command,
     mount_audit_command,
     network_policy_metadata,
@@ -33,6 +34,7 @@ from agentic_benchmark_isolation import (
     reset_directory,
     resolve_proxy_policy,
     run_provider_preflight,
+    tool_sandbox_audit_command,
     validate_bwrap_command,
 )
 from agentic_benchmark_provider_preflight import freeze_auth_file, run_sanitized_provider_preflight
@@ -585,6 +587,37 @@ class CommandBoundaryTest(unittest.TestCase):
         )
         self.assertTrue(set(setenv_keys(command)).isdisjoint(PROXY_KEYS))
         self.assertIn("--unshare-net", command)
+
+    def test_live_command_and_no_model_probe_use_nested_compatible_landlock(self):
+        layout = prepare_provider_preflight_layout(self.scratch / "sandbox-layout", self.auth)
+        probe = tool_sandbox_audit_command(
+            bwrap=self.bwrap,
+            codex=self.codex,
+            layout=layout,  # type: ignore[arg-type]
+        )
+        validate_bwrap_command(
+            probe,
+            root=self.root,
+            output_root=self.scratch,
+            layout=layout,  # type: ignore[arg-type]
+        )
+        self.assertEqual(
+            probe[probe.index("--") + 1 :],
+            [str(self.codex), "sandbox", "--enable", "use_legacy_landlock", "--", "/bin/true"],
+        )
+        self.assertIn("--unshare-net", probe)
+
+        live = build_codex_live_command(
+            bwrap=self.bwrap,
+            codex=self.codex,
+            layout=layout,  # type: ignore[arg-type]
+            prompt="prompt",
+            model="model",
+            proxy_policy=self.policy,
+        )
+        payload = live[live.index("--") + 1 :]
+        self.assertIn("use_legacy_landlock", payload)
+        self.assertNotIn("--dangerously-bypass-approvals-and-sandbox", payload)
 
     def test_prompt_audit_failure_redacts_proxy_values(self):
         proxy = "http://proxy.invalid:8080"

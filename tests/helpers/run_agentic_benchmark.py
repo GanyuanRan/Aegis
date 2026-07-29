@@ -343,6 +343,7 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
         "networkPolicy": network_policy_metadata(proxy_policy),
         "toolPolicy": {
             "codexSandbox": "workspace-write",
+            "codexSandboxBackend": "legacy-landlock",
             "modelClientNetwork": "provider-access-required",
             "agentToolNetwork": "restricted-by-codex-sandbox",
             "approvalPolicy": "never",
@@ -435,6 +436,7 @@ def parse_codex_jsonl(raw: str) -> dict[str, Any]:
     assistant_messages: list[str] = []
     token_values: dict[str, int] = {}
     observed_models: list[str] = []
+    tool_sandbox_failure_count = 0
     for record in records:
         item = record.get("item") if isinstance(record.get("item"), dict) else record
         item_type = str(item.get("type", record.get("type", "unknown")))
@@ -446,6 +448,12 @@ def parse_codex_jsonl(raw: str) -> dict[str, Any]:
                 assistant_messages.append(message_text)
                 events.append({"sequence": len(events), "kind": "analysis", "toolKind": None, "tags": semantic_tags(message_text)})
         elif item_type in {"command_execution", "command", "shell_command"}:
+            sandbox_output = item.get("aggregated_output")
+            if isinstance(sandbox_output, str) and re.search(
+                r"\bbwrap: (?:No permissions to create a new namespace|Creating new namespace failed)",
+                sandbox_output,
+            ):
+                tool_sandbox_failure_count += 1
             tags = semantic_tags(text)
             if re.search(r"(?:^|\s)(?:rg|grep)(?:\s|$)", lower) and "--files" not in lower:
                 tags.append("dependency-check")
@@ -474,6 +482,7 @@ def parse_codex_jsonl(raw: str) -> dict[str, Any]:
         "finalResponse": assistant_messages[-1] if assistant_messages else "",
         "tokens": token_values,
         "observedModels": observed_models,
+        "toolSandboxFailureCount": tool_sandbox_failure_count,
     }
 
 
@@ -572,6 +581,14 @@ def _execute_target_unscrubbed(
             "status": "invalid",
             "invalidReason": "infrastructure",
             "errorType": "attempt-host-events-invalid",
+            "elapsedSeconds": elapsed,
+            "hostExit": process.returncode,
+        }
+    if parsed.get("toolSandboxFailureCount", 0):
+        return {
+            "status": "invalid",
+            "invalidReason": "infrastructure",
+            "errorType": "attempt-tool-sandbox-unavailable",
             "elapsedSeconds": elapsed,
             "hostExit": process.returncode,
         }
@@ -881,6 +898,10 @@ def validate_live_isolation_report(report: dict[str, Any], batch: dict[str, Any]
         require(evidence.get("scorerVisible") is False, f"{arm} can see the scorer")
         require(evidence.get("visibleProcessCount", 999) <= 3, f"{arm} can see the host process table")
         require(evidence.get("snapshotVisible") is (arm == "aegis-auto"), f"{arm} snapshot visibility drifted")
+        require(
+            evidence.get("toolSandbox") == {"backend": "legacy-landlock", "status": "ready"},
+            f"{arm} tool sandbox probe did not pass",
+        )
 
 
 def isolation_audit_command(args: argparse.Namespace) -> None:

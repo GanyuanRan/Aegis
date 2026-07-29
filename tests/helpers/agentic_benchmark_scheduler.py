@@ -31,6 +31,7 @@ INFRASTRUCTURE_ERROR_TYPES = {
     "attempt-host-exit",
     "attempt-output-limit",
     "attempt-scorer-failure",
+    "attempt-tool-sandbox-unavailable",
     "executor-exception",
     "interrupted-before-final-record",
     "supervisor-artifact-limit",

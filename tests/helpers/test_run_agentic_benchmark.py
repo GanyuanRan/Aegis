@@ -118,8 +118,7 @@ class RunnerContractTest(unittest.TestCase):
         workspace = output_root / "workspace"
         workspace.mkdir()
         (output_root / "prompt.txt").write_text("prompt", encoding="utf-8")
-        frozen_case = {"caseId": "case", "frozenSeedProjectPath": "seed", "frozenPromptPath": "prompt.txt",
-                       "frozenOutcomeContractPath": "contract.json"}
+        frozen_case = {"caseId": "case", "frozenSeedProjectPath": "seed", "frozenPromptPath": "prompt.txt", "frozenOutcomeContractPath": "contract.json"}
         batch = {"frozenCases": [frozen_case], "modelPolicy": {"requestedModel": "model"}}
         target = {"targetId": "target", "caseId": "case", "arm": "baseline-no-aegis"}
         fake_process = mock.Mock(returncode=returncode)
@@ -247,6 +246,7 @@ class RunnerContractTest(unittest.TestCase):
             "scorerVisible": False,
             "visibleProcessCount": 2,
             "snapshotVisible": False,
+            "toolSandbox": {"backend": "legacy-landlock", "status": "ready"},
         }
         report = {
             "modelCalls": 0,
@@ -287,6 +287,7 @@ class RunnerContractTest(unittest.TestCase):
                     "scorerVisible": False,
                     "visibleProcessCount": 2,
                     "snapshotVisible": arm == "aegis-auto",
+                    "toolSandbox": {"backend": "legacy-landlock", "status": "ready"},
                 }
                 for arm in ARMS
             },
@@ -333,18 +334,16 @@ class RunnerContractTest(unittest.TestCase):
         self.assertEqual(report["review"]["status"], "unknown")
 
     def test_codex_jsonl_is_reduced_to_scoring_evidence(self):
-        raw = "\n".join(
-            json.dumps(value)
-            for value in [
-                {"type": "item.completed", "item": {"type": "command_execution", "command": "rg fallback src"}},
+        raw = "\n".join(json.dumps(value) for value in (
+                {"type": "item.completed", "item": {"type": "command_execution", "command": "rg fallback src", "aggregated_output": "bwrap: No permissions to create a new namespace; PRIVATE_DETAIL"}},
                 {"type": "item.completed", "item": {"type": "file_change", "changes": [{"kind": "delete", "path": "old.py"}]}},
                 {"type": "item.completed", "item": {"type": "agent_message", "text": "The code change is necessary. Continue?"}},
                 {"type": "turn.completed", "usage": {"input_tokens": 10, "output_tokens": 3}},
-            ]
-        )
+            ))
         parsed = parse_codex_jsonl(raw)
         self.assertEqual(parsed["finalResponse"], "The code change is necessary. Continue?")
         self.assertEqual(parsed["tokens"]["input_tokens"], 10)
+        self.assertEqual(parsed["toolSandboxFailureCount"], 1)
         self.assertIn("dependency-check", parsed["events"][0]["tags"])
         self.assertEqual(parsed["events"][1]["toolKind"], "delete_file")
 
@@ -1180,6 +1179,7 @@ class RunnerContractTest(unittest.TestCase):
         cases = (
             ("host-exit", 9, parsed_valid, None, "attempt-host-exit"),
             ("events-invalid", 0, {**parsed_valid, "recordCount": 0}, None, "attempt-host-events-invalid"),
+            ("tool-sandbox", 0, {**parsed_valid, "toolSandboxFailureCount": 1}, None, "attempt-tool-sandbox-unavailable"),
             ("scorer-failure", 0, parsed_valid, SystemExit("private scorer detail"), "attempt-scorer-failure"),
         )
         for label, returncode, parsed, scorer_error, expected in cases:
