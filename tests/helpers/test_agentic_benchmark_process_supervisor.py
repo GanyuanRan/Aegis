@@ -555,6 +555,41 @@ else:
             self.assertLessEqual(cleanup_calls[0][0], 0.3)
             self.assertEqual(cleanup_calls[0][1], side_effect is not None)
 
+    def test_attempt_supervisor_maps_failures_to_stable_non_payload_error_types(self):
+        private_detail = "PRIVATE_PROVIDER_DETAIL"
+        base = {
+            "returncode": 0,
+            "stdout": '{"status":"valid","contractPass":true}',
+            "elapsedSeconds": 0.125,
+            "timedOut": False,
+            "outputExceeded": False,
+            "artifactLimitObserved": False,
+        }
+        for label, overrides, expected in (
+            ("output", {"outputExceeded": True, "stdout": private_detail}, "supervisor-output-limit"),
+            ("artifact", {"artifactLimitObserved": True}, "supervisor-artifact-limit"),
+            ("worker-exit", {"returncode": 9, "stdout": private_detail}, "supervisor-worker-exit"),
+            ("json", {"stdout": private_detail}, "supervisor-result-invalid-json"),
+            ("shape", {"stdout": "[]"}, "supervisor-result-invalid-shape"),
+        ):
+            outcome = {**base, **overrides}
+            with self.subTest(label=label), mock.patch.object(
+                agentic_benchmark_process_supervisor,
+                "supervise_process",
+                return_value=outcome,
+            ):
+                result = supervise_operation("attempt", {}, 1.0)
+            self.assertEqual(
+                result,
+                {
+                    "status": "invalid",
+                    "invalidReason": "infrastructure",
+                    "errorType": expected,
+                    "elapsedSeconds": 0.125,
+                },
+            )
+            self.assertNotIn(private_detail, json.dumps(result, sort_keys=True))
+
     def test_credential_markers_use_worker_stdin_and_never_argv_or_result(self):
         secret = "private-refresh-token-value"
         captured: dict[str, object] = {}

@@ -105,6 +105,45 @@ class RunnerContractTest(unittest.TestCase):
             ledger["attempts"].append(attempt)
         return ledger
 
+    def run_unscrubbed_attempt(
+        self,
+        output_root: Path,
+        *,
+        returncode: int = 0,
+        parsed: dict | None = None,
+        scorer_error: BaseException | None = None,
+        output_exceeded: bool = False,
+    ) -> tuple[dict, mock.Mock]:
+        root = Path(__file__).resolve().parents[2]
+        workspace = output_root / "workspace"
+        workspace.mkdir()
+        (output_root / "prompt.txt").write_text("prompt", encoding="utf-8")
+        frozen_case = {"caseId": "case", "frozenSeedProjectPath": "seed", "frozenPromptPath": "prompt.txt",
+                       "frozenOutcomeContractPath": "contract.json"}
+        batch = {"frozenCases": [frozen_case], "modelPolicy": {"requestedModel": "model"}}
+        target = {"targetId": "target", "caseId": "case", "arm": "baseline-no-aegis"}
+        fake_process = mock.Mock(returncode=returncode)
+        with mock.patch.object(benchmark_runner, "prepare_arm_layout", return_value={"workspace": workspace}), mock.patch.object(
+            benchmark_runner, "snapshot_workspace", return_value={}
+        ), mock.patch.object(
+            benchmark_runner, "build_codex_live_command", return_value=["fake-bwrap", "--", "fake-codex"]
+        ), mock.patch.object(benchmark_runner, "validate_bwrap_command"), mock.patch.object(
+            benchmark_runner.subprocess, "Popen", return_value=fake_process
+        ) as popen, mock.patch.object(
+            benchmark_runner,
+            "communicate_with_timeout",
+            return_value=("{}", "", False, output_exceeded, False),
+        ), mock.patch.object(benchmark_runner, "parse_codex_jsonl", return_value=parsed), mock.patch.object(
+            benchmark_runner, "score_outcome", side_effect=scorer_error
+        ):
+            result = benchmark_runner._execute_target_unscrubbed(
+                root=root, output_root=output_root, batch=batch, target=target, attempt_number=1,
+                auth_file=output_root / "auth", bwrap=output_root / "bwrap", codex=output_root / "codex",
+                timeout_seconds=1.0, proxy_policy=resolve_proxy_policy({}),
+                credential_policy=EMPTY_CREDENTIAL_POLICY, process_group_supervised=True,
+            )
+        return result, popen
+
     def test_full_success(self):
         batch = fake_batch()
         ledger = self.ledger(batch, valid_result)
@@ -129,7 +168,7 @@ class RunnerContractTest(unittest.TestCase):
             batch,
             lambda target: valid_result(target)
             if target["caseId"] == "case-one"
-            else {"status": "invalid", "invalidReason": "infrastructure"},
+            else {"status": "invalid", "invalidReason": "infrastructure", "errorType": "executor-exception"},
         )
         for attempt_number, target in enumerate(batch["schedule"][2:4], start=5):
             ledger["attempts"].append(
@@ -267,7 +306,9 @@ class RunnerContractTest(unittest.TestCase):
         batch = fake_batch(max_attempts=4)
         ledger = self.ledger(
             batch,
-            lambda target: valid_result(target) if target["caseId"] == "case-one" else {"status": "invalid", "invalidReason": "infrastructure"},
+            lambda target: valid_result(target)
+            if target["caseId"] == "case-one"
+            else {"status": "invalid", "invalidReason": "infrastructure", "errorType": "executor-exception"},
         )
         report = aggregate(batch, ledger)
         flags = {flag["id"] for flag in report["review"]["flags"]}
@@ -879,7 +920,8 @@ class RunnerContractTest(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="agentic-artifact-flow-test-", dir=root / ".tmp") as value:
             output_root = Path(value)
             attempt_root = output_root / "attempts/001-fake-target"
-            expected = {"status": "invalid", "invalidReason": "infrastructure", "elapsedSeconds": 1.0}
+            expected = {"status": "invalid", "invalidReason": "infrastructure",
+                        "errorType": "executor-exception", "elapsedSeconds": 1.0}
 
             def normal(**_kwargs):
                 (attempt_root / "isolated/home").mkdir(parents=True)
@@ -1125,51 +1167,31 @@ class RunnerContractTest(unittest.TestCase):
         root = Path(__file__).resolve().parents[2]
         with tempfile.TemporaryDirectory(prefix="agentic-attempt-group-", dir=root / ".tmp") as value:
             output_root = Path(value)
-            (output_root / "workspace").mkdir()
-            (output_root / "prompt.txt").write_text("prompt", encoding="utf-8")
-            batch = {
-                "frozenCases": [
-                    {
-                        "caseId": "case",
-                        "frozenSeedProjectPath": "seed",
-                        "frozenPromptPath": "prompt.txt",
-                    }
-                ],
-                "modelPolicy": {"requestedModel": "model"},
-            }
-            target = {"targetId": "target", "caseId": "case", "arm": "baseline-no-aegis"}
-            fake_process = mock.Mock()
-            with mock.patch.object(
-                benchmark_runner,
-                "prepare_arm_layout",
-                return_value={"workspace": output_root / "workspace"},
-            ), mock.patch.object(benchmark_runner, "snapshot_workspace", return_value={}), mock.patch.object(
-                benchmark_runner, "build_codex_live_command", return_value=["fake-bwrap", "--", "fake-codex"]
-            ), mock.patch.object(benchmark_runner, "validate_bwrap_command"), mock.patch.object(
-                benchmark_runner.subprocess, "Popen", return_value=fake_process
-            ) as popen, mock.patch.object(
-                benchmark_runner,
-                "communicate_with_timeout",
-                return_value=("", "", False, True, False),
-            ):
-                result = benchmark_runner._execute_target_unscrubbed(
-                    root=root,
-                    output_root=output_root,
-                    batch=batch,
-                    target=target,
-                    attempt_number=1,
-                    auth_file=output_root / "auth",
-                    bwrap=output_root / "bwrap",
-                    codex=output_root / "codex",
-                    timeout_seconds=1.0,
-                    proxy_policy=resolve_proxy_policy({}),
-                    credential_policy=EMPTY_CREDENTIAL_POLICY,
-                    process_group_supervised=True,
-                )
+            result, popen = self.run_unscrubbed_attempt(output_root, output_exceeded=True)
             self.assertFalse(popen.call_args.kwargs["start_new_session"])
             self.assertEqual(result["invalidReason"], "infrastructure")
+            self.assertEqual(result["errorType"], "attempt-output-limit")
             stderr = (output_root / "attempts/001-target/codex-stderr.log").read_text(encoding="utf-8")
             self.assertNotIn("timed out", stderr)
+
+    def test_attempt_pipeline_maps_host_events_and_scorer_failures_to_stable_error_types(self):
+        root = Path(__file__).resolve().parents[2]
+        parsed_valid = {"malformedLineCount": 0, "recordCount": 1, "finalResponse": "safe response", "events": []}
+        cases = (
+            ("host-exit", 9, parsed_valid, None, "attempt-host-exit"),
+            ("events-invalid", 0, {**parsed_valid, "recordCount": 0}, None, "attempt-host-events-invalid"),
+            ("scorer-failure", 0, parsed_valid, SystemExit("private scorer detail"), "attempt-scorer-failure"),
+        )
+        for label, returncode, parsed, scorer_error, expected in cases:
+            with self.subTest(label=label), tempfile.TemporaryDirectory(
+                prefix=f"agentic-attempt-diagnostic-{label}-", dir=root / ".tmp"
+            ) as value:
+                result, _popen = self.run_unscrubbed_attempt(
+                    Path(value), returncode=returncode, parsed=parsed, scorer_error=scorer_error
+                )
+                self.assertEqual(result["invalidReason"], "infrastructure")
+                self.assertEqual(result["errorType"], expected)
+                self.assertNotIn("private scorer detail", json.dumps(result, sort_keys=True))
 
 
 if __name__ == "__main__":

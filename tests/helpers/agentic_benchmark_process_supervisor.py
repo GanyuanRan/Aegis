@@ -341,8 +341,11 @@ def communicate_with_timeout(
     return stdout, stderr, stopped and not exceeded and not artifact_observed, exceeded, artifact_observed
 
 
-def _invalid(reason: str, elapsed: float) -> dict[str, Any]:
-    return {"status": "invalid", "invalidReason": reason, "elapsedSeconds": round(max(0.0, elapsed), 3)}
+def _invalid(reason: str, elapsed: float, error_type: str | None = None) -> dict[str, Any]:
+    result = {"status": "invalid", "invalidReason": reason, "elapsedSeconds": round(max(0.0, elapsed), 3)}
+    if error_type is not None:
+        result["errorType"] = error_type
+    return result
 
 
 def supervise_process(
@@ -514,25 +517,25 @@ def supervise_operation(
         raise SystemExit(f"benchmark {operation} exceeded the remaining wall-clock budget")
     if outcome["outputExceeded"]:
         if operation == "attempt":
-            return _invalid("infrastructure", elapsed)
+            return _invalid("infrastructure", elapsed, "supervisor-output-limit")
         raise SystemExit(f"benchmark {operation} result is too large")
     if outcome.get("artifactLimitObserved"):
         if operation == "attempt":
-            return _invalid("infrastructure", elapsed)
+            return _invalid("infrastructure", elapsed, "supervisor-artifact-limit")
         raise SystemExit(f"benchmark {operation} artifact limits were observed during sampled monitoring")
     if outcome["returncode"] != 0:
         if operation == "attempt":
-            return _invalid("infrastructure", elapsed)
+            return _invalid("infrastructure", elapsed, "supervisor-worker-exit")
         raise SystemExit(f"benchmark {operation} failed")
     try:
         result = json.loads(outcome["stdout"])
     except (TypeError, json.JSONDecodeError):
         if operation == "attempt":
-            return _invalid("infrastructure", elapsed)
+            return _invalid("infrastructure", elapsed, "supervisor-result-invalid-json")
         raise SystemExit(f"benchmark {operation} returned an invalid result")
     if not isinstance(result, dict):
         if operation == "attempt":
-            return _invalid("infrastructure", elapsed)
+            return _invalid("infrastructure", elapsed, "supervisor-result-invalid-shape")
         raise SystemExit(f"benchmark {operation} returned an invalid result")
     if operation == "attempt":
         result["elapsedSeconds"] = round(elapsed, 3)

@@ -551,13 +551,30 @@ def _execute_target_unscrubbed(
     if timed_out:
         return {"status": "invalid", "invalidReason": "timeout", "elapsedSeconds": elapsed}
     if output_exceeded:
-        return {"status": "invalid", "invalidReason": "infrastructure", "elapsedSeconds": elapsed}
+        return {
+            "status": "invalid",
+            "invalidReason": "infrastructure",
+            "errorType": "attempt-output-limit",
+            "elapsedSeconds": elapsed,
+        }
     if process.returncode != 0:
-        return {"status": "invalid", "invalidReason": "infrastructure", "elapsedSeconds": elapsed, "hostExit": process.returncode}
+        return {
+            "status": "invalid",
+            "invalidReason": "infrastructure",
+            "errorType": "attempt-host-exit",
+            "elapsedSeconds": elapsed,
+            "hostExit": process.returncode,
+        }
 
     parsed = parse_codex_jsonl(stdout)
     if parsed["malformedLineCount"] or not parsed["recordCount"] or not parsed["finalResponse"]:
-        return {"status": "invalid", "invalidReason": "infrastructure", "elapsedSeconds": elapsed, "hostExit": process.returncode}
+        return {
+            "status": "invalid",
+            "invalidReason": "infrastructure",
+            "errorType": "attempt-host-events-invalid",
+            "elapsedSeconds": elapsed,
+            "hostExit": process.returncode,
+        }
     events_path = attempt_root / "events.json"
     response_path = attempt_root / "final-response.txt"
     score_path = attempt_root / "outcome.json"
@@ -576,7 +593,13 @@ def _execute_target_unscrubbed(
     try:
         outcome = score_outcome(score_args)
     except SystemExit:
-        return {"status": "invalid", "invalidReason": "infrastructure", "elapsedSeconds": elapsed, "hostExit": process.returncode}
+        return {
+            "status": "invalid",
+            "invalidReason": "infrastructure",
+            "errorType": "attempt-scorer-failure",
+            "elapsedSeconds": elapsed,
+            "hostExit": process.returncode,
+        }
     atomic_json(score_path, outcome)
     if outcome["contractPass"] is None:
         return {"status": "invalid", "invalidReason": "scorer-unknown", "elapsedSeconds": elapsed, "hostExit": process.returncode}

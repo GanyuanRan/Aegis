@@ -79,6 +79,10 @@ def valid(_target: dict | None = None) -> dict:
     return {"status": "valid", "contractPass": True}
 
 
+def infrastructure(error_type: str = "executor-exception") -> dict:
+    return {"status": "invalid", "invalidReason": "infrastructure", "errorType": error_type}
+
+
 def attempt_record(target: dict, number: int, wave: int, status: str, **extra) -> dict:
     record = {
         "attemptNumber": number,
@@ -153,13 +157,48 @@ class SchedulerTest(unittest.TestCase):
         def executor(_target, attempt_number, _timeout_seconds):
             calls.append(attempt_number)
             if attempt_number == 1:
-                return {"status": "invalid", "invalidReason": "infrastructure"}
+                return infrastructure()
             return valid()
 
         state = self.execute(frozen, ledger(), executor)
         self.assertEqual(sorted(calls), [1, 2])
         self.assertEqual(len(state["attempts"]), 2)
         self.assertEqual(state["scheduler"]["reason"], "paired-canary-transport-failure")
+
+    def test_infrastructure_error_type_is_required_allowlisted_and_infrastructure_only(self):
+        for error_type in sorted(scheduler.INFRASTRUCTURE_ERROR_TYPES):
+            with self.subTest(accepted=error_type):
+                self.assertEqual(scheduler._validate_result(infrastructure(error_type))["errorType"], error_type)
+
+        for label, result in (
+            ("missing", {"status": "invalid", "invalidReason": "infrastructure"}),
+            ("dynamic-class", infrastructure("PrivateProviderException")),
+            ("non-infrastructure", {"status": "invalid", "invalidReason": "timeout", "errorType": "executor-exception"}),
+        ):
+            with self.subTest(rejected=label), self.assertRaises(SystemExit):
+                scheduler._validate_result(result)
+
+        mismatched_recovery = {
+            **infrastructure(),
+            "recovery": "interrupted-before-final-record",
+        }
+        with self.assertRaises(SystemExit):
+            scheduler._validate_result(mismatched_recovery, allow_recovery=True)
+
+    def test_executor_exception_uses_a_stable_code_not_the_exception_class(self):
+        class PrivateProviderException(Exception):
+            pass
+
+        state = self.execute(
+            batch(case_count=1, workers=2, max_attempts=2),
+            ledger(),
+            lambda *_args: (_ for _ in ()).throw(PrivateProviderException("private detail")),
+        )
+        self.assertEqual(
+            [attempt["errorType"] for attempt in state["attempts"]],
+            ["executor-exception", "executor-exception"],
+        )
+        self.assertNotIn("PrivateProviderException", json.dumps(state, sort_keys=True))
 
     def test_proxy_exposure_stops_paired_canary_without_active_wave_orphan(self):
         frozen = batch(case_count=3)
@@ -251,6 +290,7 @@ class SchedulerTest(unittest.TestCase):
         self.assertEqual(calls, [])
         self.assertTrue(all(item["invalidReason"] == "infrastructure" for item in state["attempts"]))
         self.assertTrue(all(item["recovery"] == "interrupted-before-final-record" for item in state["attempts"]))
+        self.assertTrue(all(item["errorType"] == "interrupted-before-final-record" for item in state["attempts"]))
         self.assertEqual(state["cumulativeWallSeconds"], 10.0)
         self.assertNotIn("activeWave", state)
         self.assertEqual(state["scheduler"]["reason"], "paired-canary-transport-failure")
@@ -533,7 +573,7 @@ class SchedulerTest(unittest.TestCase):
 
         def executor(_target, attempt_number, _timeout_seconds):
             if attempt_number in {3, 4}:
-                return {"status": "invalid", "invalidReason": "infrastructure"}
+                return infrastructure()
             return valid()
 
         state = self.execute(frozen, ledger(), executor)

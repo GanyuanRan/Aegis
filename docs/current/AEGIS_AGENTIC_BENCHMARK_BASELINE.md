@@ -369,6 +369,12 @@ prompts, projects, outcome contracts, evaluated method-pack snapshot and run
 policy must be frozen and hashed. Semantic changes invalidate the batch.
 Infrastructure-invalid attempts remain in an immutable ledger and consume the
 selected profile's 44- or 132-attempt ceiling.
+An infrastructure-invalid ledger entry must retain exactly one fixed, public-safe
+`errorType` from the scheduler-owned allowlist. The code identifies the failed
+boundary, such as supervisor output/result handling, host execution/events,
+scoring, executor failure or interrupted recovery; it must never contain raw
+exceptions, stderr, model output, credentials, proxy values, local paths or
+provider text. Unsupported or dynamically derived error types fail closed.
 
 Held-out results aggregate by case. The extended profile must not treat its
 three repetitions as three independent tasks. Percentage-point deltas and

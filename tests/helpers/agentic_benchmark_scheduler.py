@@ -26,6 +26,19 @@ TRANSPORT_INVALID_REASONS = {
     "credential-exposure",
     "proxy-exposure",
 }
+INFRASTRUCTURE_ERROR_TYPES = {
+    "attempt-host-events-invalid",
+    "attempt-host-exit",
+    "attempt-output-limit",
+    "attempt-scorer-failure",
+    "executor-exception",
+    "interrupted-before-final-record",
+    "supervisor-artifact-limit",
+    "supervisor-output-limit",
+    "supervisor-result-invalid-json",
+    "supervisor-result-invalid-shape",
+    "supervisor-worker-exit",
+}
 POLICY_FIELDS = (
     "profileId",
     "workers",
@@ -283,14 +296,23 @@ def _validate_result(result: dict[str, Any], *, allow_recovery: bool = False) ->
             _require(not artifact_path.is_absolute() and ".." not in artifact_path.parts, "artifactRoot must be a safe relative path")
     else:
         _require(result.get("invalidReason") in INVALID_REASONS, "invalid attempt result requires an allowed invalidReason")
-        if "errorType" in result:
-            _require(isinstance(result["errorType"], str) and result["errorType"], "errorType must be a non-empty string")
+        if result["invalidReason"] == "infrastructure":
+            _require(
+                result.get("errorType") in INFRASTRUCTURE_ERROR_TYPES,
+                "infrastructure-invalid attempt requires an allowed errorType",
+            )
+        else:
+            _require("errorType" not in result, "errorType is reserved for infrastructure-invalid attempts")
         if "recovery" in result:
             _require(allow_recovery, "executor result cannot set recovery")
             _require(
                 result["recovery"] == "interrupted-before-final-record"
                 and result["invalidReason"] == "infrastructure",
                 "recovery marker requires an infrastructure-invalid attempt",
+            )
+            _require(
+                result["errorType"] == result["recovery"],
+                "recovery marker and errorType must identify the same boundary",
             )
     return dict(result)
 
@@ -459,6 +481,7 @@ def _recover_interrupted(batch: dict[str, Any], ledger: dict[str, Any]) -> bool:
             {
                 "status": "invalid",
                 "invalidReason": "infrastructure",
+                "errorType": "interrupted-before-final-record",
                 "recovery": "interrupted-before-final-record",
             }
         )
@@ -695,11 +718,11 @@ def _run_wave(
             attempt_number = futures[future]
             try:
                 result = future.result()
-            except Exception as exc:  # fail closed while retaining the attempt record
+            except Exception:  # fail closed while retaining a stable diagnostic code
                 result = {
                     "status": "invalid",
                     "invalidReason": "infrastructure",
-                    "errorType": type(exc).__name__,
+                    "errorType": "executor-exception",
                 }
             results[attempt_number] = _validate_result(result)
     return results
