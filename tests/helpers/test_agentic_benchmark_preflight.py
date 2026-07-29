@@ -417,10 +417,56 @@ class CommandBoundaryTest(unittest.TestCase):
             os.close(unrelated)
             frozen.close()
 
+    def test_payload_literal_separator_stays_opaque_and_can_launch(self):
+        self.auth.write_text('{"OPENAI_API_KEY":"abc"}', encoding="utf-8")
+        frozen = freeze_auth_file(self.auth)
+        command = [
+            "fake-bwrap",
+            "--ro-bind-data",
+            str(frozen.descriptor),
+            "/auth.json",
+            "--",
+            "fake-codex",
+            "prompt-before",
+            "--",
+            "prompt-after",
+        ]
+        try:
+            with mock.patch.object(agentic_benchmark_provider_preflight.subprocess, "Popen") as popen:
+                agentic_benchmark_provider_preflight.popen_with_independent_memfd_offsets(command)
+            launched = popen.call_args.args[0]
+            separator = command.index("--")
+            self.assertEqual(launched[separator + 1 :], command[separator + 1 :])
+            self.assertEqual(popen.call_count, 1)
+        finally:
+            frozen.close()
+
+    def test_ro_bind_data_rejects_empty_or_option_shaped_targets_before_popen(self):
+        self.auth.write_text('{"OPENAI_API_KEY":"abc"}', encoding="utf-8")
+        frozen = freeze_auth_file(self.auth)
+        try:
+            for target in ("", "-relative-option", "--bind"):
+                command = [
+                    "fake-bwrap",
+                    "--ro-bind-data",
+                    str(frozen.descriptor),
+                    target,
+                    "--",
+                    "fake-codex",
+                ]
+                with self.subTest(target=target), mock.patch.object(
+                    agentic_benchmark_provider_preflight.subprocess,
+                    "Popen",
+                ) as popen:
+                    with self.assertRaises(SystemExit):
+                        agentic_benchmark_provider_preflight.popen_with_independent_memfd_offsets(command)
+                    popen.assert_not_called()
+        finally:
+            frozen.close()
+
     def test_memfd_spawn_rejects_ambiguous_or_malformed_bwrap_prefixes(self):
         malformed = [
             ["fake-bwrap", "fake-codex"],
-            ["fake-bwrap", "--", "fake-codex", "--", "prompt"],
             ["fake-bwrap", "--ro-bind-data", "--", "fake-codex"],
             ["fake-bwrap", "--ro-bind-data", "not-a-descriptor", "/auth.json", "--", "fake-codex"],
         ]

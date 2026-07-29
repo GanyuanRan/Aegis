@@ -256,17 +256,23 @@ def validate_auth_mount_file(auth_file: Path) -> None:
 
 
 def command_memfd_descriptors(command: list[str]) -> tuple[int, ...]:
-    separators = [index for index, value in enumerate(command) if value == "--"]
-    if len(separators) != 1:
-        raise SystemExit("benchmark bwrap command must contain exactly one separator")
-    prefix_end = separators[0]
+    try:
+        prefix_end = command.index("--")
+    except ValueError as exc:
+        raise SystemExit("benchmark bwrap command must contain a separator") from exc
     descriptors: set[int] = set()
-    for index, value in enumerate(command[:prefix_end]):
-        if value != "--ro-bind-data":
+    index = 0
+    while index < prefix_end:
+        if command[index] != "--ro-bind-data":
+            index += 1
             continue
-        if index + 2 >= prefix_end or not command[index + 1].isdigit():
+        if index + 2 >= prefix_end:
             raise SystemExit("benchmark bwrap ro-bind-data mount is invalid")
-        descriptors.add(int(command[index + 1]))
+        source, target = command[index + 1 : index + 3]
+        if re.fullmatch(r"[0-9]+", source) is None or not target or target.startswith("-"):
+            raise SystemExit("benchmark bwrap ro-bind-data mount is invalid")
+        descriptors.add(int(source))
+        index += 3
     return tuple(sorted(descriptors))
 
 
