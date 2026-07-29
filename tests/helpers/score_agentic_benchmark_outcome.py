@@ -333,7 +333,9 @@ def snapshot_workspace(workspace: Path) -> dict[str, str]:
 
 
 def snapshot_verification_workspace(workspace: Path) -> dict[str, str]:
-    snapshot: dict[str, str] = {}
+    root_mode = workspace.lstat().st_mode
+    root_value = f"type:{stat.S_IFMT(root_mode)}:mode:{stat.S_IMODE(root_mode):o}"
+    snapshot = {".": hashlib.sha256(root_value.encode()).hexdigest()}
     for path in sorted(workspace.rglob("*")):
         mode = stat.S_IMODE(path.lstat().st_mode)
         if path.is_symlink():

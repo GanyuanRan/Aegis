@@ -349,6 +349,7 @@ for label, folder, changes, expected_verification, expected_pass in dual_behavio
 paired_mutations = [
     ("paired ordinary source overwrite fails", "Path('source.py').write_text('changed')", False),
     ("paired ordinary added file fails", "Path('added.py').write_text('new')", False),
+    ("paired ordinary root mode change fails", "Path('.').chmod(Path('.').stat().st_mode ^ 0o001)", False),
     ("paired ordinary restored transient write passes", "p=Path('temp'); p.write_text('x'); p.unlink()", True),
 ]
 for label, mutation, expected in paired_mutations:
