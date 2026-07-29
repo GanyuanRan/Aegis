@@ -662,15 +662,29 @@ assert_contains "$baseline" "explicit decision token.*Decision: code-change" \
 assert_contains "skills/systematic-debugging/SKILL.md" "AEGIS_MINIMALITY_REFERENCE" \
     "systematic debugging points to minimality reference"
 assert_contains "skills/systematic-debugging/SKILL.md" "Layer Stop Card" \
-    "systematic debugging defines layer stop card"
-assert_contains "skills/systematic-debugging/SKILL.md" "User Intervention Point" \
-    "systematic debugging exposes user intervention point"
-assert_contains "skills/systematic-debugging/SKILL.md" "Falsifier" \
-    "systematic debugging exposes falsifier for layer stop"
-assert_contains "skills/systematic-debugging/SKILL.md" "Pre-Claim Gate" \
-    "systematic debugging defines pre-claim gate before claiming root cause"
-assert_contains "skills/systematic-debugging/SKILL.md" "Causal Topology Gate" \
-    "systematic debugging defines causal topology gate for multi-root classification"
+    "systematic debugging main names the layer-stop escalation trigger"
+assert_contains "skills/systematic-debugging/SKILL.md" "advanced-debugging-governance.md.*before another fix|before another fix.*advanced-debugging-governance.md" \
+    "systematic debugging main directly triggers advanced escalation guidance"
+assert_contains "skills/systematic-debugging/advanced-debugging-governance.md" "Current Stop Layer" \
+    "advanced debugging reference owns the detailed layer stop card"
+assert_contains "skills/systematic-debugging/advanced-debugging-governance.md" "User Intervention Point" \
+    "advanced debugging reference owns the intervention field"
+assert_contains "skills/systematic-debugging/advanced-debugging-governance.md" "Falsifier:" \
+    "advanced debugging reference owns the layer-stop falsifier field"
+assert_not_contains "skills/systematic-debugging/SKILL.md" "Current Stop Layer:" \
+    "systematic debugging main does not duplicate the detailed layer stop card"
+assert_contains "skills/systematic-debugging/SKILL.md" "root-cause-claim-contract.md.*before claiming a root cause|before claiming a root cause.*root-cause-claim-contract.md" \
+    "systematic debugging main directly triggers the causal proof contract"
+assert_contains "skills/systematic-debugging/root-cause-claim-contract.md" "Falsifier Checked" \
+    "root-cause contract owns falsifier proof"
+assert_contains "skills/systematic-debugging/root-cause-claim-contract.md" "Pre-Claim Gate Pass" \
+    "root-cause contract owns the pre-claim output"
+assert_contains "skills/systematic-debugging/root-cause-claim-contract.md" "Causal Topology Gate" \
+    "root-cause contract owns causal topology proof"
+assert_not_contains "skills/systematic-debugging/advanced-debugging-governance.md" "Pre-Claim Gate Pass:" \
+    "advanced debugging reference does not duplicate the causal proof output"
+assert_contains "skills/systematic-debugging/advanced-debugging-governance.md" "H1:.*conditional" \
+    "advanced debugging reference owns expanded hard-signal governance"
 assert_contains "skills/long-task-continuation/SKILL.md" "Planless Slice Lane" \
     "long-task continuation includes planless slice lane"
 assert_contains "skills/long-task-continuation/SKILL.md" "Slice Card" \

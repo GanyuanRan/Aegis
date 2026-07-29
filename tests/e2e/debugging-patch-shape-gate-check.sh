@@ -43,12 +43,16 @@ assert_not_contains() {
 echo "=== Debugging Patch-Shape Gate Check ==="
 
 debugging_skill="skills/systematic-debugging/SKILL.md"
+debugging_advanced="skills/systematic-debugging/advanced-debugging-governance.md"
+root_cause_contract="skills/systematic-debugging/root-cause-claim-contract.md"
 process_baseline="docs/current/AEGIS_PROCESS_BASELINE.md"
 
 assert_contains "$debugging_skill" "drill upward through diagnostic layers" \
     "debugging hot path uses source-oriented diagnostic wording"
 assert_contains "$debugging_skill" "Patch-Shape Triage" \
     "debugging defines patch-shape triage before editing"
+assert_contains "$debugging_skill" "Before fixing, run Patch-Shape Triage and Ripple Signal Triage" \
+    "debugging hot path composes patch-shape and ripple triage before fixing"
 assert_contains "$debugging_skill" "keyword, phrase, regex, negation-word list, or sample-text exception" \
     "debugging treats keyword/phrase/regex fixes as patch-shape signals"
 assert_contains "$debugging_skill" "local guard, extra conditional.*one-off branch" \
@@ -81,28 +85,42 @@ assert_contains "$debugging_skill" "sufficient repair \\| local patch \\| needs 
     "debugging classifies local patch versus sufficient repair"
 assert_contains "$debugging_skill" "not the smallest textual diff" \
     "debugging states minimal fix is not smallest textual diff"
-assert_contains "$debugging_skill" "H7.*keyword, phrase, regex" \
-    "debugging quality gate adds H7 keyword/phrase/regex signal"
-assert_contains "$debugging_skill" "H10.*re-parses raw text|H10.*re-infers action/state" \
-    "debugging quality gate adds H10 downstream re-inference signal"
-assert_contains "$debugging_skill" "H13.*observed sample" \
-    "debugging quality gate adds sample-only patch signal"
-assert_contains "$debugging_skill" "H14.*topology is.*conjunctive-cluster.*member set is not enumerated" \
-    "debugging quality gate adds H14 cluster member enumeration signal"
-assert_contains "$debugging_skill" "H15.*anti-disguise check" \
-    "debugging quality gate adds H15 anti-disguise check signal"
-assert_contains "$debugging_skill" "Pre-Claim Gate" \
-    "debugging defines Pre-Claim Gate before claiming root cause"
-assert_contains "$debugging_skill" "Causal Topology Gate" \
-    "debugging defines Causal Topology Gate for multi-root classification"
-assert_contains "$debugging_skill" "anti-disguise check" \
-    "debugging requires anti-disguise check before accepting a cluster"
-assert_contains "$debugging_skill" "necessity test" \
-    "debugging requires member necessity test for cluster and compound"
-assert_contains "$debugging_skill" "D6.*topology is explicitly classified" \
-    "debugging depth gate adds D6 explicit topology classification"
-assert_contains "$debugging_skill" "D7.*anti-disguise check has been run" \
-    "debugging depth gate adds D7 anti-disguise check executed"
+assert_contains "$debugging_skill" "not a RED gate or a prerequisite for production edits" \
+    "debugging hot path keeps TDD-off reproduction diagnostic"
+assert_contains "$debugging_skill" "aegis-workspace-helper.*new-work" \
+    "debugging hot path retains workspace new-work command"
+assert_contains "$debugging_skill" "aegis-workspace-helper.*add-evidence" \
+    "debugging hot path retains workspace add-evidence command"
+assert_contains "$debugging_skill" "aegis-workspace-helper.*check" \
+    "debugging hot path retains workspace check command"
+assert_contains "$debugging_skill" "Fast bug fix or quick bug fix pressure" \
+    "debugging hot path keeps quick-fix workspace pressure rule"
+assert_contains "$debugging_skill" "Triage fires, record it before editing" \
+    "debugging hot path keeps ripple-before-editing rule"
+assert_contains "$debugging_advanced" "H7.*keyword, phrase, regex" \
+    "advanced debugging owner keeps H7 keyword/phrase/regex signal"
+assert_contains "$debugging_advanced" "H10.*re-parses raw text|H10.*re-infers action/state" \
+    "advanced debugging owner keeps H10 downstream re-inference signal"
+assert_contains "$debugging_advanced" "H13.*observed sample" \
+    "advanced debugging owner keeps H13 sample-only patch signal"
+assert_contains "$debugging_advanced" "H14.*topology is.*conjunctive-cluster.*member set is not enumerated" \
+    "advanced debugging owner keeps H14 cluster member enumeration signal"
+assert_contains "$debugging_advanced" "H15.*anti-disguise check" \
+    "advanced debugging owner keeps H15 anti-disguise signal"
+assert_contains "$root_cause_contract" "Pre-Claim Gate" \
+    "root-cause contract owns Pre-Claim Gate"
+assert_contains "$root_cause_contract" "Causal Topology Gate" \
+    "root-cause contract owns Causal Topology Gate"
+assert_contains "$root_cause_contract" "Falsifier Checked" \
+    "root-cause contract owns falsifier proof"
+assert_contains "$root_cause_contract" "anti-disguise check" \
+    "root-cause contract owns compound anti-disguise proof"
+assert_contains "$root_cause_contract" "necessity test" \
+    "root-cause contract owns member necessity proof"
+assert_contains "$debugging_advanced" "D6.*topology is explicitly classified" \
+    "advanced debugging owner keeps D6 topology closeout signal"
+assert_contains "$debugging_advanced" "D7.*anti-disguise check has been run" \
+    "advanced debugging owner keeps D7 anti-disguise closeout signal"
 
 assert_contains "$process_baseline" "keyword, phrase, regex, negation-word list" \
     "process baseline defines patch-shape ripple signals"
