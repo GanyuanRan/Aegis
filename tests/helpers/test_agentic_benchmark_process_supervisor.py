@@ -472,6 +472,30 @@ else:
             with mock.patch("agentic_benchmark_provider_preflight.MAX_ARTIFACT_FILE_BYTES", 1024):
                 self.assertFalse(agentic_benchmark_process_supervisor.artifact_limit_observed(artifact_root))
 
+    def test_artifact_monitor_ignores_worker_cleanup_race_but_not_other_scan_errors(self):
+        with tempfile.TemporaryDirectory(prefix="agentic-artifact-cleanup-race-", dir=self.root / ".tmp") as value:
+            artifact_root = Path(value)
+            disappearing = artifact_root / "isolated-home"
+            disappearing.mkdir()
+            real_scandir = os.scandir
+
+            def cleanup_race(candidate):
+                if os.fsdecode(candidate) == str(disappearing):
+                    raise FileNotFoundError(candidate)
+                return real_scandir(candidate)
+
+            with mock.patch.object(agentic_benchmark_process_supervisor.os, "scandir", side_effect=cleanup_race):
+                self.assertFalse(agentic_benchmark_process_supervisor.artifact_limit_observed(artifact_root))
+            with mock.patch.object(agentic_benchmark_process_supervisor.os, "scandir", side_effect=PermissionError):
+                self.assertTrue(agentic_benchmark_process_supervisor.artifact_limit_observed(artifact_root))
+            vanished_entry = mock.Mock()
+            vanished_entry.is_dir.return_value = False
+            vanished_entry.stat.side_effect = FileNotFoundError
+            scan = mock.MagicMock()
+            scan.__iter__.return_value = iter([vanished_entry])
+            with mock.patch.object(agentic_benchmark_process_supervisor.os, "scandir", return_value=scan):
+                self.assertFalse(agentic_benchmark_process_supervisor.artifact_limit_observed(artifact_root))
+
     def test_parent_timeout_cleanup_promotes_residual_credential_exposure(self):
         cleanup_calls = 0
 

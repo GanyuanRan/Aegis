@@ -189,6 +189,8 @@ def artifact_limit_observed(root: Path) -> bool:
         directory = pending.pop()
         try:
             iterator = os.scandir(directory)
+        except FileNotFoundError:
+            continue
         except OSError:
             return True
         with iterator:
@@ -201,6 +203,8 @@ def artifact_limit_observed(root: Path) -> bool:
                         pending.append(entry.path)
                         continue
                     size = entry.stat(follow_symlinks=False).st_size
+                except FileNotFoundError:
+                    continue
                 except OSError:
                     return True
                 total_bytes += size
