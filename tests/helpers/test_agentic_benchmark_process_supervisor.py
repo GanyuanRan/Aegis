@@ -170,6 +170,64 @@ os._exit(0)
                         except ProcessLookupError:
                             pass
 
+    def test_live_worker_can_wait_for_an_adopted_zombie_to_be_reaped(self):
+        script = """
+import os
+import signal
+import sys
+import time
+
+pid_read, pid_write = os.pipe()
+release_read, release_write = os.pipe()
+intermediate = os.fork()
+if intermediate == 0:
+    os.close(pid_read)
+    os.close(release_write)
+    leaf = os.fork()
+    if leaf == 0:
+        os.close(pid_write)
+        os.read(release_read, 1)
+        os._exit(0)
+    os.close(release_read)
+    os.write(pid_write, str(leaf).encode())
+    os.close(pid_write)
+    os._exit(0)
+
+os.close(pid_write)
+os.close(release_read)
+leaf = int(os.read(pid_read, 32))
+os.close(pid_read)
+os.waitpid(intermediate, 0)
+leaf_pidfd = os.pidfd_open(leaf)
+with open(sys.argv[1], 'w', encoding='utf-8') as stream:
+    stream.write(str(leaf))
+os.write(release_write, b'x')
+os.close(release_write)
+deadline = time.monotonic() + 2
+while time.monotonic() < deadline:
+    try:
+        signal.pidfd_send_signal(leaf_pidfd, 0)
+    except ProcessLookupError:
+        os.close(leaf_pidfd)
+        raise SystemExit(0)
+    time.sleep(0.002)
+os.close(leaf_pidfd)
+raise SystemExit(9)
+"""
+        with tempfile.TemporaryDirectory(prefix="agentic-adopted-zombie-", dir=self.root / ".tmp") as value:
+            pid_path = Path(value) / "leaf.pid"
+            started = time.monotonic()
+            outcome = supervise_process(
+                [sys.executable, "-c", script, str(pid_path)],
+                "{}",
+                0.5,
+            )
+            self.assertFalse(outcome["timedOut"])
+            self.assertEqual(outcome["returncode"], 0)
+            self.assertLess(time.monotonic() - started, 0.5)
+            self.assertTrue(pid_path.is_file())
+            self._assert_process_gone(int(pid_path.read_text(encoding="utf-8")))
+
     def test_monitor_exception_reaps_trampoline_and_immediate_exit_adoptee(self):
         script = """
 import os

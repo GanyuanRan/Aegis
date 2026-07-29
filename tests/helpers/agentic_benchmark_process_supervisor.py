@@ -115,6 +115,13 @@ def _contain_process(command_fd: int) -> int:
     while True:
         if child_return is None:
             child_return = child.poll()
+        for pid in _direct_child_pids(os.getpid()):
+            if pid == child.pid:
+                continue
+            try:
+                os.waitpid(pid, os.WNOHANG)
+            except ChildProcessError:
+                pass
         descendants = _descendant_pids(os.getpid())
         if termination_started[0] is not None:
             signal_number = signal.SIGKILL if time.monotonic() - termination_started[0] >= 0.01 else signal.SIGTERM
@@ -124,13 +131,6 @@ def _contain_process(command_fd: int) -> int:
                 except OSError:
                     pass
         if child_return is not None:
-            for pid in _direct_child_pids(os.getpid()):
-                if pid == child.pid:
-                    continue
-                try:
-                    os.waitpid(pid, os.WNOHANG)
-                except ChildProcessError:
-                    pass
             if not _descendant_pids(os.getpid()):
                 return child_return
         time.sleep(0.002)
