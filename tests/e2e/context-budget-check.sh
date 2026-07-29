@@ -100,27 +100,32 @@ else
     fi
 fi
 
-# Task 10 creates this reference when the verification main-body extraction is
-# complete. Activate the shared hot-path ceiling at that owner boundary so the
-# current single-skill slice does not require a compatibility allowance.
 verification_expanded="skills/verification-before-completion/expanded-closeout.md"
-if [[ -f "$debugging_skill" && -f "$verification_skill" ]]; then
+if [[ -f "$verification_skill" && -f "$verification_expanded" ]]; then
+    verification_chars="$(char_count "$verification_skill")"
+    if (( verification_chars <= max_verification_main_chars )); then
+        pass "verification main body is <= ${max_verification_main_chars} chars (${verification_chars})"
+    else
+        fail "verification main body is <= ${max_verification_main_chars} chars (${verification_chars})"
+    fi
+    pass "verification main and expanded owner both exist"
+elif [[ -f "$verification_skill" || -f "$verification_expanded" ]]; then
+    fail "verification extraction rejects partial main/reference state"
+else
+    fail "verification main and expanded owner exist"
+fi
+
+if [[ -f "$debugging_skill" && -f "$verification_skill" && -f "$verification_expanded" ]]; then
     debugging_chars="$(char_count "$debugging_skill")"
     verification_chars="$(char_count "$verification_skill")"
-    if (( verification_chars > max_verification_main_chars )) && [[ ! -f "$verification_expanded" ]]; then
-        pass "combined main-body ceiling is staged until verification extraction"
-    elif (( verification_chars <= max_verification_main_chars )) && [[ -f "$verification_expanded" ]]; then
-        combined_chars=$((debugging_chars + verification_chars))
-        if (( combined_chars <= max_combined_main_chars )); then
-            pass "combined debugging and verification main bodies are <= ${max_combined_main_chars} chars (${combined_chars})"
-        else
-            fail "combined debugging and verification main bodies are <= ${max_combined_main_chars} chars (${combined_chars})"
-        fi
-    elif (( verification_chars <= max_verification_main_chars )); then
-        fail "verification extraction reference must exist after main-body compaction"
+    combined_chars=$((debugging_chars + verification_chars))
+    if (( combined_chars <= max_combined_main_chars )); then
+        pass "combined debugging and verification main bodies are <= ${max_combined_main_chars} chars (${combined_chars})"
     else
-        fail "verification main body must be compact when expanded closeout exists"
+        fail "combined debugging and verification main bodies are <= ${max_combined_main_chars} chars (${combined_chars})"
     fi
+else
+    fail "combined main-body ceiling requires complete debugging/verification owners"
 fi
 assert_growth_budget "skills/executing-plans/SKILL.md" 7823 450 \
     "executing-plans bounded growth"
