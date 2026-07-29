@@ -242,6 +242,31 @@ claims and event order. Aegis skill names, routes, artifact names, or semantic
 aliases may be diagnostic attribution only; they cannot make a task pass and
 must not be required from the no-Aegis arm.
 
+Verification commands may optionally declare `immutableArgPaths`. Each
+declared path must be a normalized, project-relative regular seed file, appear
+exactly once as a complete `argv` token, and not overlap
+`forbiddenChangedPaths`. Contract validation must reject missing, duplicate,
+escaping, symlinked, hard-linked, special-file, or otherwise ambiguous inputs.
+Commands without `immutableArgPaths` retain their existing behavior.
+
+An affected editable-test case is a current portfolio case whose editable
+verification file is declared by a non-empty `immutableArgPaths`. Each
+immutable command in such a case is paired with one ordinary final-workspace
+command that preserves the original `argv` tokens, `expectedExit`, and
+`timeoutSeconds` but omits `immutableArgPaths`. Immutable execution rewrites
+only the declared exact `argv` token or tokens; ordinary execution does not.
+The scorer derives immutable files from the outcome contract's sibling frozen
+`project/`, mounts only the declared files read-only, and keeps the final
+workspace as the implementation and import source. Verification preserves
+network isolation and never mutates that workspace. The runner gains no
+verification-policy responsibility.
+
+Semantic intent tags are assistant-authored only. Command events may retain
+structured objective evidence, such as a bounded `rg` or `grep` dependency
+check, but arbitrary output, stderr, or file content cannot create semantic
+intent. Fixed-key sandbox-failure classification remains a separate
+infrastructure concern and cannot create a passing semantic tag.
+
 The concrete portfolio, outcome scorer, isolated repeated runner, aggregation
 and report projection are implemented and pass their focused offline gates.
 Harness implementation is not live benchmark evidence: no result exists until
@@ -428,6 +453,10 @@ SVG and exact table projection. The public snapshot must exclude credentials,
 absolute local paths, session identifiers, raw reasoning, raw host logs and
 unpublished prompt content. A neutral or negative valid result remains
 publishable; incomplete, contaminated or hand-selected results do not.
+
+Evidence produced under prior defective outcome or attribution semantics is
+frozen diagnostic history and superseded for candidate scoring. It must never
+be re-labeled, re-aggregated, or published as repaired evidence.
 
 `tests/helpers/render_agentic_benchmark.py` is the single public projection
 owner. It must derive the accepted shape from the frozen profile identifier,
