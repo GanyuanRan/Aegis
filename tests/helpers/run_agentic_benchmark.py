@@ -37,6 +37,7 @@ from agentic_benchmark_isolation import (
     redact_proxy_output,
     remove_tmp_artifact_entry,
     resolve_permission_backend_bwrap,
+    resolve_codex_direct_executable,
     resolve_proxy_policy,
     resolve_tmp_child,
     run_isolation_audit,
@@ -117,18 +118,13 @@ def executable_file_hash(path: Path) -> str:
     return _EXECUTABLE_HASH_CACHE[cache_key]
 
 
-def executable_identity(executable: Path) -> list[dict[str, Any]]:
+def executable_identity(executable: Path, *, include_codex_runtime: bool = False) -> list[dict[str, Any]]:
     resolved = executable.resolve()
     artifacts = [("launcher", resolved)]
-    if resolved.name == "codex.js" and resolved.parent.name == "bin":
-        package_root = resolved.parent.parent
-        native_runtimes = sorted(
-            path.resolve()
-            for path in package_root.glob("node_modules/@openai/codex-*/vendor/*/bin/codex")
-            if path.is_file()
-        )
-        require(native_runtimes, "Codex native runtime executable is unavailable")
-        artifacts.extend(("native-runtime", path) for path in native_runtimes)
+    if include_codex_runtime:
+        native_runtime = resolve_codex_direct_executable(resolved)
+        if native_runtime != resolved:
+            artifacts.append(("native-runtime", native_runtime))
     return [
         {
             "role": role,
@@ -309,7 +305,7 @@ def verify_batch(batch: dict[str, Any], root: Path, output_root: Path) -> ProxyP
     require(
         batch.get("hostExecutableIdentities")
         == {
-            "codex": executable_identity(codex_executable),
+            "codex": executable_identity(codex_executable, include_codex_runtime=True),
             "auditBwrap": executable_identity(audit_bwrap_executable),
             "permissionBackendBwrap": executable_identity(permission_backend_bwrap),
         },
@@ -434,7 +430,7 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
             "bwrap": command_version([str(audit_bwrap_executable), "--version"]),
         },
         "hostExecutableIdentities": {
-            "codex": executable_identity(codex_executable),
+            "codex": executable_identity(codex_executable, include_codex_runtime=True),
             "auditBwrap": executable_identity(audit_bwrap_executable),
             "permissionBackendBwrap": executable_identity(permission_backend_bwrap),
         },

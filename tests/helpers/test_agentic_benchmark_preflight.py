@@ -36,6 +36,7 @@ from agentic_benchmark_isolation import (
     redact_proxy_output,
     reset_directory,
     resolve_proxy_policy,
+    resolve_codex_direct_executable,
     run_provider_preflight,
     tool_sandbox_audit_command,
     validate_bwrap_command,
@@ -146,7 +147,7 @@ class CommandBoundaryTest(unittest.TestCase):
         self.bwrap = self.scratch / "bwrap"
         self.codex = self.scratch / "codex"
         self.bwrap.touch()
-        self.codex.touch()
+        shutil.copy2(shutil.which("true") or "/usr/bin/true", self.codex)
         self.policy = resolve_proxy_policy({"HTTP_PROXY": "http://proxy.invalid:8080"})
 
     def tearDown(self):
@@ -649,6 +650,27 @@ class CommandBoundaryTest(unittest.TestCase):
         self.assertEqual(environment["CODEX_HOME"], str(layout["home"] / ".codex"))
         self.assertEqual(environment["TMPDIR"], str(layout["tmp"]))
         self.assertEqual(environment["HTTP_PROXY"], "http://proxy.invalid:8080")
+
+    def test_live_command_resolves_the_packaged_native_codex_runtime(self):
+        package = self.scratch / "codex-package"
+        launcher = package / "bin/codex.js"
+        target = {
+            "x86_64": "x86_64-unknown-linux-musl",
+            "aarch64": "aarch64-unknown-linux-musl",
+        }[os.uname().machine]
+        native = package / f"node_modules/@openai/codex-test/vendor/{target}/bin/codex"
+        launcher.parent.mkdir(parents=True)
+        launcher.touch()
+        native.parent.mkdir(parents=True)
+        shutil.copy2(shutil.which("true") or "/usr/bin/true", native)
+        self.assertEqual(resolve_codex_direct_executable(launcher), native)
+
+    def test_direct_codex_runtime_rejects_unknown_wrappers(self):
+        wrapper = self.scratch / "codex-wrapper"
+        wrapper.write_text("#!/bin/sh\nexec codex \"$@\"\n", encoding="utf-8")
+        wrapper.chmod(0o755)
+        with self.assertRaises(SystemExit):
+            resolve_codex_direct_executable(wrapper)
 
     def test_direct_skill_projection_is_read_only_and_cleanup_safe(self):
         snapshot = self.scratch / "snapshot"

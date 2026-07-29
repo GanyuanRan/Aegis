@@ -340,8 +340,10 @@ fixtures, logs, reports or public artifacts.
 Every isolated client subprocess must derive its own offset-zero read-only
 open-file description from the sealed authentication snapshot; concurrent or
 sequential commands must never rewind or share the source offset. A direct
-Codex client receives that descriptor only through its private `auth.json`
-link, and the descriptor must not reach agent tool children. Commands that
+Codex client must execute the frozen native runtime directly and receive that
+descriptor only through its private `auth.json` link; a package launcher that
+drops non-stdio descriptors before spawning the native runtime is not a live
+client path. The descriptor must not reach agent tool children. Commands that
 still use the audit-only outer `bwrap` may inherit or rewrite only numeric
 `--ro-bind-data` sources in the validated bwrap prefix; every payload argument
 after the first `--` separator remains opaque to descriptor discovery.
@@ -376,8 +378,11 @@ owner. The original distribution snapshot remains agent-invisible. Both arms
 must pass the same zero-inference read/write/denied-read/denied-network probe
 before provider inference. The frozen shell-environment policy must also prove that provider
 proxy variables are absent from tool children even while the trusted client
-uses the validated provider transport. Legacy Landlock, `danger-full-access`, sandbox bypass and dual-path
-fallbacks are not compatibility paths. An attempt with a sandbox failure or no
+uses the validated provider transport. The tool probe must invoke the same
+frozen native Codex runtime as live attempts so descriptor hiding cannot pass
+merely because a package launcher dropped the FD first.
+Legacy Landlock, `danger-full-access`, sandbox bypass and dual-path fallbacks
+are not compatibility paths. An attempt with a sandbox failure or no
 machine-observed command/edit event is infrastructure-invalid and must never be
 scored as an agent outcome.
 

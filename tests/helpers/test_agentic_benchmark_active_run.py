@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import signal
 import subprocess
 import sys
@@ -61,11 +62,10 @@ class ActiveRunTest(unittest.TestCase):
         self.root = Path(__file__).resolve().parents[2]
         (self.root / ".tmp").mkdir(exist_ok=True)
         tool_directory = Path(self.addCleanupDirectory("agentic-active-tools-"))
-        codex = tool_directory / "codex"
+        codex = Path(shutil.which("true") or "/usr/bin/true")
         bwrap = tool_directory / "bwrap"
-        for path, version in ((codex, "codex-offline-test"), (bwrap, "bwrap-offline-test")):
-            path.write_text(f"#!/bin/sh\nprintf '%s\\n' '{version}'\n", encoding="utf-8")
-            path.chmod(0o755)
+        bwrap.write_text("#!/bin/sh\nprintf '%s\\n' 'bwrap-offline-test'\n", encoding="utf-8")
+        bwrap.chmod(0o755)
         environment = mock.patch.dict(os.environ, {
             "AEGIS_BENCHMARK_CODEX": str(codex),
             "AEGIS_BENCHMARK_BWRAP": str(bwrap),

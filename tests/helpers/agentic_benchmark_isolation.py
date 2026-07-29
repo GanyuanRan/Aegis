@@ -78,6 +78,32 @@ def resolve_permission_backend_bwrap() -> Path:
     return resolved
 
 
+def resolve_codex_direct_executable(codex: Path) -> Path:
+    resolved = codex.resolve()
+    direct = resolved
+    if resolved.name == "codex.js" and resolved.parent.name == "bin":
+        target = {
+            "x86_64": "x86_64-unknown-linux-musl",
+            "aarch64": "aarch64-unknown-linux-musl",
+        }.get(os.uname().machine)
+        require(target is not None, "Codex native runtime platform is unsupported")
+        package_root = resolved.parent.parent
+        candidates = [
+            *package_root.glob(f"node_modules/@openai/codex-*/vendor/{target}/bin/codex"),
+            package_root / f"vendor/{target}/bin/codex",
+        ]
+        native_runtimes = sorted({path.resolve() for path in candidates if path.is_file()})
+        require(len(native_runtimes) == 1, "Codex native runtime executable is ambiguous or unavailable")
+        direct = native_runtimes[0]
+    try:
+        with direct.open("rb") as executable:
+            elf_header = executable.read(4)
+    except OSError as exc:
+        raise SystemExit("Codex native runtime executable is unavailable") from exc
+    require(elf_header == b"\x7fELF" and os.access(direct, os.X_OK), "direct Codex executable must be a native ELF runtime")
+    return direct
+
+
 def sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
@@ -426,7 +452,7 @@ def build_codex_live_command(
     model: str,
 ) -> list[str]:
     return [
-        str(codex),
+        str(resolve_codex_direct_executable(codex)),
         "exec",
         "--json",
         "--color",
@@ -550,7 +576,7 @@ print(json.dumps({
         "SKILL_FILE", repr(str(skill_file) if skill_file is not None else None)
     ).strip()
     return [
-        str(codex),
+        str(resolve_codex_direct_executable(codex)),
         "sandbox",
         "--permission-profile",
         PERMISSION_PROFILE_NAME,
