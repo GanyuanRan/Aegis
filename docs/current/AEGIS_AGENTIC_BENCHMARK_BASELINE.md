@@ -247,7 +247,8 @@ declared path must be a normalized, project-relative regular seed file, appear
 exactly once as a complete `argv` token, and not overlap
 `forbiddenChangedPaths`. Contract validation must reject missing, duplicate,
 escaping, symlinked, hard-linked, special-file, or otherwise ambiguous inputs.
-Commands without `immutableArgPaths` retain their existing behavior.
+Standalone commands in contracts without any `immutableArgPaths` retain their
+existing direct workspace-binding behavior.
 
 An affected editable-test case is a current portfolio case whose editable
 verification file is declared by a non-empty `immutableArgPaths`. Each
@@ -259,11 +260,12 @@ The scorer derives immutable files from the outcome contract's sibling frozen
 `project/`, mounts only the declared files read-only, and keeps the final
 workspace as the implementation and import source. Immutable verification
 binds that workspace read-only, preserves network isolation, and cannot mutate
-it. The paired ordinary command retains the existing workspace-binding
-behavior for backward compatibility. Affected paired scoring must leave the
-terminal workspace snapshot unchanged; this does not prohibit transient writes
-by the ordinary subprocess. The runner gains no verification-policy
-responsibility.
+it. The paired ordinary command retains writable workspace semantics inside
+one disposable copy of the final workspace. A permanent content, mode, path,
+addition, or deletion change in that copy fails verification, while a transient
+write restored before command exit remains compatible. Affected paired scoring
+must leave the actual terminal workspace snapshot unchanged. The runner gains
+no verification-policy responsibility.
 
 Semantic intent tags are assistant-authored only. Command events may retain
 structured objective evidence, such as a bounded `rg` or `grep` dependency

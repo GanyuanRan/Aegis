@@ -237,6 +237,12 @@ owner_report = expect_result(
 verification_check = next(check for check in owner_report["checks"] if check["category"] == "verification")
 assert verification_check["evidence"]["networkIsolated"] is True
 
+immutable_command = {
+    "argv": ["python3", "check.py"],
+    "immutableArgPaths": ["check.py"],
+    "expectedExit": 0,
+    "timeoutSeconds": 5,
+}
 expect_result(
     "verification command without immutableArgPaths retains writable workspace compatibility",
     True,
@@ -260,16 +266,7 @@ expect_result(
     True,
     "valid-immutable-argument",
     "valid-immutable-argument",
-    {
-        "verification": [
-            {
-                "argv": ["python3", "check.py"],
-                "immutableArgPaths": ["check.py"],
-                "expectedExit": 0,
-                "timeoutSeconds": 5,
-            }
-        ]
-    },
+    {"verification": [immutable_command]},
     {"check.py": "raise SystemExit(9)\n"},
     events=[],
     project_files={
@@ -306,14 +303,14 @@ dual_behavior_cases = [
         "weakened visible test cannot hide broken source",
         "immutable-weakened-test",
         {"calc.py": "def normalize(value):\n    return 1\n", "test_calc.py": "pass\n"},
-        [False, True],
+        [False, True, True],
         False,
     ),
     (
         "broken visible test fails ordinary workspace verification",
         "immutable-broken-visible-test",
         {"calc.py": "def normalize(value):\n    return value\n", "test_calc.py": "raise SystemExit(7)\n"},
-        [True, False],
+        [True, False, True],
         False,
     ),
     (
@@ -323,7 +320,7 @@ dual_behavior_cases = [
             "calc.py": "def normalize(value):\n    return value\n",
             "test_calc.py": dual_test + "assert normalize(3) == 3\n",
         },
-        [True, True],
+        [True, True, True],
         True,
     ),
 ]
@@ -349,6 +346,20 @@ for label, folder, changes, expected_verification, expected_pass in dual_behavio
     assert actual_verification == expected_verification, (label, report)
     assert "forbidden-path-change" not in report["triggeredVetoes"], (label, report)
 
+paired_mutations = [
+    ("paired ordinary source overwrite fails", "Path('source.py').write_text('changed')", False),
+    ("paired ordinary added file fails", "Path('added.py').write_text('new')", False),
+    ("paired ordinary restored transient write passes", "p=Path('temp'); p.write_text('x'); p.unlink()", True),
+]
+for label, mutation, expected in paired_mutations:
+    ordinary = {"argv": ["python3", "-c", f"from pathlib import Path; {mutation}"], "expectedExit": 0, "timeoutSeconds": 5}
+    report = expect_result(label, expected, label.replace(" ", "-"), label.replace(" ", "-"),
+        {"verification": [immutable_command, ordinary], "vetoes": ["verification-failure"]},
+        {"source.py": "original\n"}, events=[], project_files={"check.py": "pass\n"})
+    ordinary_check = next(check for check in report["checks"] if check["id"] == "verification.1")
+    assert ordinary_check["evidence"]["workspacePreserved"] is expected
+    assert next(check for check in report["checks"] if check["id"] == "verification.workspacePreserved")["result"] is True
+
 nested_report = expect_result(
     "nested multiple immutable files stay private and use workspace imports",
     True,
@@ -361,9 +372,10 @@ nested_report = expect_result(
                     "python3",
                     "checks/test_inputs.py",
                     "data/expected.txt",
+                    "data/markers.txt",
                     "--label=data/expected.txt",
                 ],
-                "immutableArgPaths": ["checks/test_inputs.py", "data/expected.txt"],
+                "immutableArgPaths": ["checks/test_inputs.py", "data/expected.txt", "data/markers.txt"],
                 "expectedExit": 0,
                 "timeoutSeconds": 5,
             }
@@ -381,17 +393,23 @@ nested_report = expect_result(
             "import sys\n"
             "from implementation import VALUE\n"
             "expected = Path(sys.argv[1])\n"
+            "markers = Path(sys.argv[2]).read_text().splitlines()\n"
             "assert expected.read_text(encoding='utf-8') == 'ok\\n'\n"
-            "assert sys.argv[2] == '--label=data/expected.txt'\n"
+            "assert sys.argv[3] == '--label=data/expected.txt'\n"
             "assert not expected.with_name('sibling.txt').exists()\n"
             "assert VALUE == 42\n"
+            "for cmdline in Path('/proc').glob('[0-9]*/cmdline'):\n"
+            "    try: visible = cmdline.read_bytes()\n"
+            "    except OSError: continue\n"
+            "    assert not any(marker.encode() in visible for marker in markers)\n"
         ),
         "data/expected.txt": "ok\n",
+        "data/markers.txt": f"{root}\n",
         "data/sibling.txt": "must remain hidden\n",
         "implementation.py": "VALUE = -1\n",
     },
 )
-assert nested_report["checkCounts"] == {"pass": 1, "fail": 0, "unknown": 0}
+assert nested_report["checkCounts"] == {"pass": 2, "fail": 0, "unknown": 0}
 
 expect_result(
     "empty immutableArgPaths remains compatible without an immutable project",
@@ -412,12 +430,6 @@ expect_result(
     events=[],
 )
 
-immutable_command = {
-    "argv": ["python3", "check.py"],
-    "immutableArgPaths": ["check.py"],
-    "expectedExit": 0,
-    "timeoutSeconds": 5,
-}
 regular_project = {"project_files": {"check.py": "pass\n"}}
 schema_path_cases = [
     ("unknown verification command field is rejected", "immutable-unknown-field", {**immutable_command, "unexpected": True}, "contains unknown fields", regular_project),

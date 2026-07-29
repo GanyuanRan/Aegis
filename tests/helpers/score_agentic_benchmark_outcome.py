@@ -11,6 +11,8 @@ import re
 import shutil
 import stat
 import subprocess
+import tempfile
+from contextlib import ExitStack
 from pathlib import Path, PurePosixPath
 from typing import Any
 
@@ -330,6 +332,20 @@ def snapshot_workspace(workspace: Path) -> dict[str, str]:
     return files
 
 
+def snapshot_verification_workspace(workspace: Path) -> dict[str, str]:
+    snapshot: dict[str, str] = {}
+    for path in sorted(workspace.rglob("*")):
+        mode = stat.S_IMODE(path.lstat().st_mode)
+        if path.is_symlink():
+            value = f"symlink:{mode:o}:{os.readlink(path)}"
+        elif path.is_file():
+            value = hash_file(path)
+        else:
+            value = f"type:{stat.S_IFMT(path.lstat().st_mode)}:mode:{mode:o}"
+        snapshot[path.relative_to(workspace).as_posix()] = hashlib.sha256(value.encode()).hexdigest()
+    return snapshot
+
+
 def required_workspace_path_exists(workspace: Path, relative: str) -> bool:
     candidate = workspace / relative
     if not os.path.lexists(candidate):
@@ -449,55 +465,53 @@ def score_verification(
     if commands is None:
         return
     bwrap = shutil.which("bwrap")
-    for index, command in enumerate(commands):
-        immutable_paths = command.get("immutableArgPaths", [])
-        if bwrap is None:
-            add_check(checks, f"verification.{index}", "verification", None, {"reason": "network-isolator-unavailable"})
-            continue
-        immutable_bwrap_args: list[str] = []
-        execution_argv = command["argv"]
-        if immutable_paths:
-            require(immutable_project is not None, "immutable verification requires an immutable project")
-            immutable_bwrap_args, execution_argv = immutable_verification_args(command, immutable_project)
-        argv = [
-            bwrap,
-            "--die-with-parent",
-            "--new-session",
-            "--unshare-net",
-            "--tmpfs",
-            "/tmp",
-            "--dir",
-            "/tmp/agentic-benchmark-home",
-            "--ro-bind" if immutable_paths else "--bind",
-            str(workspace),
-            "/workspace",
-            "--chdir",
-            "/workspace",
-            *immutable_bwrap_args,
-        ]
-        for system_path in ("/usr", "/bin", "/lib", "/lib64", "/etc"):
-            if Path(system_path).exists():
-                argv.extend(["--ro-bind", system_path, system_path])
-        argv.extend(["--dev-bind", "/dev", "/dev", "--proc", "/proc", "--", *execution_argv])
-        evidence: dict[str, Any] = {"expectedExit": command["expectedExit"], "networkIsolated": True}
-        try:
-            completed = subprocess.run(
-                argv,
-                text=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                timeout=command["timeoutSeconds"],
-                env=verification_environment(immutable_inputs=bool(immutable_paths)),
-                check=False,
-            )
-            evidence["actualExit"] = completed.returncode
-            evidence["timedOut"] = False
-            result = completed.returncode == command["expectedExit"]
-        except subprocess.TimeoutExpired:
-            evidence["actualExit"] = None
-            evidence["timedOut"] = True
-            result = False
-        add_check(checks, f"verification.{index}", "verification", result, evidence)
+    paired = any(command.get("immutableArgPaths") for command in commands)
+    actual_before = snapshot_verification_workspace(workspace) if paired else None
+    with ExitStack() as stack:
+        ordinary_workspace = workspace
+        if paired:
+            temporary_root = Path(stack.enter_context(tempfile.TemporaryDirectory(prefix="aegis-verification-", dir=workspace.parent)))
+            ordinary_workspace = temporary_root / "workspace"
+            shutil.copytree(workspace, ordinary_workspace, symlinks=True)
+        for index, command in enumerate(commands):
+            immutable_paths = command.get("immutableArgPaths", [])
+            if bwrap is None:
+                add_check(checks, f"verification.{index}", "verification", None, {"reason": "network-isolator-unavailable"})
+                continue
+            immutable_bwrap_args: list[str] = []
+            execution_argv = command["argv"]
+            command_workspace = workspace if immutable_paths else ordinary_workspace
+            copy_before = snapshot_verification_workspace(command_workspace) if paired and not immutable_paths else None
+            if immutable_paths:
+                require(immutable_project is not None, "immutable verification requires an immutable project")
+                immutable_bwrap_args, execution_argv = immutable_verification_args(command, immutable_project)
+            argv = [
+                bwrap, "--die-with-parent", "--new-session", "--unshare-net", "--unshare-pid", "--as-pid-1",
+                "--tmpfs", "/tmp", "--dir", "/tmp/agentic-benchmark-home",
+                "--ro-bind" if immutable_paths else "--bind", str(command_workspace), "/workspace",
+                "--chdir", "/workspace", *immutable_bwrap_args,
+            ]
+            for system_path in ("/usr", "/bin", "/lib", "/lib64", "/etc"):
+                if Path(system_path).exists():
+                    argv.extend(["--ro-bind", system_path, system_path])
+            argv.extend(["--dev-bind", "/dev", "/dev", "--proc", "/proc", "--", *execution_argv])
+            evidence: dict[str, Any] = {"expectedExit": command["expectedExit"], "networkIsolated": True}
+            try:
+                completed = subprocess.run(argv, text=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                    timeout=command["timeoutSeconds"], env=verification_environment(immutable_inputs=bool(immutable_paths)), check=False)
+                evidence.update(actualExit=completed.returncode, timedOut=False)
+                result = completed.returncode == command["expectedExit"]
+            except subprocess.TimeoutExpired:
+                evidence.update(actualExit=None, timedOut=True)
+                result = False
+            if copy_before is not None:
+                copy_preserved = copy_before == snapshot_verification_workspace(command_workspace)
+                evidence["workspacePreserved"] = copy_preserved
+                result = result and copy_preserved
+            add_check(checks, f"verification.{index}", "verification", result, evidence)
+        if paired:
+            preserved = actual_before == snapshot_verification_workspace(workspace)
+            add_check(checks, "verification.workspacePreserved", "verification", preserved, {"workspacePreserved": preserved})
 
 
 def normalized_contains(text: str, phrase: str) -> bool:
