@@ -192,6 +192,18 @@ def prepare_distribution_snapshot(root: Path, destination: Path) -> dict[str, An
     return distribution_snapshot_metadata(destination)
 
 
+def copy_read_only_tree(source: Path, destination: Path) -> None:
+    """Copy a profile-read-only projection whose directories remain removable."""
+
+    shutil.copytree(source, destination, symlinks=True)
+    entries = [destination, *destination.rglob("*")]
+    require(not any(path.is_symlink() for path in entries), "skill projection must not contain symlinks")
+    for path in reversed(entries):
+        mode = stat.S_IMODE(path.stat().st_mode)
+        cleanup_safe_mode = (mode | 0o700) if path.is_dir() else (mode & ~0o222)
+        path.chmod(cleanup_safe_mode)
+
+
 def distribution_snapshot_metadata(destination: Path) -> dict[str, Any]:
     plugin_manifest = destination / ".codex-plugin/plugin.json"
     require(plugin_manifest.is_file(), "Codex plugin manifest is missing from the distribution snapshot")
@@ -268,7 +280,7 @@ def prepare_arm_layout(
         if virtualized_paths:
             (discovery / "aegis").symlink_to(VIRTUAL_SNAPSHOT / "skills")
         else:
-            shutil.copytree(snapshot.resolve() / "skills", discovery / "aegis", copy_function=os.link)
+            copy_read_only_tree(snapshot.resolve() / "skills", discovery / "aegis")
     return {
         "root": arm_root,
         "home": home,
@@ -303,7 +315,7 @@ def materialize_direct_skill_projection(layout: dict[str, Path]) -> None:
     projection = layout["home"] / ".agents/skills/aegis"
     require(projection.is_symlink(), "virtual skill projection is unavailable for direct audit")
     projection.unlink()
-    shutil.copytree(snapshot.resolve() / "skills", projection, copy_function=os.link)
+    copy_read_only_tree(snapshot.resolve() / "skills", projection)
 
 
 def system_mount_args() -> list[str]:

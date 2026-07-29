@@ -40,7 +40,12 @@ from agentic_benchmark_isolation import (
     tool_sandbox_audit_command,
     validate_bwrap_command,
 )
-from agentic_benchmark_provider_preflight import freeze_auth_file, run_sanitized_provider_preflight
+from agentic_benchmark_provider_preflight import (
+    CredentialPolicy,
+    freeze_auth_file,
+    run_sanitized_provider_preflight,
+    scrub_confidential_artifact_tree,
+)
 
 
 def setenv_keys(command: list[str]) -> list[str]:
@@ -644,6 +649,40 @@ class CommandBoundaryTest(unittest.TestCase):
         self.assertEqual(environment["CODEX_HOME"], str(layout["home"] / ".codex"))
         self.assertEqual(environment["TMPDIR"], str(layout["tmp"]))
         self.assertEqual(environment["HTTP_PROXY"], "http://proxy.invalid:8080")
+
+    def test_direct_skill_projection_is_read_only_and_cleanup_safe(self):
+        snapshot = self.scratch / "snapshot"
+        skill = snapshot / "skills/example/SKILL.md"
+        skill.parent.mkdir(parents=True)
+        skill.write_text("---\nname: example\n---\n", encoding="utf-8")
+        seed = self.root / "tests/e2e/fixtures/replay-projects/change-necessity-before-edit"
+        layout = prepare_arm_layout(
+            self.scratch / "projection-layout", seed, self.auth, snapshot,
+            virtualized_paths=False,
+        )
+        projected = layout["home"] / ".agents/skills/aegis/example/SKILL.md"
+        self.assertEqual(projected.stat().st_nlink, 1)
+        self.assertEqual(projected.stat().st_mode & 0o222, 0)
+        self.assertIsNone(scrub_confidential_artifact_tree(
+            layout["root"], resolve_proxy_policy({}), CredentialPolicy(()),
+        ))
+
+    def test_direct_skill_projection_rejects_source_symlinks(self):
+        snapshot = self.scratch / "symlink-snapshot"
+        skill_directory = snapshot / "skills/example"
+        skill_directory.mkdir(parents=True)
+        private = self.scratch / "private-source.txt"
+        private.write_text("must not be projected", encoding="utf-8")
+        (skill_directory / "SKILL.md").symlink_to(private)
+        seed = self.root / "tests/e2e/fixtures/replay-projects/change-necessity-before-edit"
+        with self.assertRaises(SystemExit):
+            prepare_arm_layout(
+                self.scratch / "symlink-layout", seed, self.auth, snapshot,
+                virtualized_paths=False,
+            )
+        projected = self.scratch / "symlink-layout/home/.agents/skills/aegis/example/SKILL.md"
+        self.assertTrue(projected.is_symlink())
+        self.assertEqual(projected.readlink(), private)
 
     def test_prompt_audit_failure_redacts_proxy_values(self):
         proxy = "http://proxy.invalid:8080"

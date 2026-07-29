@@ -369,10 +369,12 @@ peer-workspace and authentication reads, deny agent-tool network access, and be
 enforced by Codex's native `bwrap`/seccomp backend. The Aegis arm receives a
 read-only, distribution-shaped skill projection under its private
 `~/.agents/skills`; the baseline arm receives the same profile with no Aegis
-projection. The original distribution snapshot remains agent-invisible. Both
-arms must pass the same
-zero-inference read/write/denied-read/denied-network probe before provider
-inference. The frozen shell-environment policy must also prove that provider
+projection. Direct projections must use independent regular files rather than
+symlinks or hard links: file write bits are removed, directories remain
+parent-cleanup-safe, and the permission profile remains the agent write-denial
+owner. The original distribution snapshot remains agent-invisible. Both arms
+must pass the same zero-inference read/write/denied-read/denied-network probe
+before provider inference. The frozen shell-environment policy must also prove that provider
 proxy variables are absent from tool children even while the trusted client
 uses the validated provider transport. Legacy Landlock, `danger-full-access`, sandbox bypass and dual-path
 fallbacks are not compatibility paths. An attempt with a sandbox failure or no
