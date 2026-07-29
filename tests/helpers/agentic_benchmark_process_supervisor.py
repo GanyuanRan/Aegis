@@ -116,7 +116,7 @@ def _contain_process(command_fd: int) -> int:
         if child_return is None:
             child_return = child.poll()
         for pid in _direct_child_pids(os.getpid()):
-            if pid == child.pid:
+            if child_return is None and pid == child.pid:
                 continue
             try:
                 os.waitpid(pid, os.WNOHANG)

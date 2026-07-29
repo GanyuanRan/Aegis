@@ -228,6 +228,44 @@ raise SystemExit(9)
             self.assertTrue(pid_path.is_file())
             self._assert_process_gone(int(pid_path.read_text(encoding="utf-8")))
 
+    def test_reap_exempts_the_worker_pid_only_until_poll_reaps_that_worker(self):
+        command_fd = agentic_benchmark_process_supervisor._sealed_memfd(
+            "test-containment-command",
+            json.dumps({"command": ["fake-worker"], "passFds": []}).encode(),
+        )
+        child = SimpleNamespace(pid=42, poll=mock.Mock(side_effect=[None, 0]))
+        try:
+            with mock.patch.object(agentic_benchmark_process_supervisor, "_enable_child_subreaper"), mock.patch.object(
+                agentic_benchmark_process_supervisor.subprocess,
+                "Popen",
+                return_value=child,
+            ), mock.patch.object(
+                agentic_benchmark_process_supervisor.signal,
+                "signal",
+            ), mock.patch.object(
+                agentic_benchmark_process_supervisor,
+                "_direct_child_pids",
+                side_effect=[{42, 99}, {42}],
+            ), mock.patch.object(
+                agentic_benchmark_process_supervisor,
+                "_descendant_pids",
+                side_effect=[{42}, set(), set()],
+            ), mock.patch.object(
+                agentic_benchmark_process_supervisor.os,
+                "waitpid",
+            ) as waitpid, mock.patch.object(
+                agentic_benchmark_process_supervisor.time,
+                "sleep",
+            ):
+                result = agentic_benchmark_process_supervisor._contain_process(command_fd)
+        finally:
+            os.close(command_fd)
+        self.assertEqual(result, 0)
+        self.assertEqual(
+            waitpid.call_args_list,
+            [mock.call(99, os.WNOHANG), mock.call(42, os.WNOHANG)],
+        )
+
     def test_monitor_exception_reaps_trampoline_and_immediate_exit_adoptee(self):
         script = """
 import os
