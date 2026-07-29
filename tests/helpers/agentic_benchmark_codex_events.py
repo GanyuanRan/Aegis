@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import json
+import posixpath
 import re
+import shlex
 from typing import Any
 
 
@@ -18,6 +20,8 @@ SANDBOX_START_FAILURE_PATTERNS = tuple(re.compile(pattern, re.IGNORECASE) for pa
 SANDBOX_EVIDENCE_KEYS = {
     "aggregated_output", "detail", "error", "errors", "failure", "message", "reason", "status", "stderr",
 }
+MAX_STRUCTURED_COMMAND_CHARS = 16_384
+MAX_STRUCTURED_COMMAND_ARGS = 256
 
 
 def walk_values(value: Any) -> list[Any]:
@@ -35,15 +39,34 @@ def strings_in(value: Any) -> list[str]:
     return [item for item in walk_values(value) if isinstance(item, str)]
 
 
+def is_assistant_message(item_type: str, item: dict[str, Any]) -> bool:
+    role = item.get("role")
+    if item_type == "message":
+        return role == "assistant"
+    if item_type in {"agent_message", "assistant_message"}:
+        return role is None or role in {"agent", "assistant"}
+    return False
+
+
 def assistant_text(item: dict[str, Any]) -> str:
-    for key in ("text", "message", "content", "output_text"):
+    for key in ("text", "message", "output_text", "content"):
         value = item.get(key)
         if isinstance(value, str) and value.strip():
             return value.strip()
-        if isinstance(value, (dict, list)):
-            values = [text for text in strings_in(value) if text.strip()]
-            if values:
-                return "\n".join(values).strip()
+
+    content = item.get("content")
+    blocks = content if isinstance(content, list) else [content]
+    block_texts: list[str] = []
+    for block in blocks:
+        if not isinstance(block, dict) or block.get("type") not in {"output_text", "text"}:
+            continue
+        for key in ("text", "output_text", "content"):
+            value = block.get(key)
+            if isinstance(value, str) and value.strip():
+                block_texts.append(value.strip())
+                break
+    if block_texts:
+        return "\n".join(block_texts)
     return ""
 
 
@@ -58,6 +81,97 @@ def semantic_tags(text: str) -> list[str]:
     if re.search(r"dependenc|callers?|references?|usages?|fallback|retir", normalized):
         tags.append("dependency-check")
     return tags
+
+
+def bounded_shell_tokens(command: str) -> list[str]:
+    if not command or len(command) > MAX_STRUCTURED_COMMAND_CHARS:
+        return []
+    try:
+        lexer = shlex.shlex(command, posix=True, punctuation_chars=";&|")
+        lexer.whitespace_split = True
+        lexer.commenters = ""
+        arguments: list[str] = []
+        total_chars = 0
+        for argument in lexer:
+            total_chars += len(argument)
+            if (
+                len(arguments) >= MAX_STRUCTURED_COMMAND_ARGS
+                or total_chars > MAX_STRUCTURED_COMMAND_CHARS
+            ):
+                return []
+            arguments.append(argument)
+    except ValueError:
+        return []
+    return arguments if arguments and arguments[0] else []
+
+
+def bounded_argv_tokens(command: list[Any]) -> list[str]:
+    if not command or len(command) > MAX_STRUCTURED_COMMAND_ARGS:
+        return []
+    arguments: list[str] = []
+    total_chars = 0
+    for argument in command:
+        if not isinstance(argument, str):
+            return []
+        total_chars += len(argument)
+        if total_chars > MAX_STRUCTURED_COMMAND_CHARS:
+            return []
+        arguments.append(argument)
+    return arguments if arguments[0] else []
+
+
+def split_command_segments(arguments: list[str]) -> list[list[str]]:
+    separators = {";", "&&", "||", "|", "&"}
+    segments: list[list[str]] = []
+    current: list[str] = []
+    for argument in arguments:
+        if argument in separators:
+            if current:
+                segments.append(current)
+                current = []
+        else:
+            current.append(argument)
+    if current:
+        segments.append(current)
+    return segments
+
+
+def structured_command_segments(item: dict[str, Any]) -> list[list[str]]:
+    """Return bounded executable segments, unwrapping only fixed safe shell forms."""
+    command = item.get("command")
+    is_shell_text = isinstance(command, str)
+    if is_shell_text:
+        arguments = bounded_shell_tokens(command)
+    elif isinstance(command, list):
+        arguments = bounded_argv_tokens(command)
+    else:
+        return []
+    if not arguments:
+        return []
+
+    executable = posixpath.basename(arguments[0]).casefold()
+    if executable in {"bash", "sh"}:
+        if len(arguments) != 3 or arguments[1] not in {"-c", "-lc"}:
+            return []
+        script_arguments = bounded_shell_tokens(arguments[2])
+        return split_command_segments(script_arguments) if script_arguments else []
+    return split_command_segments(arguments) if is_shell_text else [arguments]
+
+
+def is_dependency_search(segments: list[list[str]]) -> bool:
+    for arguments in segments:
+        if not arguments or posixpath.basename(arguments[0]).casefold() not in {"rg", "grep"}:
+            continue
+        inventory = False
+        for argument in arguments[1:]:
+            if argument == "--":
+                break
+            if argument == "--files":
+                inventory = True
+                break
+        if not inventory:
+            return True
+    return False
 
 
 def sandbox_evidence_strings(value: Any) -> list[str]:
@@ -106,7 +220,7 @@ def parse_codex_jsonl(raw: str) -> dict[str, Any]:
         item_type = str(item.get("type", record.get("type", "unknown")))
         text = "\n".join(strings_in(item))
         lower = text.casefold()
-        if item_type in {"agent_message", "assistant_message", "message"}:
+        if is_assistant_message(item_type, item):
             message_text = assistant_text(item)
             if message_text:
                 assistant_messages.append(message_text)
@@ -119,8 +233,8 @@ def parse_codex_jsonl(raw: str) -> dict[str, Any]:
                 tool_sandbox_failure_count += 1
             else:
                 tool_execution_count += 1
-            tags = semantic_tags(text)
-            if re.search(r"(?:^|\s)(?:rg|grep)(?:\s|$)", lower) and "--files" not in lower:
+            tags: list[str] = []
+            if is_dependency_search(structured_command_segments(item)):
                 tags.append("dependency-check")
             destructive = re.search(r"(?:^|\s)(?:rm|unlink|rmdir)(?:\s|$)", lower) is not None
             events.append({
@@ -134,7 +248,7 @@ def parse_codex_jsonl(raw: str) -> dict[str, Any]:
             events.append({
                 "sequence": len(events), "kind": "edit",
                 "toolKind": "delete_file" if deleted else "apply_patch",
-                "tags": semantic_tags(text),
+                "tags": [],
             })
         elif item_type == "error" and has_sandbox_start_failure(item):
             tool_sandbox_failure_count += 1
