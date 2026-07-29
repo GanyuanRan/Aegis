@@ -67,6 +67,7 @@ def fake_batch(*, max_attempts: int | None = None) -> dict:
         "perAttemptTimeoutSeconds": 10,
         "infrastructureFailureLimit": 2,
         "modelPolicy": {"requestedModel": "fake-model"},
+        "networkPolicy": {"mode": "direct", "keys": [], "schemes": [], "fingerprint": "c" * 64},
         "distributionSnapshot": {"version": "test", "treeHash": "b" * 64, "skillCount": 2},
         "hostVersions": {"codex": "fake-codex", "bwrap": "fake-bwrap"},
         "schedule": schedule,
@@ -212,6 +213,10 @@ class RunnerContractTest(unittest.TestCase):
             "modelCalls": 0,
             "authorityBoundary": AUTHORITY_BOUNDARY,
             "distributionSnapshot": {"treeHash": batch["distributionSnapshot"]["treeHash"]},
+            "auditNetworkPolicy": {
+                "promptInput": copy.deepcopy(batch["networkPolicy"]),
+                "mountAudit": {"mode": "network-disabled"},
+            },
             "arms": {
                 "baseline-no-aegis": copy.deepcopy(arm),
                 "aegis-auto": {**copy.deepcopy(arm), "evaluatedSkillMatchCount": 2, "methodPackMarkerCount": 2, "snapshotVisible": True},
@@ -221,6 +226,42 @@ class RunnerContractTest(unittest.TestCase):
         report["arms"]["baseline-no-aegis"]["evaluatedSkillMatchCount"] = 1
         with self.assertRaises(SystemExit):
             validate_live_isolation_report(report, batch)
+
+    def test_isolation_report_keeps_prompt_and_mount_network_policies_distinct(self):
+        batch = fake_batch()
+        report = {
+            "modelCalls": 0,
+            "authorityBoundary": AUTHORITY_BOUNDARY,
+            "distributionSnapshot": {"treeHash": batch["distributionSnapshot"]["treeHash"]},
+            "auditNetworkPolicy": {
+                "promptInput": copy.deepcopy(batch["networkPolicy"]),
+                "mountAudit": {"mode": "network-disabled"},
+            },
+            "arms": {
+                arm: {
+                    "evaluatedSkillMatchCount": 0 if arm == "baseline-no-aegis" else 2,
+                    "methodPackMarkerCount": 0 if arm == "baseline-no-aegis" else 2,
+                    "nonSkillInputHash": "same",
+                    "authReadOnly": True,
+                    "benchmarkRepoVisible": False,
+                    "peerWorkspaceVisible": False,
+                    "scorerVisible": False,
+                    "visibleProcessCount": 2,
+                    "snapshotVisible": arm == "aegis-auto",
+                }
+                for arm in ARMS
+            },
+        }
+        validate_live_isolation_report(report, batch)
+        for field, value in (
+            ("promptInput", {"mode": "network-disabled"}),
+            ("mountAudit", copy.deepcopy(batch["networkPolicy"])),
+        ):
+            with self.subTest(field=field):
+                drifted = copy.deepcopy(report)
+                drifted["auditNetworkPolicy"][field] = value
+                with self.assertRaises(SystemExit):
+                    validate_live_isolation_report(drifted, batch)
 
     def test_partial_batch_flag(self):
         batch = fake_batch(max_attempts=4)

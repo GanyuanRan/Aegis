@@ -644,6 +644,49 @@ else:
             self.assertEqual(str(caught.exception), "captured")
             self.assertEqual(captured, [{"001-valid", "002-invalid"}])
 
+    def test_setup_passes_the_verified_proxy_policy_only_to_prompt_isolation_owner(self):
+        with tempfile.TemporaryDirectory(prefix="agentic-setup-policy-test-", dir=self.root / ".tmp") as value:
+            output_root = Path(value)
+            batch = {"caseIds": ["case"], "frozenCases": []}
+            proxy_policy = object()
+            captured: dict[str, object] = {}
+
+            def capture_audit(**arguments):
+                captured.update(arguments)
+                return {"safe": True}
+
+            runner = SimpleNamespace(
+                repo_root=lambda: self.root,
+                resolve_tmp_child=lambda _root, path, _label: path,
+                verify_batch=lambda *_args: proxy_policy,
+                validate_auth_mount_file=lambda _path: None,
+                credential_policy_from_markers=lambda _markers: object(),
+                load_batch_and_ledger=lambda _root: (batch, {"attempts": []}),
+                agentic_benchmark_scheduler=SimpleNamespace(validate_ledger=lambda *_args: None),
+                scrub_stale_confidential_artifacts=lambda *_args: None,
+                remove_tmp_artifact_entry=lambda *_args: None,
+                resolve_tool=lambda name, _variable: Path(f"/tool/{name}"),
+                find_case=lambda *_args: {"caseId": "case", "frozenPromptPath": "prompt.txt", "frozenSeedProjectPath": "project"},
+                relative_repo_path=lambda _root, path: str(path),
+                run_isolation_audit=capture_audit,
+                validate_live_isolation_report=lambda *_args: None,
+                atomic_json=lambda *_args: None,
+            )
+            result = agentic_benchmark_process_supervisor._execute_isolation_setup(
+                runner,
+                {
+                    "root": str(self.root),
+                    "outputRoot": str(output_root),
+                    "batch": batch,
+                    "authFile": "/safe/auth",
+                    "credentialMarkers": [],
+                    "timeoutSeconds": 1.0,
+                },
+            )
+            self.assertIs(captured["proxy_policy"], proxy_policy)
+            self.assertTrue(captured["process_group_supervised"])
+            self.assertEqual(result["authFile"], "/safe/auth")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -23,6 +23,7 @@ python3 tests/helpers/run_agentic_benchmark.py isolation-audit \
 
 python3 - "$report_file" <<'PY'
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -33,6 +34,8 @@ aegis = report["arms"]["aegis-auto"]
 
 assert report["modelCalls"] == 0
 assert report["authorityBoundary"] == "advisory-method-pack-evidence-not-completion-authority"
+assert report["auditNetworkPolicy"]["promptInput"]["mode"] in {"direct", "proxy"}
+assert report["auditNetworkPolicy"]["mountAudit"] == {"mode": "network-disabled"}
 assert baseline["evaluatedSkillMatchCount"] == 0
 assert aegis["evaluatedSkillMatchCount"] == report["distributionSnapshot"]["skillCount"]
 assert baseline["methodPackMarkerCount"] == 0
@@ -50,6 +53,9 @@ assert len(report["distributionSnapshot"]["treeHash"]) == 64
 serialized = report_path.read_text(encoding="utf-8")
 for forbidden in ("/home/", "/workspace", "auth.json", "The settings page sometimes shows"):
     assert forbidden not in serialized, forbidden
+for key in ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "http_proxy", "https_proxy", "all_proxy"):
+    if os.environ.get(key):
+        assert os.environ[key] not in serialized
 print("  [PASS] live no-model prompt and mount audit")
 PY
 
@@ -63,6 +69,7 @@ from agentic_benchmark_isolation import (
     build_bwrap_command,
     hash_tree,
     prepare_arm_layout,
+    resolve_proxy_policy,
     run_isolation_audit,
     validate_arm_pair,
     validate_bwrap_command,
@@ -78,12 +85,15 @@ seed = root / "tests/e2e/fixtures/replay-projects/change-necessity-before-edit"
 layout = prepare_arm_layout(scratch / "arm", seed, auth, None)
 bwrap = Path(shutil.which("bwrap") or "/missing/bwrap")
 codex = Path(shutil.which("codex") or "/missing/codex").resolve()
+proxy_policy = resolve_proxy_policy(__import__("os").environ)
 command = build_bwrap_command(
     bwrap=bwrap,
     codex=codex,
     layout=layout,
     prompt="refusal-test",
     debug_prompt=True,
+    isolate_network=False,
+    proxy_policy=proxy_policy,
 )
 
 def refused(label, callback):
@@ -105,6 +115,7 @@ refused(
         auth_file=auth,
         bwrap=scratch / "missing-bwrap",
         codex=codex,
+        proxy_policy=proxy_policy,
     ),
 )
 refused(
@@ -116,6 +127,7 @@ refused(
         auth_file=missing_auth,
         bwrap=bwrap,
         codex=codex,
+        proxy_policy=proxy_policy,
     ),
 )
 
@@ -123,7 +135,10 @@ writable_auth = command.copy()
 writable_auth[writable_auth.index("--ro-bind")] = "--bind"
 refused(
     "writable auth mount",
-    lambda: validate_bwrap_command(writable_auth, root=root, output_root=scratch, layout=layout),
+    lambda: validate_bwrap_command(
+        writable_auth, root=root, output_root=scratch, layout=layout,
+        client_network=True, proxy_policy=proxy_policy,
+    ),
 )
 
 repo_visible = command.copy()
@@ -131,7 +146,10 @@ separator = repo_visible.index("--")
 repo_visible[separator:separator] = ["--ro-bind", str(root), "/benchmark-repo"]
 refused(
     "benchmark repository visibility",
-    lambda: validate_bwrap_command(repo_visible, root=root, output_root=scratch, layout=layout),
+    lambda: validate_bwrap_command(
+        repo_visible, root=root, output_root=scratch, layout=layout,
+        client_network=True, proxy_policy=proxy_policy,
+    ),
 )
 
 unhashable = scratch / "unhashable-snapshot"

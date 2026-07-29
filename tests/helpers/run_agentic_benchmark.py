@@ -842,6 +842,9 @@ def validate_live_isolation_report(report: dict[str, Any], batch: dict[str, Any]
     require(report.get("modelCalls") == 0, "isolation audit must not make a model call")
     require(report.get("authorityBoundary") == AUTHORITY_BOUNDARY, "isolation audit authority boundary drifted")
     require(report.get("distributionSnapshot", {}).get("treeHash") == batch["distributionSnapshot"]["treeHash"], "isolation audit snapshot does not match the frozen batch")
+    network_policy = report.get("auditNetworkPolicy", {})
+    require(network_policy.get("promptInput") == batch["networkPolicy"], "prompt-input audit network policy drifted")
+    require(network_policy.get("mountAudit") == {"mode": "network-disabled"}, "mount audit must remain network-disabled")
     baseline = report.get("arms", {}).get("baseline-no-aegis", {})
     aegis = report.get("arms", {}).get("aegis-auto", {})
     require(baseline.get("evaluatedSkillMatchCount") == 0, "baseline arm is contaminated by evaluated Aegis skills")
@@ -874,6 +877,7 @@ def isolation_audit_command(args: argparse.Namespace) -> None:
         auth_file=resolve_auth_file(args.auth_file),
         bwrap=resolve_tool("bwrap", "AEGIS_BENCHMARK_BWRAP"),
         codex=resolve_tool("codex", "AEGIS_BENCHMARK_CODEX"),
+        proxy_policy=resolve_proxy_policy(os.environ),
     )
     atomic_json(report_path, report)
     print(json.dumps({"caseId": report["caseId"], "modelCalls": 0, "baselineSkillMatches": report["arms"]["baseline-no-aegis"]["evaluatedSkillMatchCount"], "aegisSkillMatches": report["arms"]["aegis-auto"]["evaluatedSkillMatchCount"]}, sort_keys=True))

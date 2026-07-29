@@ -473,10 +473,10 @@ def validate_bwrap_command(
             require(target in {str(VIRTUAL_HOME), str(VIRTUAL_WORKSPACE)}, f"unexpected writable benchmark mount: {target}")
     if client_network:
         require(proxy_policy is not None, "network-enabled benchmark command requires a validated proxy policy")
-        require("--unshare-net" not in command, "live Codex client must be able to reach the configured model provider")
+        require("--unshare-net" not in command, "network-enabled benchmark command must use the validated transport policy")
     else:
         require(proxy_policy is None, "network-disabled benchmark command must not receive a proxy policy")
-        require("--unshare-net" in command, "benchmark command must disable network during prompt audit")
+        require("--unshare-net" in command, "network-disabled benchmark command must unshare the network namespace")
     separator = command.index("--")
     prefix = command[:separator]
     command_environment: dict[str, str] = {}
@@ -559,6 +559,7 @@ def run_command(
     timeout: float = 60.0,
     *,
     process_group_supervised: bool = False,
+    proxy_policy: ProxyPolicy | None = None,
 ) -> str:
     process = subprocess.Popen(
         command,
@@ -578,7 +579,8 @@ def run_command(
         raise SystemExit(f"{label} timed out")
     if output_exceeded:
         raise SystemExit(f"{label} output exceeded the capture limit")
-    require(process.returncode == 0, f"{label} failed with exit {process.returncode}: {stderr[:500]}")
+    safe_stderr = redact_proxy_output(stderr, proxy_policy)[0] if proxy_policy is not None else stderr
+    require(process.returncode == 0, f"{label} failed with exit {process.returncode}: {safe_stderr[:500]}")
     return stdout
 
 
@@ -594,6 +596,7 @@ def prompt_text(data: list[dict[str, Any]]) -> str:
 def without_skill_instructions(data: list[dict[str, Any]]) -> list[dict[str, Any]]:
     stripped = copy.deepcopy(data)
     for item in stripped:
+        item.pop("id", None)
         content = item.get("content")
         if not isinstance(content, list):
             continue
@@ -688,6 +691,7 @@ def run_isolation_audit(
     auth_file: Path,
     bwrap: Path,
     codex: Path,
+    proxy_policy: ProxyPolicy,
     prepared_snapshot: Path | None = None,
     timeout_seconds: float = 60.0,
     process_group_supervised: bool = False,
@@ -730,13 +734,28 @@ def run_isolation_audit(
             layout=layouts[arm],
             prompt=prompt,
             debug_prompt=True,
+            isolate_network=False,
+            proxy_policy=proxy_policy,
         )
-        validate_bwrap_command(command, root=root, output_root=output_root, layout=layouts[arm])
+        validate_bwrap_command(
+            command,
+            root=root,
+            output_root=output_root,
+            layout=layouts[arm],
+            client_network=True,
+            proxy_policy=proxy_policy,
+        )
+        require(
+            command[command.index("--") + 1 : command.index("--") + 4]
+            == [str(codex), "debug", "prompt-input"],
+            "network-enabled isolation audit must remain the fixed Codex prompt-input command",
+        )
         raw = run_command(
             command,
             f"{arm} Codex prompt-input audit",
             remaining_timeout(),
             process_group_supervised=process_group_supervised,
+            proxy_policy=proxy_policy,
         )
         try:
             data = json.loads(raw)
@@ -780,6 +799,10 @@ def run_isolation_audit(
         "authorityBoundary": AUTHORITY_BOUNDARY,
         "caseId": case["id"],
         "modelCalls": 0,
+        "auditNetworkPolicy": {
+            "promptInput": network_policy_metadata(proxy_policy),
+            "mountAudit": {"mode": "network-disabled"},
+        },
         "distributionSnapshot": snapshot,
         "sharedInputs": pair,
         "arms": {

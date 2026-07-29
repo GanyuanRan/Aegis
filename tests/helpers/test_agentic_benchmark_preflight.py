@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import hashlib
 import os
@@ -23,8 +24,10 @@ from agentic_benchmark_isolation import (
     PROXY_KEYS,
     build_bwrap_command,
     build_provider_preflight_command,
+    mount_audit_command,
     network_policy_metadata,
     prepare_provider_preflight_layout,
+    prompt_input_summary,
     redact_proxy_output,
     reset_directory,
     resolve_proxy_policy,
@@ -304,7 +307,7 @@ class CommandBoundaryTest(unittest.TestCase):
         self.assertEqual(str(caught.exception), "provider preflight isolated root cleanup failed")
         self.assertNotIn("proxy.invalid", str(caught.exception))
 
-    def test_prompt_audit_never_receives_proxy(self):
+    def test_prompt_audit_uses_only_the_validated_proxy_policy(self):
         layout = prepare_provider_preflight_layout(self.scratch / "prompt-layout", self.auth)
         command = build_bwrap_command(
             bwrap=self.bwrap,
@@ -312,9 +315,77 @@ class CommandBoundaryTest(unittest.TestCase):
             layout=layout,  # type: ignore[arg-type]
             prompt="audit prompt",
             debug_prompt=True,
+            isolate_network=False,
+            proxy_policy=self.policy,
+        )
+        validate_bwrap_command(
+            command,
+            root=self.root,
+            output_root=self.scratch,
+            layout=layout,  # type: ignore[arg-type]
+            client_network=True,
+            proxy_policy=self.policy,
+        )
+        self.assertEqual(sorted(set(setenv_keys(command)) & set(PROXY_KEYS)), ["HTTP_PROXY"])
+        self.assertNotIn("--unshare-net", command)
+
+    def test_mount_audit_remains_network_disabled_and_receives_no_proxy(self):
+        layout = prepare_provider_preflight_layout(self.scratch / "mount-layout", self.auth)
+        command = mount_audit_command(
+            bwrap=self.bwrap,
+            codex=self.codex,
+            layout=layout,  # type: ignore[arg-type]
+        )
+        validate_bwrap_command(
+            command,
+            root=self.root,
+            output_root=self.scratch,
+            layout=layout,  # type: ignore[arg-type]
         )
         self.assertTrue(set(setenv_keys(command)).isdisjoint(PROXY_KEYS))
         self.assertIn("--unshare-net", command)
+
+    def test_prompt_audit_failure_redacts_proxy_values(self):
+        proxy = "http://proxy.invalid:8080"
+        policy = resolve_proxy_policy({"HTTP_PROXY": proxy})
+        with self.assertRaises(SystemExit) as caught:
+            agentic_benchmark_isolation.run_command(
+                [sys.executable, "-c", f"import sys; sys.stderr.write({proxy!r}); raise SystemExit(9)"],
+                "prompt audit",
+                proxy_policy=policy,
+            )
+        self.assertIn("[REDACTED_PROXY]", str(caught.exception))
+        self.assertNotIn(proxy, str(caught.exception))
+
+    def test_prompt_summary_ignores_only_volatile_top_level_item_ids(self):
+        first = [
+            {
+                "id": "msg_first",
+                "type": "message",
+                "role": "developer",
+                "content": [{"type": "input_text", "text": "same", "id": "nested-first"}],
+            }
+        ]
+        second = copy.deepcopy(first)
+        second[0]["id"] = "msg_second"
+        first_summary = prompt_input_summary(first, "absent", [])
+        second_summary = prompt_input_summary(second, "absent", [])
+        self.assertNotEqual(first_summary["inputHash"], second_summary["inputHash"])
+        self.assertEqual(first_summary["nonSkillInputHash"], second_summary["nonSkillInputHash"])
+
+        for label, mutate in (
+            ("role", lambda value: value[0].update(role="user")),
+            ("type", lambda value: value[0].update(type="different")),
+            ("content", lambda value: value[0]["content"][0].update(text="changed")),
+            ("nested-id", lambda value: value[0]["content"][0].update(id="nested-second")),
+        ):
+            with self.subTest(label=label):
+                drifted = copy.deepcopy(first)
+                mutate(drifted)
+                self.assertNotEqual(
+                    first_summary["nonSkillInputHash"],
+                    prompt_input_summary(drifted, "absent", [])["nonSkillInputHash"],
+                )
 
     def test_command_validation_rejects_no_proxy_and_unexpected_proxy_keys(self):
         layout = prepare_provider_preflight_layout(self.scratch / "validate-layout", self.auth)
