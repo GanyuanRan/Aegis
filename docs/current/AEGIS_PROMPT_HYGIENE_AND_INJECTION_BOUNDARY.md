@@ -207,6 +207,24 @@ Prompt hygiene must not weaken the following Aegis behaviors:
 
 If these behaviors cannot be performed after context reduction, the correct action is not to skip governance — it is to escalate evidence gathering.
 
+### 4.1 Skill Progressive Disclosure
+
+Progressive disclosure for high-frequency skills follows the same capability
+protection rule as external evidence intake:
+
+- the main body keeps the executable quick/default path and explicit triggers
+  for each direct reference
+- a direct reference loads only when current task evidence matches one of those
+  triggers
+- moving detail does not weaken required semantic slots, owner or root-cause
+  rules, escalation behavior, or verification evidence
+- external output used to decide whether a reference is needed remains an
+  evidence candidate, not trusted instructions or default prompt payload
+
+Payload ceilings are subordinate to these capability requirements. They are
+maintenance bounds, not claims about benchmark performance, latency, token
+usage, cost, cache hits, or model-context occupancy.
+
 ---
 
 ## 5. Escalation Ladder When Information Is Insufficient

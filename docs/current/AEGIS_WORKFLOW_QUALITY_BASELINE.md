@@ -644,6 +644,31 @@ Pass criteria:
 - cache friendliness is an optimization property, not a provider cache-hit,
   latency, context-capacity, or billing guarantee
 
+### 3.21 Capability-Preserving Progressive Disclosure
+
+High-frequency workflow skills may use progressive disclosure to reduce their
+default loaded payload, but capability remains the acceptance boundary.
+
+Pass criteria:
+
+- each main body retains an executable quick/default path and explicit,
+  evidence-based triggers for every direct reference it may require
+- moving deep detail into a direct reference does not weaken required semantic
+  slots, owner and root-cause rules, escalation behavior, or verification
+  evidence
+- direct references load only when task evidence activates their documented
+  triggers; untriggered references do not become default prompt payload
+- capability gates pass before size gates: `systematic-debugging/SKILL.md` is
+  at most 10,000 bytes, `verification-before-completion/SKILL.md` is at most
+  7,000 bytes, their combined main bodies are at most 17,000 bytes, and
+  `using-aegis/SKILL.md` remains within its existing 2,500-byte hot-path ceiling
+- if a required behavior cannot fit these ceilings, return to design review
+  instead of deleting capability or hiding it behind an undiscoverable trigger
+
+These ceilings are maintenance constraints for capability-preserving skill
+payloads. They are not benchmark performance results and do not claim lower
+latency, token usage, cost, or model-context occupancy.
+
 ---
 
 ## 4. Compact Output Contracts
