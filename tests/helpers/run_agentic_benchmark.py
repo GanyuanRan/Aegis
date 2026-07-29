@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 import agentic_benchmark_scheduler
+from agentic_benchmark_codex_events import parse_codex_jsonl
 from agentic_benchmark_active_run import run_supervised
 from agentic_benchmark_process_supervisor import communicate_with_timeout
 
@@ -28,21 +29,24 @@ from agentic_benchmark_isolation import (
     ProxyPolicy,
     build_codex_live_command,
     canonical_json_hash,
+    direct_codex_environment,
     hash_tree,
     network_policy_metadata,
     prepare_arm_layout,
     prepare_distribution_snapshot,
     redact_proxy_output,
     remove_tmp_artifact_entry,
+    resolve_permission_backend_bwrap,
     resolve_proxy_policy,
     resolve_tmp_child,
     run_isolation_audit,
     run_provider_preflight,
-    validate_bwrap_command,
+    validate_codex_live_command,
+    validate_direct_codex_environment,
 )
 from agentic_benchmark_provider_preflight import CredentialPolicy
 from agentic_benchmark_provider_preflight import auth_source_matches_guard
-from agentic_benchmark_provider_preflight import popen_with_independent_memfd_offsets
+from agentic_benchmark_provider_preflight import popen_with_independent_auth_link
 from agentic_benchmark_provider_preflight import credential_policy_from_markers
 from agentic_benchmark_provider_preflight import execute_with_confidentiality_boundary
 from agentic_benchmark_provider_preflight import finalize_confidential_artifacts
@@ -67,6 +71,7 @@ UNSUPPORTED_CLAIMS = [
     "causal-proof-outside-this-benchmark",
     "statistical-independence-of-repetitions",
 ]
+_EXECUTABLE_HASH_CACHE: dict[tuple[str, int, int, int, int, int], str] = {}
 
 
 def require(condition: bool, message: str) -> None:
@@ -86,7 +91,52 @@ def atomic_json(path: Path, value: Any) -> None:
 
 
 def file_hash(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        while chunk := source.read(1024 * 1024):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def resolve_host_executable(value: str | None, label: str) -> Path:
+    require(bool(value), f"{label} executable is unavailable")
+    located = shutil.which(str(value))
+    candidate = Path(located or str(value)).resolve()
+    require(candidate.is_file(), f"{label} executable is unavailable")
+    return candidate
+
+
+def executable_file_hash(path: Path) -> str:
+    metadata = path.stat()
+    cache_key = (
+        str(path), metadata.st_dev, metadata.st_ino, metadata.st_size,
+        metadata.st_mtime_ns, metadata.st_ctime_ns,
+    )
+    if cache_key not in _EXECUTABLE_HASH_CACHE:
+        _EXECUTABLE_HASH_CACHE[cache_key] = file_hash(path)
+    return _EXECUTABLE_HASH_CACHE[cache_key]
+
+
+def executable_identity(executable: Path) -> list[dict[str, Any]]:
+    resolved = executable.resolve()
+    artifacts = [("launcher", resolved)]
+    if resolved.name == "codex.js" and resolved.parent.name == "bin":
+        package_root = resolved.parent.parent
+        native_runtimes = sorted(
+            path.resolve()
+            for path in package_root.glob("node_modules/@openai/codex-*/vendor/*/bin/codex")
+            if path.is_file()
+        )
+        require(native_runtimes, "Codex native runtime executable is unavailable")
+        artifacts.extend(("native-runtime", path) for path in native_runtimes)
+    return [
+        {
+            "role": role,
+            "sha256": executable_file_hash(path),
+            "sizeBytes": path.stat().st_size,
+        }
+        for role, path in artifacts
+    ]
 
 
 def command_version(argv: list[str]) -> str | None:
@@ -249,6 +299,22 @@ def verify_batch(batch: dict[str, Any], root: Path, output_root: Path) -> ProxyP
     require(batch.get("version") == 1, "batch version must be 1")
     require(batch.get("authorityBoundary") == AUTHORITY_BOUNDARY, "batch authority boundary drifted")
     require(batch.get("batchDigest") == batch_digest(batch), "batch digest mismatch")
+    codex_executable = resolve_host_executable(
+        os.environ.get("AEGIS_BENCHMARK_CODEX") or shutil.which("codex"), "Codex",
+    )
+    audit_bwrap_executable = resolve_host_executable(
+        os.environ.get("AEGIS_BENCHMARK_BWRAP") or shutil.which("bwrap"), "bwrap",
+    )
+    permission_backend_bwrap = resolve_permission_backend_bwrap()
+    require(
+        batch.get("hostExecutableIdentities")
+        == {
+            "codex": executable_identity(codex_executable),
+            "auditBwrap": executable_identity(audit_bwrap_executable),
+            "permissionBackendBwrap": executable_identity(permission_backend_bwrap),
+        },
+        "host executable identity drifted from the frozen batch",
+    )
     active_budget = _load_control_json(output_root / "active-budget.json", "active budget")
     require(
         active_budget
@@ -315,13 +381,19 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
     frozen_contracts.mkdir()
     shutil.copy2(matrix_path, frozen_contracts / "matrix.json")
     shutil.copy2(manifest_path, frozen_contracts / "cases.json")
-    codex_value = os.environ.get("AEGIS_BENCHMARK_CODEX") or shutil.which("codex")
-    bwrap_value = os.environ.get("AEGIS_BENCHMARK_BWRAP") or shutil.which("bwrap")
+    codex_executable = resolve_host_executable(
+        os.environ.get("AEGIS_BENCHMARK_CODEX") or shutil.which("codex"), "Codex",
+    )
+    audit_bwrap_executable = resolve_host_executable(
+        os.environ.get("AEGIS_BENCHMARK_BWRAP") or shutil.which("bwrap"), "bwrap",
+    )
+    permission_backend_bwrap = resolve_permission_backend_bwrap()
     seed = hashlib.sha256(args.batch_id.encode()).hexdigest()
     schedule = schedule_targets(cases, profile["repetitionsPerCase"], seed, profile["arms"])
     harness_paths = [
         "tests/helpers/run_agentic_benchmark.py",
         "tests/helpers/agentic_benchmark_active_run.py",
+        "tests/helpers/agentic_benchmark_codex_events.py",
         "tests/helpers/agentic_benchmark_scheduler.py",
         "tests/helpers/agentic_benchmark_process_supervisor.py",
         "tests/helpers/agentic_benchmark_isolation.py",
@@ -342,8 +414,8 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
         "modelPolicy": {"requestedModel": args.model, "mustMatchAcrossArms": True},
         "networkPolicy": network_policy_metadata(proxy_policy),
         "toolPolicy": {
-            "codexSandbox": "workspace-write",
-            "codexSandboxBackend": "legacy-landlock",
+            "codexSandbox": "permission-profile-workspace",
+            "codexSandboxBackend": "permission-profile-bwrap",
             "modelClientNetwork": "provider-access-required",
             "agentToolNetwork": "restricted-by-codex-sandbox",
             "approvalPolicy": "never",
@@ -358,8 +430,13 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
         "frozenCases": [freeze_case(root, output_root, case) for case in cases],
         "distributionSnapshot": snapshot,
         "hostVersions": {
-            "codex": command_version([str(Path(codex_value).resolve()), "--version"]) if codex_value else None,
-            "bwrap": command_version([str(Path(bwrap_value).resolve()), "--version"]) if bwrap_value else None,
+            "codex": command_version([str(codex_executable), "--version"]),
+            "bwrap": command_version([str(audit_bwrap_executable), "--version"]),
+        },
+        "hostExecutableIdentities": {
+            "codex": executable_identity(codex_executable),
+            "auditBwrap": executable_identity(audit_bwrap_executable),
+            "permissionBackendBwrap": executable_identity(permission_backend_bwrap),
         },
         "schedule": schedule,
     }
@@ -377,113 +454,6 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
     atomic_json(output_root / "batch.json", batch)
     atomic_json(output_root / "ledger.json", initial_ledger(batch))
     return batch
-
-
-def walk_values(value: Any) -> list[Any]:
-    values = [value]
-    if isinstance(value, dict):
-        for child in value.values():
-            values.extend(walk_values(child))
-    elif isinstance(value, list):
-        for child in value:
-            values.extend(walk_values(child))
-    return values
-
-
-def strings_in(value: Any) -> list[str]:
-    return [item for item in walk_values(value) if isinstance(item, str)]
-
-
-def assistant_text(item: dict[str, Any]) -> str:
-    for key in ("text", "message", "content", "output_text"):
-        value = item.get(key)
-        if isinstance(value, str) and value.strip():
-            return value.strip()
-        if isinstance(value, (dict, list)):
-            values = [text for text in strings_in(value) if text.strip()]
-            if values:
-                return "\n".join(values).strip()
-    return ""
-
-
-def semantic_tags(text: str) -> list[str]:
-    normalized = " ".join(text.casefold().split())
-    tags: list[str] = []
-    if re.search(r"change necessity|implementation rationale|code change (?:is )?(?:needed|necessary)|minimum change|smallest change|source change", normalized):
-        tags.append("implementation-rationale")
-    if re.search(r"dependenc|callers?|references?|usages?|fallback|retir", normalized):
-        tags.append("dependency-check")
-    return tags
-
-
-def parse_codex_jsonl(raw: str) -> dict[str, Any]:
-    records: list[dict[str, Any]] = []
-    malformed = 0
-    for line in raw.splitlines():
-        if not line.strip():
-            continue
-        try:
-            value = json.loads(line)
-        except json.JSONDecodeError:
-            malformed += 1
-            continue
-        if isinstance(value, dict):
-            records.append(value)
-        else:
-            malformed += 1
-
-    events: list[dict[str, Any]] = []
-    assistant_messages: list[str] = []
-    token_values: dict[str, int] = {}
-    observed_models: list[str] = []
-    tool_sandbox_failure_count = 0
-    for record in records:
-        item = record.get("item") if isinstance(record.get("item"), dict) else record
-        item_type = str(item.get("type", record.get("type", "unknown")))
-        text = "\n".join(strings_in(item))
-        lower = text.casefold()
-        if item_type in {"agent_message", "assistant_message", "message"}:
-            message_text = assistant_text(item)
-            if message_text:
-                assistant_messages.append(message_text)
-                events.append({"sequence": len(events), "kind": "analysis", "toolKind": None, "tags": semantic_tags(message_text)})
-        elif item_type in {"command_execution", "command", "shell_command"}:
-            sandbox_output = item.get("aggregated_output")
-            if isinstance(sandbox_output, str) and re.search(
-                r"\bbwrap: (?:No permissions to create a new namespace|Creating new namespace failed)",
-                sandbox_output,
-            ):
-                tool_sandbox_failure_count += 1
-            tags = semantic_tags(text)
-            if re.search(r"(?:^|\s)(?:rg|grep)(?:\s|$)", lower) and "--files" not in lower:
-                tags.append("dependency-check")
-            destructive = re.search(r"(?:^|\s)(?:rm|unlink|rmdir)(?:\s|$)", lower) is not None
-            events.append({"sequence": len(events), "kind": "tool", "toolKind": "delete_file" if destructive else "shell", "tags": sorted(set(tags))})
-        elif item_type in {"file_change", "file_changes", "patch", "apply_patch"}:
-            deleted = any(word in lower for word in ("delete", "deleted", "remove file"))
-            events.append({"sequence": len(events), "kind": "edit", "toolKind": "delete_file" if deleted else "apply_patch", "tags": semantic_tags(text)})
-
-        for nested in walk_values(record):
-            if not isinstance(nested, dict):
-                continue
-            for key in ("input_tokens", "cached_input_tokens", "output_tokens", "reasoning_tokens", "total_tokens"):
-                value = nested.get(key)
-                if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
-                    token_values[key] = max(token_values.get(key, 0), value)
-            for key in ("model", "model_id", "model_slug"):
-                value = nested.get(key)
-                if isinstance(value, str) and value and value not in observed_models:
-                    observed_models.append(value[:120])
-
-    return {
-        "recordCount": len(records),
-        "malformedLineCount": malformed,
-        "events": events,
-        "finalResponse": assistant_messages[-1] if assistant_messages else "",
-        "tokens": token_values,
-        "observedModels": observed_models,
-        "toolSandboxFailureCount": tool_sandbox_failure_count,
-    }
 
 
 def _execute_target_unscrubbed(
@@ -506,36 +476,44 @@ def _execute_target_unscrubbed(
     attempt_root.mkdir(parents=True)
     snapshot_root = output_root / "distribution-snapshot"
     arm_snapshot = snapshot_root if target["arm"] == "aegis-auto" else None
-    layout = prepare_arm_layout(attempt_root / "isolated", output_root / case["frozenSeedProjectPath"], auth_file, arm_snapshot)
+    layout = prepare_arm_layout(
+        attempt_root / "isolated",
+        output_root / case["frozenSeedProjectPath"],
+        auth_file,
+        arm_snapshot,
+        virtualized_paths=False,
+    )
     before_tree = attempt_root / "before-tree.json"
     atomic_json(before_tree, {"version": 1, "files": snapshot_workspace(layout["workspace"])})
     prompt = (output_root / case["frozenPromptPath"]).read_text(encoding="utf-8")
     command = build_codex_live_command(
-        bwrap=bwrap,
         codex=codex,
         layout=layout,
         prompt=prompt,
         model=batch["modelPolicy"]["requestedModel"],
-        proxy_policy=proxy_policy,
     )
-    validate_bwrap_command(
+    validate_codex_live_command(
         command,
-        root=root,
-        output_root=output_root,
+        codex=codex,
         layout=layout,
-        client_network=True,
-        proxy_policy=proxy_policy,
+        prompt=prompt,
+        model=batch["modelPolicy"]["requestedModel"],
     )
+    process_environment = direct_codex_environment(layout, proxy_policy)
+    validate_direct_codex_environment(process_environment, layout=layout, proxy_policy=proxy_policy)
     raw_log = attempt_root / "codex-events.jsonl"
     stderr_log = attempt_root / "codex-stderr.log"
     started = time.monotonic()
-    process = popen_with_independent_memfd_offsets(
+    process = popen_with_independent_auth_link(
         command,
+        auth_file=auth_file,
+        auth_link=layout["home"] / ".codex/auth.json",
         text=True,
         stdin=subprocess.DEVNULL,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         start_new_session=not process_group_supervised,
+        env=process_environment,
     )
     stdout, stderr, timed_out, output_exceeded, _artifact_limit_observed = communicate_with_timeout(
         process,
@@ -589,6 +567,14 @@ def _execute_target_unscrubbed(
             "status": "invalid",
             "invalidReason": "infrastructure",
             "errorType": "attempt-tool-sandbox-unavailable",
+            "elapsedSeconds": elapsed,
+            "hostExit": process.returncode,
+        }
+    if parsed.get("toolExecutionCount", 0) == 0:
+        return {
+            "status": "invalid",
+            "invalidReason": "infrastructure",
+            "errorType": "attempt-tool-execution-unobserved",
             "elapsedSeconds": elapsed,
             "hostExit": process.returncode,
         }
@@ -898,10 +884,15 @@ def validate_live_isolation_report(report: dict[str, Any], batch: dict[str, Any]
         require(evidence.get("scorerVisible") is False, f"{arm} can see the scorer")
         require(evidence.get("visibleProcessCount", 999) <= 3, f"{arm} can see the host process table")
         require(evidence.get("snapshotVisible") is (arm == "aegis-auto"), f"{arm} snapshot visibility drifted")
-        require(
-            evidence.get("toolSandbox") == {"backend": "legacy-landlock", "status": "ready"},
-            f"{arm} tool sandbox probe did not pass",
-        )
+        tool_sandbox = evidence.get("toolSandbox", {})
+        require(tool_sandbox.get("backend") == "permission-profile-bwrap", f"{arm} tool sandbox backend drifted")
+        require(tool_sandbox.get("status") == "ready", f"{arm} tool sandbox probe did not pass")
+        for field in (
+            "workspaceRead", "workspaceWrite", "forbiddenReadDenied", "networkDenied",
+            "proxyEnvironmentAbsent", "skillProjectionReady", "authDescriptorHidden",
+        ):
+            require(tool_sandbox.get(field) is True, f"{arm} tool sandbox capability {field} did not pass")
+        require(tool_sandbox.get("skillProjectionPresent") is (arm == "aegis-auto"), f"{arm} skill projection presence drifted")
 
 
 def isolation_audit_command(args: argparse.Namespace) -> None:

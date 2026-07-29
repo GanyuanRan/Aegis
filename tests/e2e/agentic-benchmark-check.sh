@@ -423,6 +423,12 @@ assert_contains "$baseline" "workspace-laziness" \
     "benchmark baseline measures workspace laziness"
 assert_contains "$baseline" "isolated workspace and configuration boundary|isolate host config" \
     "benchmark baseline requires run isolation"
+assert_contains "$baseline" "one frozen Codex permission profile" \
+    "benchmark baseline assigns one agent-tool sandbox owner"
+assert_contains "$baseline" "machine-observed command/edit event is infrastructure-invalid" \
+    "benchmark baseline rejects unobserved tool execution"
+assert_contains "$baseline" 'Legacy Landlock, `danger-full-access`, sandbox bypass and dual-path' \
+    "benchmark baseline retires unsafe sandbox fallbacks"
 assert_contains "$baseline" "must not say" \
     "benchmark baseline forbids overclaiming"
 assert_contains "$baseline" "completion authority" \
@@ -598,6 +604,12 @@ else
     fail "repeated runner fake-host contracts"
 fi
 
+if "${PYTHON_CMD[@]}" tests/helpers/test_agentic_benchmark_codex_events.py >/dev/null; then
+    pass "Codex event reduction contracts"
+else
+    fail "Codex event reduction contracts"
+fi
+
 if retired_shape_output="$("${PYTHON_CMD[@]}" tests/helpers/run_agentic_benchmark.py prepare \
     --profile standard-held-out \
     --partition held-out \
@@ -671,6 +683,14 @@ for path in sys.argv[1:]:
     assert (batch["caseCount"], batch["targetRunCount"], batch["maxAttempts"]) == (case_count, target_count, ceiling)
     assert (batch["workers"], batch["wallClockBudgetSeconds"]) == (workers, wall)
     assert batch["preflightTimeoutSeconds"] == 30
+    assert set(batch["hostExecutableIdentities"]) == {"codex", "auditBwrap", "permissionBackendBwrap"}
+    for identities in batch["hostExecutableIdentities"].values():
+        assert identities
+        assert identities[0]["role"] == "launcher"
+        assert all(set(identity) == {"role", "sha256", "sizeBytes"} for identity in identities)
+        assert all(len(identity["sha256"]) == 64 and identity["sizeBytes"] > 0 for identity in identities)
+        assert not any("path" in identity for identity in identities)
+    assert any(identity["role"] == "native-runtime" for identity in batch["hostExecutableIdentities"]["codex"])
     assert len({target["targetId"] for target in batch["schedule"]}) == target_count
     assert set(batch["networkPolicy"]) == {"mode", "keys", "schemes", "fingerprint"}
     assert batch["networkPolicy"]["mode"] in {"direct", "proxy"}

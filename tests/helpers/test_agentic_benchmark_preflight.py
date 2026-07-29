@@ -22,12 +22,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import agentic_benchmark_isolation
 import agentic_benchmark_provider_preflight
 from agentic_benchmark_isolation import (
+    PERMISSION_PROFILE_NAME,
     PROXY_KEYS,
     build_bwrap_command,
     build_codex_live_command,
     build_provider_preflight_command,
+    direct_codex_environment,
     mount_audit_command,
     network_policy_metadata,
+    prepare_arm_layout,
     prepare_provider_preflight_layout,
     prompt_input_summary,
     redact_proxy_output,
@@ -393,6 +396,26 @@ class CommandBoundaryTest(unittest.TestCase):
         finally:
             frozen.close()
 
+    def test_direct_client_auth_link_gets_a_private_offset_zero_descriptor(self):
+        self.auth.write_text('{"OPENAI_API_KEY":"abc"}', encoding="utf-8")
+        frozen = freeze_auth_file(self.auth)
+        auth_link = self.scratch / "direct-home/.codex/auth.json"
+        auth_link.parent.mkdir(parents=True)
+        auth_link.touch(mode=0o600)
+        try:
+            with mock.patch.object(agentic_benchmark_provider_preflight.subprocess, "Popen") as popen:
+                agentic_benchmark_provider_preflight.popen_with_independent_auth_link(
+                    ["fake-codex"], auth_file=frozen.mount_path, auth_link=auth_link,
+                )
+            inherited = popen.call_args.kwargs["pass_fds"]
+            self.assertEqual(len(inherited), 1)
+            self.assertEqual(auth_link.readlink(), Path(f"/proc/self/fd/{inherited[0]}"))
+            with self.assertRaises(OSError):
+                os.fstat(inherited[0])
+            self.assertEqual(os.lseek(frozen.descriptor, 0, os.SEEK_CUR), 0)
+        finally:
+            frozen.close()
+
     def test_unrelated_payload_proc_fd_is_neither_rewritten_nor_inherited(self):
         self.auth.write_text('{"OPENAI_API_KEY":"abc"}', encoding="utf-8")
         frozen = freeze_auth_file(self.auth)
@@ -588,36 +611,39 @@ class CommandBoundaryTest(unittest.TestCase):
         self.assertTrue(set(setenv_keys(command)).isdisjoint(PROXY_KEYS))
         self.assertIn("--unshare-net", command)
 
-    def test_live_command_and_no_model_probe_use_nested_compatible_landlock(self):
-        layout = prepare_provider_preflight_layout(self.scratch / "sandbox-layout", self.auth)
+    def test_live_command_and_no_model_probe_use_permission_profile_bwrap(self):
+        seed = self.root / "tests/e2e/fixtures/replay-projects/change-necessity-before-edit"
+        layout = prepare_arm_layout(
+            self.scratch / "sandbox-layout", seed, self.auth, None, virtualized_paths=False,
+        )
+        forbidden = [self.root / "tests/helpers/score_agentic_benchmark_outcome.py"]
         probe = tool_sandbox_audit_command(
-            bwrap=self.bwrap,
             codex=self.codex,
-            layout=layout,  # type: ignore[arg-type]
+            layout=layout,
+            forbidden_files=forbidden,
+            skill_file=None,
         )
-        validate_bwrap_command(
-            probe,
-            root=self.root,
-            output_root=self.scratch,
-            layout=layout,  # type: ignore[arg-type]
-        )
-        self.assertEqual(
-            probe[probe.index("--") + 1 :],
-            [str(self.codex), "sandbox", "--enable", "use_legacy_landlock", "--", "/bin/true"],
-        )
-        self.assertIn("--unshare-net", probe)
+        self.assertEqual(probe[:6], [
+            str(self.codex), "sandbox", "--permission-profile",
+            PERMISSION_PROFILE_NAME, "--cd", str(layout["workspace"]),
+        ])
+        self.assertNotIn("use_legacy_landlock", probe)
 
         live = build_codex_live_command(
-            bwrap=self.bwrap,
             codex=self.codex,
-            layout=layout,  # type: ignore[arg-type]
+            layout=layout,
             prompt="prompt",
             model="model",
-            proxy_policy=self.policy,
         )
-        payload = live[live.index("--") + 1 :]
-        self.assertIn("use_legacy_landlock", payload)
-        self.assertNotIn("--dangerously-bypass-approvals-and-sandbox", payload)
+        self.assertEqual(live[0], str(self.codex))
+        self.assertNotIn("--sandbox", live)
+        self.assertNotIn("use_legacy_landlock", live)
+        self.assertNotIn("--dangerously-bypass-approvals-and-sandbox", live)
+        environment = direct_codex_environment(layout, self.policy)
+        self.assertEqual(environment["HOME"], str(layout["home"]))
+        self.assertEqual(environment["CODEX_HOME"], str(layout["home"] / ".codex"))
+        self.assertEqual(environment["TMPDIR"], str(layout["tmp"]))
+        self.assertEqual(environment["HTTP_PROXY"], "http://proxy.invalid:8080")
 
     def test_prompt_audit_failure_redacts_proxy_values(self):
         proxy = "http://proxy.invalid:8080"
@@ -646,6 +672,16 @@ class CommandBoundaryTest(unittest.TestCase):
         second_summary = prompt_input_summary(second, "absent", [])
         self.assertNotEqual(first_summary["inputHash"], second_summary["inputHash"])
         self.assertEqual(first_summary["nonSkillInputHash"], second_summary["nonSkillInputHash"])
+
+        first[0]["content"][0]["text"] = (
+            '<permission_profile><entry access="read"><path>'
+            '/home/benchmark/.codex/tmp/arg0/codex-arg0First123</path></entry></permission_profile>'
+        )
+        second[0]["content"][0]["text"] = first[0]["content"][0]["text"].replace("First123", "Second456")
+        self.assertEqual(
+            prompt_input_summary(first, "absent", [])["nonSkillInputHash"],
+            prompt_input_summary(second, "absent", [])["nonSkillInputHash"],
+        )
 
         for label, mutate in (
             ("role", lambda value: value[0].update(role="user")),

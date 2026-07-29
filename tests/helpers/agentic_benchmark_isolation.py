@@ -22,6 +22,7 @@ from agentic_benchmark_provider_preflight import popen_with_independent_memfd_of
 from agentic_benchmark_provider_preflight import PROXY_KEYS
 from agentic_benchmark_provider_preflight import ProxyPolicy
 from agentic_benchmark_provider_preflight import network_policy_metadata
+from agentic_benchmark_provider_preflight import popen_with_independent_auth_link
 from agentic_benchmark_provider_preflight import redact_proxy_output
 from agentic_benchmark_provider_preflight import resolve_proxy_policy
 from agentic_benchmark_provider_preflight import run_sanitized_provider_preflight
@@ -33,10 +34,23 @@ VIRTUAL_HOME = Path("/home/benchmark")
 VIRTUAL_CODEX_HOME = VIRTUAL_HOME / ".codex"
 VIRTUAL_WORKSPACE = Path("/workspace")
 VIRTUAL_SNAPSHOT = Path("/opt/aegis")
+PERMISSION_PROFILE_NAME = "aegis-benchmark-workspace"
 NEUTRAL_CONFIG = (
     'approval_policy = "never"\n'
-    'sandbox_mode = "workspace-write"\n'
+    f'default_permissions = "{PERMISSION_PROFILE_NAME}"\n'
     "project_doc_max_bytes = 0\n\n"
+    "[shell_environment_policy]\n"
+    'inherit = "all"\n'
+    "ignore_default_excludes = false\n"
+    'include_only = ["PATH", "HOME", "TMPDIR", "GIT_CONFIG_NOSYSTEM", "GIT_CONFIG_GLOBAL"]\n\n'
+    f"[permissions.{PERMISSION_PROFILE_NAME}.filesystem]\n"
+    '":minimal" = "read"\n'
+    '":tmpdir" = "write"\n\n'
+    '"~/.agents/skills" = "read"\n\n'
+    f'[permissions.{PERMISSION_PROFILE_NAME}.filesystem.":workspace_roots"]\n'
+    '"." = "write"\n\n'
+    f"[permissions.{PERMISSION_PROFILE_NAME}.network]\n"
+    "enabled = false\n\n"
     "[features]\n"
     "multi_agent = false\n"
 )
@@ -48,11 +62,20 @@ BWRAP_BASE_ENVIRONMENT = {
     "PATH": "/usr/local/bin:/usr/bin:/bin",
     "TMPDIR": "/tmp",
 }
+DIRECT_CODEX_PATH = "/usr/local/bin:/usr/bin:/bin"
 
 
 def require(condition: bool, message: str) -> None:
     if not condition:
         raise SystemExit(message)
+
+
+def resolve_permission_backend_bwrap() -> Path:
+    value = shutil.which("bwrap", path=DIRECT_CODEX_PATH)
+    require(value is not None, "permission-profile backend bwrap is unavailable")
+    resolved = Path(value).resolve()
+    require(resolved.is_file(), "permission-profile backend bwrap is unavailable")
+    return resolved
 
 
 def sha256_bytes(value: bytes) -> str:
@@ -188,13 +211,17 @@ def prepare_arm_layout(
     seed_project: Path,
     auth_file: Path,
     snapshot: Path | None,
+    *,
+    virtualized_paths: bool = True,
 ) -> dict[str, Path]:
     home = arm_root / "home"
     workspace = arm_root / "workspace"
     home_codex = home / ".codex"
     discovery = home / ".agents/skills"
+    private_tmp = arm_root / "tmp"
     home_codex.mkdir(parents=True)
     discovery.mkdir(parents=True)
+    private_tmp.mkdir()
     shutil.copytree(seed_project, workspace)
     require(not any(workspace.rglob("AGENTS.md")), "benchmark seed project must not contain AGENTS.md")
     git_environment = {
@@ -238,11 +265,15 @@ def prepare_arm_layout(
     (home_codex / "config.toml").write_text(NEUTRAL_CONFIG, encoding="utf-8")
     (home_codex / "auth.json").touch(mode=0o600)
     if snapshot is not None:
-        (discovery / "aegis").symlink_to(VIRTUAL_SNAPSHOT / "skills")
+        if virtualized_paths:
+            (discovery / "aegis").symlink_to(VIRTUAL_SNAPSHOT / "skills")
+        else:
+            shutil.copytree(snapshot.resolve() / "skills", discovery / "aegis", copy_function=os.link)
     return {
         "root": arm_root,
         "home": home,
         "workspace": workspace,
+        "tmp": private_tmp,
         "auth": auth_file,
         "snapshot": snapshot,
     }
@@ -263,6 +294,16 @@ def prepare_provider_preflight_layout(preflight_root: Path, auth_file: Path) -> 
         "auth": auth_file,
         "snapshot": None,
     }
+
+
+def materialize_direct_skill_projection(layout: dict[str, Path]) -> None:
+    snapshot = layout["snapshot"]
+    if snapshot is None:
+        return
+    projection = layout["home"] / ".agents/skills/aegis"
+    require(projection.is_symlink(), "virtual skill projection is unavailable for direct audit")
+    projection.unlink()
+    shutil.copytree(snapshot.resolve() / "skills", projection, copy_function=os.link)
 
 
 def system_mount_args() -> list[str]:
@@ -367,65 +408,146 @@ def build_bwrap_command(
 
 def build_codex_live_command(
     *,
-    bwrap: Path,
     codex: Path,
     layout: dict[str, Path],
     prompt: str,
     model: str,
-    proxy_policy: ProxyPolicy,
 ) -> list[str]:
-    command = build_bwrap_command(
-        bwrap=bwrap,
-        codex=codex,
-        layout=layout,
-        prompt=prompt,
-        debug_prompt=False,
-        isolate_network=False,
-        proxy_policy=proxy_policy,
-    )
-    separator = command.index("--")
     return [
-        *command[: separator + 1],
         str(codex),
         "exec",
         "--json",
         "--color",
         "never",
-        "--sandbox",
-        "workspace-write",
         "--skip-git-repo-check",
         "--ephemeral",
         "--strict-config",
         "--ignore-rules",
         "--disable",
         "shell_snapshot",
-        "--enable",
-        "use_legacy_landlock",
         "--model",
         model,
         "-C",
-        str(VIRTUAL_WORKSPACE),
+        str(layout["workspace"]),
         prompt,
     ]
 
 
-def tool_sandbox_audit_command(*, bwrap: Path, codex: Path, layout: dict[str, Path]) -> list[str]:
-    command = build_bwrap_command(
-        bwrap=bwrap,
-        codex=codex,
-        layout=layout,
-        prompt="unused",
-        debug_prompt=False,
+def direct_codex_environment(layout: dict[str, Path], proxy_policy: ProxyPolicy | None = None) -> dict[str, str]:
+    environment = {
+        "HOME": str(layout["home"]),
+        "CODEX_HOME": str(layout["home"] / ".codex"),
+        "PATH": DIRECT_CODEX_PATH,
+        "TMPDIR": str(layout["tmp"]),
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "GIT_CONFIG_GLOBAL": "/dev/null",
+    }
+    if proxy_policy is not None:
+        environment.update(proxy_policy.child_environment())
+    return environment
+
+
+def validate_codex_live_command(
+    command: list[str],
+    *,
+    codex: Path,
+    layout: dict[str, Path],
+    prompt: str,
+    model: str,
+) -> None:
+    require(
+        command == build_codex_live_command(codex=codex, layout=layout, prompt=prompt, model=model),
+        "direct Codex live command drifted",
     )
-    separator = command.index("--")
+    require("--sandbox" not in command, "direct Codex live command must use the frozen permission profile")
+    require("use_legacy_landlock" not in command, "direct Codex live command must not use legacy Landlock")
+    require("--dangerously-bypass-approvals-and-sandbox" not in command, "direct Codex live command must not bypass sandboxing")
+
+
+def validate_direct_codex_environment(
+    environment: dict[str, str],
+    *,
+    layout: dict[str, Path],
+    proxy_policy: ProxyPolicy | None,
+) -> None:
+    expected = direct_codex_environment(layout, proxy_policy)
+    require(environment == expected, "direct Codex environment drifted")
+
+
+def tool_sandbox_audit_command(
+    *,
+    codex: Path,
+    layout: dict[str, Path],
+    forbidden_files: list[Path],
+    skill_file: Path | None,
+) -> list[str]:
+    require(forbidden_files and all(path.exists() for path in forbidden_files), "tool sandbox audit needs existing forbidden files")
+    script = """
+import json
+import os
+import socket
+from pathlib import Path
+
+workspace_file = next(path for path in Path('.').iterdir() if path.is_file())
+workspace_read = bool(workspace_file.read_bytes())
+probe = Path('.aegis-sandbox-probe')
+probe.write_text('ready', encoding='utf-8')
+workspace_write = probe.read_text(encoding='utf-8') == 'ready'
+probe.unlink()
+forbidden_read_denied = True
+for value in FORBIDDEN:
+    try:
+        Path(value).read_bytes()
+    except OSError:
+        continue
+    forbidden_read_denied = False
+network_denied = False
+try:
+    socket.socket()
+except OSError:
+    network_denied = True
+proxy_environment_absent = not any(key.casefold() in {'http_proxy', 'https_proxy', 'all_proxy'} for key in os.environ)
+skill_projection_ready = not Path.home().joinpath('.agents/skills/aegis').exists()
+skill_projection_present = Path.home().joinpath('.agents/skills/aegis').exists()
+if SKILL_FILE is not None:
+    try:
+        skill_projection_ready = b'name:' in Path(SKILL_FILE).read_bytes()
+    except OSError:
+        skill_projection_ready = False
+auth_descriptor_hidden = True
+for path in Path('/proc/self/fd').iterdir():
+    try:
+        target = path.readlink().as_posix()
+    except OSError:
+        continue
+    if 'aegis-benchmark-auth' in target:
+        auth_descriptor_hidden = False
+print(json.dumps({
+    'authDescriptorHidden': auth_descriptor_hidden,
+    'forbiddenReadDenied': forbidden_read_denied,
+    'networkDenied': network_denied,
+    'proxyEnvironmentAbsent': proxy_environment_absent,
+    'skillProjectionReady': skill_projection_ready,
+    'skillProjectionPresent': skill_projection_present,
+    'status': 'ready',
+    'visibleProcessCount': len(list(Path('/proc').glob('[0-9]*'))),
+    'workspaceRead': workspace_read,
+    'workspaceWrite': workspace_write,
+}, sort_keys=True))
+""".replace("FORBIDDEN", repr([str(path) for path in forbidden_files])).replace(
+        "SKILL_FILE", repr(str(skill_file) if skill_file is not None else None)
+    ).strip()
     return [
-        *command[: separator + 1],
         str(codex),
         "sandbox",
-        "--enable",
-        "use_legacy_landlock",
+        "--permission-profile",
+        PERMISSION_PROFILE_NAME,
+        "--cd",
+        str(layout["workspace"]),
         "--",
-        "/bin/true",
+        "python3",
+        "-c",
+        script,
     ]
 
 
@@ -582,14 +704,25 @@ def run_command(
     *,
     process_group_supervised: bool = False,
     proxy_policy: ProxyPolicy | None = None,
+    environment: dict[str, str] | None = None,
+    auth_file: Path | None = None,
+    auth_link: Path | None = None,
 ) -> str:
-    process = popen_with_independent_memfd_offsets(
+    spawn = popen_with_independent_memfd_offsets
+    spawn_arguments: dict[str, Any] = {}
+    if auth_file is not None or auth_link is not None:
+        require(auth_file is not None and auth_link is not None, "direct auth spawn requires both source and link")
+        spawn = popen_with_independent_auth_link
+        spawn_arguments = {"auth_file": auth_file, "auth_link": auth_link}
+    process = spawn(
         command,
         text=True,
         stdin=subprocess.DEVNULL,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         start_new_session=not process_group_supervised,
+        env=environment,
+        **spawn_arguments,
     )
     stdout, stderr, timed_out, output_exceeded, _artifact_limit_observed = communicate_with_timeout(
         process,
@@ -630,6 +763,14 @@ def without_skill_instructions(data: list[dict[str, Any]]) -> list[dict[str, Any
                 and block["text"].startswith("<skills_instructions>")
             )
         ]
+        for block in item["content"]:
+            if not isinstance(block, dict) or not isinstance(block.get("text"), str):
+                continue
+            block["text"] = re.sub(
+                r"(?<=<path>)/home/benchmark/\.codex/tmp/arg0/codex-arg0[A-Za-z0-9]+(?=</path>)",
+                "/home/benchmark/.codex/tmp/arg0/codex-arg0<VOLATILE>",
+                block["text"],
+            )
     return stripped
 
 
@@ -795,15 +936,35 @@ def run_isolation_audit(
                 process_group_supervised=process_group_supervised,
             )
         )
-        sandbox_command = tool_sandbox_audit_command(bwrap=bwrap, codex=codex, layout=layouts[arm])
-        validate_bwrap_command(sandbox_command, root=root, output_root=output_root, layout=layouts[arm])
-        run_command(
+        materialize_direct_skill_projection(layouts[arm])
+        peer = next(value for key, value in layouts.items() if key != arm)
+        peer_file = next(path for path in peer["workspace"].iterdir() if path.is_file())
+        forbidden_files = [
+            root / "tests/helpers/score_agentic_benchmark_outcome.py",
+            layouts[arm]["home"] / ".codex/auth.json",
+            peer_file,
+        ]
+        if layouts[arm]["snapshot"] is not None:
+            forbidden_files.append(next((layouts[arm]["snapshot"] / "skills").glob("*/SKILL.md")))
+        projected_skill = next((layouts[arm]["home"] / ".agents/skills/aegis").glob("*/SKILL.md"), None)
+        sandbox_command = tool_sandbox_audit_command(
+            codex=codex,
+            layout=layouts[arm],
+            forbidden_files=forbidden_files,
+            skill_file=projected_skill,
+        )
+        direct_environment = direct_codex_environment(layouts[arm], proxy_policy)
+        validate_direct_codex_environment(direct_environment, layout=layouts[arm], proxy_policy=proxy_policy)
+        tool_sandbox_audits[arm] = json.loads(run_command(
             sandbox_command,
             f"{arm} tool sandbox audit",
             remaining_timeout(),
             process_group_supervised=process_group_supervised,
-        )
-        tool_sandbox_audits[arm] = {"backend": "legacy-landlock", "status": "ready"}
+            environment=direct_environment,
+            auth_file=auth_file,
+            auth_link=layouts[arm]["home"] / ".codex/auth.json",
+        ))
+        tool_sandbox_audits[arm]["backend"] = "permission-profile-bwrap"
 
     baseline = summaries["baseline-no-aegis"]
     aegis = summaries["aegis-auto"]
@@ -823,6 +984,16 @@ def run_isolation_audit(
         require(audit.get("scorerVisible") is False, f"{arm} can see the outcome scorer")
         require(audit.get("visibleProcessCount", 999) <= 3, f"{arm} can see the host process table")
         require(audit.get("snapshotVisible") is (arm == "aegis-auto"), f"{arm} snapshot visibility drifted")
+    for arm, audit in tool_sandbox_audits.items():
+        require(audit.get("status") == "ready", f"{arm} tool sandbox did not start")
+        require(audit.get("workspaceRead") is True and audit.get("workspaceWrite") is True, f"{arm} tool sandbox cannot use its workspace")
+        require(audit.get("forbiddenReadDenied") is True, f"{arm} tool sandbox can read benchmark-private files")
+        require(audit.get("networkDenied") is True, f"{arm} tool sandbox network is not denied")
+        require(audit.get("proxyEnvironmentAbsent") is True, f"{arm} tool sandbox inherited provider proxy state")
+        require(audit.get("skillProjectionReady") is True, f"{arm} skill projection visibility drifted")
+        require(audit.get("skillProjectionPresent") is (arm == "aegis-auto"), f"{arm} skill projection presence drifted")
+        require(audit.get("authDescriptorHidden") is True, f"{arm} tool sandbox inherited the sealed auth descriptor")
+        require(audit.get("visibleProcessCount", 999) <= 3, f"{arm} tool sandbox can see the host process table")
 
     return {
         "version": 1,
@@ -840,10 +1011,10 @@ def run_isolation_audit(
             arm: {
                 **summaries[arm],
                 "authReadOnly": mount_audits[arm]["authReadOnly"],
-                "benchmarkRepoVisible": mount_audits[arm]["repoVisible"],
-                "peerWorkspaceVisible": mount_audits[arm]["peerWorkspaceVisible"],
-                "scorerVisible": mount_audits[arm]["scorerVisible"],
-                "visibleProcessCount": mount_audits[arm]["visibleProcessCount"],
+                "benchmarkRepoVisible": not tool_sandbox_audits[arm]["forbiddenReadDenied"],
+                "peerWorkspaceVisible": not tool_sandbox_audits[arm]["forbiddenReadDenied"],
+                "scorerVisible": not tool_sandbox_audits[arm]["forbiddenReadDenied"],
+                "visibleProcessCount": tool_sandbox_audits[arm]["visibleProcessCount"],
                 "snapshotVisible": mount_audits[arm]["snapshotVisible"],
                 "toolSandbox": tool_sandbox_audits[arm],
             }

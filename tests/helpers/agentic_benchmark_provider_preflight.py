@@ -309,6 +309,37 @@ def popen_with_independent_memfd_offsets(
             os.close(descriptor)
 
 
+def popen_with_independent_auth_link(
+    command: list[str],
+    *,
+    auth_file: Path,
+    auth_link: Path,
+    **kwargs: Any,
+) -> subprocess.Popen[str]:
+    """Spawn with a private offset-zero auth OFD exposed only to the client."""
+
+    if "pass_fds" in kwargs:
+        raise TypeError("auth-link process spawn owns pass_fds")
+    validate_auth_mount_file(auth_file)
+    try:
+        link_metadata = auth_link.lstat()
+    except OSError as exc:
+        raise SystemExit("direct Codex auth placeholder is unavailable") from exc
+    if not stat.S_ISREG(link_metadata.st_mode) or link_metadata.st_mode & 0o077:
+        raise SystemExit("direct Codex auth placeholder must be a private regular file")
+    flags = os.O_RDONLY | os.O_CLOEXEC
+    if re.fullmatch(r"/proc/self/fd/[0-9]+", str(auth_file)) is None:
+        flags |= getattr(os, "O_NOFOLLOW", 0)
+    descriptor = os.open(str(auth_file), flags)
+    try:
+        os.lseek(descriptor, 0, os.SEEK_SET)
+        auth_link.unlink()
+        auth_link.symlink_to(f"/proc/self/fd/{descriptor}")
+        return subprocess.Popen(command, pass_fds=(descriptor,), **kwargs)
+    finally:
+        os.close(descriptor)
+
+
 def credential_policy_from_markers(markers: Any) -> CredentialPolicy:
     if not isinstance(markers, list) or any(not isinstance(marker, str) for marker in markers):
         raise SystemExit("credential marker transfer is invalid")

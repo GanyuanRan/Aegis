@@ -60,6 +60,23 @@ class ActiveRunTest(unittest.TestCase):
     def setUp(self):
         self.root = Path(__file__).resolve().parents[2]
         (self.root / ".tmp").mkdir(exist_ok=True)
+        tool_directory = Path(self.addCleanupDirectory("agentic-active-tools-"))
+        codex = tool_directory / "codex"
+        bwrap = tool_directory / "bwrap"
+        for path, version in ((codex, "codex-offline-test"), (bwrap, "bwrap-offline-test")):
+            path.write_text(f"#!/bin/sh\nprintf '%s\\n' '{version}'\n", encoding="utf-8")
+            path.chmod(0o755)
+        environment = mock.patch.dict(os.environ, {
+            "AEGIS_BENCHMARK_CODEX": str(codex),
+            "AEGIS_BENCHMARK_BWRAP": str(bwrap),
+        })
+        environment.start()
+        self.addCleanup(environment.stop)
+
+    def addCleanupDirectory(self, prefix: str) -> str:
+        directory = tempfile.TemporaryDirectory(prefix=prefix, dir=self.root / ".tmp")
+        self.addCleanup(directory.cleanup)
+        return directory.name
 
     def runner(self, output_root: Path, batch: dict, ledger: dict, frozen_auth: mock.Mock) -> SimpleNamespace:
         scheduler = SimpleNamespace(

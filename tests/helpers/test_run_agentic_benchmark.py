@@ -27,7 +27,6 @@ from run_agentic_benchmark import (
     communicate_with_timeout,
     execute_target,
     initial_ledger,
-    parse_codex_jsonl,
     require_execution_opt_in,
     resolve_auth_file,
     schedule_targets,
@@ -39,6 +38,14 @@ from agentic_benchmark_provider_preflight import CredentialPolicy, freeze_auth_f
 
 EMPTY_CREDENTIAL_POLICY = CredentialPolicy(())
 
+
+def ready_tool_sandbox() -> dict:
+    return {
+        "backend": "permission-profile-bwrap", "status": "ready",
+        "workspaceRead": True, "workspaceWrite": True, "forbiddenReadDenied": True,
+        "networkDenied": True, "proxyEnvironmentAbsent": True, "skillProjectionReady": True,
+        "skillProjectionPresent": False, "authDescriptorHidden": True,
+    }
 
 def fake_batch(*, max_attempts: int | None = None) -> dict:
     cases = [
@@ -122,12 +129,18 @@ class RunnerContractTest(unittest.TestCase):
         batch = {"frozenCases": [frozen_case], "modelPolicy": {"requestedModel": "model"}}
         target = {"targetId": "target", "caseId": "case", "arm": "baseline-no-aegis"}
         fake_process = mock.Mock(returncode=returncode)
-        with mock.patch.object(benchmark_runner, "prepare_arm_layout", return_value={"workspace": workspace}), mock.patch.object(
+        layout = {"workspace": workspace, "home": output_root / "home", "tmp": output_root / "tmp"}
+        (layout["home"] / ".codex").mkdir(parents=True)
+        (layout["home"] / ".codex/auth.json").touch(mode=0o600)
+        layout["tmp"].mkdir()
+        with mock.patch.object(benchmark_runner, "prepare_arm_layout", return_value=layout), mock.patch.object(
             benchmark_runner, "snapshot_workspace", return_value={}
         ), mock.patch.object(
-            benchmark_runner, "build_codex_live_command", return_value=["fake-bwrap", "--", "fake-codex"]
-        ), mock.patch.object(benchmark_runner, "validate_bwrap_command"), mock.patch.object(
-            benchmark_runner.subprocess, "Popen", return_value=fake_process
+            benchmark_runner, "build_codex_live_command", return_value=["fake-codex"]
+        ), mock.patch.object(benchmark_runner, "validate_codex_live_command"), mock.patch.object(
+            benchmark_runner, "direct_codex_environment", return_value={}
+        ), mock.patch.object(benchmark_runner, "validate_direct_codex_environment"), mock.patch.object(
+            benchmark_runner, "popen_with_independent_auth_link", return_value=fake_process
         ) as popen, mock.patch.object(
             benchmark_runner,
             "communicate_with_timeout",
@@ -246,7 +259,7 @@ class RunnerContractTest(unittest.TestCase):
             "scorerVisible": False,
             "visibleProcessCount": 2,
             "snapshotVisible": False,
-            "toolSandbox": {"backend": "legacy-landlock", "status": "ready"},
+            "toolSandbox": ready_tool_sandbox(),
         }
         report = {
             "modelCalls": 0,
@@ -258,7 +271,11 @@ class RunnerContractTest(unittest.TestCase):
             },
             "arms": {
                 "baseline-no-aegis": copy.deepcopy(arm),
-                "aegis-auto": {**copy.deepcopy(arm), "evaluatedSkillMatchCount": 2, "methodPackMarkerCount": 2, "snapshotVisible": True},
+                "aegis-auto": {
+                    **copy.deepcopy(arm), "evaluatedSkillMatchCount": 2, "methodPackMarkerCount": 2,
+                    "snapshotVisible": True,
+                    "toolSandbox": {**ready_tool_sandbox(), "skillProjectionPresent": True},
+                },
             },
         }
         validate_live_isolation_report(report, batch)
@@ -287,7 +304,7 @@ class RunnerContractTest(unittest.TestCase):
                     "scorerVisible": False,
                     "visibleProcessCount": 2,
                     "snapshotVisible": arm == "aegis-auto",
-                    "toolSandbox": {"backend": "legacy-landlock", "status": "ready"},
+                    "toolSandbox": {**ready_tool_sandbox(), "skillProjectionPresent": arm == "aegis-auto"},
                 }
                 for arm in ARMS
             },
@@ -332,20 +349,6 @@ class RunnerContractTest(unittest.TestCase):
         flags = {flag["id"] for flag in report["review"]["flags"]}
         self.assertIn("scorer-unknown", flags)
         self.assertEqual(report["review"]["status"], "unknown")
-
-    def test_codex_jsonl_is_reduced_to_scoring_evidence(self):
-        raw = "\n".join(json.dumps(value) for value in (
-                {"type": "item.completed", "item": {"type": "command_execution", "command": "rg fallback src", "aggregated_output": "bwrap: No permissions to create a new namespace; PRIVATE_DETAIL"}},
-                {"type": "item.completed", "item": {"type": "file_change", "changes": [{"kind": "delete", "path": "old.py"}]}},
-                {"type": "item.completed", "item": {"type": "agent_message", "text": "The code change is necessary. Continue?"}},
-                {"type": "turn.completed", "usage": {"input_tokens": 10, "output_tokens": 3}},
-            ))
-        parsed = parse_codex_jsonl(raw)
-        self.assertEqual(parsed["finalResponse"], "The code change is necessary. Continue?")
-        self.assertEqual(parsed["tokens"]["input_tokens"], 10)
-        self.assertEqual(parsed["toolSandboxFailureCount"], 1)
-        self.assertIn("dependency-check", parsed["events"][0]["tags"])
-        self.assertEqual(parsed["events"][1]["toolKind"], "delete_file")
 
     def test_credential_output_is_redacted_and_invalidatable(self):
         root = Path(__file__).resolve().parents[2]
@@ -1175,11 +1178,15 @@ class RunnerContractTest(unittest.TestCase):
 
     def test_attempt_pipeline_maps_host_events_and_scorer_failures_to_stable_error_types(self):
         root = Path(__file__).resolve().parents[2]
-        parsed_valid = {"malformedLineCount": 0, "recordCount": 1, "finalResponse": "safe response", "events": []}
+        parsed_valid = {
+            "malformedLineCount": 0, "recordCount": 1, "finalResponse": "safe response",
+            "events": [], "toolExecutionCount": 1,
+        }
         cases = (
             ("host-exit", 9, parsed_valid, None, "attempt-host-exit"),
             ("events-invalid", 0, {**parsed_valid, "recordCount": 0}, None, "attempt-host-events-invalid"),
             ("tool-sandbox", 0, {**parsed_valid, "toolSandboxFailureCount": 1}, None, "attempt-tool-sandbox-unavailable"),
+            ("tool-unobserved", 0, {**parsed_valid, "toolExecutionCount": 0}, None, "attempt-tool-execution-unobserved"),
             ("scorer-failure", 0, parsed_valid, SystemExit("private scorer detail"), "attempt-scorer-failure"),
         )
         for label, returncode, parsed, scorer_error, expected in cases:
