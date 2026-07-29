@@ -257,9 +257,13 @@ command that preserves the original `argv` tokens, `expectedExit`, and
 only the declared exact `argv` token or tokens; ordinary execution does not.
 The scorer derives immutable files from the outcome contract's sibling frozen
 `project/`, mounts only the declared files read-only, and keeps the final
-workspace as the implementation and import source. Verification preserves
-network isolation and never mutates that workspace. The runner gains no
-verification-policy responsibility.
+workspace as the implementation and import source. Immutable verification
+binds that workspace read-only, preserves network isolation, and cannot mutate
+it. The paired ordinary command retains the existing workspace-binding
+behavior for backward compatibility. Affected paired scoring must leave the
+terminal workspace snapshot unchanged; this does not prohibit transient writes
+by the ordinary subprocess. The runner gains no verification-policy
+responsibility.
 
 Semantic intent tags are assistant-authored only. Command events may retain
 structured objective evidence, such as a bounded `rg` or `grep` dependency
