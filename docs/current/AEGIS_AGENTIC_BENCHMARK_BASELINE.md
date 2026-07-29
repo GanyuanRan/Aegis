@@ -337,6 +337,9 @@ evaluated method pack; benchmark prompts, scorers and expected outcomes must be
 outside the agent-visible filesystem. Authentication may be made available
 read-only through the host's supported path, but credentials must never enter
 fixtures, logs, reports or public artifacts.
+Every isolated subprocess must derive its own offset-zero read-only open-file
+description from the sealed authentication snapshot before launching `bwrap`;
+concurrent or sequential commands must never rewind or share the source offset.
 
 The fixed `codex debug prompt-input` audit is a zero-inference prompt-rendering
 check, not a Codex execution or provider preflight. It may use only the frozen,

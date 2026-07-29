@@ -13,6 +13,7 @@ import sys
 import tempfile
 import time
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from unittest import mock
 
@@ -234,6 +235,129 @@ class CommandBoundaryTest(unittest.TestCase):
             )
             self.assertEqual(mount.returncode, 0, mount.stderr)
             self.assertEqual(mount.stdout.split()[0], hashlib.sha256(payload).hexdigest())
+        finally:
+            frozen.close()
+
+    def test_repeated_commands_read_the_same_sealed_auth_from_offset_zero(self):
+        self.auth.write_text('{"OPENAI_API_KEY":"abc"}', encoding="utf-8")
+        payload = self.auth.read_bytes()
+        frozen = freeze_auth_file(self.auth)
+        script = "import os,sys; sys.stdout.buffer.write(os.read(int(sys.argv[2]), 1048576))"
+        command = [
+            sys.executable,
+            "-c",
+            script,
+            "--ro-bind-data",
+            str(frozen.descriptor),
+            "/auth.json",
+        ]
+        try:
+            first = agentic_benchmark_provider_preflight._default_command_runner(command, 1.0)
+            second = agentic_benchmark_provider_preflight._default_command_runner(command, 1.0)
+        finally:
+            frozen.close()
+        self.assertEqual(first.stdout.encode(), payload)
+        self.assertEqual(second.stdout.encode(), payload)
+
+    def test_concurrent_commands_do_not_share_the_sealed_auth_offset(self):
+        self.auth.write_text('{"OPENAI_API_KEY":"abc"}', encoding="utf-8")
+        payload = self.auth.read_bytes()
+        frozen = freeze_auth_file(self.auth)
+        gate = self.scratch / "read-gate"
+        ready = [self.scratch / f"reader-{number}.ready" for number in range(2)]
+        script = (
+            "import os,pathlib,sys,time; "
+            "fd=int(sys.argv[2]); ready=pathlib.Path(sys.argv[4]); gate=pathlib.Path(sys.argv[5]); "
+            "ready.touch(); "
+            "deadline=time.monotonic()+1; "
+            "\nwhile not gate.exists() and time.monotonic()<deadline: time.sleep(0.001); "
+            "sys.stdout.buffer.write(os.read(fd, 1048576))"
+        )
+
+        def run(number: int) -> subprocess.CompletedProcess[str]:
+            command = [
+                sys.executable,
+                "-c",
+                script,
+                "--ro-bind-data",
+                str(frozen.descriptor),
+                "/auth.json",
+                str(ready[number]),
+                str(gate),
+            ]
+            return agentic_benchmark_provider_preflight._default_command_runner(command, 2.0)
+
+        try:
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                futures = [executor.submit(run, number) for number in range(2)]
+                deadline = time.monotonic() + 1
+                while not all(path.exists() for path in ready) and time.monotonic() < deadline:
+                    time.sleep(0.001)
+                self.assertTrue(all(path.exists() for path in ready))
+                gate.touch()
+                results = [future.result() for future in futures]
+        finally:
+            frozen.close()
+        self.assertEqual([result.stdout.encode() for result in results], [payload, payload])
+
+    def test_popen_failure_closes_each_fresh_memfd_descriptor(self):
+        self.auth.write_text('{"OPENAI_API_KEY":"abc"}', encoding="utf-8")
+        frozen = freeze_auth_file(self.auth)
+        command = [
+            sys.executable,
+            "-c",
+            "pass",
+            "--ro-bind-data",
+            str(frozen.descriptor),
+            "/auth.json",
+        ]
+        opened: list[int] = []
+        real_open = os.open
+
+        def track_open(path: str, flags: int) -> int:
+            descriptor = real_open(path, flags)
+            opened.append(descriptor)
+            return descriptor
+
+        try:
+            with mock.patch.object(agentic_benchmark_provider_preflight.os, "open", side_effect=track_open), mock.patch.object(
+                agentic_benchmark_provider_preflight.subprocess,
+                "Popen",
+                side_effect=OSError("spawn failed"),
+            ):
+                with self.assertRaises(OSError):
+                    agentic_benchmark_provider_preflight._default_command_runner(command, 1.0)
+            self.assertEqual(len(opened), 1)
+            with self.assertRaises(OSError):
+                os.fstat(opened[0])
+        finally:
+            for descriptor in opened:
+                try:
+                    os.close(descriptor)
+                except OSError:
+                    pass
+            frozen.close()
+
+    def test_one_command_rewrites_every_reference_to_the_same_fresh_descriptor(self):
+        self.auth.write_text('{"OPENAI_API_KEY":"abc"}', encoding="utf-8")
+        frozen = freeze_auth_file(self.auth)
+        command = [
+            "fake-bwrap",
+            str(frozen.mount_path),
+            "--ro-bind-data",
+            str(frozen.descriptor),
+            "/auth.json",
+        ]
+        try:
+            with mock.patch.object(agentic_benchmark_provider_preflight.subprocess, "Popen") as popen:
+                agentic_benchmark_provider_preflight.popen_with_independent_memfd_offsets(command)
+            launched = popen.call_args.args[0]
+            fresh_path = launched[1]
+            fresh_descriptor = int(fresh_path.rsplit("/", 1)[1])
+            self.assertEqual(launched[3], str(fresh_descriptor))
+            self.assertEqual(popen.call_args.kwargs["pass_fds"], (fresh_descriptor,))
+            with self.assertRaises(OSError):
+                os.fstat(fresh_descriptor)
         finally:
             frozen.close()
 

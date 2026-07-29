@@ -18,7 +18,7 @@ from typing import Any
 
 from agentic_benchmark_process_supervisor import communicate_with_timeout
 from agentic_benchmark_provider_preflight import CommandRunner
-from agentic_benchmark_provider_preflight import command_memfd_descriptors
+from agentic_benchmark_provider_preflight import popen_with_independent_memfd_offsets
 from agentic_benchmark_provider_preflight import PROXY_KEYS
 from agentic_benchmark_provider_preflight import ProxyPolicy
 from agentic_benchmark_provider_preflight import network_policy_metadata
@@ -561,14 +561,13 @@ def run_command(
     process_group_supervised: bool = False,
     proxy_policy: ProxyPolicy | None = None,
 ) -> str:
-    process = subprocess.Popen(
+    process = popen_with_independent_memfd_offsets(
         command,
         text=True,
         stdin=subprocess.DEVNULL,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         start_new_session=not process_group_supervised,
-        pass_fds=command_memfd_descriptors(command),
     )
     stdout, stderr, timed_out, output_exceeded, _artifact_limit_observed = communicate_with_timeout(
         process,

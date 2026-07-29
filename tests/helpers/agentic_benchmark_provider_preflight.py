@@ -269,6 +269,40 @@ def command_memfd_descriptors(command: list[str]) -> tuple[int, ...]:
     return tuple(sorted(descriptors))
 
 
+def popen_with_independent_memfd_offsets(
+    command: list[str],
+    **kwargs: Any,
+) -> subprocess.Popen[str]:
+    """Spawn with one offset-zero open-file-description per command memfd."""
+
+    if "pass_fds" in kwargs:
+        raise TypeError("memfd-aware process spawn owns pass_fds")
+    replacements: dict[int, int] = {}
+    try:
+        for descriptor in command_memfd_descriptors(command):
+            replacements[descriptor] = os.open(
+                f"/proc/self/fd/{descriptor}",
+                os.O_RDONLY | os.O_CLOEXEC,
+            )
+        rewritten = list(command)
+        for index, value in enumerate(command):
+            proc_fd = re.fullmatch(r"/proc/self/fd/([0-9]+)", value)
+            if proc_fd is not None and int(proc_fd.group(1)) in replacements:
+                rewritten[index] = f"/proc/self/fd/{replacements[int(proc_fd.group(1))]}"
+            elif index > 0 and command[index - 1] == "--ro-bind-data" and value.isdigit():
+                source = int(value)
+                if source in replacements:
+                    rewritten[index] = str(replacements[source])
+        return subprocess.Popen(
+            rewritten,
+            pass_fds=tuple(sorted(replacements.values())),
+            **kwargs,
+        )
+    finally:
+        for descriptor in replacements.values():
+            os.close(descriptor)
+
+
 def credential_policy_from_markers(markers: Any) -> CredentialPolicy:
     if not isinstance(markers, list) or any(not isinstance(marker, str) for marker in markers):
         raise SystemExit("credential marker transfer is invalid")
@@ -646,14 +680,13 @@ def _default_command_runner(
     *,
     process_group_supervised: bool = False,
 ) -> subprocess.CompletedProcess[str]:
-    process = subprocess.Popen(
+    process = popen_with_independent_memfd_offsets(
         command,
         text=True,
         stdin=subprocess.DEVNULL,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         start_new_session=not process_group_supervised,
-        pass_fds=command_memfd_descriptors(command),
     )
     stdout, stderr, timed_out, output_exceeded, _artifact_limit_observed = communicate_with_timeout(
         process,

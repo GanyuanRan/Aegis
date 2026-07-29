@@ -42,7 +42,7 @@ from agentic_benchmark_isolation import (
 )
 from agentic_benchmark_provider_preflight import CredentialPolicy
 from agentic_benchmark_provider_preflight import auth_source_matches_guard
-from agentic_benchmark_provider_preflight import command_memfd_descriptors
+from agentic_benchmark_provider_preflight import popen_with_independent_memfd_offsets
 from agentic_benchmark_provider_preflight import credential_policy_from_markers
 from agentic_benchmark_provider_preflight import execute_with_confidentiality_boundary
 from agentic_benchmark_provider_preflight import finalize_confidential_artifacts
@@ -520,14 +520,13 @@ def _execute_target_unscrubbed(
     raw_log = attempt_root / "codex-events.jsonl"
     stderr_log = attempt_root / "codex-stderr.log"
     started = time.monotonic()
-    process = subprocess.Popen(
+    process = popen_with_independent_memfd_offsets(
         command,
         text=True,
         stdin=subprocess.DEVNULL,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         start_new_session=not process_group_supervised,
-        pass_fds=command_memfd_descriptors(command),
     )
     stdout, stderr, timed_out, output_exceeded, _artifact_limit_observed = communicate_with_timeout(
         process,
