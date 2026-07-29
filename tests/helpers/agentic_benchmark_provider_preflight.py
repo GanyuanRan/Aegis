@@ -256,16 +256,17 @@ def validate_auth_mount_file(auth_file: Path) -> None:
 
 
 def command_memfd_descriptors(command: list[str]) -> tuple[int, ...]:
-    descriptors = {
-        int(match.group(1))
-        for value in command
-        if (match := re.fullmatch(r"/proc/self/fd/([0-9]+)", value)) is not None
-    }
-    descriptors.update(
-        int(command[index + 1])
-        for index, value in enumerate(command[:-1])
-        if value == "--ro-bind-data" and command[index + 1].isdigit()
-    )
+    separators = [index for index, value in enumerate(command) if value == "--"]
+    if len(separators) != 1:
+        raise SystemExit("benchmark bwrap command must contain exactly one separator")
+    prefix_end = separators[0]
+    descriptors: set[int] = set()
+    for index, value in enumerate(command[:prefix_end]):
+        if value != "--ro-bind-data":
+            continue
+        if index + 2 >= prefix_end or not command[index + 1].isdigit():
+            raise SystemExit("benchmark bwrap ro-bind-data mount is invalid")
+        descriptors.add(int(command[index + 1]))
     return tuple(sorted(descriptors))
 
 
@@ -277,22 +278,21 @@ def popen_with_independent_memfd_offsets(
 
     if "pass_fds" in kwargs:
         raise TypeError("memfd-aware process spawn owns pass_fds")
+    source_descriptors = command_memfd_descriptors(command)
+    separator = command.index("--")
     replacements: dict[int, int] = {}
     try:
-        for descriptor in command_memfd_descriptors(command):
+        for descriptor in source_descriptors:
             replacements[descriptor] = os.open(
                 f"/proc/self/fd/{descriptor}",
                 os.O_RDONLY | os.O_CLOEXEC,
             )
         rewritten = list(command)
-        for index, value in enumerate(command):
-            proc_fd = re.fullmatch(r"/proc/self/fd/([0-9]+)", value)
-            if proc_fd is not None and int(proc_fd.group(1)) in replacements:
-                rewritten[index] = f"/proc/self/fd/{replacements[int(proc_fd.group(1))]}"
-            elif index > 0 and command[index - 1] == "--ro-bind-data" and value.isdigit():
-                source = int(value)
-                if source in replacements:
-                    rewritten[index] = str(replacements[source])
+        for index in range(separator):
+            if command[index] != "--ro-bind-data":
+                continue
+            source = int(command[index + 1])
+            rewritten[index + 1] = str(replacements[source])
         return subprocess.Popen(
             rewritten,
             pass_fds=tuple(sorted(replacements.values())),

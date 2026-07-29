@@ -1144,7 +1144,7 @@ class RunnerContractTest(unittest.TestCase):
                 "prepare_arm_layout",
                 return_value={"workspace": output_root / "workspace"},
             ), mock.patch.object(benchmark_runner, "snapshot_workspace", return_value={}), mock.patch.object(
-                benchmark_runner, "build_codex_live_command", return_value=["fake-codex"]
+                benchmark_runner, "build_codex_live_command", return_value=["fake-bwrap", "--", "fake-codex"]
             ), mock.patch.object(benchmark_runner, "validate_bwrap_command"), mock.patch.object(
                 benchmark_runner.subprocess, "Popen", return_value=fake_process
             ) as popen, mock.patch.object(

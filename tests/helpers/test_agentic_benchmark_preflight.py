@@ -250,6 +250,7 @@ class CommandBoundaryTest(unittest.TestCase):
             "--ro-bind-data",
             str(frozen.descriptor),
             "/auth.json",
+            "--",
         ]
         try:
             first = agentic_benchmark_provider_preflight._default_command_runner(command, 1.0)
@@ -267,7 +268,7 @@ class CommandBoundaryTest(unittest.TestCase):
         ready = [self.scratch / f"reader-{number}.ready" for number in range(2)]
         script = (
             "import os,pathlib,sys,time; "
-            "fd=int(sys.argv[2]); ready=pathlib.Path(sys.argv[4]); gate=pathlib.Path(sys.argv[5]); "
+            "fd=int(sys.argv[2]); ready=pathlib.Path(sys.argv[5]); gate=pathlib.Path(sys.argv[6]); "
             "ready.touch(); "
             "deadline=time.monotonic()+1; "
             "\nwhile not gate.exists() and time.monotonic()<deadline: time.sleep(0.001); "
@@ -282,6 +283,7 @@ class CommandBoundaryTest(unittest.TestCase):
                 "--ro-bind-data",
                 str(frozen.descriptor),
                 "/auth.json",
+                "--",
                 str(ready[number]),
                 str(gate),
             ]
@@ -310,6 +312,7 @@ class CommandBoundaryTest(unittest.TestCase):
             "--ro-bind-data",
             str(frozen.descriptor),
             "/auth.json",
+            "--",
         ]
         opened: list[int] = []
         real_open = os.open
@@ -343,23 +346,91 @@ class CommandBoundaryTest(unittest.TestCase):
         frozen = freeze_auth_file(self.auth)
         command = [
             "fake-bwrap",
-            str(frozen.mount_path),
             "--ro-bind-data",
             str(frozen.descriptor),
-            "/auth.json",
+            "/first-auth.json",
+            "--ro-bind-data",
+            str(frozen.descriptor),
+            "/second-auth.json",
+            "--",
+            "fake-codex",
         ]
         try:
             with mock.patch.object(agentic_benchmark_provider_preflight.subprocess, "Popen") as popen:
                 agentic_benchmark_provider_preflight.popen_with_independent_memfd_offsets(command)
             launched = popen.call_args.args[0]
-            fresh_path = launched[1]
-            fresh_descriptor = int(fresh_path.rsplit("/", 1)[1])
-            self.assertEqual(launched[3], str(fresh_descriptor))
+            fresh_descriptor = int(launched[2])
+            self.assertEqual(launched[5], str(fresh_descriptor))
             self.assertEqual(popen.call_args.kwargs["pass_fds"], (fresh_descriptor,))
             with self.assertRaises(OSError):
                 os.fstat(fresh_descriptor)
         finally:
             frozen.close()
+
+    def test_payload_prompt_proc_fd_zero_stays_literal_and_is_not_inherited(self):
+        self.auth.write_text('{"OPENAI_API_KEY":"abc"}', encoding="utf-8")
+        frozen = freeze_auth_file(self.auth)
+        command = [
+            "fake-bwrap",
+            "--ro-bind-data",
+            str(frozen.descriptor),
+            "/auth.json",
+            "--",
+            "fake-codex",
+            "prompt",
+            "/proc/self/fd/0",
+        ]
+        try:
+            with mock.patch.object(agentic_benchmark_provider_preflight.subprocess, "Popen") as popen:
+                agentic_benchmark_provider_preflight.popen_with_independent_memfd_offsets(command)
+            launched = popen.call_args.args[0]
+            inherited = popen.call_args.kwargs["pass_fds"]
+            self.assertEqual(launched[command.index("--") + 1 :], command[command.index("--") + 1 :])
+            self.assertNotIn(0, inherited)
+            self.assertEqual(len(inherited), 1)
+        finally:
+            frozen.close()
+
+    def test_unrelated_payload_proc_fd_is_neither_rewritten_nor_inherited(self):
+        self.auth.write_text('{"OPENAI_API_KEY":"abc"}', encoding="utf-8")
+        frozen = freeze_auth_file(self.auth)
+        unrelated = os.memfd_create("unrelated-payload")
+        payload = f"/proc/self/fd/{unrelated}"
+        command = [
+            "fake-bwrap",
+            "--ro-bind-data",
+            str(frozen.descriptor),
+            "/auth.json",
+            "--",
+            "fake-codex",
+            payload,
+        ]
+        try:
+            with mock.patch.object(agentic_benchmark_provider_preflight.subprocess, "Popen") as popen:
+                agentic_benchmark_provider_preflight.popen_with_independent_memfd_offsets(command)
+            launched = popen.call_args.args[0]
+            inherited = popen.call_args.kwargs["pass_fds"]
+            self.assertEqual(launched[-1], payload)
+            self.assertNotIn(unrelated, inherited)
+            self.assertEqual(len(inherited), 1)
+        finally:
+            os.close(unrelated)
+            frozen.close()
+
+    def test_memfd_spawn_rejects_ambiguous_or_malformed_bwrap_prefixes(self):
+        malformed = [
+            ["fake-bwrap", "fake-codex"],
+            ["fake-bwrap", "--", "fake-codex", "--", "prompt"],
+            ["fake-bwrap", "--ro-bind-data", "--", "fake-codex"],
+            ["fake-bwrap", "--ro-bind-data", "not-a-descriptor", "/auth.json", "--", "fake-codex"],
+        ]
+        for command in malformed:
+            with self.subTest(command=command), mock.patch.object(
+                agentic_benchmark_provider_preflight.subprocess,
+                "Popen",
+            ):
+                with self.assertRaises(SystemExit):
+                    agentic_benchmark_provider_preflight.popen_with_independent_memfd_offsets(command)
 
     def test_failure_timeout_and_exception_remove_the_entire_isolated_root(self):
         for status in ("failure", "timeout", "exception"):
@@ -474,7 +545,7 @@ class CommandBoundaryTest(unittest.TestCase):
         policy = resolve_proxy_policy({"HTTP_PROXY": proxy})
         with self.assertRaises(SystemExit) as caught:
             agentic_benchmark_isolation.run_command(
-                [sys.executable, "-c", f"import sys; sys.stderr.write({proxy!r}); raise SystemExit(9)"],
+                [sys.executable, "-c", f"import sys; sys.stderr.write({proxy!r}); raise SystemExit(9)", "--"],
                 "prompt audit",
                 proxy_policy=policy,
             )
@@ -696,6 +767,7 @@ class SanitizedPreflightTest(unittest.TestCase):
             sys.executable,
             "-c",
             "import signal,time; signal.signal(signal.SIGTERM, signal.SIG_IGN); time.sleep(60)",
+            "--",
         ]
         started = time.monotonic()
         result = run_sanitized_provider_preflight(command, "requested-model", 0.2)
@@ -703,7 +775,7 @@ class SanitizedPreflightTest(unittest.TestCase):
         self.assertLess(time.monotonic() - started, 1.0)
 
     def test_outer_supervised_isolation_and_preflight_children_do_not_create_sessions(self):
-        command = [sys.executable, "-c", "import os; print(os.getpgrp())"]
+        command = [sys.executable, "-c", "import os; print(os.getpgrp())", "--"]
         isolation_group = agentic_benchmark_isolation.run_command(
             command,
             "isolation child",

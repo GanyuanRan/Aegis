@@ -340,6 +340,9 @@ fixtures, logs, reports or public artifacts.
 Every isolated subprocess must derive its own offset-zero read-only open-file
 description from the sealed authentication snapshot before launching `bwrap`;
 concurrent or sequential commands must never rewind or share the source offset.
+Only numeric `--ro-bind-data` sources in the validated bwrap prefix may be
+inherited or rewritten; every payload argument after the unique `--` separator
+must remain opaque to descriptor discovery.
 
 The fixed `codex debug prompt-input` audit is a zero-inference prompt-rendering
 check, not a Codex execution or provider preflight. It may use only the frozen,
