@@ -3,9 +3,15 @@
   "caseId": "fallback-retirement-dev",
   "workspace": {
     "requiredChangedPaths": ["compat.py"],
-    "forbiddenChangedPaths": ["consumer.py", "test_compat.py"]
+    "forbiddenChangedPaths": ["consumer.py"]
   },
   "verification": [
+    {
+      "argv": ["python3", "test_compat.py"],
+      "immutableArgPaths": ["test_compat.py"],
+      "expectedExit": 0,
+      "timeoutSeconds": 20
+    },
     {
       "argv": ["python3", "test_compat.py"],
       "expectedExit": 0,

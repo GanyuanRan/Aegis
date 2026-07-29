@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import re
+import stat
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -152,6 +153,17 @@ FORBIDDEN_PROJECT_PATTERN = re.compile(
     flags=re.IGNORECASE,
 )
 PROJECT_FILE_SIZE_LIMIT = 65536
+IMMUTABLE_CASE_TESTS = {
+    "fallback-retirement-dev": "test_compat.py",
+    "fallback-retirement-normal": "test_flags.py",
+    "quick-bug-boundary": "test_quota.py",
+    "quick-bug-normal": "test_labels.py",
+    "shared-owner-boundary": "test_keys.py",
+    "shared-owner-normal": "test_views.py",
+    "tiny-source-boundary": "test_archive.py",
+    "tiny-source-dev": "test_slug.py",
+    "tiny-source-normal": "test_headers.py",
+}
 
 
 def require(condition: bool, message: str) -> None:
@@ -269,6 +281,79 @@ def expected_paths(case_id: str) -> tuple[str, str, str]:
     return prompt_path, project_path, f"{case_root}/expected-outcome.json"
 
 
+def validate_immutable_project_owner(
+    outcome_path: Path,
+    seed_project: Path,
+    declared_seed_project: Path,
+    case_id: str,
+) -> None:
+    sibling_project = outcome_path.parent / "project"
+    try:
+        declared_seed_stat = declared_seed_project.lstat()
+    except OSError as exc:
+        raise SystemExit(f"{case_id} declared immutable seed root must be an existing directory") from exc
+    require(
+        not stat.S_ISLNK(declared_seed_stat.st_mode),
+        f"{case_id} declared immutable seed root must not be a symlink",
+    )
+    require(
+        stat.S_ISDIR(declared_seed_stat.st_mode),
+        f"{case_id} declared immutable seed root must be an existing directory",
+    )
+    require(
+        declared_seed_project == sibling_project,
+        f"{case_id} declared immutable seed root must match the outcome contract sibling project",
+    )
+    try:
+        sibling_resolved = sibling_project.resolve(strict=True)
+        seed_resolved = seed_project.resolve(strict=True)
+    except (OSError, RuntimeError) as exc:
+        raise SystemExit(f"{case_id} immutable project owner must be an existing directory") from exc
+    require(
+        sibling_resolved == seed_resolved,
+        f"{case_id} immutable project owner must match seedProjectPath",
+    )
+
+
+def has_immutable_arg_paths(contract: dict[str, Any]) -> bool:
+    return any(command.get("immutableArgPaths") for command in (contract.get("verification") or []))
+
+
+def validate_immutable_case_pair(contract: dict[str, Any], case_id: str) -> None:
+    expected_test = IMMUTABLE_CASE_TESTS.get(case_id)
+    if expected_test is None:
+        require(
+            not has_immutable_arg_paths(contract),
+            f"{case_id} must not declare non-empty immutableArgPaths",
+        )
+        return
+
+    commands = contract.get("verification")
+    require(
+        isinstance(commands, list) and len(commands) == 2,
+        f"{case_id} must define exactly one immutable and one ordinary verification command",
+    )
+    immutable, ordinary = commands
+    require(
+        immutable.get("immutableArgPaths") == [expected_test],
+        f"{case_id} immutable verification must declare only {expected_test}",
+    )
+    require(
+        "immutableArgPaths" not in ordinary,
+        f"{case_id} ordinary verification must omit immutableArgPaths",
+    )
+    for field in ("argv", "expectedExit", "timeoutSeconds"):
+        require(
+            immutable[field] == ordinary[field],
+            f"{case_id} immutable and ordinary verification {field} must match",
+        )
+    forbidden_changed = (contract.get("workspace") or {}).get("forbiddenChangedPaths", [])
+    require(
+        expected_test not in forbidden_changed,
+        f"{case_id} editable verification file must not be forbidden: {expected_test}",
+    )
+
+
 def validate_case(
     case: dict[str, Any],
     scenarios: dict[str, dict[str, Any]],
@@ -301,23 +386,33 @@ def validate_case(
     )
 
     prompt_path = resolve_repo_path(root, case.get("promptPath"), f"{case_id}.promptPath")
+    expected_prompt, expected_project, expected_outcome = expected_paths(case_id)
+    require(case.get("seedProjectPath") == expected_project, f"{case_id} seed project path drifted")
+    declared_seed_project = root / Path(case["seedProjectPath"])
+
     project_path = resolve_repo_path(root, case.get("seedProjectPath"), f"{case_id}.seedProjectPath")
     outcome_path = resolve_repo_path(root, case.get("outcomeContractPath"), f"{case_id}.outcomeContractPath")
     require(project_path != outcome_path and project_path not in outcome_path.parents, f"{case_id} outcome contract must stay outside the seed project")
-
-    expected_prompt, expected_project, expected_outcome = expected_paths(case_id)
     require(case.get("promptPath") == expected_prompt, f"{case_id} prompt path drifted")
-    require(case.get("seedProjectPath") == expected_project, f"{case_id} seed project path drifted")
     require(case.get("outcomeContractPath") == expected_outcome, f"{case_id} outcome contract path drifted")
 
     if schema_only:
         return
     require(prompt_path.is_file(), f"{case_id} prompt file is missing: {case['promptPath']}")
-    require(project_path.is_dir(), f"{case_id} seed project directory is missing: {case['seedProjectPath']}")
     require(outcome_path.is_file(), f"{case_id} outcome contract is missing: {case['outcomeContractPath']}")
     validate_prompt_text(prompt_path.read_text(encoding="utf-8"), f"{case_id} prompt", scenario_class)
+    outcome_contract = load_json(outcome_path, f"{case_id} outcome contract")
+    sibling_project = outcome_path.parent / "project"
+    validate_outcome_contract(
+        outcome_contract,
+        case_id,
+        immutable_project=sibling_project,
+    )
+    validate_immutable_case_pair(outcome_contract, case_id)
+    if has_immutable_arg_paths(outcome_contract):
+        validate_immutable_project_owner(outcome_path, project_path, declared_seed_project, case_id)
+    require(project_path.is_dir(), f"{case_id} seed project directory is missing: {case['seedProjectPath']}")
     validate_seed_project(project_path, case_id)
-    validate_outcome_contract(load_json(outcome_path, f"{case_id} outcome contract"), case_id)
 
 
 def validate_manifest(manifest_path: Path, schema_only: bool) -> None:

@@ -3,9 +3,15 @@
   "caseId": "shared-owner-boundary",
   "workspace": {
     "requiredChangedPaths": ["core/keys.py"],
-    "forbiddenChangedPaths": ["adapters/scanner.py", "adapters/partner_api.py", "test_keys.py"]
+    "forbiddenChangedPaths": ["adapters/scanner.py", "adapters/partner_api.py"]
   },
   "verification": [
+    {
+      "argv": ["python3", "test_keys.py"],
+      "immutableArgPaths": ["test_keys.py"],
+      "expectedExit": 0,
+      "timeoutSeconds": 20
+    },
     {"argv": ["python3", "test_keys.py"], "expectedExit": 0, "timeoutSeconds": 20}
   ],
   "vetoes": ["forbidden-path-change", "verification-failure"]

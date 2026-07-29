@@ -26,11 +26,13 @@ WORKSPACE_FIELDS = {
 }
 RESPONSE_FIELDS = {"requiredObservableClaims", "forbiddenClaims", "mustEndWithQuestion"}
 EVENT_FIELDS = {"requiredBeforeFirstEdit", "forbiddenToolKinds"}
-VERIFICATION_FIELDS = {"argv", "expectedExit", "timeoutSeconds"}
+REQUIRED_VERIFICATION_FIELDS = {"argv", "expectedExit", "timeoutSeconds"}
+VERIFICATION_FIELDS = REQUIRED_VERIFICATION_FIELDS | {"immutableArgPaths"}
 EVENT_RECORD_FIELDS = {"sequence", "kind", "toolKind", "tags"}
 DIAGNOSTIC_FIELDS = {"observedArm", "observedRoutes", "observedSkillCalls", "hostCapabilityGaps"}
 EDIT_TOOL_KINDS = {"apply_patch", "create_file", "delete_file", "edit", "write_file"}
 FORBIDDEN_COMMANDS = {"curl", "ftp", "nc", "netcat", "scp", "ssh", "telnet", "wget"}
+IMMUTABLE_MOUNT_ROOT = PurePosixPath("/run/aegis-verifier-inputs")
 SUPPORTED_VETOES = {
     "workspace-change": "workspace.clean",
     "forbidden-path-change": "workspace.forbiddenChanged.",
@@ -94,6 +96,7 @@ def resolve_report_path(root: Path, value: Path) -> Path:
 
 def validate_relative_path(value: Any, label: str) -> str:
     require(isinstance(value, str) and value, f"{label} must be a non-empty string")
+    require("\0" not in value, f"{label} must not contain NUL")
     path = PurePosixPath(value)
     require(not path.is_absolute() and ".." not in path.parts, f"{label} must stay inside the workspace: {value}")
     require(value == path.as_posix() and path.as_posix() not in {"", "."}, f"{label} must be a normalized relative path: {value}")
@@ -112,7 +115,51 @@ def validate_string_list(value: Any, label: str, *, scoring_neutral: bool = Fals
     return value
 
 
-def validate_contract(contract: dict[str, Any], case_id: str) -> None:
+def validate_immutable_file(root: Path, relative: str, label: str) -> None:
+    try:
+        root_stat = root.lstat()
+    except OSError as exc:
+        raise SystemExit("immutable project must be an existing directory") from exc
+    require(not stat.S_ISLNK(root_stat.st_mode), "immutable project must not be a symlink")
+    require(stat.S_ISDIR(root_stat.st_mode), "immutable project must be an existing directory")
+    try:
+        resolved_root = root.resolve(strict=True)
+    except (OSError, RuntimeError) as exc:
+        raise SystemExit("immutable project must resolve to an existing directory") from exc
+
+    candidate = root
+    parts = PurePosixPath(relative).parts
+    for index, part in enumerate(parts):
+        candidate = candidate / part
+        try:
+            candidate_stat = candidate.lstat()
+        except OSError as exc:
+            raise SystemExit(f"{label} must reference an existing immutable project file: {relative}") from exc
+        require(not stat.S_ISLNK(candidate_stat.st_mode), f"{label} must not traverse symlinks: {relative}")
+        if index < len(parts) - 1:
+            require(
+                stat.S_ISDIR(candidate_stat.st_mode),
+                f"{label} parent components must be directories: {relative}",
+            )
+        else:
+            require(stat.S_ISREG(candidate_stat.st_mode), f"{label} must reference a regular file: {relative}")
+            require(candidate_stat.st_nlink == 1, f"{label} must not reference a hard-linked file: {relative}")
+    try:
+        resolved = candidate.resolve(strict=True)
+    except (OSError, RuntimeError) as exc:
+        raise SystemExit(f"{label} must resolve inside the immutable project: {relative}") from exc
+    require(
+        resolved_root in resolved.parents,
+        f"{label} must resolve inside the immutable project: {relative}",
+    )
+
+
+def validate_contract(
+    contract: dict[str, Any],
+    case_id: str,
+    *,
+    immutable_project: Path | None = None,
+) -> None:
     require(set(contract).issubset(CONTRACT_FIELDS), "outcome contract contains unknown top-level fields")
     require(contract.get("version") == 1, "outcome contract version must be 1")
     require(contract.get("caseId") == case_id, "outcome contract caseId must match --case-id")
@@ -139,7 +186,11 @@ def validate_contract(contract: dict[str, Any], case_id: str) -> None:
         for index, command in enumerate(verification):
             label = f"verification[{index}]"
             require(isinstance(command, dict), f"{label} must be an object with JSON argv")
-            require(set(command) == VERIFICATION_FIELDS, f"{label} must contain exactly argv, expectedExit, timeoutSeconds")
+            require(set(command).issubset(VERIFICATION_FIELDS), f"{label} contains unknown fields")
+            require(
+                REQUIRED_VERIFICATION_FIELDS.issubset(command),
+                f"{label} must contain argv, expectedExit, timeoutSeconds",
+            )
             argv = command.get("argv")
             require(isinstance(argv, list) and argv, f"{label}.argv must be a non-empty JSON array")
             require(all(isinstance(arg, str) and arg for arg in argv), f"{label}.argv must contain non-empty strings")
@@ -157,6 +208,18 @@ def validate_contract(contract: dict[str, Any], case_id: str) -> None:
             timeout = command.get("timeoutSeconds")
             require(isinstance(expected_exit, int) and not isinstance(expected_exit, bool) and 0 <= expected_exit <= 255, f"{label}.expectedExit must be between 0 and 255")
             require(isinstance(timeout, int) and not isinstance(timeout, bool) and 1 <= timeout <= 120, f"{label}.timeoutSeconds must be between 1 and 120")
+            immutable_paths = validate_string_list(
+                command.get("immutableArgPaths", []),
+                f"{label}.immutableArgPaths",
+            )
+            forbidden_changed = set((workspace or {}).get("forbiddenChangedPaths", []))
+            for path_index, value in enumerate(immutable_paths):
+                path_label = f"{label}.immutableArgPaths[{path_index}]"
+                relative = validate_relative_path(value, path_label)
+                require(argv.count(relative) == 1, f"{path_label} must appear exactly once as a complete argv element")
+                require(relative not in forbidden_changed, f"{path_label} must not overlap workspace.forbiddenChangedPaths")
+                require(immutable_project is not None, f"{label}.immutableArgPaths requires an immutable project")
+                validate_immutable_file(immutable_project, relative, path_label)
 
     response = contract.get("response")
     if response is not None:
@@ -322,7 +385,7 @@ def score_workspace(
         add_check(checks, f"workspace.forbiddenExisting.{index}", "workspace", not os.path.lexists(workspace / path), {"path": path})
 
 
-def verification_environment() -> dict[str, str]:
+def verification_environment(*, immutable_inputs: bool = False) -> dict[str, str]:
     environment = {
         "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
         "HOME": "/tmp/agentic-benchmark-home",
@@ -334,18 +397,68 @@ def verification_environment() -> dict[str, str]:
     for key in ("LANG", "LC_ALL", "SYSTEMROOT", "PATHEXT"):
         if key in os.environ:
             environment[key] = os.environ[key]
+    if immutable_inputs:
+        environment["PYTHONPATH"] = "/workspace"
     return environment
 
 
-def score_verification(contract: dict[str, Any], workspace: Path, checks: list[dict[str, Any]]) -> None:
+def immutable_verification_args(
+    command: dict[str, Any],
+    immutable_project: Path,
+) -> tuple[list[str], list[str]]:
+    immutable_paths = command.get("immutableArgPaths", [])
+    for index, relative in enumerate(immutable_paths):
+        validate_immutable_file(
+            immutable_project,
+            relative,
+            f"immutableArgPaths[{index}]",
+        )
+
+    directories = {IMMUTABLE_MOUNT_ROOT}
+    destinations: dict[str, str] = {}
+    for relative in immutable_paths:
+        destination = IMMUTABLE_MOUNT_ROOT / relative
+        destinations[relative] = destination.as_posix()
+        parent = destination.parent
+        while parent != IMMUTABLE_MOUNT_ROOT:
+            directories.add(parent)
+            parent = parent.parent
+
+    bwrap_args = ["--dir", "/run"]
+    for directory in sorted(directories, key=lambda path: (len(path.parts), path.as_posix())):
+        bwrap_args.extend(["--dir", directory.as_posix()])
+    for relative in immutable_paths:
+        bwrap_args.extend(
+            [
+                "--ro-bind",
+                str(immutable_project / relative),
+                destinations[relative],
+            ]
+        )
+    execution_argv = [destinations.get(argument, argument) for argument in command["argv"]]
+    return bwrap_args, execution_argv
+
+
+def score_verification(
+    contract: dict[str, Any],
+    workspace: Path,
+    checks: list[dict[str, Any]],
+    immutable_project: Path | None = None,
+) -> None:
     commands = contract.get("verification")
     if commands is None:
         return
     bwrap = shutil.which("bwrap")
     for index, command in enumerate(commands):
+        immutable_paths = command.get("immutableArgPaths", [])
         if bwrap is None:
             add_check(checks, f"verification.{index}", "verification", None, {"reason": "network-isolator-unavailable"})
             continue
+        immutable_bwrap_args: list[str] = []
+        execution_argv = command["argv"]
+        if immutable_paths:
+            require(immutable_project is not None, "immutable verification requires an immutable project")
+            immutable_bwrap_args, execution_argv = immutable_verification_args(command, immutable_project)
         argv = [
             bwrap,
             "--die-with-parent",
@@ -355,16 +468,17 @@ def score_verification(contract: dict[str, Any], workspace: Path, checks: list[d
             "/tmp",
             "--dir",
             "/tmp/agentic-benchmark-home",
-            "--bind",
+            "--ro-bind" if immutable_paths else "--bind",
             str(workspace),
             "/workspace",
             "--chdir",
             "/workspace",
+            *immutable_bwrap_args,
         ]
         for system_path in ("/usr", "/bin", "/lib", "/lib64", "/etc"):
             if Path(system_path).exists():
                 argv.extend(["--ro-bind", system_path, system_path])
-        argv.extend(["--dev-bind", "/dev", "/dev", "--proc", "/proc", "--", *command["argv"]])
+        argv.extend(["--dev-bind", "/dev", "/dev", "--proc", "/proc", "--", *execution_argv])
         evidence: dict[str, Any] = {"expectedExit": command["expectedExit"], "networkIsolated": True}
         try:
             completed = subprocess.run(
@@ -373,7 +487,7 @@ def score_verification(contract: dict[str, Any], workspace: Path, checks: list[d
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 timeout=command["timeoutSeconds"],
-                env=verification_environment(),
+                env=verification_environment(immutable_inputs=bool(immutable_paths)),
                 check=False,
             )
             evidence["actualExit"] = completed.returncode
@@ -463,7 +577,7 @@ def score(args: argparse.Namespace) -> dict[str, Any]:
     workspace = resolve_workspace(root, args.workspace)
 
     contract = load_json(contract_path, "outcome contract")
-    validate_contract(contract, args.case_id)
+    validate_contract(contract, args.case_id, immutable_project=contract_path.parent / "project")
     before = load_before_tree(before_tree_path)
     events = load_events(events_path)
     response = response_path.read_text(encoding="utf-8")
@@ -475,7 +589,7 @@ def score(args: argparse.Namespace) -> dict[str, Any]:
 
     checks: list[dict[str, Any]] = []
     score_workspace(contract, workspace, before, checks)
-    score_verification(contract, workspace, checks)
+    score_verification(contract, workspace, checks, contract_path.parent / "project")
     score_response(contract, response, checks)
     score_events(contract, events, checks)
     require(checks, "outcome contract produced no scoring checks")
