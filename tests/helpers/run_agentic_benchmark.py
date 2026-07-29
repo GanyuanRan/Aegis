@@ -900,15 +900,19 @@ def isolation_audit_command(args: argparse.Namespace) -> None:
     output_root = resolve_tmp_child(root, args.output_root, "output-root")
     report_path = resolve_tmp_child(root, args.report_json, "report-json")
     require(output_root in report_path.parents, "isolation report must stay inside output-root")
-    report = run_isolation_audit(
-        root=root,
-        case=case,
-        output_root=output_root,
-        auth_file=resolve_auth_file(args.auth_file),
-        bwrap=resolve_tool("bwrap", "AEGIS_BENCHMARK_BWRAP"),
-        codex=resolve_tool("codex", "AEGIS_BENCHMARK_CODEX"),
-        proxy_policy=resolve_proxy_policy(os.environ),
-    )
+    frozen_auth = freeze_auth_file(resolve_auth_file(args.auth_file))
+    try:
+        report = run_isolation_audit(
+            root=root,
+            case=case,
+            output_root=output_root,
+            auth_file=frozen_auth.mount_path,
+            bwrap=resolve_tool("bwrap", "AEGIS_BENCHMARK_BWRAP"),
+            codex=resolve_tool("codex", "AEGIS_BENCHMARK_CODEX"),
+            proxy_policy=resolve_proxy_policy(os.environ),
+        )
+    finally:
+        frozen_auth.close()
     atomic_json(report_path, report)
     print(json.dumps({"caseId": report["caseId"], "modelCalls": 0, "baselineSkillMatches": report["arms"]["baseline-no-aegis"]["evaluatedSkillMatchCount"], "aegisSkillMatches": report["arms"]["aegis-auto"]["evaluatedSkillMatchCount"]}, sort_keys=True))
 

@@ -402,7 +402,7 @@ class CommandBoundaryTest(unittest.TestCase):
         finally:
             frozen.close()
 
-    def test_direct_client_auth_link_gets_a_private_offset_zero_descriptor(self):
+    def test_direct_client_auth_link_uses_parent_held_offset_zero_descriptor(self):
         self.auth.write_text('{"OPENAI_API_KEY":"abc"}', encoding="utf-8")
         frozen = freeze_auth_file(self.auth)
         auth_link = self.scratch / "direct-home/.codex/auth.json"
@@ -413,12 +413,56 @@ class CommandBoundaryTest(unittest.TestCase):
                 agentic_benchmark_provider_preflight.popen_with_independent_auth_link(
                     ["fake-codex"], auth_file=frozen.mount_path, auth_link=auth_link,
                 )
-            inherited = popen.call_args.kwargs["pass_fds"]
-            self.assertEqual(len(inherited), 1)
-            self.assertEqual(auth_link.readlink(), Path(f"/proc/self/fd/{inherited[0]}"))
-            with self.assertRaises(OSError):
-                os.fstat(inherited[0])
+            self.assertNotIn("pass_fds", popen.call_args.kwargs)
+            self.assertIs(popen.call_args.kwargs["close_fds"], True)
+            self.assertEqual(
+                auth_link.readlink(),
+                Path(f"/proc/{os.getpid()}/fd/{frozen.descriptor}"),
+            )
             self.assertEqual(os.lseek(frozen.descriptor, 0, os.SEEK_CUR), 0)
+        finally:
+            frozen.close()
+
+    def test_direct_client_auth_link_rejects_unsealed_regular_file(self):
+        auth_link = self.scratch / "regular-direct-home/.codex/auth.json"
+        auth_link.parent.mkdir(parents=True)
+        auth_link.touch(mode=0o600)
+        with mock.patch.object(agentic_benchmark_provider_preflight.subprocess, "Popen") as popen:
+            with self.assertRaises(SystemExit):
+                agentic_benchmark_provider_preflight.popen_with_independent_auth_link(
+                    ["fake-codex"], auth_file=self.auth, auth_link=auth_link,
+                )
+        popen.assert_not_called()
+
+    def test_direct_client_auth_link_rejects_unsealed_named_memfd(self):
+        descriptor = os.memfd_create(
+            "aegis-benchmark-auth", os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING,
+        )
+        auth_link = self.scratch / "unsealed-direct-home/.codex/auth.json"
+        auth_link.parent.mkdir(parents=True)
+        auth_link.touch(mode=0o600)
+        try:
+            os.fchmod(descriptor, 0o400)
+            with mock.patch.object(agentic_benchmark_provider_preflight.subprocess, "Popen") as popen:
+                with self.assertRaises(SystemExit):
+                    agentic_benchmark_provider_preflight.popen_with_independent_auth_link(
+                        ["fake-codex"], auth_file=Path(f"/proc/self/fd/{descriptor}"), auth_link=auth_link,
+                    )
+            popen.assert_not_called()
+        finally:
+            os.close(descriptor)
+
+    def test_direct_client_auth_link_rejects_descriptor_inheritance_overrides(self):
+        frozen = freeze_auth_file(self.auth)
+        auth_link = self.scratch / "override-direct-home/.codex/auth.json"
+        auth_link.parent.mkdir(parents=True)
+        auth_link.touch(mode=0o600)
+        try:
+            for override in ({"close_fds": False}, {"pass_fds": (frozen.descriptor,)}):
+                with self.subTest(override=override), self.assertRaises(TypeError):
+                    agentic_benchmark_provider_preflight.popen_with_independent_auth_link(
+                        ["fake-codex"], auth_file=frozen.mount_path, auth_link=auth_link, **override,
+                    )
         finally:
             frozen.close()
 

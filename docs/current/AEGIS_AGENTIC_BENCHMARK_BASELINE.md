@@ -340,10 +340,12 @@ fixtures, logs, reports or public artifacts.
 Every isolated client subprocess must derive its own offset-zero read-only
 open-file description from the sealed authentication snapshot; concurrent or
 sequential commands must never rewind or share the source offset. A direct
-Codex client must execute the frozen native runtime directly and receive that
-descriptor only through its private `auth.json` link; a package launcher that
-drops non-stdio descriptors before spawning the native runtime is not a live
-client path. The descriptor must not reach agent tool children. Commands that
+Codex client must execute the frozen native runtime directly and receive auth
+only by opening a private `auth.json` link to the supervising worker's sealed
+descriptor path. The descriptor itself must not be inherited by the client; a
+package launcher that drops non-stdio descriptors before spawning the native
+runtime is not a live client path. The descriptor must not reach agent tool
+children. Commands that
 still use the audit-only outer `bwrap` may inherit or rewrite only numeric
 `--ro-bind-data` sources in the validated bwrap prefix; every payload argument
 after the first `--` separator remains opaque to descriptor discovery.

@@ -31,6 +31,7 @@ MAX_ARTIFACT_TOTAL_BYTES = 256 * 1024 * 1024
 PROXY_KEYS = ("ALL_PROXY", "HTTPS_PROXY", "HTTP_PROXY")
 PROXY_SCHEMES = {"http", "https", "socks5", "socks5h"}
 MAX_AUTH_FILE_BYTES = 4 * 1024 * 1024
+REQUIRED_AUTH_SEALS = fcntl.F_SEAL_SEAL | fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_GROW | fcntl.F_SEAL_WRITE
 ROOT_AUTH_FIELDS = {"auth_mode", "OPENAI_API_KEY", "tokens", "last_refresh"}
 TOKEN_AUTH_FIELDS = {"id_token", "access_token", "refresh_token", "account_id"}
 CREDENTIAL_PATTERN_SOURCES = (
@@ -172,8 +173,7 @@ class FrozenAuth:
                     raise OSError("short memfd write")
                 view = view[written:]
             os.lseek(descriptor, 0, os.SEEK_SET)
-            seals = fcntl.F_SEAL_SEAL | fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_GROW | fcntl.F_SEAL_WRITE
-            fcntl.fcntl(descriptor, fcntl.F_ADD_SEALS, seals)
+            fcntl.fcntl(descriptor, fcntl.F_ADD_SEALS, REQUIRED_AUTH_SEALS)
         except BaseException:
             os.close(descriptor)
             raise
@@ -253,6 +253,14 @@ def validate_auth_mount_file(auth_file: Path) -> None:
         raise SystemExit("benchmark auth mount must not be a symlink")
     if not stat.S_ISREG(metadata.st_mode) or metadata.st_mode & 0o022:
         raise SystemExit("benchmark auth mount must be a private regular file")
+    if is_frozen_memfd:
+        descriptor = int(str(auth_file).rsplit("/", 1)[-1])
+        try:
+            seals = fcntl.fcntl(descriptor, fcntl.F_GET_SEALS)
+        except OSError as exc:
+            raise SystemExit("benchmark sealed auth descriptor is unavailable") from exc
+        if seals & REQUIRED_AUTH_SEALS != REQUIRED_AUTH_SEALS:
+            raise SystemExit("benchmark auth descriptor is not fully sealed")
 
 
 def command_memfd_descriptors(command: list[str]) -> tuple[int, ...]:
@@ -316,28 +324,30 @@ def popen_with_independent_auth_link(
     auth_link: Path,
     **kwargs: Any,
 ) -> subprocess.Popen[str]:
-    """Spawn with a private offset-zero auth OFD exposed only to the client."""
+    """Expose a parent-held sealed auth FD by path without inheriting it."""
 
-    if "pass_fds" in kwargs:
-        raise TypeError("auth-link process spawn owns pass_fds")
+    if "pass_fds" in kwargs or "close_fds" in kwargs:
+        raise TypeError("auth-link process spawn owns descriptor inheritance")
     validate_auth_mount_file(auth_file)
+    descriptor_match = re.fullmatch(r"/proc/self/fd/([0-9]+)", str(auth_file))
+    if descriptor_match is None:
+        raise SystemExit("direct Codex auth source must be a sealed descriptor")
     try:
         link_metadata = auth_link.lstat()
     except OSError as exc:
         raise SystemExit("direct Codex auth placeholder is unavailable") from exc
     if not stat.S_ISREG(link_metadata.st_mode) or link_metadata.st_mode & 0o077:
         raise SystemExit("direct Codex auth placeholder must be a private regular file")
-    flags = os.O_RDONLY | os.O_CLOEXEC
-    if re.fullmatch(r"/proc/self/fd/[0-9]+", str(auth_file)) is None:
-        flags |= getattr(os, "O_NOFOLLOW", 0)
-    descriptor = os.open(str(auth_file), flags)
+    source_descriptor = int(descriptor_match.group(1))
     try:
-        os.lseek(descriptor, 0, os.SEEK_SET)
-        auth_link.unlink()
-        auth_link.symlink_to(f"/proc/self/fd/{descriptor}")
-        return subprocess.Popen(command, pass_fds=(descriptor,), **kwargs)
-    finally:
-        os.close(descriptor)
+        source_offset = os.lseek(source_descriptor, 0, os.SEEK_CUR)
+    except OSError as exc:
+        raise SystemExit("sealed auth descriptor is unavailable") from exc
+    if source_offset != 0:
+        raise SystemExit("sealed auth descriptor offset drifted")
+    auth_link.unlink()
+    auth_link.symlink_to(f"/proc/{os.getpid()}/fd/{source_descriptor}")
+    return subprocess.Popen(command, close_fds=True, **kwargs)
 
 
 def credential_policy_from_markers(markers: Any) -> CredentialPolicy:
