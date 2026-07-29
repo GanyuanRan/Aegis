@@ -665,6 +665,26 @@ assert_contains "skills/systematic-debugging/SKILL.md" "Layer Stop Card" \
     "systematic debugging main names the layer-stop escalation trigger"
 assert_contains "skills/systematic-debugging/SKILL.md" "advanced-debugging-governance.md.*before another fix|before another fix.*advanced-debugging-governance.md" \
     "systematic debugging main directly triggers advanced escalation guidance"
+assert_contains "skills/systematic-debugging/SKILL.md" "repair-added patch-shape" \
+    "systematic debugging directly routes added hard signals"
+assert_contains "skills/systematic-debugging/SKILL.md" "wrong-owner/downstream repair" \
+    "systematic debugging directly routes H3/H9 wrong-owner repairs"
+assert_contains "skills/systematic-debugging/SKILL.md" "multi-site/one-regression" \
+    "systematic debugging directly routes multi-site evidence gaps"
+assert_contains "skills/systematic-debugging/SKILL.md" "uninspected same-symptom fix" \
+    "systematic debugging directly routes repeated-fix history"
+assert_contains "skills/systematic-debugging/SKILL.md" "missing compound" \
+    "systematic debugging begins the compound closure trigger"
+assert_contains "skills/systematic-debugging/SKILL.md" "member/necessity/anti-disguise" \
+    "systematic debugging directly routes compound closure gaps"
+assert_contains "skills/systematic-debugging/SKILL.md" "unclear/disputed stop" \
+    "systematic debugging directly routes unclear stop layers"
+assert_contains "skills/systematic-debugging/SKILL.md" "outside-repo authority.*unmigrated" \
+    "systematic debugging directly routes external authority and contract stops"
+assert_contains "skills/systematic-debugging/SKILL.md" "published-contract break" \
+    "systematic debugging completes the published-contract stop trigger"
+assert_contains "skills/systematic-debugging/SKILL.md" "undefined spec.*missing permission/info" \
+    "systematic debugging directly routes specification and permission stops"
 assert_contains "skills/systematic-debugging/advanced-debugging-governance.md" "Current Stop Layer" \
     "advanced debugging reference owns the detailed layer stop card"
 assert_contains "skills/systematic-debugging/advanced-debugging-governance.md" "User Intervention Point" \

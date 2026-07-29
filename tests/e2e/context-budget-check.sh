@@ -89,15 +89,19 @@ else
 fi
 
 debugging_skill="skills/systematic-debugging/SKILL.md"
-if [[ ! -f "$debugging_skill" ]]; then
-    fail "systematic-debugging skill exists"
-else
+debugging_advanced="skills/systematic-debugging/advanced-debugging-governance.md"
+if [[ -f "$debugging_skill" && -f "$debugging_advanced" ]]; then
     debugging_chars="$(char_count "$debugging_skill")"
     if (( debugging_chars <= max_debugging_main_chars )); then
         pass "systematic-debugging main body is <= ${max_debugging_main_chars} chars (${debugging_chars})"
     else
         fail "systematic-debugging main body is <= ${max_debugging_main_chars} chars (${debugging_chars})"
     fi
+    pass "systematic-debugging main and advanced owner both exist"
+elif [[ -f "$debugging_skill" || -f "$debugging_advanced" ]]; then
+    fail "systematic-debugging extraction rejects partial main/reference state"
+else
+    fail "systematic-debugging main and advanced owner exist"
 fi
 
 verification_expanded="skills/verification-before-completion/expanded-closeout.md"
@@ -115,7 +119,7 @@ else
     fail "verification main and expanded owner exist"
 fi
 
-if [[ -f "$debugging_skill" && -f "$verification_skill" && -f "$verification_expanded" ]]; then
+if [[ -f "$debugging_skill" && -f "$debugging_advanced" && -f "$verification_skill" && -f "$verification_expanded" ]]; then
     debugging_chars="$(char_count "$debugging_skill")"
     verification_chars="$(char_count "$verification_skill")"
     combined_chars=$((debugging_chars + verification_chars))

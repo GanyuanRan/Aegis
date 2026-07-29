@@ -40,6 +40,18 @@ assert_not_contains() {
     fi
 }
 
+assert_line() {
+    local file="$1"
+    local expected="$2"
+    local label="$3"
+
+    if grep -qxF -- "$expected" "$file"; then
+        pass "$label"
+    else
+        fail "$label"
+    fi
+}
+
 echo "=== Debugging Patch-Shape Gate Check ==="
 
 debugging_skill="skills/systematic-debugging/SKILL.md"
@@ -97,6 +109,28 @@ assert_contains "$debugging_skill" "Fast bug fix or quick bug fix pressure" \
     "debugging hot path keeps quick-fix workspace pressure rule"
 assert_contains "$debugging_skill" "Triage fires, record it before editing" \
     "debugging hot path keeps ripple-before-editing rule"
+assert_contains "$debugging_skill" "repair-added patch-shape" \
+    "debugging hot path routes repair-added patch-shape evidence to advanced governance"
+assert_contains "$debugging_skill" "wrong-owner/downstream repair" \
+    "debugging hot path routes H3/H9 wrong-owner repairs"
+assert_contains "$debugging_skill" "multi-site/one-regression" \
+    "debugging hot path routes H2-style regression gaps"
+assert_contains "$debugging_skill" "uninspected same-symptom fix" \
+    "debugging hot path routes H6-style repeated-fix history"
+assert_contains "$debugging_skill" "pattern/anomaly/duplicate/wrong-owner/downstream repair" \
+    "debugging hot path routes remaining closure evidence"
+assert_contains "$debugging_skill" "missing compound" \
+    "debugging hot path begins the compound-proof trigger"
+assert_contains "$debugging_skill" "member/necessity/anti-disguise" \
+    "debugging hot path routes compound-proof gaps"
+assert_contains "$debugging_skill" "unclear/disputed stop" \
+    "debugging hot path routes unclear layer stops"
+assert_contains "$debugging_skill" "outside-repo authority.*unmigrated" \
+    "debugging hot path routes external authority and contract T-class signals"
+assert_contains "$debugging_skill" "published-contract break" \
+    "debugging hot path completes the contract T-class trigger"
+assert_contains "$debugging_skill" "undefined spec.*missing permission/info" \
+    "debugging hot path routes specification and permission T-class signals"
 assert_contains "$debugging_advanced" "H7.*keyword, phrase, regex" \
     "advanced debugging owner keeps H7 keyword/phrase/regex signal"
 assert_contains "$debugging_advanced" "H10.*re-parses raw text|H10.*re-infers action/state" \
@@ -117,6 +151,26 @@ assert_contains "$root_cause_contract" "anti-disguise check" \
     "root-cause contract owns compound anti-disguise proof"
 assert_contains "$root_cause_contract" "necessity test" \
     "root-cause contract owns member necessity proof"
+assert_line "$root_cause_contract" "#### Conjunctive cluster proof" \
+    "root-cause contract defines conjunctive member proof"
+assert_line "$root_cause_contract" "#### Independent compound proof" \
+    "root-cause contract defines independent member proof"
+assert_contains "$root_cause_contract" "overall symptom may persist through" \
+    "independent compound proof does not reuse conjunctive disappearance"
+assert_not_contains "$root_cause_contract" "For.*conjunctive-cluster.*and.*independent-compound" \
+    "root-cause contract does not collapse topology-specific member proofs"
+assert_line "$root_cause_contract" "- Candidate: independent-compound" \
+    "root-cause example classifies independently sufficient paths exactly"
+assert_line "$root_cause_contract" "- Same-incident active roots: A, B" \
+    "root-cause example records simultaneous root activity"
+assert_line "$root_cause_contract" "- Anti-disguise result: shared upstream L7 Spec Gap" \
+    "root-cause example records the shared upstream"
+assert_line "$root_cause_contract" "- Final: single-root-multi-symptom" \
+    "root-cause example records the exact anti-disguise collapse"
+assert_line "$root_cause_contract" "- independent-compound: multiple active roots in same incident" \
+    "root-cause contract distinguishes simultaneous compound activity"
+assert_line "$root_cause_contract" "- disjunctive-or: one active root plus alternative sufficient roots" \
+    "root-cause contract distinguishes alternative sufficient roots"
 assert_contains "$debugging_advanced" "D6.*topology is explicitly classified" \
     "advanced debugging owner keeps D6 topology closeout signal"
 assert_contains "$debugging_advanced" "D7.*anti-disguise check has been run" \

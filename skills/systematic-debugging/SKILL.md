@@ -30,8 +30,6 @@ Bug, failure, or unexpected behavior:
 Done: confidence ≥ B, DeeperCause = `no` with evidence, tracks explicit,
 and no H-class signal.
 
-# Systematic Debugging
-
 ## Core invariant
 
 Find root cause and fix the bug class at its canonical owner. A minimal fix is
@@ -48,10 +46,9 @@ change, minimum boundary, and an explicit decision token such as
 `Decision: code-change`. If shared logic, a contract, fallback, duplicate
 owner, consumer patch, or cross-module behavior appears, leave this lane.
 
-`Aegis Visibility` says how evidence, owner, patch shape, or verification
-changed repair. Pass root cause, avoided misfix, boundary, evidence,
-complexity, and risk to `verification-before-completion`; do not issue a
-separate receipt.
+`Aegis Visibility` names the evidence/owner/patch-shape/verification effect.
+Pass root cause, avoided misfix, boundary, evidence, complexity, and risk to
+`verification-before-completion`; no separate receipt.
 
 ## Diagnose before repair
 
@@ -174,13 +171,15 @@ Verification must match the risk:
   `defense-in-depth.md` **only after the root repair is known and evidence shows
   a second independent validation boundary is required**.
 
-If a fix fails, return to diagnosis with a new hypothesis. If any symptom
-persists or chains may diverge, or if three fixes failed, read
-`advanced-debugging-governance.md` **before another fix**. Also read it when
-the stop layer is disputed/unclear, a Layer Stop Card or user intervention is
-needed, a compound root is plausible, or H/T/D quality-gate classification is
-required. The reference owns those detailed escalation procedures; it does
-not replace the causal proof contract.
+Read `advanced-debugging-governance.md` **before another fix** for failed/
+persistent / divergent repair or three failures; for unclear/disputed stop /
+Layer Stop Card / intervention; or plausible compound root. Closeout triggers:
+repair-added patch-shape; multi-site/one-regression;
+remaining pattern/anomaly/duplicate/wrong-owner/downstream repair;
+uninspected same-symptom fix; missing compound member/necessity/anti-disguise;
+outside-repo authority; unmigrated
+published-contract break; undefined spec; missing permission/info. They route H/T/D;
+detail is not causal proof.
 
 For non-trivial debugging with configured workspace support:
 
@@ -210,6 +209,5 @@ did not grow without proof. Confidence: A = direct evidence and regression
 coverage; B = strong evidence with bounded unknowns; C = partial evidence and
 must not be presented as resolved.
 
-For white-box auditability, `Trace Digest` may summarize collected evidence;
-never expose raw chain-of-thought or let trace replace root-cause, rule-effect,
-and verification evidence.
+`Trace Digest` may summarize audit evidence; never expose chain-of-thought or
+replace root-cause, rule-effect, and verification evidence.
