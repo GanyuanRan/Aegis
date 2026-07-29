@@ -23,6 +23,7 @@ import shutil
 import stat
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 root = Path(sys.argv[1]).resolve()
@@ -144,8 +145,10 @@ def invoke_case(
         command.extend(["--diagnostic-attribution", str(diagnostic_path)])
 
     workspace_before_score = snapshot(workspace)
+    staging_before = set(Path(tempfile.gettempdir()).glob("aegis-verification-*"))
     completed = subprocess.run(command, cwd=root, text=True, capture_output=True)
     assert snapshot(workspace) == workspace_before_score, f"{folder}: scorer mutated workspace"
+    assert set(Path(tempfile.gettempdir()).glob("aegis-verification-*")) == staging_before, f"{folder}: scorer leaked neutral staging"
     report = json.loads(report_path.read_text(encoding="utf-8")) if completed.returncode == 0 else None
     return completed, report
 
@@ -347,19 +350,27 @@ for label, folder, changes, expected_verification, expected_pass in dual_behavio
     assert "forbidden-path-change" not in report["triggeredVetoes"], (label, report)
 
 paired_mutations = [
-    ("paired ordinary source overwrite fails", "Path('source.py').write_text('changed')", False),
-    ("paired ordinary added file fails", "Path('added.py').write_text('new')", False),
-    ("paired ordinary root mode change fails", "Path('.').chmod(Path('.').stat().st_mode ^ 0o001)", False),
-    ("paired ordinary restored transient write passes", "p=Path('temp'); p.write_text('x'); p.unlink()", True),
+    ("paired ordinary source overwrite fails", "Path('source.py').write_text('changed')", False, False, 5),
+    ("paired ordinary added file fails", "Path('added.py').write_text('new')", False, False, 5),
+    ("paired ordinary delete fails", "Path('source.py').unlink()", False, False, 5),
+    ("paired ordinary rename fails", "Path('source.py').rename('moved.py')", False, False, 5),
+    ("paired ordinary file mode change fails", "p=Path('source.py'); p.chmod(p.stat().st_mode ^ 0o001)", False, False, 5),
+    ("paired ordinary root mode change fails", "Path('.').chmod(Path('.').stat().st_mode ^ 0o001)", False, False, 5),
+    ("paired ordinary symlink retarget fails", "Path('link').unlink(); Path('link').symlink_to('other.py')", False, False, 5),
+    ("paired ordinary restored transient write passes", "p=Path('temp'); p.write_text('x'); p.unlink()", True, True, 5),
+    ("paired ordinary timeout preserves actual workspace", "import time; time.sleep(2)", False, True, 1),
 ]
-for label, mutation, expected in paired_mutations:
-    ordinary = {"argv": ["python3", "-c", f"from pathlib import Path; {mutation}"], "expectedExit": 0, "timeoutSeconds": 5}
+for label, mutation, expected, copy_preserved, timeout in paired_mutations:
+    ordinary = {"argv": ["python3", "-c", f"from pathlib import Path; {mutation}"], "expectedExit": 0, "timeoutSeconds": timeout}
     report = expect_result(label, expected, label.replace(" ", "-"), label.replace(" ", "-"),
         {"verification": [immutable_command, ordinary], "vetoes": ["verification-failure"]},
-        {"source.py": "original\n"}, events=[], project_files={"check.py": "pass\n"})
+        {"source.py": "original\n", "other.py": "other\n"}, mutate=lambda workspace: (workspace / "link").symlink_to("source.py"), events=[], project_files={"check.py": "pass\n"})
     ordinary_check = next(check for check in report["checks"] if check["id"] == "verification.1")
-    assert ordinary_check["evidence"]["workspacePreserved"] is expected
+    assert ordinary_check["evidence"]["workspacePreserved"] is copy_preserved
     assert next(check for check in report["checks"] if check["id"] == "verification.workspacePreserved")["result"] is True
+
+def prepare_host_markers(project):
+    (project / "data/markers.txt").write_text(f"{root}\n{project}\n{project.parent / 'workspace'}\n", encoding="utf-8")
 
 nested_report = expect_result(
     "nested multiple immutable files stay private and use workspace imports",
@@ -395,6 +406,8 @@ nested_report = expect_result(
             "from implementation import VALUE\n"
             "expected = Path(sys.argv[1])\n"
             "markers = Path(sys.argv[2]).read_text().splitlines()\n"
+            "visible_mounts = Path('/proc/self/mountinfo').read_bytes()\n"
+            "assert not any(marker.encode() in visible_mounts for marker in markers)\n"
             "assert expected.read_text(encoding='utf-8') == 'ok\\n'\n"
             "assert sys.argv[3] == '--label=data/expected.txt'\n"
             "assert not expected.with_name('sibling.txt').exists()\n"
@@ -405,10 +418,10 @@ nested_report = expect_result(
             "    assert not any(marker.encode() in visible for marker in markers)\n"
         ),
         "data/expected.txt": "ok\n",
-        "data/markers.txt": f"{root}\n",
         "data/sibling.txt": "must remain hidden\n",
         "implementation.py": "VALUE = -1\n",
     },
+    prepare_project=prepare_host_markers,
 )
 assert nested_report["checkCounts"] == {"pass": 2, "fail": 0, "unknown": 0}
 

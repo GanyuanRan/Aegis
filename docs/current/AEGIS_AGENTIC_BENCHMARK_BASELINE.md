@@ -260,12 +260,13 @@ The scorer derives immutable files from the outcome contract's sibling frozen
 `project/`, mounts only the declared files read-only, and keeps the final
 workspace as the implementation and import source. Immutable verification
 binds that workspace read-only, preserves network isolation, and cannot mutate
-it. The paired ordinary command retains writable workspace semantics inside
-one disposable copy of the final workspace. A permanent content, mode, path,
-addition, or deletion change in that copy fails verification, while a transient
-write restored before command exit remains compatible. Affected paired scoring
-must leave the actual terminal workspace snapshot unchanged. The runner gains
-no verification-policy responsibility.
+it. Paired verification uses neutral system-temporary staging: immutable
+commands receive an independent symlink-preserving final-workspace snapshot
+and only declared frozen files, while ordinary commands share a separate
+writable disposable copy. A permanent content, mode, path, addition, or
+deletion change in the ordinary copy fails verification; a transient restored
+write remains compatible. The actual terminal workspace stays unchanged. The
+runner gains no verification-policy responsibility.
 
 Semantic intent tags are assistant-authored only. Command events may retain
 structured objective evidence, such as a bounded `rg` or `grep` dependency

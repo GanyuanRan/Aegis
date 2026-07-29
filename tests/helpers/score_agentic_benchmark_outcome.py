@@ -457,6 +457,14 @@ def immutable_verification_args(
     return bwrap_args, execution_argv
 
 
+def stage_immutable_project(commands: list[dict[str, Any]], immutable_project: Path, staged_project: Path) -> None:
+    for relative in dict.fromkeys(path for command in commands for path in command.get("immutableArgPaths", [])):
+        validate_immutable_file(immutable_project, relative, f"immutableArgPaths[{relative}]")
+        destination = staged_project / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(immutable_project / relative, destination, follow_symlinks=False)
+
+
 def score_verification(
     contract: dict[str, Any],
     workspace: Path,
@@ -471,10 +479,17 @@ def score_verification(
     actual_before = snapshot_verification_workspace(workspace) if paired else None
     with ExitStack() as stack:
         ordinary_workspace = workspace
+        immutable_workspace = workspace
+        staged_project = immutable_project
         if paired:
-            temporary_root = Path(stack.enter_context(tempfile.TemporaryDirectory(prefix="aegis-verification-", dir=workspace.parent)))
-            ordinary_workspace = temporary_root / "workspace"
+            require(immutable_project is not None, "paired verification requires an immutable project")
+            temporary_root = Path(stack.enter_context(tempfile.TemporaryDirectory(prefix="aegis-verification-")))
+            ordinary_workspace = temporary_root / "ordinary-workspace"
+            immutable_workspace = temporary_root / "immutable-workspace"
+            staged_project = temporary_root / "project"
             shutil.copytree(workspace, ordinary_workspace, symlinks=True)
+            shutil.copytree(workspace, immutable_workspace, symlinks=True)
+            stage_immutable_project(commands, immutable_project, staged_project)
         for index, command in enumerate(commands):
             immutable_paths = command.get("immutableArgPaths", [])
             if bwrap is None:
@@ -482,11 +497,11 @@ def score_verification(
                 continue
             immutable_bwrap_args: list[str] = []
             execution_argv = command["argv"]
-            command_workspace = workspace if immutable_paths else ordinary_workspace
+            command_workspace = immutable_workspace if immutable_paths else ordinary_workspace
             copy_before = snapshot_verification_workspace(command_workspace) if paired and not immutable_paths else None
             if immutable_paths:
                 require(immutable_project is not None, "immutable verification requires an immutable project")
-                immutable_bwrap_args, execution_argv = immutable_verification_args(command, immutable_project)
+                immutable_bwrap_args, execution_argv = immutable_verification_args(command, staged_project)
             argv = [
                 bwrap, "--die-with-parent", "--new-session", "--unshare-net", "--unshare-pid", "--as-pid-1",
                 "--tmpfs", "/tmp", "--dir", "/tmp/agentic-benchmark-home",
