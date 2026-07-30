@@ -18,3 +18,5 @@ Entries are workspace records, not authoritative runtime decisions.
 | 2026-07-30 | artifact | docs/aegis/work/2026-07-30-deeper-cause-proof/resume-state-hint.json | 2026-07-30-deeper-cause-proof resume state hint |
 | 2026-07-30 | artifact | docs/aegis/work/2026-07-30-deeper-cause-proof/evidence-bundle-draft-baseline-pressure.json | 2026-07-30-deeper-cause-proof evidence baseline-pressure |
 | 2026-07-30 | artifact | docs/aegis/work/2026-07-30-deeper-cause-proof/evidence-bundle-draft-focused-baseline.json | 2026-07-30-deeper-cause-proof evidence focused-baseline |
+| 2026-07-30 | artifact | docs/aegis/work/2026-07-30-deeper-cause-proof/gate-input-pack.json | 2026-07-30-deeper-cause-proof gate input pack |
+| 2026-07-30 | work | docs/aegis/work/2026-07-30-deeper-cause-proof/proof-bundle.md | 2026-07-30-deeper-cause-proof proof bundle |

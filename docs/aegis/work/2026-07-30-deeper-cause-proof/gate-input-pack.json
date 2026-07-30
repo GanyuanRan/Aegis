@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "baselineRefs": [
+    "docs/current/AEGIS_PROCESS_BASELINE.md",
+    "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md"
+  ],
+  "impactStatement": "docs/aegis/work/2026-07-30-deeper-cause-proof/impact-statement-draft.json",
+  "compatPlan": "No runtime authority, no host distribution change, systematic-debugging/SKILL.md <= 10000 bytes, combined main skills <= 17000 bytes.",
+  "retirementPlan": "Planned retirement remains explicit: replace self-judged no-deeper-why closeout and stale independent-compound necessity wording; nothing retired yet.",
+  "evidenceBundle": [
+    "docs/aegis/work/2026-07-30-deeper-cause-proof/evidence-bundle-draft-baseline-pressure.json",
+    "docs/aegis/work/2026-07-30-deeper-cause-proof/evidence-bundle-draft-focused-baseline.json"
+  ]
+}
