@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "taskId": "2026-07-30-deeper-cause-proof",
+  "taskIntentRef": "docs/aegis/work/2026-07-30-deeper-cause-proof/task-intent-draft.json",
+  "baselineRefs": [
+    "docs/current/AEGIS_PROCESS_BASELINE.md",
+    "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md"
+  ],
+  "scopeStatus": "No implementation drift: no skill, baseline, fixture, validator, or test behavior was edited before pause.",
+  "compatStatus": "Runtime-authority and host-distribution boundaries unchanged; WIP branch only.",
+  "retirementStatus": "Planned retirement remains explicit: replace self-judged no-deeper-why closeout and stale independent-compound necessity wording; nothing retired yet.",
+  "newRiskSignals": [
+    "Quick-lane exemption currently depends on self-classification and existing default modification may evade patch-shape triggers."
+  ],
+  "decision": "pause-for-user"
+}

@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "focused-baseline",
+  "type": "command",
+  "source": "bash tests/e2e/debugging-patch-shape-gate-check.sh; python3 tests/helpers/validate_workflow_quality_matrix.py tests/e2e/fixtures/workflow-quality-matrix.json; bash tests/e2e/context-budget-check.sh",
+  "summary": "All commands exit 0 before the new regression cases are added; main systematic-debugging skill is 9999 bytes and combined debugging plus verification mains are 16997 bytes.",
+  "verifier": "fresh local command output, 2026-07-30"
+}

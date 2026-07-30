@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "requestedOutcome": "Strengthen the seven-layer debugging stop contract so proximate causes cannot be claimed as roots while preserving the quick bug lane.",
+  "goal": "Require falsifiable deeper-cause evidence before non-trivial root claims without making Aegis heavier.",
+  "successEvidence": [
+    "Pressure scenarios A and B remain open until upstream generator or specification causes are resolved; negative-control scenario C stays in the quick lane; focused, budget, boundary, parser, and Layer 1 checks pass."
+  ],
+  "stopCondition": "Done only after contract, baselines, behavior matrix, stale topology semantics, tests, review, and verification are complete; otherwise remain paused, needs-verification, blocked, or scope-exceeded.",
+  "nonGoals": [
+    "Do not add an eighth diagnostic layer, new skill, runtime gate, release, tag, or main-branch publication."
+  ],
+  "scope": "systematic-debugging root-cause claim contract, lightweight main routing, advanced H/D closeout signals, current process/workflow baselines, workflow-quality fixtures and validators.",
+  "changeKinds": [
+    "contract"
+  ],
+  "riskHints": [
+    "Over-tightening could make tiny local bugs expensive; under-tightening preserves self-classified quick-lane escape."
+  ]
+}
