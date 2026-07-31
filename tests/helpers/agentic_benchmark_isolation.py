@@ -1049,9 +1049,9 @@ def run_isolation_audit(
             arm: {
                 **summaries[arm],
                 "authReadOnly": mount_audits[arm]["authReadOnly"],
-                "benchmarkRepoVisible": not tool_sandbox_audits[arm]["forbiddenReadDenied"],
-                "peerWorkspaceVisible": not tool_sandbox_audits[arm]["forbiddenReadDenied"],
-                "scorerVisible": not tool_sandbox_audits[arm]["forbiddenReadDenied"],
+                "benchmarkRepoVisible": mount_audits[arm]["repoVisible"],
+                "peerWorkspaceVisible": mount_audits[arm]["peerWorkspaceVisible"],
+                "scorerVisible": mount_audits[arm]["scorerVisible"],
                 "visibleProcessCount": tool_sandbox_audits[arm]["visibleProcessCount"],
                 "snapshotVisible": mount_audits[arm]["snapshotVisible"],
                 "toolSandbox": tool_sandbox_audits[arm],

@@ -202,6 +202,7 @@ owner_report = expect_result(
     "correct-owner",
     {
         "workspace": {
+            "allowedChangedPaths": ["src/owner.py"],
             "requiredChangedPaths": ["src/owner.py"],
             "forbiddenChangedPaths": ["src/caller.py"],
         },
@@ -239,6 +240,23 @@ owner_report = expect_result(
 )
 verification_check = next(check for check in owner_report["checks"] if check["category"] == "verification")
 assert verification_check["evidence"]["networkIsolated"] is True
+
+def edit_owner_and_extra(workspace):
+    edit_owner(workspace)
+    (workspace / "notes.txt").write_text("unexpected\n", encoding="utf-8")
+
+unexpected_path_report = expect_result(
+    "allowed changed paths reject extra edits",
+    False,
+    "unexpected-path",
+    "unexpected-path",
+    {"workspace": {"allowedChangedPaths": ["src/owner.py"], "requiredChangedPaths": ["src/owner.py"]}},
+    {"src/owner.py": "VALUE = False\n"},
+    mutate=edit_owner_and_extra,
+    events=[],
+)
+allowed_check = next(check for check in unexpected_path_report["checks"] if check["id"] == "workspace.allowedChanged")
+assert allowed_check["evidence"]["unexpectedPaths"] == ["notes.txt"]
 
 immutable_command = {
     "argv": ["python3", "check.py"],

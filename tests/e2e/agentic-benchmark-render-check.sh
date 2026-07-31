@@ -5,6 +5,11 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
 
+if ! command -v rg >/dev/null 2>&1; then
+    echo "ERROR: rg is required for benchmark render assertions." >&2
+    exit 2
+fi
+
 if command -v python3 >/dev/null 2>&1 && python3 -V >/dev/null 2>&1; then
     PYTHON_CMD=(python3)
 elif command -v py >/dev/null 2>&1 && py -3 -V >/dev/null 2>&1; then

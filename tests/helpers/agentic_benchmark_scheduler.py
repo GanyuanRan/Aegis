@@ -5,12 +5,12 @@ from __future__ import annotations
 
 import json
 import math
-import os
-import tempfile
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable
+
+from agentic_benchmark_atomic import atomic_json as _atomic_json
 
 
 INVALID_REASONS = {
@@ -148,27 +148,6 @@ def _validate_policy(batch: dict[str, Any]) -> None:
         _positive_integer(target["repetition"], "repetition")
         target_ids.append(target["targetId"])
     _require(len(target_ids) == len(set(target_ids)), "schedule targetId values must be unique")
-
-
-def _atomic_json(path: Path, value: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    payload = json.dumps(value, indent=2, sort_keys=True) + "\n"
-    descriptor, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
-    temporary_path = Path(temporary_name)
-    try:
-        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
-            handle.write(payload)
-            handle.flush()
-            os.fsync(handle.fileno())
-        os.replace(temporary_path, path)
-        directory_descriptor = os.open(path.parent, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
-        try:
-            os.fsync(directory_descriptor)
-        finally:
-            os.close(directory_descriptor)
-    finally:
-        if temporary_path.exists():
-            temporary_path.unlink()
 
 
 def _set_status(ledger: dict[str, Any], status: str, reason: str | None = None) -> None:

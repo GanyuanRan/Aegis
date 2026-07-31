@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 import agentic_benchmark_scheduler
+from agentic_benchmark_atomic import atomic_json
 from agentic_benchmark_codex_events import parse_codex_jsonl
 from agentic_benchmark_active_run import run_supervised
 from agentic_benchmark_process_supervisor import communicate_with_timeout
@@ -82,13 +83,6 @@ def require(condition: bool, message: str) -> None:
 
 def repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
-
-
-def atomic_json(path: Path, value: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    temporary.replace(path)
 
 
 def file_hash(path: Path) -> str:
@@ -384,10 +378,15 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
         os.environ.get("AEGIS_BENCHMARK_BWRAP") or shutil.which("bwrap"), "bwrap",
     )
     permission_backend_bwrap = resolve_permission_backend_bwrap()
+    codex_version = command_version([str(codex_executable), "--version"])
+    bwrap_version = command_version([str(audit_bwrap_executable), "--version"])
+    require(codex_version is not None, "cannot read Codex version during batch preparation")
+    require(bwrap_version is not None, "cannot read bwrap version during batch preparation")
     seed = hashlib.sha256(args.batch_id.encode()).hexdigest()
     schedule = schedule_targets(cases, profile["repetitionsPerCase"], seed, profile["arms"])
     harness_paths = [
         "tests/helpers/run_agentic_benchmark.py",
+        "tests/helpers/agentic_benchmark_atomic.py",
         "tests/helpers/agentic_benchmark_active_run.py",
         "tests/helpers/agentic_benchmark_codex_events.py",
         "tests/helpers/agentic_benchmark_scheduler.py",
@@ -396,6 +395,8 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
         "tests/helpers/agentic_benchmark_provider_preflight.py",
         "tests/helpers/score_agentic_benchmark_outcome.py",
         "tests/helpers/render_agentic_benchmark.py",
+        "tests/helpers/validate_agentic_benchmark_cases.py",
+        "tests/helpers/validate_agentic_benchmark_matrix.py",
     ]
     proxy_policy = resolve_proxy_policy(os.environ)
     batch: dict[str, Any] = {
@@ -426,8 +427,8 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
         "frozenCases": [freeze_case(root, output_root, case) for case in cases],
         "distributionSnapshot": snapshot,
         "hostVersions": {
-            "codex": command_version([str(codex_executable), "--version"]),
-            "bwrap": command_version([str(audit_bwrap_executable), "--version"]),
+            "codex": codex_version,
+            "bwrap": bwrap_version,
         },
         "hostExecutableIdentities": {
             "codex": executable_identity(codex_executable, include_codex_runtime=True),
@@ -511,10 +512,11 @@ def _execute_target_unscrubbed(
         start_new_session=not process_group_supervised,
         env=process_environment,
     )
-    stdout, stderr, timed_out, output_exceeded, _artifact_limit_observed = communicate_with_timeout(
+    stdout, stderr, timed_out, output_exceeded, artifact_limit_observed = communicate_with_timeout(
         process,
         timeout_seconds,
         owns_process_group=not process_group_supervised,
+        artifact_root=attempt_root,
     )
     if timed_out:
         stderr += "\nbenchmark attempt timed out\n"
@@ -538,6 +540,13 @@ def _execute_target_unscrubbed(
             "status": "invalid",
             "invalidReason": "infrastructure",
             "errorType": "attempt-output-limit",
+            "elapsedSeconds": elapsed,
+        }
+    if artifact_limit_observed:
+        return {
+            "status": "invalid",
+            "invalidReason": "infrastructure",
+            "errorType": "attempt-artifact-limit",
             "elapsedSeconds": elapsed,
         }
     if process.returncode != 0:

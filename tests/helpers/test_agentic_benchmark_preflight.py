@@ -281,8 +281,9 @@ class CommandBoundaryTest(unittest.TestCase):
             "import os,pathlib,sys,time; "
             "fd=int(sys.argv[2]); ready=pathlib.Path(sys.argv[5]); gate=pathlib.Path(sys.argv[6]); "
             "ready.touch(); "
-            "deadline=time.monotonic()+1; "
-            "\nwhile not gate.exists() and time.monotonic()<deadline: time.sleep(0.001); "
+            "deadline=time.monotonic()+1\n"
+            "while not gate.exists() and time.monotonic()<deadline:\n"
+            "    time.sleep(0.001)\n"
             "sys.stdout.buffer.write(os.read(fd, 1048576))"
         )
 

@@ -16,11 +16,13 @@ from contextlib import ExitStack
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from agentic_benchmark_atomic import atomic_json
 
 AUTHORITY_BOUNDARY = "advisory-method-pack-evidence-not-completion-authority"
 CONTRACT_FIELDS = {"version", "caseId", "workspace", "verification", "response", "events", "vetoes"}
 WORKSPACE_FIELDS = {
     "mustRemainClean",
+    "allowedChangedPaths",
     "requiredChangedPaths",
     "forbiddenChangedPaths",
     "requiredExistingPaths",
@@ -393,6 +395,17 @@ def score_workspace(
         result = None if changed is None else (not changed) == expected_clean
         add_check(checks, "workspace.clean", "workspace", result, {"changedPathCount": None if changed is None else len(changed)})
 
+    if "allowedChangedPaths" in workspace_contract:
+        allowed = set(workspace_contract["allowedChangedPaths"])
+        unexpected = None if changed is None else sorted(changed - allowed)
+        add_check(
+            checks,
+            "workspace.allowedChanged",
+            "workspace",
+            None if unexpected is None else not unexpected,
+            {"unexpectedPaths": unexpected},
+        )
+
     for index, path in enumerate(workspace_contract.get("requiredChangedPaths", [])):
         add_check(checks, f"workspace.requiredChanged.{index}", "workspace", None if changed is None else path in changed, {"path": path})
     for index, path in enumerate(workspace_contract.get("forbiddenChangedPaths", [])):
@@ -511,7 +524,7 @@ def score_verification(
             for system_path in ("/usr", "/bin", "/lib", "/lib64", "/etc"):
                 if Path(system_path).exists():
                     argv.extend(["--ro-bind", system_path, system_path])
-            argv.extend(["--dev-bind", "/dev", "/dev", "--proc", "/proc", "--", *execution_argv])
+            argv.extend(["--dev", "/dev", "--proc", "/proc", "--", *execution_argv])
             evidence: dict[str, Any] = {"expectedExit": command["expectedExit"], "networkIsolated": True}
             try:
                 completed = subprocess.run(argv, text=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
@@ -671,10 +684,7 @@ def main() -> None:
     require(isinstance(args.case_id, str) and re.fullmatch(r"[a-z0-9][a-z0-9-]*", args.case_id), "--case-id must be kebab-case")
     report = score(args)
     report_path = resolve_report_path(repo_root(), args.report_json)
-    report_path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = report_path.with_suffix(report_path.suffix + ".tmp")
-    temporary.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    temporary.replace(report_path)
+    atomic_json(report_path, report)
     print(json.dumps({"caseId": report["caseId"], "contractPass": report["contractPass"]}))
 
 

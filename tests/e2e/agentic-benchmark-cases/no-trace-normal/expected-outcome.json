@@ -6,7 +6,7 @@
     "forbiddenExistingPaths": ["docs/aegis"]
   },
   "verification": [
-    {"argv": ["python3", "-c", "from pathlib import Path; assert 'timeout_seconds = 25' in Path('client.ini').read_text()"], "expectedExit": 0, "timeoutSeconds": 20}
+    {"argv": ["python3", "-c", "import configparser; parser=configparser.ConfigParser(); parser.read('client.ini'); assert parser.sections() == ['delivery']; assert parser.getint('delivery', 'timeout_seconds') == 25"], "expectedExit": 0, "timeoutSeconds": 20}
   ],
   "response": {
     "forbiddenClaims": ["Trace Digest"]

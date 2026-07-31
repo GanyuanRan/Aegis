@@ -4,12 +4,17 @@
 from __future__ import annotations
 
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Any
 
 
 REQUIRED_ARMS = {"baseline-no-aegis", "aegis-auto", "aegis-explicit", "previous-aegis"}
+AUTHORITY_BOUNDARY = "advisory-method-pack-evidence-not-completion-authority"
+CONTROLLED_REPLAY_TIER = "controlled-replay"
+DEVELOPMENT_PARTITION = "development"
+CONTROLLED_REPLAY_SCORE_SOURCE = "static-transcript-contract-analysis"
 
 REQUIRED_EVALUATION_TIERS = {
     "deterministic-static",
@@ -244,7 +249,7 @@ EXPECTED_RUN_PROFILES = {
         "validRunTarget": 120,
         "paidAttemptCeiling": 132,
         "workers": 8,
-        "wallClockBudgetSeconds": 2700,
+        "wallClockBudgetSeconds": 4800,
         "preflightTimeoutSeconds": 30,
         "perAttemptTimeoutSeconds": 240,
         "infrastructureFailureLimit": 2,
@@ -341,15 +346,15 @@ def validate_evaluation_contract(data: dict[str, Any]) -> None:
     require(deterministic.get("defaultCi") is True, "deterministic-static must be the default CI tier")
     require(deterministic.get("supportsPromotionEvidence") is False, "deterministic-static cannot support promotion evidence")
 
-    controlled = by_id["controlled-replay"]
+    controlled = by_id[CONTROLLED_REPLAY_TIER]
     require(controlled.get("implementationStatus") == "implemented", "controlled-replay must be implemented")
     require(controlled.get("defaultCi") is False, "controlled-replay must not be the default CI tier")
     require(
         controlled.get("executionShape") == "single-static-captured-transcript",
         "controlled-replay must declare its single static transcript shape",
     )
-    require(controlled.get("datasetPartitions") == ["development"], "controlled-replay must be development-only")
-    require(controlled.get("scoreSource") == "static-transcript-contract-analysis", "controlled-replay score source drifted")
+    require(controlled.get("datasetPartitions") == [DEVELOPMENT_PARTITION], "controlled-replay must be development-only")
+    require(controlled.get("scoreSource") == CONTROLLED_REPLAY_SCORE_SOURCE, "controlled-replay score source drifted")
     require(controlled.get("supportsPromotionEvidence") is False, "controlled-replay cannot support promotion evidence")
     unsupported = set(controlled.get("unsupportedClaims", []))
     require(
@@ -487,6 +492,13 @@ def validate_run_profiles(data: dict[str, Any]) -> None:
         require(
             profile["paidAttemptCeiling"] >= profile["validRunTarget"],
             f"{profile_id}.paidAttemptCeiling must cover the valid target",
+        )
+        minimum_wall_budget = profile["preflightTimeoutSeconds"] + math.ceil(
+            profile["paidAttemptCeiling"] / profile["workers"]
+        ) * profile["perAttemptTimeoutSeconds"]
+        require(
+            profile["wallClockBudgetSeconds"] >= minimum_wall_budget,
+            f"{profile_id}.wallClockBudgetSeconds cannot cover its attempt ceiling",
         )
 
 
@@ -673,7 +685,7 @@ def validate_isolation_and_boundary(data: dict[str, Any]) -> None:
     require(not missing_controls, f"missing isolation controls: {', '.join(missing_controls)}")
 
     require(
-        data.get("authorityBoundary") == "advisory-method-pack-evidence-not-completion-authority",
+        data.get("authorityBoundary") == AUTHORITY_BOUNDARY,
         "authorityBoundary must preserve method-pack advisory scope",
     )
     boundaries = data.get("reportBoundaries", {})

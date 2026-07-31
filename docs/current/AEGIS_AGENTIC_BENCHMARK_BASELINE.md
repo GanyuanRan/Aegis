@@ -197,7 +197,7 @@ The matrix is the only exact run-shape owner. It defines these profiles:
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 | `development-pilot` | 1 development | 1 | 2 | 2 | 2 | 300 seconds | disabled |
 | `standard-held-out` | all 20 held-out | 1 | 40 | 44 | 8 | 2700 seconds | advisory; `repeated-run-evidence` unsupported |
-| `extended-held-out` | all 20 held-out | 3 | 120 | 132 | 8 | 2700 seconds | advisory repeated-run evidence |
+| `extended-held-out` | all 20 held-out | 3 | 120 | 132 | 8 | 4800 seconds | advisory repeated-run evidence |
 
 Every profile uses both live comparison arms, a 30-second provider preflight,
 a 240-second per-attempt timeout, and an infrastructure failure limit of two

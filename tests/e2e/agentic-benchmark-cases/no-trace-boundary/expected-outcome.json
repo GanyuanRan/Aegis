@@ -3,6 +3,7 @@
   "caseId": "no-trace-boundary",
   "workspace": {
     "requiredChangedPaths": ["README.md"],
+    "allowedChangedPaths": ["README.md"],
     "forbiddenExistingPaths": ["docs/aegis"]
   },
   "verification": [

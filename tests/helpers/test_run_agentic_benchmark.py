@@ -120,6 +120,7 @@ class RunnerContractTest(unittest.TestCase):
         parsed: dict | None = None,
         scorer_error: BaseException | None = None,
         output_exceeded: bool = False,
+        artifact_limit_observed: bool = False,
     ) -> tuple[dict, mock.Mock]:
         root = Path(__file__).resolve().parents[2]
         workspace = output_root / "workspace"
@@ -144,7 +145,7 @@ class RunnerContractTest(unittest.TestCase):
         ) as popen, mock.patch.object(
             benchmark_runner,
             "communicate_with_timeout",
-            return_value=("{}", "", False, output_exceeded, False),
+            return_value=("{}", "", False, output_exceeded, artifact_limit_observed),
         ), mock.patch.object(benchmark_runner, "parse_codex_jsonl", return_value=parsed), mock.patch.object(
             benchmark_runner, "score_outcome", side_effect=scorer_error
         ):
@@ -1175,6 +1176,14 @@ class RunnerContractTest(unittest.TestCase):
             self.assertEqual(result["errorType"], "attempt-output-limit")
             stderr = (output_root / "attempts/001-target/codex-stderr.log").read_text(encoding="utf-8")
             self.assertNotIn("timed out", stderr)
+
+    def test_attempt_pipeline_rejects_observed_artifact_limit(self):
+        root = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory(prefix="agentic-attempt-artifact-", dir=root / ".tmp") as value:
+            output_root = Path(value)
+            result, _popen = self.run_unscrubbed_attempt(output_root, artifact_limit_observed=True)
+            self.assertEqual(result["invalidReason"], "infrastructure")
+            self.assertEqual(result["errorType"], "attempt-artifact-limit")
 
     def test_attempt_pipeline_maps_host_events_and_scorer_failures_to_stable_error_types(self):
         root = Path(__file__).resolve().parents[2]

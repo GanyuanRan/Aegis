@@ -9,7 +9,6 @@ import hashlib
 import html
 import json
 import math
-import os
 import random
 import re
 import tempfile
@@ -18,6 +17,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+from agentic_benchmark_atomic import atomic_text
 from agentic_benchmark_scheduler import INVALID_REASONS
 
 
@@ -130,21 +130,6 @@ def load_json(path: Path, label: str) -> dict[str, Any]:
         raise SystemExit(f"cannot read {label} {path}: {exc}") from exc
     require(isinstance(value, dict), f"{label} must contain a JSON object")
     return value
-
-
-def atomic_text(path: Path, value: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    descriptor, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
-    temporary = Path(temporary_name)
-    try:
-        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
-            stream.write(value)
-            stream.flush()
-            os.fsync(stream.fileno())
-        os.replace(temporary, path)
-    except BaseException:
-        temporary.unlink(missing_ok=True)
-        raise
 
 
 def canonical_json(value: Any) -> str:

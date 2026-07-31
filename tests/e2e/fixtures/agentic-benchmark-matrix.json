@@ -186,7 +186,7 @@
       "validRunTarget": 120,
       "paidAttemptCeiling": 132,
       "workers": 8,
-      "wallClockBudgetSeconds": 2700,
+      "wallClockBudgetSeconds": 4800,
       "preflightTimeoutSeconds": 30,
       "perAttemptTimeoutSeconds": 240,
       "infrastructureFailureLimit": 2,

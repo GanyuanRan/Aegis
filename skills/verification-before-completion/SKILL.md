@@ -7,16 +7,19 @@ description: "Use when about to claim work is complete, fixed, passing, verified
 
 Before any done/passing/fixed/complete/verified/release-ready/handoff claim:
 
-1. Choose a fresh falsifying command or manual check.
-2. Run it completely; read output, exit status, failures, and covered scope.
-3. Select the closeout level:
+1. Classify the next action. Persistent-state, source-of-truth removal, or
+   irreversible work requires scoped user permission before execution;
+   warnings, guards, and broad assent do not grant it.
+2. Choose a fresh falsifying command or manual check.
+3. Run it completely; read output, exit status, failures, and covered scope.
+4. Select the closeout level:
    - **L0 fast-path**: tiny, low-risk work; one evidence sentence plus residual
      risk or uncovered scope.
    - **L1 default**: non-trivial Aegis-shaped work; one compact localized
      `Aegis Impact and Safety Receipt`.
    - **L2 expanded**: a trigger below applies; read `expanded-closeout.md`
      directly, then add only its triggered detail to the same receipt.
-4. If evidence is partial, stale, failing, or narrower than the claim,
+5. If evidence is partial, stale, failing, or narrower than the claim,
    downgrade the status. Never claim completion first and verify later.
 
 This Method Pack grants no authoritative `GateDecision`, `PolicySnapshot`,
@@ -30,9 +33,8 @@ Stop before claiming success if:
 - the next action is commit, push, PR, merge, tag, publish, release, or handoff;
 - task/slice completion is being treated as accepted requirement satisfaction;
 - governance or retirement lacks repair/retirement evidence;
-- retained old logic lacks a retention reason and retirement trigger;
-- complexity is unresolved; or
-- a warning, guard, or broad assent is being treated as destructive permission.
+- retained old logic lacks a retention reason and retirement trigger; or
+- complexity is unresolved.
 
 ## Required Evidence Slots
 
@@ -127,9 +129,6 @@ When a work record exists run `python <aegis-workspace-helper> bundle --root
 <target-project-root> --work YYYY-MM-DD-<slug>`, then run `python
 <aegis-workspace-helper> check --root <target-project-root>`. These checks prove
 structure, not evidence sufficiency.
-
-If persistent-state or irreversible source-of-truth work requires scoped user
-confirmation and it is absent, do not act and never claim complete.
 
 ## Completion Boundary
 
