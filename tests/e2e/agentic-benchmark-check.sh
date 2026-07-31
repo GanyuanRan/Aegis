@@ -505,6 +505,36 @@ mkdir -p "$REPO_ROOT/.tmp"
 coverage_negative_root="$(mktemp -d "$REPO_ROOT/.tmp/agentic-coverage-negative.XXXXXX")"
 trap 'rm -rf -- "$coverage_negative_root"' EXIT
 
+# The static gate must stay host-neutral while still proving that dry-run
+# batches freeze both a launcher and its packaged native runtime identity.
+# This fixture is hashed during preparation but never makes a model call.
+offline_codex="$("${PYTHON_CMD[@]}" - "$coverage_negative_root/offline-codex" <<'PY'
+import platform
+import shutil
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+launcher = root / "bin" / "codex.js"
+launcher.parent.mkdir(parents=True)
+launcher.write_text("#!/bin/sh\nprintf '%s\\n' 'codex-cli 0.0.0-offline-test'\n", encoding="utf-8")
+launcher.chmod(0o755)
+
+target = {
+    "x86_64": "x86_64-unknown-linux-musl",
+    "aarch64": "aarch64-unknown-linux-musl",
+}.get(platform.machine())
+if target is None:
+    raise SystemExit("offline Codex fixture platform is unsupported")
+native = root / "node_modules" / "@openai" / "codex-offline-test" / "vendor" / target / "bin" / "codex"
+native.parent.mkdir(parents=True)
+shutil.copy2(Path(sys.executable).resolve(), native)
+native.chmod(0o755)
+print(launcher)
+PY
+)"
+export AEGIS_BENCHMARK_CODEX="$offline_codex"
+
 while IFS='|' read -r mutation label expected_error validator_scope; do
     assert_negative_coverage_case "$mutation" "$label" "$expected_error" "$validator_scope"
 done <<'CASES'
