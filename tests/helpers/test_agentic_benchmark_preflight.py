@@ -169,8 +169,16 @@ class CommandBoundaryTest(unittest.TestCase):
             raw = json.dumps(
                 {
                     "models": [
-                        {"slug": "requested-model", "base_instructions": "raw catalog must disappear"},
-                        {"slug": "other-model", "base_instructions": "also raw"},
+                        {
+                            "slug": "requested-model",
+                            "supported_reasoning_levels": [{"effort": "high"}, {"effort": "xhigh"}],
+                            "base_instructions": "raw catalog must disappear",
+                        },
+                        {
+                            "slug": "other-model",
+                            "supported_reasoning_levels": [{"effort": "low"}],
+                            "base_instructions": "also raw",
+                        },
                     ]
                 }
             )
@@ -183,6 +191,7 @@ class CommandBoundaryTest(unittest.TestCase):
             bwrap=self.bwrap,
             codex=self.codex,
             requested_model="requested-model",
+            requested_reasoning_effort="xhigh",
             timeout_seconds=30,
             proxy_policy=self.policy,
             command_runner=fake_runner,
@@ -198,9 +207,10 @@ class CommandBoundaryTest(unittest.TestCase):
         self.assertEqual(sorted(set(setenv_keys(command)) & set(PROXY_KEYS)), ["HTTP_PROXY"])
         self.assertFalse(any("/opt/aegis" in value for value in command))
         self.assertFalse(isolated_root.exists())
-        self.assertEqual(set(result), {"status", "elapsedSeconds", "requestedModelAvailable", "catalogCount"})
+        self.assertEqual(set(result), {"status", "elapsedSeconds", "requestedModelAvailable", "requestedReasoningEffortAvailable", "catalogCount"})
         self.assertEqual(result["status"], "ready")
         self.assertTrue(result["requestedModelAvailable"])
+        self.assertTrue(result["requestedReasoningEffortAvailable"])
         self.assertEqual(result["catalogCount"], 2)
         serialized = json.dumps(result, sort_keys=True)
         for forbidden in ("requested-model", "other-model", "raw catalog", "proxy.invalid"):
@@ -579,6 +589,7 @@ class CommandBoundaryTest(unittest.TestCase):
                     "bwrap": self.bwrap,
                     "codex": self.codex,
                     "requested_model": "requested-model",
+                    "requested_reasoning_effort": "high",
                     "timeout_seconds": 30,
                     "proxy_policy": self.policy,
                     "command_runner": fake_runner,
@@ -616,6 +627,7 @@ class CommandBoundaryTest(unittest.TestCase):
                     bwrap=self.bwrap,
                     codex=self.codex,
                     requested_model="requested-model",
+                    requested_reasoning_effort="high",
                     timeout_seconds=30,
                     proxy_policy=self.policy,
                     command_runner=fake_runner,
@@ -688,6 +700,7 @@ class CommandBoundaryTest(unittest.TestCase):
             layout=layout,
             prompt="prompt",
             model="model",
+            reasoning_effort="high",
         )
         self.assertEqual(live[0], str(self.codex))
         self.assertNotIn("--sandbox", live)
@@ -927,6 +940,7 @@ class SanitizedPreflightTest(unittest.TestCase):
         return run_sanitized_provider_preflight(
             ["fake-codex", "debug", "models"],
             "requested-model",
+            "xhigh",
             30,
             command_runner=runner,
         )
@@ -935,7 +949,16 @@ class SanitizedPreflightTest(unittest.TestCase):
         result = self.run_fake('{"models":[{"slug":"other-model"}]}')
         self.assertEqual(result["status"], "requested-model-missing")
         self.assertFalse(result["requestedModelAvailable"])
+        self.assertFalse(result["requestedReasoningEffortAvailable"])
         self.assertEqual(result["catalogCount"], 1)
+
+    def test_missing_requested_reasoning_effort_is_not_ready(self):
+        result = self.run_fake(
+            '{"models":[{"slug":"requested-model","supported_reasoning_levels":[{"effort":"high"}]}]}'
+        )
+        self.assertEqual(result["status"], "requested-reasoning-effort-missing")
+        self.assertTrue(result["requestedModelAvailable"])
+        self.assertFalse(result["requestedReasoningEffortAvailable"])
 
     def test_malformed_and_empty_catalogs_are_rejected(self):
         values = [
@@ -962,6 +985,7 @@ class SanitizedPreflightTest(unittest.TestCase):
         timed_out = run_sanitized_provider_preflight(
             ["fake-codex", "debug", "models"],
             "requested-model",
+            "xhigh",
             30,
             command_runner=timeout_runner,
         )
@@ -984,11 +1008,13 @@ class SanitizedPreflightTest(unittest.TestCase):
         result = run_sanitized_provider_preflight(
             ["fake-codex", "debug", "models"],
             "requested-model",
+            "xhigh",
             30,
             command_runner=refresh_failed,
         )
         self.assertEqual(result["status"], "command-failed")
         self.assertFalse(result["requestedModelAvailable"])
+        self.assertFalse(result["requestedReasoningEffortAvailable"])
         self.assertEqual(result["catalogCount"], 0)
         serialized = json.dumps(result, sort_keys=True)
         for forbidden in ("requested-model", "private raw catalog", "refresh", "proxy.invalid"):
@@ -1002,7 +1028,7 @@ class SanitizedPreflightTest(unittest.TestCase):
             "--",
         ]
         started = time.monotonic()
-        result = run_sanitized_provider_preflight(command, "requested-model", 0.2)
+        result = run_sanitized_provider_preflight(command, "requested-model", "xhigh", 0.2)
         self.assertEqual(result["status"], "timeout")
         self.assertLess(time.monotonic() - started, 1.0)
 

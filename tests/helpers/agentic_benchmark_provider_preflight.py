@@ -750,11 +750,18 @@ def _default_command_runner(
     return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
 
 
-def _result(status: str, elapsed_seconds: float, available: bool, count: int) -> dict[str, Any]:
+def _result(
+    status: str,
+    elapsed_seconds: float,
+    model_available: bool,
+    reasoning_effort_available: bool,
+    count: int,
+) -> dict[str, Any]:
     return {
         "status": status,
         "elapsedSeconds": round(max(0.0, elapsed_seconds), 3),
-        "requestedModelAvailable": available,
+        "requestedModelAvailable": model_available,
+        "requestedReasoningEffortAvailable": reasoning_effort_available,
         "catalogCount": count,
     }
 
@@ -762,6 +769,7 @@ def _result(status: str, elapsed_seconds: float, available: bool, count: int) ->
 def run_sanitized_provider_preflight(
     command: list[str],
     requested_model: str,
+    requested_reasoning_effort: str,
     timeout_seconds: float,
     *,
     command_runner: CommandRunner | None = None,
@@ -774,6 +782,8 @@ def run_sanitized_provider_preflight(
         raise SystemExit("provider preflight timeout must be positive")
     if not requested_model:
         raise SystemExit("provider preflight requested model must be non-empty")
+    if not requested_reasoning_effort:
+        raise SystemExit("provider preflight requested reasoning effort must be non-empty")
     started = clock()
     try:
         if command_runner is None:
@@ -785,33 +795,54 @@ def run_sanitized_provider_preflight(
         else:
             completed = command_runner(command, timeout_seconds)
     except subprocess.TimeoutExpired:
-        return _result("timeout", clock() - started, False, 0)
+        return _result("timeout", clock() - started, False, False, 0)
     except OSError:
-        return _result("command-failed", clock() - started, False, 0)
+        return _result("command-failed", clock() - started, False, False, 0)
     elapsed = clock() - started
     if completed.returncode != 0:
-        return _result("command-failed", elapsed, False, 0)
+        return _result("command-failed", elapsed, False, False, 0)
     # Codex can retain a cached catalog and exit zero after a refresh error. Treat
     # every stderr signal as failure instead of parsing unstable log wording.
     if completed.stderr:
-        return _result("command-failed", elapsed, False, 0)
+        return _result("command-failed", elapsed, False, False, 0)
     try:
         catalog = json.loads(completed.stdout)
     except (TypeError, json.JSONDecodeError):
-        return _result("malformed-catalog", elapsed, False, 0)
+        return _result("malformed-catalog", elapsed, False, False, 0)
     if not isinstance(catalog, dict) or set(catalog) != {"models"}:
-        return _result("malformed-catalog", elapsed, False, 0)
+        return _result("malformed-catalog", elapsed, False, False, 0)
     models = catalog["models"]
     if not isinstance(models, list):
-        return _result("malformed-catalog", elapsed, False, 0)
+        return _result("malformed-catalog", elapsed, False, False, 0)
     slugs: list[str] = []
+    requested_entry: dict[str, Any] | None = None
     for model in models:
         if not isinstance(model, dict) or not isinstance(model.get("slug"), str) or not model["slug"]:
-            return _result("malformed-catalog", elapsed, False, 0)
+            return _result("malformed-catalog", elapsed, False, False, 0)
         slugs.append(model["slug"])
+        if model["slug"] == requested_model:
+            requested_entry = model
     if len(set(slugs)) != len(slugs):
-        return _result("malformed-catalog", elapsed, False, 0)
+        return _result("malformed-catalog", elapsed, False, False, 0)
     if not slugs:
-        return _result("empty-catalog", elapsed, False, 0)
-    available = requested_model in slugs
-    return _result("ready" if available else "requested-model-missing", elapsed, available, len(slugs))
+        return _result("empty-catalog", elapsed, False, False, 0)
+    if requested_entry is None:
+        return _result("requested-model-missing", elapsed, False, False, len(slugs))
+    levels = requested_entry.get("supported_reasoning_levels")
+    if not isinstance(levels, list):
+        return _result("malformed-catalog", elapsed, True, False, len(slugs))
+    efforts: list[str] = []
+    for level in levels:
+        if not isinstance(level, dict) or not isinstance(level.get("effort"), str) or not level["effort"]:
+            return _result("malformed-catalog", elapsed, True, False, len(slugs))
+        efforts.append(level["effort"])
+    if len(set(efforts)) != len(efforts):
+        return _result("malformed-catalog", elapsed, True, False, len(slugs))
+    effort_available = requested_reasoning_effort in efforts
+    return _result(
+        "ready" if effort_available else "requested-reasoning-effort-missing",
+        elapsed,
+        True,
+        effort_available,
+        len(slugs),
+    )

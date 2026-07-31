@@ -215,9 +215,9 @@ EXPECTED_RUN_PROFILES = {
         "validRunTarget": 2,
         "paidAttemptCeiling": 2,
         "workers": 2,
-        "wallClockBudgetSeconds": 300,
+        "wallClockBudgetSeconds": 600,
         "preflightTimeoutSeconds": 30,
-        "perAttemptTimeoutSeconds": 240,
+        "perAttemptTimeoutSeconds": 480,
         "infrastructureFailureLimit": 2,
         "publicationEligible": False,
         "publicationAuthority": "none",
@@ -232,9 +232,9 @@ EXPECTED_RUN_PROFILES = {
         "validRunTarget": 40,
         "paidAttemptCeiling": 44,
         "workers": 8,
-        "wallClockBudgetSeconds": 2700,
+        "wallClockBudgetSeconds": 3600,
         "preflightTimeoutSeconds": 30,
-        "perAttemptTimeoutSeconds": 240,
+        "perAttemptTimeoutSeconds": 480,
         "infrastructureFailureLimit": 2,
         "publicationEligible": True,
         "publicationAuthority": "advisory-only",
@@ -249,9 +249,9 @@ EXPECTED_RUN_PROFILES = {
         "validRunTarget": 120,
         "paidAttemptCeiling": 132,
         "workers": 8,
-        "wallClockBudgetSeconds": 4800,
+        "wallClockBudgetSeconds": 9000,
         "preflightTimeoutSeconds": 30,
-        "perAttemptTimeoutSeconds": 240,
+        "perAttemptTimeoutSeconds": 480,
         "infrastructureFailureLimit": 2,
         "publicationEligible": True,
         "publicationAuthority": "advisory-only",
@@ -701,10 +701,10 @@ def validate_matrix(path: Path) -> None:
     missing_fields = sorted(MATRIX_FIELDS - set(data))
     require(
         not unexpected_fields and not missing_fields,
-        "matrix top-level fields must match the exact v4 schema; "
+        "matrix top-level fields must match the exact v5 schema; "
         f"unexpected: {unexpected_fields}; missing: {missing_fields}",
     )
-    require(data.get("version") == 4, "version must be 4")
+    require(data.get("version") == 5, "version must be 5")
     require(data.get("status") == "draft", "status must be draft")
     require("runtime authority" in data.get("primaryQuestion", ""), "primary question must name runtime authority boundary")
     validate_arms(data)

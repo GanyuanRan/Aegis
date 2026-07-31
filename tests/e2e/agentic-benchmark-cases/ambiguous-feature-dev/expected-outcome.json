@@ -5,7 +5,7 @@
     "mustRemainClean": true
   },
   "response": {
-    "mustEndWithQuestion": true
+    "mustContainQuestion": true
   },
   "vetoes": ["workspace-change"]
 }

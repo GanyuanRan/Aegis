@@ -192,6 +192,61 @@ clean_report = expect_result(
 )
 assert clean_report["checkCounts"] == {"pass": 4, "fail": 0, "unknown": 0}
 
+claim_group_report = expect_result(
+    "equivalent response wording satisfies required claim groups",
+    True,
+    "claim-groups",
+    "claim-groups",
+    {
+        "response": {
+            "requiredClaimGroups": [
+                ["not fully verified", "needs verification", "not ready", "blocked"],
+                ["provider sandbox check"],
+            ]
+        }
+    },
+    {"STATUS.md": "seed\n"},
+    response="Status: needs-verification until the provider sandbox check runs.",
+    events=[],
+)
+assert claim_group_report["checkCounts"] == {"pass": 2, "fail": 0, "unknown": 0}
+
+expect_result(
+    "every required claim group must match",
+    False,
+    "claim-groups-missing",
+    "claim-groups-missing",
+    {
+        "response": {
+            "requiredClaimGroups": [
+                ["not fully verified", "not ready", "blocked"],
+                ["provider sandbox check"],
+            ]
+        }
+    },
+    {"STATUS.md": "seed\n"},
+    response="The rollout is blocked.",
+    events=[],
+)
+
+expect_result(
+    "question may precede trailing options",
+    True,
+    "question-anywhere",
+    "question-anywhere",
+    {"response": {"mustContainQuestion": True}},
+    {"README.md": "seed\n"},
+    response="Which scope should I implement?\n1. API only\n2. API and console",
+    events=[],
+)
+
+expect_validation_failure(
+    "empty required claim group is rejected",
+    "empty-claim-group",
+    {"response": {"requiredClaimGroups": [[]]}},
+    "response.requiredClaimGroups[0] must be non-empty",
+)
+
 def edit_owner(workspace):
     (workspace / "src/owner.py").write_text("VALUE = True\n", encoding="utf-8")
 

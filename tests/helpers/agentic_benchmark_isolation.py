@@ -450,6 +450,7 @@ def build_codex_live_command(
     layout: dict[str, Path],
     prompt: str,
     model: str,
+    reasoning_effort: str,
 ) -> list[str]:
     return [
         str(resolve_codex_direct_executable(codex)),
@@ -463,6 +464,8 @@ def build_codex_live_command(
         "--ignore-rules",
         "--disable",
         "shell_snapshot",
+        "-c",
+        f'model_reasoning_effort="{reasoning_effort}"',
         "--model",
         model,
         "-C",
@@ -492,9 +495,16 @@ def validate_codex_live_command(
     layout: dict[str, Path],
     prompt: str,
     model: str,
+    reasoning_effort: str,
 ) -> None:
     require(
-        command == build_codex_live_command(codex=codex, layout=layout, prompt=prompt, model=model),
+        command == build_codex_live_command(
+            codex=codex,
+            layout=layout,
+            prompt=prompt,
+            model=model,
+            reasoning_effort=reasoning_effort,
+        ),
         "direct Codex live command drifted",
     )
     require("--sandbox" not in command, "direct Codex live command must use the frozen permission profile")
@@ -691,6 +701,7 @@ def run_provider_preflight(
     bwrap: Path,
     codex: Path,
     requested_model: str,
+    requested_reasoning_effort: str,
     timeout_seconds: float,
     proxy_policy: ProxyPolicy,
     command_runner: CommandRunner | None = None,
@@ -723,6 +734,7 @@ def run_provider_preflight(
         return run_sanitized_provider_preflight(
             command,
             requested_model,
+            requested_reasoning_effort,
             timeout_seconds,
             command_runner=command_runner,
             process_group_supervised=process_group_supervised,

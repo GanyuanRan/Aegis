@@ -95,7 +95,8 @@ Benchmark runs must prevent contamination between arms:
 - isolate host config and plugin directories
 - record the effective Aegis installation path and activation mode
 - preserve workspaces or transcripts for audit
-- make model, host, seed, timeout, and tool restrictions explicit
+- pin the same requested model and reasoning effort across both arms, and make
+  host, seed, timeout, and tool restrictions explicit
 - run scorer self-tests before trusting scorer output
 
 If a contamination bug is found, the affected result must be marked superseded
@@ -128,7 +129,7 @@ method-pack verification, not a runtime gate.
 
 ### 7.1 Scenario Coverage Contract
 
-The version 4 matrix maps every minimum scenario class to three distinct
+The version 5 matrix maps every minimum scenario class to three distinct
 coverage signals:
 
 - `workflowQualityFixtureRefs` names one or more existing deterministic
@@ -182,7 +183,7 @@ automatically promote a candidate or modify a skill, workflow, or baseline.
 
 ### 7.3 P1 Case Portfolio And Fair-Scoring Contract
 
-Matrix version 4 reserves one concrete portfolio manifest at:
+Matrix version 5 reserves one concrete portfolio manifest at:
 
 `tests/e2e/fixtures/agentic-benchmark-cases.json`
 
@@ -195,12 +196,12 @@ The matrix is the only exact run-shape owner. It defines these profiles:
 
 | Profile | Cases | Repetitions | Valid target | Attempt ceiling | Workers | Wall budget | Publication |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| `development-pilot` | 1 development | 1 | 2 | 2 | 2 | 300 seconds | disabled |
-| `standard-held-out` | all 20 held-out | 1 | 40 | 44 | 8 | 2700 seconds | advisory; `repeated-run-evidence` unsupported |
-| `extended-held-out` | all 20 held-out | 3 | 120 | 132 | 8 | 4800 seconds | advisory repeated-run evidence |
+| `development-pilot` | 1 development | 1 | 2 | 2 | 2 | 600 seconds | disabled |
+| `standard-held-out` | all 20 held-out | 1 | 40 | 44 | 8 | 3600 seconds | advisory; `repeated-run-evidence` unsupported |
+| `extended-held-out` | all 20 held-out | 3 | 120 | 132 | 8 | 9000 seconds | advisory repeated-run evidence |
 
 Every profile uses both live comparison arms, a 30-second provider preflight,
-a 240-second per-attempt timeout, and an infrastructure failure limit of two
+a 480-second per-attempt timeout, and an infrastructure failure limit of two
 completed attempts in a wave. The maximum supported worker count is 12. An
 incomplete batch must not feed public benchmark claims.
 
@@ -222,10 +223,11 @@ reservation while a remaining-budget cleanup attempts to purge untrusted
 attempt artifacts.
 
 The preflight proves only that Codex returned a sanitized, non-empty catalog,
-that the requested model was present, and that no visible refresh failure was
-reported. It does not independently prove provider reachability when an
-upstream client silently serves cached metadata. The paired real-attempt canary
-is the transport truth before wider fan-out.
+that the requested model was present, that the requested reasoning effort was
+listed for that model, and that no visible refresh failure was reported. It
+does not independently prove provider reachability when an upstream client
+silently serves cached metadata. The paired real-attempt canary is the
+transport truth before wider fan-out.
 
 The standard profile preserves held-out case coverage while bounding normal
 user wait, but one observation per case cannot support repeated-run stability,
@@ -241,6 +243,17 @@ or no-edit cases inspect worktree preservation, forbidden actions, response
 claims and event order. Aegis skill names, routes, artifact names, or semantic
 aliases may be diagnostic attribution only; they cannot make a task pass and
 must not be required from the no-Aegis arm.
+
+Response scoring must not require one incidental surface phrase when several
+ordinary-language expressions carry the same observable meaning. A
+`requiredClaimGroups` contract requires every semantic group while allowing any
+one frozen alternative inside that group. A `mustContainQuestion` contract
+accepts a question anywhere in the final response instead of requiring the
+last character to be punctuation. Exact required or forbidden claims remain
+available when exact wording is itself the behavior under test. Claim matching
+case-folds text and treats punctuation, underscores, and whitespace as neutral
+separators. Alternative sets are frozen before held-out execution and apply
+identically to both arms.
 
 Verification commands may optionally declare `immutableArgPaths`. Each
 declared path must be a normalized, project-relative regular seed file, appear
@@ -362,7 +375,8 @@ and does not grant final evidence sufficiency or completion authority.
 ## 10. Repeated Held-Out Isolation And Publication Boundary
 
 The repeated held-out path must fail closed unless both arms receive the same
-prompt, seeded project, host, model, timeout and tool policy in fresh workspaces.
+prompt, seeded project, host, requested model, reasoning effort, timeout and
+tool policy in fresh workspaces.
 The no-Aegis arm must prove that injected Aegis instructions, skills and plugins
 are absent. The Aegis arm may mount only a distribution-shaped snapshot of the
 evaluated method pack; benchmark prompts, scorers and expected outcomes must be
@@ -454,12 +468,23 @@ confidence intervals must use a deterministic case-cluster method with its seed
 recorded. Mixed within-case outcomes, non-discriminating arm results and scorer
 unknowns require blinded review or remain explicitly unknown.
 
+Resolved review flags do not rewrite frozen case outcomes. When an arm-hidden
+technical review identifies conservative deterministic response matching, the
+public projection must disclose that semantically acceptable paraphrases may
+still count as failures. It must also distinguish that technical review from
+independent human review. The frozen contract-pass metric remains the primary
+reported value; review cannot relabel it after seeing held-out results.
+
 Raw logs and workspaces stay under repo-local `.tmp/`. A README publication may
 commit only a sanitized, path-independent advisory report plus a deterministic
-SVG and exact table projection. The public snapshot must exclude credentials,
-absolute local paths, session identifiers, raw reasoning, raw host logs and
-unpublished prompt content. A neutral or negative valid result remains
-publishable; incomplete, contaminated or hand-selected results do not.
+SVG and exact table projection. The public snapshot must record the requested
+model, requested reasoning effort and whether model identity was observable in
+host events. When the host omits model identity, that absence must remain an
+explicit limitation rather than being inferred from the request. The snapshot
+must exclude credentials, absolute local paths, session identifiers, raw
+reasoning, raw host logs and unpublished prompt content. A neutral or negative
+valid result remains publishable; incomplete, contaminated or hand-selected
+results do not.
 
 Evidence produced under prior defective outcome or attribution semantics is
 frozen diagnostic history and superseded for candidate scoring. It must never
@@ -470,7 +495,7 @@ owner. It must derive the accepted shape from the frozen profile identifier,
 recompute every displayed score from the complete 40-row standard or 120-row
 extended held-out result set, validate the corresponding 30/20/40/44 or
 30/20/120/132 design and case-cluster interval, then produce a zero-based SVG
-and English/Chinese tables from the same sanitized JSON. Standard reports must
-display the unsupported `repeated-run-evidence` limitation. The repeated runner
-owns private execution and aggregation only; it does not expose a second
-sanitizer or renderer path.
+and English/Chinese tables, including the frozen model and reasoning effort,
+from the same sanitized JSON. Standard reports must display the unsupported
+`repeated-run-evidence` limitation. The repeated runner owns private execution
+and aggregation only; it does not expose a second sanitizer or renderer path.

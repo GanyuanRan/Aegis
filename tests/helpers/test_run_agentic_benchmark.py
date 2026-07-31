@@ -73,7 +73,7 @@ def fake_batch(*, max_attempts: int | None = None) -> dict:
         "wallClockBudgetSeconds": 100,
         "perAttemptTimeoutSeconds": 10,
         "infrastructureFailureLimit": 2,
-        "modelPolicy": {"requestedModel": "fake-model"},
+        "modelPolicy": {"requestedModel": "fake-model", "reasoningEffort": "high", "mustMatchAcrossArms": True},
         "networkPolicy": {"mode": "direct", "keys": [], "schemes": [], "fingerprint": "c" * 64},
         "distributionSnapshot": {"version": "test", "treeHash": "b" * 64, "skillCount": 2},
         "hostVersions": {"codex": "fake-codex", "bwrap": "fake-bwrap"},
@@ -127,7 +127,10 @@ class RunnerContractTest(unittest.TestCase):
         workspace.mkdir()
         (output_root / "prompt.txt").write_text("prompt", encoding="utf-8")
         frozen_case = {"caseId": "case", "frozenSeedProjectPath": "seed", "frozenPromptPath": "prompt.txt", "frozenOutcomeContractPath": "contract.json"}
-        batch = {"frozenCases": [frozen_case], "modelPolicy": {"requestedModel": "model"}}
+        batch = {
+            "frozenCases": [frozen_case],
+            "modelPolicy": {"requestedModel": "model", "reasoningEffort": "high", "mustMatchAcrossArms": True},
+        }
         target = {"targetId": "target", "caseId": "case", "arm": "baseline-no-aegis"}
         fake_process = mock.Mock(returncode=returncode)
         layout = {"workspace": workspace, "home": output_root / "home", "tmp": output_root / "tmp"}

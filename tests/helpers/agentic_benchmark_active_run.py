@@ -24,7 +24,7 @@ from agentic_benchmark_process_supervisor import supervise_stage
 
 MAX_PARENT_RETURN_RESERVE_SECONDS = 1.0
 MAX_ACTIVE_BUDGET_BYTES = 4096
-MAX_PROFILE_WALL_SECONDS = 2700.0
+MAX_PROFILE_WALL_SECONDS = 9000.0
 ACTIVE_BUDGET_FIELDS = {"version", "profileId", "batchDigest", "wallClockBudgetSeconds"}
 
 

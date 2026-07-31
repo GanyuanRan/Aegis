@@ -16,6 +16,7 @@ fi
 PROFILE=""
 BATCH_ID=""
 MODEL="${AEGIS_AGENTIC_BENCHMARK_MODEL:-}"
+REASONING_EFFORT="${AEGIS_AGENTIC_BENCHMARK_REASONING_EFFORT:-}"
 OUTPUT_ROOT=""
 DRY_RUN=0
 CASE_ID=""
@@ -23,7 +24,7 @@ CASE_ID=""
 usage() {
     cat <<'EOF'
 Usage: run-agentic-benchmark.sh --profile <development-pilot|standard-held-out|extended-held-out> \
-  --batch-id <id> [--model <model>] [options]
+  --batch-id <id> [--model <model>] [--reasoning-effort <effort>] [options]
 
 Options:
   --case <id>          Required exactly once for development-pilot; forbidden otherwise.
@@ -35,6 +36,8 @@ Environment for a real run:
   AEGIS_AGENTIC_BENCHMARK_HELD_OUT=1   Additionally required for held-out profiles.
   AEGIS_AGENTIC_BENCHMARK_EXTENDED=1   Additionally required for extended-held-out.
   AEGIS_AGENTIC_BENCHMARK_MODEL        Alternative to --model.
+  AEGIS_AGENTIC_BENCHMARK_REASONING_EFFORT
+                                         Alternative to --reasoning-effort.
 EOF
 }
 
@@ -49,6 +52,7 @@ while [[ $# -gt 0 ]]; do
             CASE_ID="$2"; shift 2 ;;
         --batch-id) BATCH_ID="$2"; shift 2 ;;
         --model) MODEL="$2"; shift 2 ;;
+        --reasoning-effort) REASONING_EFFORT="$2"; shift 2 ;;
         --output-root) OUTPUT_ROOT="$2"; shift 2 ;;
         --dry-run) DRY_RUN=1; shift ;;
         --help|-h) usage; exit 0 ;;
@@ -82,6 +86,14 @@ if [[ -z "$MODEL" ]]; then
         exit 2
     fi
 fi
+if [[ -z "$REASONING_EFFORT" ]]; then
+    if [[ "$DRY_RUN" == "1" ]]; then
+        REASONING_EFFORT="dry-run-pinned-effort"
+    else
+        echo "ERROR: --reasoning-effort or AEGIS_AGENTIC_BENCHMARK_REASONING_EFFORT is required." >&2
+        exit 2
+    fi
+fi
 if [[ -z "$OUTPUT_ROOT" ]]; then
     OUTPUT_ROOT=".tmp/agentic-benchmark-${BATCH_ID}"
 fi
@@ -91,6 +103,7 @@ prepare_args=(
     --profile "$PROFILE"
     --batch-id "$BATCH_ID"
     --model "$MODEL"
+    --reasoning-effort "$REASONING_EFFORT"
     --output-root "$OUTPUT_ROOT"
 )
 if [[ -n "$CASE_ID" ]]; then
@@ -113,6 +126,8 @@ print(json.dumps({
     "maxAttempts": batch["maxAttempts"],
     "workers": batch["workers"],
     "wallClockBudgetSeconds": batch["wallClockBudgetSeconds"],
+    "model": batch["modelPolicy"]["requestedModel"],
+    "reasoningEffort": batch["modelPolicy"]["reasoningEffort"],
     "modelCalls": 0,
     "dryRun": True,
 }, sort_keys=True))
@@ -136,13 +151,13 @@ fi
 if [[ ! -f "$OUTPUT_ROOT/batch.json" ]]; then
     "${PYTHON_CMD[@]}" tests/helpers/run_agentic_benchmark.py "${prepare_args[@]}"
 fi
-"${PYTHON_CMD[@]}" - "$OUTPUT_ROOT/batch.json" "$PROFILE" "$BATCH_ID" "$MODEL" "$CASE_ID" <<'PY'
+"${PYTHON_CMD[@]}" - "$OUTPUT_ROOT/batch.json" "$PROFILE" "$BATCH_ID" "$MODEL" "$REASONING_EFFORT" "$CASE_ID" <<'PY'
 import json
 import sys
 from pathlib import Path
 
 batch = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-profile, batch_id, model, case_id = sys.argv[2:6]
+profile, batch_id, model, reasoning_effort, case_id = sys.argv[2:7]
 requested_cases = [case_id] if case_id else []
 if batch["profileId"] != profile:
     raise SystemExit("prepared batch profile differs from this invocation")
@@ -150,6 +165,8 @@ if batch["batchId"] != batch_id:
     raise SystemExit("prepared batch id differs from this invocation")
 if batch["modelPolicy"]["requestedModel"] != model:
     raise SystemExit("prepared batch model differs from this invocation")
+if batch["modelPolicy"]["reasoningEffort"] != reasoning_effort:
+    raise SystemExit("prepared batch reasoning effort differs from this invocation")
 if batch["requestedCaseIds"] != requested_cases:
     raise SystemExit("prepared batch case selection differs from this invocation")
 PY

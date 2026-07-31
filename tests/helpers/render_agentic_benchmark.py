@@ -91,12 +91,12 @@ SECRET_PATTERNS = (
     re.compile(r"(?i)(?:access_token|refresh_token|id_token|api_key)\s*[:=]\s*[\"']?[^\"'\s]{8,}"),
 )
 GOLDEN_HASHES = {
-    "standard-held-out-positive": "8b2b5d94a15b2cb363652ce8e218819b1bda4d9d6350f46064bd086a28332c87",
-    "standard-held-out-neutral": "0c511f1ababd4bf2d79e0038930a031d5e049385f026bb983bc07acf2161cbeb",
-    "standard-held-out-negative": "1ee281b7712ab8b913bb9dcb2d82e1a1056fcda16f6f8581f010f031379c44df",
-    "extended-held-out-positive": "fc102fe333fa80c6c66ce7fa11f179a876090c7623e6d8b23bbf6e2749356eeb",
-    "extended-held-out-neutral": "b6ef6aeddae80c1c05547f40401d5ea7d75d908c41868fa26b6c39480d5e8cef",
-    "extended-held-out-negative": "9f970aa8e2f95473d8f9531189b850ebc1bf7acf22f759d53e62cfc67daf0d1a",
+    "standard-held-out-positive": "111e5f3517dbcc05170fbd28de301de583e8f5bb4b9fdca76136273b42d0ed99",
+    "standard-held-out-neutral": "3962d8ceb8c9844f34cceaa6cbe271cf4d8e96016b2a73ad7aa363e554846cd3",
+    "standard-held-out-negative": "e58e28b4eea10097f07f730d8f13da9f6204e2533c019f91cf0be568eddb1525",
+    "extended-held-out-positive": "1c188e538abc4993ab6ec620629fd5fe366351d1f14936fe4fb52a9fca071b6e",
+    "extended-held-out-neutral": "7423e483010871a976043ccf843ef366b21bacfd5e92e94cf731c54c02fece93",
+    "extended-held-out-negative": "420f0d38c804bffcadd8a5e8af0d19d1301b70caa1a44c44c4dd78c489fc8d06",
 }
 OUTPUT_PRIVATE_PATTERN = re.compile(
     r"/(?:home|Users|tmp|workspace)/|(?:^|[\s\"'=(])(?:[A-Za-z]:[\\/]|\\\\[^\\/\s]+[\\/])|session[_-]?id|rollout[_-]?id|sk-[A-Za-z0-9_-]{16,}",
@@ -216,7 +216,7 @@ def cluster_interval(records: list[dict[str, Any]], seed: str, iterations: int =
 
 
 def validate_matrix_profile_contracts_value(matrix: dict[str, Any]) -> None:
-    require(matrix.get("version") == 4, "renderer requires benchmark matrix version 4")
+    require(matrix.get("version") == 5, "renderer requires benchmark matrix version 5")
     run_profiles = matrix.get("runProfiles")
     require(isinstance(run_profiles, list), "benchmark matrix runProfiles must be a list")
     profiles = {
@@ -237,8 +237,8 @@ def validate_matrix_profile_contracts_value(matrix: dict[str, Any]) -> None:
         "unsupportedEvidence": "unsupportedEvidence",
     }
     for profile_id, contract in PROFILE_CONTRACTS.items():
-        require(sum(isinstance(item, dict) and item.get("id") == profile_id for item in run_profiles) == 1, f"renderer profile must appear exactly once in matrix v4: {profile_id}")
-        require(profile_id in profiles, f"renderer profile is missing from matrix v4: {profile_id}")
+        require(sum(isinstance(item, dict) and item.get("id") == profile_id for item in run_profiles) == 1, f"renderer profile must appear exactly once in matrix v5: {profile_id}")
+        require(profile_id in profiles, f"renderer profile is missing from matrix v5: {profile_id}")
         matrix_profile = profiles[profile_id]
         for contract_field, matrix_field in field_map.items():
             actual = matrix_profile.get(matrix_field)
@@ -251,7 +251,7 @@ def validate_matrix_profile_contracts_value(matrix: dict[str, Any]) -> None:
                 require(isinstance(actual, list) and all(isinstance(item, str) for item in actual), f"matrix {profile_id}.{matrix_field} must be a string list")
             elif isinstance(expected, str):
                 require(isinstance(actual, str), f"matrix {profile_id}.{matrix_field} must be a string")
-            require(actual == expected, f"renderer profile contract drifted from matrix v4: {profile_id}.{matrix_field}")
+            require(actual == expected, f"renderer profile contract drifted from matrix v5: {profile_id}.{matrix_field}")
 
 
 @functools.lru_cache(maxsize=1)
@@ -309,14 +309,28 @@ def derived_metrics(report: dict[str, Any]) -> dict[str, Any]:
     require(identities == expected_identities, "caseResults do not match the frozen profile repetitions and arms")
 
     arms = {arm: summarize([item for item in normalized if item["arm"] == arm]) for arm in ARMS}
-    delta = round(arms["aegis-auto"]["passRate"] - arms["baseline-no-aegis"]["passRate"], 2)
+    delta = round(
+        (
+            arms["aegis-auto"]["passes"] / arms["aegis-auto"]["validRuns"]
+            - arms["baseline-no-aegis"]["passes"] / arms["baseline-no-aegis"]["validRuns"]
+        )
+        * 100,
+        2,
+    )
     per_scenario: dict[str, Any] = {}
     for scenario in SCENARIOS:
         values = [item for item in normalized if item["scenarioClass"] == scenario]
         summaries = {arm: summarize([item for item in values if item["arm"] == arm]) for arm in ARMS}
         per_scenario[scenario] = {
             "arms": summaries,
-            "deltaPercentagePoints": round(summaries["aegis-auto"]["passRate"] - summaries["baseline-no-aegis"]["passRate"], 2),
+            "deltaPercentagePoints": round(
+                (
+                    summaries["aegis-auto"]["passes"] / summaries["aegis-auto"]["validRuns"]
+                    - summaries["baseline-no-aegis"]["passes"] / summaries["baseline-no-aegis"]["validRuns"]
+                )
+                * 100,
+                2,
+            ),
         }
     interval = report.get("overall", {}).get("deltaInterval95")
     require(isinstance(interval, dict), "overall.deltaInterval95 must be an object")
@@ -346,10 +360,14 @@ def validate_common(report: dict[str, Any], expected_type: str) -> dict[str, Any
     require(isinstance(versions["codex"], str) and re.fullmatch(r"codex-cli [0-9A-Za-z.+-]+", versions["codex"]) is not None, "Codex version is invalid")
     require(isinstance(versions["bwrap"], str) and re.fullmatch(r"bubblewrap [0-9A-Za-z.+-]+", versions["bwrap"]) is not None, "bubblewrap version is invalid")
     model = report.get("model")
-    require(isinstance(model, dict) and set(model) == {"requested", "observed", "observedStatus"}, "model identity fields drifted")
+    require(isinstance(model, dict) and set(model) == {"requested", "reasoningEffort", "observed", "observedStatus"}, "model identity fields drifted")
     require(isinstance(model.get("requested"), str) and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,79}", model["requested"]) is not None, "requested model identifier is invalid")
-    require(model.get("observedStatus") == "recorded", "observed model identity must be recorded")
-    require(isinstance(model.get("observed"), list) and model["observed"] and all(isinstance(item, str) and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,79}", item) is not None for item in model["observed"]), "observed model identifiers are invalid")
+    require(isinstance(model.get("reasoningEffort"), str) and re.fullmatch(r"[a-z][a-z0-9_-]{0,31}", model["reasoningEffort"]) is not None, "reasoning effort is invalid")
+    observed_status = model.get("observedStatus")
+    require(observed_status in {"recorded", "unavailable-from-host-events"}, "observed model identity status is invalid")
+    observed = model.get("observed")
+    require(isinstance(observed, list) and all(isinstance(item, str) and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,79}", item) is not None for item in observed), "observed model identifiers are invalid")
+    require((observed_status == "recorded") is bool(observed), "observed model identity and status disagree")
 
     design = report.get("design")
     require(isinstance(design, dict), "design must be an object")
@@ -438,6 +456,12 @@ def sanitize_private(report: dict[str, Any]) -> dict[str, Any]:
         if isinstance(value.get("subjects"), list):
             flag["subjectCount"] = len(value["subjects"])
         flags.append(flag)
+    review_limitations = []
+    if flags and all(flag["status"] == "resolved" for flag in flags):
+        review_limitations = [
+            "deterministic-response-contracts-may-count-semantic-paraphrases-as-failures",
+            "arm-hidden-technical-review-not-independent-human-review",
+        ]
     public = {
         "version": 1,
         "reportType": PUBLIC_REPORT_TYPE,
@@ -457,7 +481,11 @@ def sanitize_private(report: dict[str, Any]) -> dict[str, Any]:
         "review": {"status": report["review"]["status"], "flags": flags},
         "completeness": report["completeness"],
         "publication": report["publication"],
-        "limitations": list(profile_contract(report)["limitations"]),
+        "limitations": [
+            *profile_contract(report)["limitations"],
+            *review_limitations,
+            *(["observed-model-identity-unavailable-from-host-events"] if report["model"]["observedStatus"] == "unavailable-from-host-events" else []),
+        ],
         "unsupportedClaims": list(UNSUPPORTED_CLAIMS),
     }
     validate_common(public, PUBLIC_REPORT_TYPE)
@@ -472,7 +500,19 @@ def validate_public(report: dict[str, Any]) -> dict[str, Any]:
         "resourceUse", "review", "completeness", "publication", "limitations", "unsupportedClaims",
     }
     require(set(report) == expected_keys, "sanitized report fields drifted")
-    require(report["limitations"] == profile_contract(report)["limitations"], "profile limitations drifted")
+    review_flags = report["review"]["flags"]
+    review_limitations = []
+    if review_flags and all(flag["status"] == "resolved" for flag in review_flags):
+        review_limitations = [
+            "deterministic-response-contracts-may-count-semantic-paraphrases-as-failures",
+            "arm-hidden-technical-review-not-independent-human-review",
+        ]
+    expected_limitations = [
+        *profile_contract(report)["limitations"],
+        *review_limitations,
+        *(["observed-model-identity-unavailable-from-host-events"] if report["model"]["observedStatus"] == "unavailable-from-host-events" else []),
+    ]
+    require(report["limitations"] == expected_limitations, "profile limitations drifted")
     return derived
 
 
@@ -492,6 +532,9 @@ def limitation_texts(report: dict[str, Any], language: str) -> list[str]:
             "repetitions-case-clustered-not-statistically-independent": "Repetitions are clustered by case and are not statistically independent.",
             "not-independent-universal-causal-promotion-runtime-or-completion-authority": "This does not establish statistical independence, universal quality, causal proof, candidate promotion, runtime authority, or completion authority.",
             "not-universal-causal-promotion-runtime-or-completion-authority": "This does not establish universal quality, causal proof, candidate promotion, runtime authority, or completion authority.",
+            "deterministic-response-contracts-may-count-semantic-paraphrases-as-failures": "Deterministic response contracts are conservative and may count semantically acceptable paraphrases as failures.",
+            "arm-hidden-technical-review-not-independent-human-review": "Resolved flags received arm-hidden technical review, not independent human review.",
+            "observed-model-identity-unavailable-from-host-events": "The host did not emit observed model identity; the requested model and reasoning effort were frozen and preflight-validated.",
         },
         "zh": {
             "repeated-run-evidence-unsupported": "不支持重复运行证据：此配置中每个案例只有一次观测。",
@@ -499,6 +542,9 @@ def limitation_texts(report: dict[str, Any], language: str) -> list[str]:
             "repetitions-case-clustered-not-statistically-independent": "重复运行按案例聚簇，不具备统计独立性。",
             "not-independent-universal-causal-promotion-runtime-or-completion-authority": "这不构成独立性、普遍质量、因果证明、候选晋升、运行时权威或完成权威。",
             "not-universal-causal-promotion-runtime-or-completion-authority": "这不构成普遍质量、因果证明、候选晋升、运行时权威或完成权威。",
+            "deterministic-response-contracts-may-count-semantic-paraphrases-as-failures": "确定性响应合同较为保守，语义可接受的改写仍可能被计为失败。",
+            "arm-hidden-technical-review-not-independent-human-review": "已解决的复核项经过 arm-hidden 技术复核，但并非独立人工评审。",
+            "observed-model-identity-unavailable-from-host-events": "宿主事件未返回实际模型身份；报告仅记录已冻结并通过预检的请求模型与推理档位。",
         },
     }
     return [messages[language][item] for item in report["limitations"]]
@@ -514,7 +560,7 @@ def markdown(report: dict[str, Any], language: str) -> str:
         metric, baseline, aegis, change = "Metric", "Without Aegis", "With Aegis", "Difference"
         contract, unsafe = "Contract pass rate", "Unsafe outcome rate (lower is better)"
         scenario_title = "Scenario class"
-        profile_line = f"Profile: `{report['profileId']}` · n={target_runs} runs / 20 cases."
+        profile_line = f"Profile: `{report['profileId']}` · `{report['model']['requested']}` / `{report['model']['reasoningEffort']}` · n={target_runs} runs / 20 cases."
         limitations_title = "Limitations:"
     else:
         title = "Agentic Benchmark 结果"
@@ -522,7 +568,7 @@ def markdown(report: dict[str, Any], language: str) -> str:
         metric, baseline, aegis, change = "指标", "不使用 Aegis", "使用 Aegis", "差值"
         contract, unsafe = "合同通过率", "不安全结果率（越低越好）"
         scenario_title = "场景类别"
-        profile_line = f"配置：`{report['profileId']}` · n={target_runs} 次运行 / 20 个案例。"
+        profile_line = f"配置：`{report['profileId']}` · `{report['model']['requested']}` / `{report['model']['reasoningEffort']}` · n={target_runs} 次运行 / 20 个案例。"
         limitations_title = "限制："
     rows = [
         f"### {title}",
@@ -613,7 +659,7 @@ def svg(report: dict[str, Any]) -> str:
     for index, arm in enumerate(ARMS):
         bar(y + index * 24, labels[arm], overall["arms"][arm]["unsafeOutcomeRate"], colors[arm])
     y += 62
-    lines.append(f'<text class="muted" x="40" y="{y}">Batch {html.escape(report["batchId"])} · {html.escape(report["model"]["requested"])} · advisory only</text>')
+    lines.append(f'<text class="muted" x="40" y="{y}">Batch {html.escape(report["batchId"])} · {html.escape(report["model"]["requested"])} / {html.escape(report["model"]["reasoningEffort"])} · advisory only</text>')
     for note in limitation_texts(report, "en"):
         y += 17
         lines.append(f'<text class="muted" x="40" y="{y}">Limitation: {html.escape(note)}</text>')
@@ -666,7 +712,7 @@ def synthetic_private(kind: str, profile_id: str = "extended-held-out") -> dict[
         "profileId": profile_id,
         "partition": "held-out",
         "versions": {"aegis": "2.5.3-test", "codex": "codex-cli 0.0.0-test", "bwrap": "bubblewrap 0.0.0-test"},
-        "model": {"requested": "test-model", "observed": ["test-model"], "observedStatus": "recorded"},
+        "model": {"requested": "test-model", "reasoningEffort": "high", "observed": ["test-model"], "observedStatus": "recorded"},
         "design": {"portfolioCaseCount": 30, "caseCount": 20, "arms": list(ARMS), "repetitions": profile["repetitions"], "targetRuns": profile["targetRuns"], "maxAttempts": profile["maxAttempts"], "clusterUnit": "case"},
         "attempts": {"total": profile["targetRuns"], "valid": profile["targetRuns"], "passes": passes, "fails": profile["targetRuns"] - passes, "invalid": 0, "invalidReasons": {}, "remaining": 0},
         "overall": derived["overall"],
@@ -699,6 +745,20 @@ def bundle_hash(bundle: tuple[str, str, str, str]) -> str:
 
 
 def self_test(print_golden: bool = False) -> None:
+    rounding = synthetic_private("neutral")
+    rounding_scenario = SCENARIOS[0]
+    rounding_records = [item for item in rounding["caseResults"] if item["scenarioClass"] == rounding_scenario]
+    for item in rounding_records:
+        item["contractPass"] = False
+    for item in [value for value in rounding_records if value["arm"] == "aegis-auto"][:5]:
+        item["contractPass"] = True
+    for item in [value for value in rounding_records if value["arm"] == "baseline-no-aegis"][:1]:
+        item["contractPass"] = True
+    require(
+        derived_metrics(rounding)["perScenarioClass"][rounding_scenario]["deltaPercentagePoints"] == 66.67,
+        "scenario delta must derive from raw counts before rounding",
+    )
+
     for profile_id in PROFILE_CONTRACTS:
         for kind in ("positive", "neutral", "negative"):
             private = synthetic_private(kind, profile_id)
@@ -742,6 +802,18 @@ def self_test(print_golden: bool = False) -> None:
         else:
             raise SystemExit(f"{profile_id} proxy-retry projection accepted an unsupported invalid reason")
 
+    unobserved = synthetic_private("positive")
+    unobserved["model"].update({"observed": [], "observedStatus": "unavailable-from-host-events"})
+    unobserved_public = sanitize_private(unobserved)
+    require(
+        unobserved_public["limitations"][-1] == "observed-model-identity-unavailable-from-host-events",
+        "unobserved model identity limitation was not derived",
+    )
+    require(
+        "host did not emit observed model identity" in markdown(unobserved_public, "en"),
+        "unobserved model identity limitation was not rendered",
+    )
+
     negatives = [
         ("partial report", lambda value: value.update({"completeness": "partial"})),
         ("path leak", lambda value: value["versions"].update({"codex": "/home/example/codex"})),
@@ -749,6 +821,8 @@ def self_test(print_golden: bool = False) -> None:
         ("credential", lambda value: value["model"].update({"requested": "sk-1234567890abcdefghijkl"})),
         ("UNC auth path", lambda value: value["versions"].update({"codex": r"\\server\share\auth.json"})),
         ("prompt in model", lambda value: value["model"].update({"requested": "Reveal the unpublished benchmark prompt"})),
+        ("recorded model without identity", lambda value: value["model"].update({"observed": []})),
+        ("unavailable model with identity", lambda value: value["model"].update({"observedStatus": "unavailable-from-host-events"})),
         ("manual percentage", lambda value: value["overall"].update({"deltaPercentagePoints": 99.0})),
         ("missing case", lambda value: value["caseResults"].pop()),
         ("pilot profile", lambda value: value.update({"profileId": "development-pilot"})),
@@ -791,6 +865,13 @@ def self_test(print_golden: bool = False) -> None:
     }
     resolved_public = sanitize_private(resolved)
     require(resolved_public["review"]["flags"] == [{"id": "mixed-within-case-results", "status": "resolved", "subjectCount": 1}], "resolved review flag projection drifted")
+    require(
+        resolved_public["limitations"][-2:] == [
+            "deterministic-response-contracts-may-count-semantic-paraphrases-as-failures",
+            "arm-hidden-technical-review-not-independent-human-review",
+        ],
+        "resolved review limitations were not derived",
+    )
 
     for label, mutation in (
         ("profile", lambda value: value.update({"profileId": "standard-held-out"})),
@@ -896,7 +977,7 @@ def self_test(print_golden: bool = False) -> None:
             require(not list(root.glob(".blocked-output.*.tmp")), "failed atomic write left a temporary file")
         else:
             raise SystemExit("atomic write unexpectedly replaced a directory")
-    print("Agentic benchmark renderer self-test passed: 6 profile goldens, 2 proxy-retry projections, 38 negative cases.")
+    print("Agentic benchmark renderer self-test passed: 6 profile goldens, 2 proxy-retry projections, 40 negative cases.")
 
 
 def sanitize_command(args: argparse.Namespace) -> None:

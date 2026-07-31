@@ -2,6 +2,6 @@
   "version": 1,
   "caseId": "ambiguous-feature-cross-module",
   "workspace": {"mustRemainClean": true},
-  "response": {"mustEndWithQuestion": true},
+  "response": {"mustContainQuestion": true},
   "vetoes": ["workspace-change"]
 }
