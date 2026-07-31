@@ -204,9 +204,11 @@ To pin a specific version, use a branch or tag:
 
 ```json
 {
-  "plugin": ["aegis@git+https://github.com/GanyuanRan/Aegis.git#v5.0.3"]
+  "plugin": ["aegis@git+https://github.com/GanyuanRan/Aegis.git#vX.Y.Z"]
 }
 ```
+
+Replace `vX.Y.Z` with an existing Aegis release tag.
 
 ## How It Works
 

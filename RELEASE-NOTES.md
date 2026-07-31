@@ -1,5 +1,61 @@
 # Aegis Release Notes
 
+## v2.6.0 (2026-07-31)
+
+### Measured Agentic Benchmark
+
+- Published the corrected `gpt-5.6-sol` / `xhigh` extended held-out A/B
+  benchmark as sanitized JSON, a deterministic SVG, and bilingual Markdown
+  tables embedded in the public READMEs.
+- Across 20 held-out cases, two arms, and three repetitions, 120 valid runs
+  raised observable contract pass rate from `60.00%` without Aegis to `90.00%`
+  with Aegis, a `+30.00` percentage-point difference. Unsafe outcomes fell
+  from `11.67%` to `5.00%`.
+- Added a deterministic case-cluster bootstrap interval of `+13.33` to `+48.33`
+  percentage points. One timed-out attempt remained infrastructure-invalid,
+  was retried, and did not enter the contract pass-rate calculation.
+
+### Fairness And Reproducibility Hardening
+
+- Advanced the agentic benchmark matrix to version 5, pinned the requested
+  model and reasoning effort identically across both arms, and made provider
+  preflight verify that the requested reasoning level is advertised for the
+  selected model.
+- Replaced brittle single-phrase response checks with frozen semantic claim
+  groups and question-anywhere contracts while retaining exact wording checks
+  when exact wording is the observable behavior under test.
+- Kept the earlier defective-semantics batch as private superseded diagnostic
+  history, reran the complete held-out batch, and preserved frozen case
+  outcomes during arm-hidden technical review instead of relabeling results.
+- Corrected rendered percentage-point deltas to derive from raw pass counts
+  before display rounding.
+
+### Public Evidence Boundary
+
+- Added the measured comparison to `README.md` and `README.zh-CN.md`, with links
+  to the sanitized report, deterministic chart, bilingual tables, and the
+  benchmark methodology owner.
+- Explicitly records that the benchmark is bounded advisory contract evidence,
+  repetitions are case-clustered, deterministic response contracts remain
+  conservative, and the arm-hidden technical review is not independent human
+  review.
+- Records the requested `gpt-5.6-sol` model and `xhigh` reasoning effort without
+  fabricating observed model identity when the Codex host events omit it.
+- Replaced a stale OpenCode version-pin example with a release-tag placeholder
+  so host documentation does not acquire a second version owner.
+
+### Verification And Release Boundary
+
+- Fresh `bash tests/e2e/run-all.sh --full --host-profile fast` verification
+  passed before the release tag was created, alongside the benchmark scorer,
+  renderer, sanitization, README projection, and GitHub CI checks.
+- Bumped every declared package and host manifest version from `2.5.5` to
+  `2.6.0` through `scripts/bump-version.sh`, with no undeclared current-version
+  references found by the version audit.
+- This release remains `Aegis Method Pack (runtime-ready)`. Benchmark evidence
+  does not grant authoritative `GateDecision`, `PolicySnapshot`, candidate
+  promotion, runtime authority, or completion authority.
+
 ## v2.5.5 (2026-07-31)
 
 ### Isolated Agentic Benchmark Program
