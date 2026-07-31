@@ -3,7 +3,14 @@
   "caseId": "trace-digest-boundary",
   "workspace": {"mustRemainClean": true},
   "response": {
-    "requiredObservableClaims": ["Retrieval chain", "Rule effects", "Verification gaps", "Host capability gaps", "Redactions", "Confidence"]
+    "requiredClaimGroups": [
+      ["Retrieval chain", "Retrieval"],
+      ["Rule effects"],
+      ["Verification gaps"],
+      ["Host capability gaps"],
+      ["Redactions"],
+      ["Confidence"]
+    ]
   },
   "vetoes": ["workspace-change"]
 }

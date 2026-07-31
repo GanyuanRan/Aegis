@@ -285,10 +285,31 @@ def profile_fields(profile: dict[str, Any]) -> dict[str, Any]:
     return fields
 
 
+def validate_model_policy(value: Any) -> dict[str, Any]:
+    require(isinstance(value, dict), "model policy must be an object")
+    require(
+        set(value) == {"requestedModel", "reasoningEffort", "mustMatchAcrossArms"},
+        "model policy fields drifted",
+    )
+    require(
+        isinstance(value["requestedModel"], str)
+        and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,79}", value["requestedModel"]) is not None,
+        "model policy must pin a safe model identifier",
+    )
+    require(
+        isinstance(value["reasoningEffort"], str)
+        and re.fullmatch(r"[a-z][a-z0-9_-]{0,31}", value["reasoningEffort"]) is not None,
+        "model policy must pin a safe reasoning effort",
+    )
+    require(value["mustMatchAcrossArms"] is True, "model policy must match across arms")
+    return value
+
+
 def verify_batch(batch: dict[str, Any], root: Path, output_root: Path) -> ProxyPolicy:
     require(batch.get("version") == 1, "batch version must be 1")
     require(batch.get("authorityBoundary") == AUTHORITY_BOUNDARY, "batch authority boundary drifted")
     require(batch.get("batchDigest") == batch_digest(batch), "batch digest mismatch")
+    validate_model_policy(batch.get("modelPolicy"))
     codex_executable = resolve_host_executable(
         os.environ.get("AEGIS_BENCHMARK_CODEX") or shutil.which("codex"), "Codex",
     )
@@ -361,7 +382,11 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
     require(profile is not None, f"unknown benchmark profile: {args.profile}")
     cases = select_profile_cases(manifest, profile, args.case)
     require(re.fullmatch(r"[a-z0-9][a-z0-9._-]{2,79}", args.batch_id) is not None, "batch-id has an invalid format")
-    require(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,79}", args.model or "") is not None, "--model is required and must pin a safe model identifier")
+    model_policy = validate_model_policy({
+        "requestedModel": args.model,
+        "reasoningEffort": args.reasoning_effort,
+        "mustMatchAcrossArms": True,
+    })
 
     output_root = resolve_tmp_child(root, args.output_root, "output-root")
     require(not output_root.exists() or not any(output_root.iterdir()), "output-root already contains a prepared batch")
@@ -408,7 +433,7 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
         "caseIds": [case["id"] for case in cases],
         "portfolioCaseCount": len(manifest["cases"]),
         **profile_fields(profile),
-        "modelPolicy": {"requestedModel": args.model, "mustMatchAcrossArms": True},
+        "modelPolicy": model_policy,
         "networkPolicy": network_policy_metadata(proxy_policy),
         "toolPolicy": {
             "codexSandbox": "permission-profile-workspace",
@@ -488,6 +513,7 @@ def _execute_target_unscrubbed(
         layout=layout,
         prompt=prompt,
         model=batch["modelPolicy"]["requestedModel"],
+        reasoning_effort=batch["modelPolicy"]["reasoningEffort"],
     )
     validate_codex_live_command(
         command,
@@ -495,6 +521,7 @@ def _execute_target_unscrubbed(
         layout=layout,
         prompt=prompt,
         model=batch["modelPolicy"]["requestedModel"],
+        reasoning_effort=batch["modelPolicy"]["reasoningEffort"],
     )
     process_environment = direct_codex_environment(layout, proxy_policy)
     validate_direct_codex_environment(process_environment, layout=layout, proxy_policy=proxy_policy)
@@ -776,6 +803,7 @@ def aggregate(batch: dict[str, Any], ledger: dict[str, Any]) -> dict[str, Any]:
         },
         "model": {
             "requested": batch["modelPolicy"]["requestedModel"],
+            "reasoningEffort": batch["modelPolicy"]["reasoningEffort"],
             "observed": sorted(observed_models),
             "observedStatus": "recorded" if observed_models else "unavailable-from-host-events",
         },
@@ -989,6 +1017,7 @@ def parse_args() -> argparse.Namespace:
     prepare.add_argument("--case", action="append", default=[])
     prepare.add_argument("--batch-id", required=True)
     prepare.add_argument("--model", required=True)
+    prepare.add_argument("--reasoning-effort", required=True)
     prepare.add_argument("--output-root", type=Path, required=True)
     prepare.set_defaults(handler=prepare_command)
 

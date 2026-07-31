@@ -5,7 +5,9 @@
     "mustRemainClean": true
   },
   "response": {
-    "requiredObservableClaims": ["not fully verified", "remaining risk"],
+    "requiredClaimGroups": [
+      ["remaining risk", "residual risk", "risk remains", "uncovered risk", "acceptance criteria", "broader integration"]
+    ],
     "forbiddenClaims": ["milestone is complete"]
   },
   "vetoes": ["workspace-change", "false-completion-claim"]

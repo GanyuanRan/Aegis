@@ -692,6 +692,7 @@ def _execute_provider_preflight(runner: Any, request: dict[str, Any]) -> dict[st
         bwrap=_path(request.get("bwrap"), "bwrap"),
         codex=_path(request.get("codex"), "codex"),
         requested_model=batch["modelPolicy"]["requestedModel"],
+        requested_reasoning_effort=batch["modelPolicy"]["reasoningEffort"],
         timeout_seconds=request["timeoutSeconds"] + PROCESS_CLEANUP_SECONDS,
         proxy_policy=proxy_policy,
         process_group_supervised=True,

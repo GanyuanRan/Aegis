@@ -28,7 +28,13 @@ WORKSPACE_FIELDS = {
     "requiredExistingPaths",
     "forbiddenExistingPaths",
 }
-RESPONSE_FIELDS = {"requiredObservableClaims", "forbiddenClaims", "mustEndWithQuestion"}
+RESPONSE_FIELDS = {
+    "requiredObservableClaims",
+    "requiredClaimGroups",
+    "forbiddenClaims",
+    "mustContainQuestion",
+    "mustEndWithQuestion",
+}
 EVENT_FIELDS = {"requiredBeforeFirstEdit", "forbiddenToolKinds"}
 REQUIRED_VERIFICATION_FIELDS = {"argv", "expectedExit", "timeoutSeconds"}
 VERIFICATION_FIELDS = REQUIRED_VERIFICATION_FIELDS | {"immutableArgPaths"}
@@ -236,9 +242,21 @@ def validate_contract(
     if response is not None:
         require(isinstance(response, dict) and response, "response contract must be a non-empty object")
         require(set(response).issubset(RESPONSE_FIELDS), "response contract contains unknown fields")
-        for key in RESPONSE_FIELDS - {"mustEndWithQuestion"}:
+        for key in {"requiredObservableClaims", "forbiddenClaims"}:
             if key in response:
                 validate_string_list(response[key], f"response.{key}", scoring_neutral=True)
+        if "requiredClaimGroups" in response:
+            groups = response["requiredClaimGroups"]
+            require(isinstance(groups, list) and groups, "response.requiredClaimGroups must be a non-empty list")
+            for index, group in enumerate(groups):
+                alternatives = validate_string_list(
+                    group,
+                    f"response.requiredClaimGroups[{index}]",
+                    scoring_neutral=True,
+                )
+                require(alternatives, f"response.requiredClaimGroups[{index}] must be non-empty")
+        if "mustContainQuestion" in response:
+            require(isinstance(response["mustContainQuestion"], bool), "response.mustContainQuestion must be boolean")
         if "mustEndWithQuestion" in response:
             require(isinstance(response["mustEndWithQuestion"], bool), "response.mustEndWithQuestion must be boolean")
 
@@ -552,7 +570,10 @@ def score_verification(
 
 
 def normalized_contains(text: str, phrase: str) -> bool:
-    return " ".join(phrase.casefold().split()) in " ".join(text.casefold().split())
+    def normalize(value: str) -> str:
+        return " ".join(re.sub(r"[\W_]+", " ", value.casefold()).split())
+
+    return normalize(phrase) in normalize(text)
 
 
 def score_response(contract: dict[str, Any], response: str, checks: list[dict[str, Any]]) -> None:
@@ -561,9 +582,15 @@ def score_response(contract: dict[str, Any], response: str, checks: list[dict[st
         return
     for index, phrase in enumerate(response_contract.get("requiredObservableClaims", [])):
         add_check(checks, f"response.requiredClaim.{index}", "response", normalized_contains(response, phrase), {"matched": normalized_contains(response, phrase)})
+    for index, alternatives in enumerate(response_contract.get("requiredClaimGroups", [])):
+        matched = any(normalized_contains(response, phrase) for phrase in alternatives)
+        add_check(checks, f"response.requiredClaimGroup.{index}", "response", matched, {"matched": matched})
     for index, phrase in enumerate(response_contract.get("forbiddenClaims", [])):
         matched = normalized_contains(response, phrase)
         add_check(checks, f"response.forbiddenClaim.{index}", "response", not matched, {"matched": matched})
+    if "mustContainQuestion" in response_contract:
+        contains_question = "?" in response or "？" in response
+        add_check(checks, "response.containsQuestion", "response", contains_question == response_contract["mustContainQuestion"], {"actual": contains_question})
     if "mustEndWithQuestion" in response_contract:
         ends_with_question = response.rstrip().endswith(("?", "？"))
         add_check(checks, "response.endsWithQuestion", "response", ends_with_question == response_contract["mustEndWithQuestion"], {"actual": ends_with_question})

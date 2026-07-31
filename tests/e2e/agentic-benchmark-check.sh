@@ -141,13 +141,13 @@ elif mutation in {
     elif mutation == "standard-workers":
         profiles["standard-held-out"]["workers"] = 13
     elif mutation == "standard-wall-budget":
-        profiles["standard-held-out"]["wallClockBudgetSeconds"] = 2699
+        profiles["standard-held-out"]["wallClockBudgetSeconds"] = 3599
     elif mutation == "extended-wall-budget":
-        profiles["extended-held-out"]["wallClockBudgetSeconds"] = 4799
+        profiles["extended-held-out"]["wallClockBudgetSeconds"] = 8999
     elif mutation == "standard-preflight-timeout":
         profiles["standard-held-out"]["preflightTimeoutSeconds"] = 31
     elif mutation == "standard-attempt-timeout":
-        profiles["standard-held-out"]["perAttemptTimeoutSeconds"] = 241
+        profiles["standard-held-out"]["perAttemptTimeoutSeconds"] = 481
     elif mutation == "standard-infrastructure-limit":
         profiles["standard-held-out"]["infrastructureFailureLimit"] = 3
     elif mutation == "standard-repeat-overclaim":
@@ -426,6 +426,8 @@ assert_contains "$baseline" "workspace-laziness" \
     "benchmark baseline measures workspace laziness"
 assert_contains "$baseline" "isolated workspace and configuration boundary|isolate host config" \
     "benchmark baseline requires run isolation"
+assert_contains "$baseline" "same requested model and reasoning effort across both arms" \
+    "benchmark baseline freezes model and reasoning effort fairly across arms"
 assert_contains "$baseline" "one frozen Codex permission profile" \
     "benchmark baseline assigns one agent-tool sandbox owner"
 assert_contains "$baseline" "machine-observed command/edit event is infrastructure-invalid" \
@@ -498,6 +500,8 @@ assert_contains "$baseline" "44- or 132-attempt ceiling" \
     "benchmark baseline bounds paid retry attempts"
 assert_contains "$baseline" "sanitized, path-independent advisory report" \
     "benchmark baseline defines a public-safe report projection"
+assert_contains "$baseline" "requested reasoning effort and whether model identity was observable" \
+    "benchmark baseline records the public model policy and host-event limitation"
 
 "${PYTHON_CMD[@]}" tests/helpers/validate_workflow_quality_matrix.py "$workflow_matrix"
 "${PYTHON_CMD[@]}" tests/helpers/validate_agentic_benchmark_matrix.py "$matrix"
@@ -549,10 +553,10 @@ live-tier-in-progress|live harness implementation status regression|live held-ou
 standard-valid-run-target|standard valid-run target drift|standard-held-out.validRunTarget must be 40|matrix-only
 standard-paid-attempt-ceiling|standard paid-attempt ceiling drift|standard-held-out.paidAttemptCeiling must be 44|matrix-only
 standard-workers|unsupported standard worker count|standard-held-out.workers must be 8|matrix-only
-standard-wall-budget|standard wall budget drift|standard-held-out.wallClockBudgetSeconds must be 2700|matrix-only
-extended-wall-budget|extended wall budget drift|extended-held-out.wallClockBudgetSeconds must be 4800|matrix-only
+standard-wall-budget|standard wall budget drift|standard-held-out.wallClockBudgetSeconds must be 3600|matrix-only
+extended-wall-budget|extended wall budget drift|extended-held-out.wallClockBudgetSeconds must be 9000|matrix-only
 standard-preflight-timeout|standard preflight timeout drift|standard-held-out.preflightTimeoutSeconds must be 30|matrix-only
-standard-attempt-timeout|standard attempt timeout drift|standard-held-out.perAttemptTimeoutSeconds must be 240|matrix-only
+standard-attempt-timeout|standard attempt timeout drift|standard-held-out.perAttemptTimeoutSeconds must be 480|matrix-only
 standard-infrastructure-limit|standard infrastructure failure limit drift|standard-held-out.infrastructureFailureLimit must be 2|matrix-only
 standard-repeat-overclaim|standard repeated-run evidence overclaim|standard-held-out.unsupportedEvidence must be ['repeated-run-evidence']|matrix-only
 development-publication|development publication drift|development-pilot.publicationEligible must be False|matrix-only
@@ -566,7 +570,7 @@ maximum-supported-workers|maximum supported workers drift|maximumSupportedWorker
 missing-run-profile|missing exact run profile|runProfiles must define development-pilot, standard-held-out, and extended-held-out exactly|matrix-only
 tier-duplicate-shape|tier duplicate shape owner|opt-in-live-held-out must contain exactly its canonical evaluation tier fields|matrix-only
 live-required-evidence|live tier semantic shape alias|opt-in-live-held-out must contain exactly its canonical evaluation tier fields|matrix-only
-matrix-top-level-repetitions|matrix top-level legacy repetitions alias|matrix top-level fields must match the exact v4 schema; unexpected: ['repetitions']|matrix-only
+matrix-top-level-repetitions|matrix top-level legacy repetitions alias|matrix top-level fields must match the exact v5 schema; unexpected: ['repetitions']|matrix-only
 legacy-live-tier-alias|retired live tier alias|evaluationTiers must define the four-tier contract exactly|matrix-only
 live-score-source|arm-biased live scorer drift|live held-out scorer must remain arm-neutral and outcome-based|matrix-only
 live-supports-promotion|live promotion overclaim|live held-out tier cannot support promotion evidence by itself|matrix-only
@@ -649,6 +653,7 @@ if retired_shape_output="$("${PYTHON_CMD[@]}" tests/helpers/run_agentic_benchmar
     --partition held-out \
     --batch-id retired-shape-flag \
     --model dry-run-model \
+    --reasoning-effort dry-run-effort \
     --output-root "$coverage_negative_root/retired-shape-flag" 2>&1)"; then
     fail "profile-only runner rejects retired raw shape flags"
 elif grep -qF "unrecognized arguments: --partition held-out" <<<"$retired_shape_output"; then
@@ -660,7 +665,8 @@ fi
 retired_wrapper_flags_ok=1
 for retired_flag in --partition --repetitions --max-attempts --arms --timeout-seconds; do
     if bash "$repeated_runner" --profile standard-held-out --batch-id "retired-${retired_flag#--}" \
-        --model dry-run-model --output-root "$coverage_negative_root/retired-${retired_flag#--}" \
+        --model dry-run-model --reasoning-effort dry-run-effort \
+        --output-root "$coverage_negative_root/retired-${retired_flag#--}" \
         "$retired_flag" retired >/dev/null 2>&1; then
         retired_wrapper_flags_ok=0
     fi
@@ -704,9 +710,9 @@ import sys
 from pathlib import Path
 
 profiles = {
-    "development-pilot": (1, 2, 2, 2, 300),
-    "standard-held-out": (20, 40, 44, 8, 2700),
-    "extended-held-out": (20, 120, 132, 8, 4800),
+    "development-pilot": (1, 2, 2, 2, 600),
+    "standard-held-out": (20, 40, 44, 8, 3600),
+    "extended-held-out": (20, 120, 132, 8, 9000),
 }
 for path in sys.argv[1:]:
     batch_path = Path(path)
@@ -717,6 +723,11 @@ for path in sys.argv[1:]:
     assert (batch["caseCount"], batch["targetRunCount"], batch["maxAttempts"]) == (case_count, target_count, ceiling)
     assert (batch["workers"], batch["wallClockBudgetSeconds"]) == (workers, wall)
     assert batch["preflightTimeoutSeconds"] == 30
+    assert batch["modelPolicy"] == {
+        "requestedModel": "dry-run-pinned-model",
+        "reasoningEffort": "dry-run-pinned-effort",
+        "mustMatchAcrossArms": True,
+    }
     assert set(batch["hostExecutableIdentities"]) == {"codex", "auditBwrap", "permissionBackendBwrap"}
     for identities in batch["hostExecutableIdentities"].values():
         assert identities
@@ -797,41 +808,48 @@ fi
 resume_checks_ok=1
 if resume_output="$(PYTHONOPTIMIZE=1 AEGIS_AGENTIC_BENCHMARK_LIVE=1 AEGIS_AGENTIC_BENCHMARK_HELD_OUT=1 AEGIS_AGENTIC_BENCHMARK_EXTENDED=1 \
     bash "$repeated_runner" --profile standard-held-out --batch-id offline-contract --model dry-run-pinned-model \
-    --output-root "$dry_run_root" 2>&1)"; then
+    --reasoning-effort dry-run-pinned-effort --output-root "$dry_run_root" 2>&1)"; then
     resume_checks_ok=0
 elif ! grep -qF "prepared batch profile differs" <<<"$resume_output"; then
     resume_checks_ok=0
 fi
 if resume_output="$(PYTHONOPTIMIZE=1 AEGIS_AGENTIC_BENCHMARK_LIVE=1 AEGIS_AGENTIC_BENCHMARK_HELD_OUT=1 AEGIS_AGENTIC_BENCHMARK_EXTENDED=1 \
     bash "$repeated_runner" --profile extended-held-out --batch-id changed-batch --model dry-run-pinned-model \
-    --output-root "$dry_run_root" 2>&1)"; then
+    --reasoning-effort dry-run-pinned-effort --output-root "$dry_run_root" 2>&1)"; then
     resume_checks_ok=0
 elif ! grep -qF "prepared batch id differs" <<<"$resume_output"; then
     resume_checks_ok=0
 fi
 if resume_output="$(PYTHONOPTIMIZE=1 AEGIS_AGENTIC_BENCHMARK_LIVE=1 AEGIS_AGENTIC_BENCHMARK_HELD_OUT=1 AEGIS_AGENTIC_BENCHMARK_EXTENDED=1 \
     bash "$repeated_runner" --profile extended-held-out --batch-id offline-contract --model changed-model \
-    --output-root "$dry_run_root" 2>&1)"; then
+    --reasoning-effort dry-run-pinned-effort --output-root "$dry_run_root" 2>&1)"; then
     resume_checks_ok=0
 elif ! grep -qF "prepared batch model differs" <<<"$resume_output"; then
     resume_checks_ok=0
 fi
+if resume_output="$(PYTHONOPTIMIZE=1 AEGIS_AGENTIC_BENCHMARK_LIVE=1 AEGIS_AGENTIC_BENCHMARK_HELD_OUT=1 AEGIS_AGENTIC_BENCHMARK_EXTENDED=1 \
+    bash "$repeated_runner" --profile extended-held-out --batch-id offline-contract --model dry-run-pinned-model \
+    --reasoning-effort changed-effort --output-root "$dry_run_root" 2>&1)"; then
+    resume_checks_ok=0
+elif ! grep -qF "prepared batch reasoning effort differs" <<<"$resume_output"; then
+    resume_checks_ok=0
+fi
 if resume_output="$(PYTHONOPTIMIZE=1 AEGIS_AGENTIC_BENCHMARK_LIVE=1 bash "$repeated_runner" --profile development-pilot \
     --case shared-owner-bug-repair --batch-id offline-pilot --model dry-run-pinned-model \
-    --output-root "$pilot_dry_run_root" 2>&1)"; then
+    --reasoning-effort dry-run-pinned-effort --output-root "$pilot_dry_run_root" 2>&1)"; then
     resume_checks_ok=0
 elif ! grep -qF "prepared batch case selection differs" <<<"$resume_output"; then
     resume_checks_ok=0
 fi
 if [[ "$resume_checks_ok" == "1" ]]; then
-    pass "optimized Python resume rejects profile, batch, model, and case invocation drift before execution"
+    pass "optimized Python resume rejects profile, batch, model, reasoning effort, and case invocation drift before execution"
 else
     fail "optimized Python resume rejects profile, batch, model, and case invocation drift before execution"
 fi
 
 if full_only_output="$(AEGIS_AGENTIC_BENCHMARK_LIVE=0 AEGIS_AGENTIC_BENCHMARK_HELD_OUT=0 AEGIS_AGENTIC_BENCHMARK_EXTENDED=0 AEGIS_AGENTIC_BENCHMARK_FULL=1 bash "$repeated_runner" \
     --profile standard-held-out --batch-id full-alone --model dry-run-model \
-    --output-root "$coverage_negative_root/full-alone" 2>&1)"; then
+    --reasoning-effort dry-run-effort --output-root "$coverage_negative_root/full-alone" 2>&1)"; then
     fail "retired FULL variable cannot authorize a held-out run"
 elif grep -qF "AEGIS_AGENTIC_BENCHMARK_LIVE=1" <<<"$full_only_output"; then
     pass "retired FULL variable cannot authorize a held-out run"
@@ -841,7 +859,7 @@ fi
 
 if full_live_output="$(AEGIS_AGENTIC_BENCHMARK_LIVE=1 AEGIS_AGENTIC_BENCHMARK_HELD_OUT=0 AEGIS_AGENTIC_BENCHMARK_EXTENDED=0 AEGIS_AGENTIC_BENCHMARK_FULL=1 bash "$repeated_runner" \
     --profile standard-held-out --batch-id full-with-live --model dry-run-model \
-    --output-root "$coverage_negative_root/full-with-live" 2>&1)"; then
+    --reasoning-effort dry-run-effort --output-root "$coverage_negative_root/full-with-live" 2>&1)"; then
     fail "retired FULL variable cannot replace held-out opt-in"
 elif grep -qF "AEGIS_AGENTIC_BENCHMARK_HELD_OUT=1" <<<"$full_live_output"; then
     pass "retired FULL variable cannot replace held-out opt-in"

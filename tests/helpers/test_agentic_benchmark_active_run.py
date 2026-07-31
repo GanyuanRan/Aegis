@@ -113,6 +113,7 @@ class ActiveRunTest(unittest.TestCase):
                 case=["tiny-fast-dev"],
                 batch_id=f"offline-active-{output_root.name[-12:]}",
                 model="offline-test-model",
+                reasoning_effort="high",
                 output_root=output_root,
             )
         )

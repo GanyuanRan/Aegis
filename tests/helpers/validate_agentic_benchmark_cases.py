@@ -247,7 +247,7 @@ def seed_project_digest(project_path: Path) -> str:
 
 
 def matrix_scenarios(matrix: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    require(matrix.get("version") == 4, "benchmark matrix version must be 4")
+    require(matrix.get("version") == 5, "benchmark matrix version must be 5")
     scenarios = matrix.get("scenarioClasses")
     require(isinstance(scenarios, list), "benchmark matrix scenarioClasses must be a list")
     by_id: dict[str, dict[str, Any]] = {}

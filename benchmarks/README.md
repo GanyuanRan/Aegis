@@ -6,12 +6,14 @@ publication approval.
 
 `benchmarks/results/` may contain only public-safe advisory JSON reports. A
 valid report records the frozen batch and profile identity, host/model versions,
-the 30-case portfolio and 20-case held-out design, all 40 `standard-held-out`
-or 120 `extended-held-out` observable outcomes, case-cluster intervals,
-invalid-attempt counts, profile limitations, review status, and unsupported
-claims. Generated SVG and bilingual Markdown projections must derive from the
-same validated JSON; displayed percentages, sample sizes, profile names, and
-limitations are never entered manually.
+the requested model and reasoning effort, the observed model identity or an
+explicit host-event unavailability status, the 30-case portfolio and 20-case
+held-out design, all 40 `standard-held-out` or 120 `extended-held-out`
+observable outcomes, case-cluster intervals, invalid-attempt counts, profile
+limitations, review status, and unsupported claims. Generated SVG and bilingual
+Markdown projections must derive from the same validated JSON; displayed
+percentages, sample sizes, profile names, model settings, and limitations are
+never entered manually.
 
 Raw logs, prompts, workspaces, host reasoning, credentials, auth/config paths,
 session identifiers, rollout identifiers, and machine-local paths belong only
@@ -30,4 +32,17 @@ repetitions are not statistically independent and do not prove universal
 quality, external causality, candidate promotion, runtime authority, or
 completion authority.
 
-No result is currently published by this harness implementation change.
+## Published Result
+
+The current public snapshot is the `gpt-5.6-sol` / `xhigh`
+`extended-held-out` comparison for Aegis 2.5.5:
+
+- [sanitized report](results/gpt-5-6-sol-xhigh-extended-20260731.json)
+- [deterministic SVG](results/gpt-5-6-sol-xhigh-extended-20260731.svg)
+- [English table](results/gpt-5-6-sol-xhigh-extended-20260731.en.md)
+- [Chinese table](results/gpt-5-6-sol-xhigh-extended-20260731.zh-CN.md)
+
+It contains 120 valid held-out outcomes across 20 cases and three repetitions
+per arm/case combination. One timed-out attempt is retained only in the private
+ledger and represented publicly as an invalid-attempt count; it does not enter
+the contract pass-rate calculation.
