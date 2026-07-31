@@ -1073,6 +1073,71 @@ assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "locally green
 assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "carrier naming alone cannot reset the direction" \
     "workflow quality compares repair direction semantically"
 
+assert_contains "skills/using-aegis/SKILL.md" "TaskStartSnapshot" \
+    "Aegis router requires task-start Git evidence before writes"
+assert_contains "skills/writing-plans/SKILL.md" "Reuse the current branch/workspace by default" \
+    "writing plans defaults to the current workspace"
+assert_contains "skills/writing-plans/SKILL.md" "one scoped commit only after the whole Task" \
+    "writing plans use coherent task commits"
+assert_not_contains "skills/writing-plans/SKILL.md" "dedicated worktree|Frequent commits" \
+    "writing plans retire inherited worktree and micro-commit defaults"
+assert_contains "skills/executing-plans/SKILL.md" "TaskStartSnapshot" \
+    "plan execution captures task-start Git evidence"
+assert_contains "skills/executing-plans/SKILL.md" "coordinator is the Git mutation owner" \
+    "plan execution has one Git mutation owner"
+assert_contains_all "skills/executing-plans/SKILL.md" \
+    "plan execution separates branch history from worktree checkout" \
+    "Reuse the current branch unless" "independent history" "worktree still requires"
+assert_not_contains "skills/executing-plans/SKILL.md" "REQUIRED.*using-git-worktrees|Never start implementation on main/master" \
+    "plan execution does not force isolation from branch name or ceremony"
+assert_contains "skills/using-git-worktrees/SKILL.md" "Step 0: Environment Detection" \
+    "worktree workflow detects environment before mutation"
+assert_contains "skills/using-git-worktrees/SKILL.md" "concurrent checkout|dirty state prevents a safe checkout" \
+    "worktree creation requires a real checkout conflict"
+assert_contains "skills/using-git-worktrees/SKILL.md" 'Never edit or commit `\.gitignore` solely' \
+    "worktree creation cannot add a task-unrelated ignore commit"
+assert_contains "skills/using-git-worktrees/SKILL.md" 'Do not infer `npm install`' \
+    "worktree setup follows project authority instead of blind install"
+assert_not_contains "skills/using-git-worktrees/SKILL.md" "Add appropriate line to .gitignore|Auto-detect and run appropriate setup" \
+    "worktree workflow retires inherited setup mutations"
+assert_contains "skills/finishing-a-development-branch/SKILL.md" "Step 1: Environment and Ownership Detection" \
+    "branch finishing detects ownership and environment first"
+assert_contains "skills/finishing-a-development-branch/SKILL.md" "without an implicit pull" \
+    "local merge does not hide a remote update"
+assert_contains "skills/finishing-a-development-branch/SKILL.md" "remove/unregister the worktree first" \
+    "cleanup removes checkout before branch"
+assert_contains "skills/finishing-a-development-branch/SKILL.md" "never remove the current working directory" \
+    "cleanup runs outside the target worktree"
+assert_contains_all "skills/finishing-a-development-branch/SKILL.md" \
+    "cleanup supports non-ancestor merge evidence" \
+    "squash/rebase" "patch" "equivalence" "not an ancestor-only test"
+assert_not_contains "skills/finishing-a-development-branch/SKILL.md" "^git pull$|^git worktree prune$" \
+    "branch finishing omits unsafe implicit pull and global prune commands"
+assert_contains "skills/subagent-driven-development/SKILL.md" "Same-task agents share the current workspace" \
+    "same-task subagents do not multiply worktrees"
+assert_contains "skills/subagent-driven-development/SKILL.md" "coordinator is the only default Git mutation owner" \
+    "subagent workflow centralizes Git mutations"
+assert_not_contains "skills/subagent-driven-development/SKILL.md" "Start implementation on main/master|REQUIRED: Set up isolated workspace" \
+    "subagent workflow retires inherited main and worktree bans"
+assert_contains "skills/subagent-driven-development/implementer-prompt.md" "Do not stage, commit" \
+    "implementer leaves Git mutation to coordinator"
+assert_not_contains "skills/subagent-driven-development/implementer-prompt.md" "Commit your work" \
+    "implementer no longer commits before independent review"
+assert_contains "skills/subagent-driven-development/code-quality-reviewer-prompt.md" "REVIEW_SCOPE: working-tree" \
+    "subagent quality review supports pre-commit working-tree review"
+assert_contains "skills/requesting-code-review/code-reviewer.md" 'For `working-tree`' \
+    "canonical reviewer supports working-tree diffs"
+assert_contains "skills/verification-before-completion/SKILL.md" "TaskStartSnapshot" \
+    "completion compares against task-start Git state"
+assert_contains_all "skills/verification-before-completion/SKILL.md" \
+    "completion receipt distinguishes task and repository cleanliness" \
+    "Task clean" "Repository clean" "Task-clean never implies repo-clean"
+assert_contains_all "skills/using-aegis/references/codex-tools.md" \
+    "Codex mapping points to current Git lifecycle entry steps" \
+    "using-git-worktrees.*Step 0" "finishing-a-development-branch.*Step 1"
+assert_contains "skills/using-aegis/references/codex-tools.md" "only default Git mutation owner" \
+    "Codex mapping keeps spawned agents out of Git lifecycle mutation"
+
 "${PYTHON_CMD[@]}" tests/helpers/validate_workflow_quality_matrix.py "$matrix"
 if (( failures > 0 )); then
     echo ""

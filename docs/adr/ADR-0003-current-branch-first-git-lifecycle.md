@@ -293,9 +293,11 @@ fresh verification；仓库若要求 PR，仍必须尊重其 branch 策略。
 若实现发现其他 current docs 对普通任务仍承诺默认 worktree，只修改最小的真实
 owner，并在验证中证明无互相冲突的 current guidance。
 
-本次 baseline sync 记录的是已经批准的 method policy，不伪造 skill 投影已完成。
-与本 ADR 冲突的继承 skill 文本从此属于 `Implementation Drift`，必须在后续实现
-切片中收敛后才能声称 lifecycle implementation 完成。
+最初的 baseline sync 只记录已经批准的 method policy，没有伪造 skill 投影完成。
+后续实现切片已把该决策收敛到 routing、planning、execution、worktree、branch
+finishing、subagent/review、verification 和 Codex mapping 的现有 owner，并复用
+`tests/e2e/workflow-quality-check.sh` 作为行为契约。未来重新出现的冲突文本属于
+`Implementation Drift`，不是第二个 Git lifecycle owner。
 
 ## 反例审查
 

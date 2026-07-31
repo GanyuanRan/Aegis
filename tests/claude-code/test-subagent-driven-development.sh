@@ -136,12 +136,12 @@ fi
 
 echo ""
 
-# Test 8: Verify worktree requirement
-echo "Test 8: Worktree requirement..."
+# Test 8: Verify worktree exception boundary
+echo "Test 8: Worktree exception boundary..."
 
 output=$(run_claude "What workflow skills are required before using subagent-driven-development? List any prerequisites or required skills." 30)
 
-if assert_contains "$output" "using-git-worktrees\|worktree" "Mentions worktree requirement"; then
+if assert_contains "$output" "current.*workspace\|worktree.*conditional\|concurrent.*checkout\|dirty.*state" "Keeps worktrees conditional"; then
     : # pass
 else
     exit 1
@@ -149,12 +149,12 @@ fi
 
 echo ""
 
-# Test 9: Verify main branch warning
-echo "Test 9: Main branch red flag..."
+# Test 9: Verify current-branch-first behavior
+echo "Test 9: Current branch default..."
 
 output=$(run_claude "In subagent-driven-development, is it okay to start implementation directly on the main branch?" 30)
 
-if assert_contains "$output" "worktree\|feature.*branch\|not.*main\|never.*main\|avoid.*main\|don't.*main\|consent\|permission" "Warns against main branch"; then
+if assert_contains "$output" "main.*okay\|main.*allowed\|main.*current branch\|main.*does not.*require\|main.*not.*reason\|okay.*main\|allowed.*main\|current branch.*main" "Does not create a branch only because it is main"; then
     : # pass
 else
     exit 1

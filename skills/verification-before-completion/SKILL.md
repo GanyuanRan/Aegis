@@ -5,40 +5,24 @@ description: "Use when about to claim work is complete, fixed, passing, verified
 
 # Execute
 
-Before any done/passing/fixed/complete/verified/release-ready/handoff claim:
-
-1. Classify the next action. Persistent-state, source-of-truth removal, or
-   irreversible work requires scoped user permission before execution;
-   warnings, guards, and broad assent do not grant it.
-2. Choose a fresh falsifying command or manual check.
-3. Run it completely; read output, exit status, failures, and covered scope.
-4. Select the closeout level:
-   - **L0 fast-path**: tiny, low-risk work; one evidence sentence plus residual
-     risk or uncovered scope.
-   - **L1 default**: non-trivial Aegis-shaped work; one compact localized
-     `Aegis Impact and Safety Receipt`.
-   - **L2 expanded**: a trigger below applies; read `expanded-closeout.md`
-     directly, then add only its triggered detail to the same receipt.
-5. If evidence is partial, stale, failing, or narrower than the claim,
-   downgrade the status; never claim complete first and verify later.
+Before any success claim, classify destructive permission needs, choose and run
+a fresh falsifying check, read its complete result/scope, then select L0/L1/L2.
+If evidence is partial, stale, failing, or narrower than the claim, downgrade;
+never claim complete first and verify later.
 
 This Method Pack grants no authoritative `GateDecision`, `PolicySnapshot`,
 evidence sufficiency, requirement acceptance, or completion authority.
 
 ## Stop Signals
 
-Stop before claiming success if:
-
-- evidence is uncertain, stale, agent-only, or narrower than the claim;
-- the next action is commit, push, PR, merge, tag, publish, release, or handoff;
-- task/slice completion is being treated as accepted requirement satisfaction;
-- governance or retirement lacks repair/retirement evidence;
-- retained old logic lacks a retention reason and retirement trigger; or
-- complexity is unresolved.
+Stop for uncertain/agent-only evidence, before commit/push/PR/merge/release or
+handoff, when task completion is mistaken for requirement acceptance, or when
+governance, retirement, or complexity closure is unresolved. Destructive or
+irreversible work needs scoped permission; warnings or broad assent do not grant it.
 
 ## Required Evidence Slots
 
-Keep these slots explicit and auditable in headings, prose, or a compact card:
+Keep these slots explicit and auditable:
 
 ```text
 - Evidence action / check performed:
@@ -56,6 +40,20 @@ Keep these slots explicit and auditable in headings, prose, or a compact card:
 When tests shape the claim, include target test and related regression evidence.
 If automation is blocked, give reproducible manual steps and lower confidence.
 Evidence is not completion authority.
+
+## Task Git Closeout
+
+For modification tasks, compare the final state with `TaskStartSnapshot`. Only
+the coordinator stages task-owned paths; never use broad staging or include
+pre-existing user state. A default local task commit follows fresh verification
+unless the task is read-only/no-change, user/project authority says `no commit`, or
+verification failed. Read back `HEAD`, message, files, and remaining task delta.
+Commit/hook failure preserves the work and blocks a clean claim; do not bypass hooks.
+
+The Git receipt reports branch; commit SHA/message or non-commit reason;
+`Task clean`; `Repository clean`; and each task-created branch/worktree as
+created, removed, or retained with reason. Task-clean never implies repo-clean.
+This receipt is evidence, not external integration or completion authority.
 
 ## Aegis Visibility / Single Closeout
 
@@ -106,7 +104,7 @@ Natural wording is valid when every semantic slot stays auditable. `Semantic Slo
 `Natural Surface`, and `Governance Receipt` are compatibility names, not other
 reports.
 
-## L2 Direct Triggers
+## L2 Expanded Triggers
 
 On any match, read `expanded-closeout.md`. It owns detail; this file owns routing
 and the final receipt.

@@ -255,9 +255,10 @@ Current behavior rules:
   its branch, and never force-cleans dirty, locked, unknown, or user-owned
   resources.
 
-The approved ADR now outranks conflicting inherited skill wording. Until those
-skill projections are revised and verified, such wording is classified as
-architecture-scoped `Implementation Drift`, not an alternative Git owner.
+The approved ADR is projected through the routing, planning, execution,
+worktree, branch-finishing, subagent, review, verification, and Codex mapping
+owners. Any future conflicting skill wording is architecture-scoped
+`Implementation Drift`, not an alternative Git owner.
 
 ### 3.0d Strong-Opinion Review Lenses
 
