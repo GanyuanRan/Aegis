@@ -547,6 +547,7 @@ standard-valid-run-target|standard valid-run target drift|standard-held-out.vali
 standard-paid-attempt-ceiling|standard paid-attempt ceiling drift|standard-held-out.paidAttemptCeiling must be 44|matrix-only
 standard-workers|unsupported standard worker count|standard-held-out.workers must be 8|matrix-only
 standard-wall-budget|standard wall budget drift|standard-held-out.wallClockBudgetSeconds must be 2700|matrix-only
+extended-wall-budget|extended wall budget drift|extended-held-out.wallClockBudgetSeconds must be 4800|matrix-only
 standard-preflight-timeout|standard preflight timeout drift|standard-held-out.preflightTimeoutSeconds must be 30|matrix-only
 standard-attempt-timeout|standard attempt timeout drift|standard-held-out.perAttemptTimeoutSeconds must be 240|matrix-only
 standard-infrastructure-limit|standard infrastructure failure limit drift|standard-held-out.infrastructureFailureLimit must be 2|matrix-only
@@ -702,7 +703,7 @@ from pathlib import Path
 profiles = {
     "development-pilot": (1, 2, 2, 2, 300),
     "standard-held-out": (20, 40, 44, 8, 2700),
-    "extended-held-out": (20, 120, 132, 8, 2700),
+    "extended-held-out": (20, 120, 132, 8, 4800),
 }
 for path in sys.argv[1:]:
     batch_path = Path(path)

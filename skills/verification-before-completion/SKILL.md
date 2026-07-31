@@ -20,7 +20,7 @@ Before any done/passing/fixed/complete/verified/release-ready/handoff claim:
    - **L2 expanded**: a trigger below applies; read `expanded-closeout.md`
      directly, then add only its triggered detail to the same receipt.
 5. If evidence is partial, stale, failing, or narrower than the claim,
-   downgrade the status. Never claim completion first and verify later.
+   downgrade the status; never claim complete first and verify later.
 
 This Method Pack grants no authoritative `GateDecision`, `PolicySnapshot`,
 evidence sufficiency, requirement acceptance, or completion authority.
