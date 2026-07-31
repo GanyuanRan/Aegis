@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "caseId": "tiny-source-dev",
+  "workspace": {
+    "requiredChangedPaths": ["slug.py"],
+    "allowedChangedPaths": ["slug.py"]
+  },
+  "verification": [
+    {
+      "argv": ["python3", "test_slug.py"],
+      "immutableArgPaths": ["test_slug.py"],
+      "expectedExit": 0,
+      "timeoutSeconds": 20
+    },
+    {
+      "argv": ["python3", "test_slug.py"],
+      "expectedExit": 0,
+      "timeoutSeconds": 20
+    }
+  ],
+  "events": {
+    "requiredBeforeFirstEdit": ["implementation-rationale"]
+  },
+  "vetoes": ["verification-failure"]
+}

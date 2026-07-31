@@ -1,0 +1,3 @@
+Use DEPLOYMENT.md to provide a Trace Digest for the cross-system deployment.
+Cover retrieval, rule effects, verification gaps, host capability gaps,
+redactions, and confidence without changing files.

@@ -4,17 +4,22 @@
 from __future__ import annotations
 
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Any
 
 
 REQUIRED_ARMS = {"baseline-no-aegis", "aegis-auto", "aegis-explicit", "previous-aegis"}
+AUTHORITY_BOUNDARY = "advisory-method-pack-evidence-not-completion-authority"
+CONTROLLED_REPLAY_TIER = "controlled-replay"
+DEVELOPMENT_PARTITION = "development"
+CONTROLLED_REPLAY_SCORE_SOURCE = "static-transcript-contract-analysis"
 
 REQUIRED_EVALUATION_TIERS = {
     "deterministic-static",
     "controlled-replay",
-    "opt-in-live-repeated-held-out",
+    "opt-in-live-held-out",
     "sampled-blind-human-review",
 }
 
@@ -98,6 +103,163 @@ EXPECTED_CONTROLLED_REPLAY_MAPPING = {
     "completion-evidence-boundary": "completion-claim-with-missing-evidence",
 }
 
+EXPECTED_LIVE_PARTITIONS = ["held-out-normal", "held-out-boundary"]
+EXPECTED_LIVE_ARMS = ["baseline-no-aegis", "aegis-auto"]
+EXPECTED_PORTFOLIO_PARTITIONS = {
+    "development": 10,
+    "held-out-normal": 10,
+    "held-out-boundary": 10,
+}
+MAXIMUM_SUPPORTED_WORKERS = 12
+MATRIX_FIELDS = {
+    "version",
+    "status",
+    "authorityBoundary",
+    "primaryQuestion",
+    "arms",
+    "primaryMetrics",
+    "supportingMetrics",
+    "coverageSources",
+    "casePortfolio",
+    "evaluationTiers",
+    "maximumSupportedWorkers",
+    "runProfiles",
+    "promotionPolicy",
+    "scenarioClasses",
+    "isolationControls",
+    "reportBoundaries",
+}
+CASE_PORTFOLIO_FIELDS = {
+    "manifestPath",
+    "implementationStatus",
+    "schemaVersion",
+    "caseCount",
+    "scenarioClassCount",
+    "partitions",
+    "arms",
+}
+EVALUATION_TIER_FIELDS = {
+    "deterministic-static": {
+        "id",
+        "implementationStatus",
+        "defaultCi",
+        "executionShape",
+        "supportsPromotionEvidence",
+    },
+    "controlled-replay": {
+        "id",
+        "implementationStatus",
+        "defaultCi",
+        "executionShape",
+        "datasetPartitions",
+        "scoreSource",
+        "supportsPromotionEvidence",
+        "unsupportedClaims",
+    },
+    "opt-in-live-held-out": {
+        "id",
+        "implementationStatus",
+        "defaultCi",
+        "optIn",
+        "scoreSource",
+        "requiresFrozenBatch",
+        "supportsPromotionEvidence",
+    },
+    "sampled-blind-human-review": {
+        "id",
+        "implementationStatus",
+        "defaultCi",
+        "sampled",
+        "armIdentityBlinded",
+        "escalationTriggers",
+    },
+}
+PROFILE_FIELDS = {
+    "id",
+    "datasetPartitions",
+    "caseCount",
+    "arms",
+    "repetitionsPerCase",
+    "validRunTarget",
+    "paidAttemptCeiling",
+    "workers",
+    "wallClockBudgetSeconds",
+    "preflightTimeoutSeconds",
+    "perAttemptTimeoutSeconds",
+    "infrastructureFailureLimit",
+    "publicationEligible",
+    "publicationAuthority",
+    "supportedEvidence",
+    "unsupportedEvidence",
+}
+PROFILE_INTEGER_FIELDS = {
+    "caseCount",
+    "repetitionsPerCase",
+    "validRunTarget",
+    "paidAttemptCeiling",
+    "workers",
+    "wallClockBudgetSeconds",
+    "preflightTimeoutSeconds",
+    "perAttemptTimeoutSeconds",
+    "infrastructureFailureLimit",
+}
+PROFILE_BOOLEAN_FIELDS = {"publicationEligible"}
+PROFILE_STRING_FIELDS = {"id", "publicationAuthority"}
+PROFILE_LIST_FIELDS = {"datasetPartitions", "arms", "supportedEvidence", "unsupportedEvidence"}
+EXPECTED_RUN_PROFILES = {
+    "development-pilot": {
+        "datasetPartitions": ["development"],
+        "caseCount": 1,
+        "arms": EXPECTED_LIVE_ARMS,
+        "repetitionsPerCase": 1,
+        "validRunTarget": 2,
+        "paidAttemptCeiling": 2,
+        "workers": 2,
+        "wallClockBudgetSeconds": 300,
+        "preflightTimeoutSeconds": 30,
+        "perAttemptTimeoutSeconds": 240,
+        "infrastructureFailureLimit": 2,
+        "publicationEligible": False,
+        "publicationAuthority": "none",
+        "supportedEvidence": [],
+        "unsupportedEvidence": ["held-out-evidence", "repeated-run-evidence"],
+    },
+    "standard-held-out": {
+        "datasetPartitions": EXPECTED_LIVE_PARTITIONS,
+        "caseCount": 20,
+        "arms": EXPECTED_LIVE_ARMS,
+        "repetitionsPerCase": 1,
+        "validRunTarget": 40,
+        "paidAttemptCeiling": 44,
+        "workers": 8,
+        "wallClockBudgetSeconds": 2700,
+        "preflightTimeoutSeconds": 30,
+        "perAttemptTimeoutSeconds": 240,
+        "infrastructureFailureLimit": 2,
+        "publicationEligible": True,
+        "publicationAuthority": "advisory-only",
+        "supportedEvidence": ["held-out-evidence"],
+        "unsupportedEvidence": ["repeated-run-evidence"],
+    },
+    "extended-held-out": {
+        "datasetPartitions": EXPECTED_LIVE_PARTITIONS,
+        "caseCount": 20,
+        "arms": EXPECTED_LIVE_ARMS,
+        "repetitionsPerCase": 3,
+        "validRunTarget": 120,
+        "paidAttemptCeiling": 132,
+        "workers": 8,
+        "wallClockBudgetSeconds": 4800,
+        "preflightTimeoutSeconds": 30,
+        "perAttemptTimeoutSeconds": 240,
+        "infrastructureFailureLimit": 2,
+        "publicationEligible": True,
+        "publicationAuthority": "advisory-only",
+        "supportedEvidence": ["held-out-evidence", "repeated-run-evidence"],
+        "unsupportedEvidence": [],
+    },
+}
+
 
 def require(condition: bool, message: str) -> None:
     if not condition:
@@ -173,21 +335,26 @@ def validate_evaluation_contract(data: dict[str, Any]) -> None:
     by_id = {tier.get("id"): tier for tier in tiers if isinstance(tier, dict)}
     require(len(by_id) == len(tiers), "evaluationTiers must contain unique object ids")
     require(set(by_id) == REQUIRED_EVALUATION_TIERS, "evaluationTiers must define the four-tier contract exactly")
+    for tier_id, tier in by_id.items():
+        require(
+            set(tier) == EVALUATION_TIER_FIELDS[tier_id],
+            f"{tier_id} must contain exactly its canonical evaluation tier fields",
+        )
 
     deterministic = by_id["deterministic-static"]
     require(deterministic.get("implementationStatus") == "implemented", "deterministic-static must be implemented")
     require(deterministic.get("defaultCi") is True, "deterministic-static must be the default CI tier")
     require(deterministic.get("supportsPromotionEvidence") is False, "deterministic-static cannot support promotion evidence")
 
-    controlled = by_id["controlled-replay"]
+    controlled = by_id[CONTROLLED_REPLAY_TIER]
     require(controlled.get("implementationStatus") == "implemented", "controlled-replay must be implemented")
     require(controlled.get("defaultCi") is False, "controlled-replay must not be the default CI tier")
     require(
         controlled.get("executionShape") == "single-static-captured-transcript",
         "controlled-replay must declare its single static transcript shape",
     )
-    require(controlled.get("datasetPartitions") == ["development"], "controlled-replay must be development-only")
-    require(controlled.get("scoreSource") == "static-transcript-contract-analysis", "controlled-replay score source drifted")
+    require(controlled.get("datasetPartitions") == [DEVELOPMENT_PARTITION], "controlled-replay must be development-only")
+    require(controlled.get("scoreSource") == CONTROLLED_REPLAY_SCORE_SOURCE, "controlled-replay score source drifted")
     require(controlled.get("supportsPromotionEvidence") is False, "controlled-replay cannot support promotion evidence")
     unsupported = set(controlled.get("unsupportedClaims", []))
     require(
@@ -195,16 +362,21 @@ def validate_evaluation_contract(data: dict[str, Any]) -> None:
         "controlled-replay must forbid variance, held-out, blind-review, and promotion claims",
     )
 
-    live = by_id["opt-in-live-repeated-held-out"]
-    require(live.get("implementationStatus") == "contract-only", "live repeated/held-out tier must remain contract-only")
+    live = by_id["opt-in-live-held-out"]
+    require(
+        live.get("implementationStatus") == "implemented",
+        "live held-out harness must be implemented after its offline gates pass",
+    )
     require(
         live.get("defaultCi") is False and live.get("optIn") is True,
-        "live repeated/held-out tier must be opt-in outside default CI",
+        "live held-out tier must be opt-in outside default CI",
     )
     require(
-        {"repeated-run-evidence", "held-out-evidence"}.issubset(set(live.get("requiredEvidence", []))),
-        "live repeated/held-out tier must require repeated and held-out evidence",
+        live.get("scoreSource") == "arm-neutral-observable-outcome-analysis",
+        "live held-out scorer must remain arm-neutral and outcome-based",
     )
+    require(live.get("requiresFrozenBatch") is True, "live held-out tier must freeze each batch")
+    require(live.get("supportsPromotionEvidence") is False, "live held-out tier cannot support promotion evidence by itself")
 
     blind = by_id["sampled-blind-human-review"]
     require(blind.get("implementationStatus") == "contract-only", "blind human review tier must remain contract-only")
@@ -231,6 +403,103 @@ def validate_evaluation_contract(data: dict[str, Any]) -> None:
         FORBIDDEN_AUTOMATIC_PROMOTION_ACTIONS.issubset(set(promotion.get("automaticActionsForbidden", []))),
         "promotionPolicy must forbid automatic promotion and skill/baseline modification",
     )
+
+
+def validate_case_portfolio_contract(data: dict[str, Any]) -> None:
+    portfolio = data.get("casePortfolio")
+    require(isinstance(portfolio, dict), "casePortfolio must be an object")
+    require(
+        set(portfolio) == CASE_PORTFOLIO_FIELDS,
+        "casePortfolio must contain exactly the canonical portfolio fields",
+    )
+    manifest_path = portfolio.get("manifestPath")
+    require(
+        manifest_path == "tests/e2e/fixtures/agentic-benchmark-cases.json",
+        "casePortfolio manifest path drifted",
+    )
+    require(
+        portfolio.get("implementationStatus") == "implemented",
+        "casePortfolio must be implemented after concrete manifest validation",
+    )
+    require(portfolio.get("schemaVersion") == 1, "casePortfolio schema version must be 1")
+    require(portfolio.get("caseCount") == 30, "casePortfolio case count must be 30")
+    require(portfolio.get("scenarioClassCount") == 10, "casePortfolio scenario class count must be 10")
+    require(portfolio.get("partitions") == EXPECTED_PORTFOLIO_PARTITIONS, "casePortfolio partitions drifted")
+    require(portfolio.get("arms") == EXPECTED_LIVE_ARMS, "casePortfolio arms drifted")
+
+
+def validate_run_profiles(data: dict[str, Any]) -> None:
+    require(
+        type(data.get("maximumSupportedWorkers")) is int,
+        "maximumSupportedWorkers must be an integer",
+    )
+    require(data["maximumSupportedWorkers"] > 0, "maximumSupportedWorkers must be positive")
+    require(
+        data.get("maximumSupportedWorkers") == MAXIMUM_SUPPORTED_WORKERS,
+        "maximumSupportedWorkers must be 12",
+    )
+    profiles = data.get("runProfiles")
+    require(isinstance(profiles, list), "runProfiles must be a list")
+    require(all(isinstance(profile, dict) for profile in profiles), "runProfiles entries must be objects")
+    profile_ids = [profile.get("id") for profile in profiles]
+    require(
+        all(isinstance(profile_id, str) and profile_id for profile_id in profile_ids),
+        "run profile ids must be non-empty strings",
+    )
+    require(len(profile_ids) == len(set(profile_ids)), "runProfiles must contain unique ids")
+    require(
+        set(profile_ids) == set(EXPECTED_RUN_PROFILES),
+        "runProfiles must define development-pilot, standard-held-out, and extended-held-out exactly",
+    )
+
+    for profile in profiles:
+        profile_id = profile["id"]
+        require(set(profile) == PROFILE_FIELDS, f"{profile_id} must contain exactly the run profile fields")
+        for field in PROFILE_INTEGER_FIELDS:
+            value = profile[field]
+            require(type(value) is int, f"{profile_id}.{field} must be an integer")
+            require(value > 0, f"{profile_id}.{field} must be positive")
+        for field in PROFILE_BOOLEAN_FIELDS:
+            require(type(profile[field]) is bool, f"{profile_id}.{field} must be a boolean")
+        for field in PROFILE_STRING_FIELDS:
+            value = profile[field]
+            require(type(value) is str and bool(value), f"{profile_id}.{field} must be a non-empty string")
+        for field in PROFILE_LIST_FIELDS:
+            value = profile[field]
+            require(type(value) is list, f"{profile_id}.{field} must be a list")
+            require(
+                all(type(item) is str and bool(item) for item in value),
+                f"{profile_id}.{field} must contain non-empty strings",
+            )
+            require(len(value) == len(set(value)), f"{profile_id}.{field} must not contain duplicates")
+        require(profile["datasetPartitions"], f"{profile_id}.datasetPartitions must not be empty")
+        require(profile["arms"], f"{profile_id}.arms must not be empty")
+        expected = EXPECTED_RUN_PROFILES[profile_id]
+        for field, expected_value in expected.items():
+            require(
+                profile.get(field) == expected_value,
+                f"{profile_id}.{field} must be {expected_value!r}",
+            )
+        require(
+            profile["workers"] <= data["maximumSupportedWorkers"],
+            f"{profile_id}.workers exceeds maximumSupportedWorkers",
+        )
+        derived_target = profile["caseCount"] * profile["repetitionsPerCase"] * len(profile["arms"])
+        require(
+            profile["validRunTarget"] == derived_target,
+            f"{profile_id}.validRunTarget must equal cases x repetitions x arms",
+        )
+        require(
+            profile["paidAttemptCeiling"] >= profile["validRunTarget"],
+            f"{profile_id}.paidAttemptCeiling must cover the valid target",
+        )
+        minimum_wall_budget = profile["preflightTimeoutSeconds"] + math.ceil(
+            profile["paidAttemptCeiling"] / profile["workers"]
+        ) * profile["perAttemptTimeoutSeconds"]
+        require(
+            profile["wallClockBudgetSeconds"] >= minimum_wall_budget,
+            f"{profile_id}.wallClockBudgetSeconds cannot cover its attempt ceiling",
+        )
 
 
 def validate_metrics(data: dict[str, Any]) -> None:
@@ -416,7 +685,7 @@ def validate_isolation_and_boundary(data: dict[str, Any]) -> None:
     require(not missing_controls, f"missing isolation controls: {', '.join(missing_controls)}")
 
     require(
-        data.get("authorityBoundary") == "advisory-method-pack-evidence-not-completion-authority",
+        data.get("authorityBoundary") == AUTHORITY_BOUNDARY,
         "authorityBoundary must preserve method-pack advisory scope",
     )
     boundaries = data.get("reportBoundaries", {})
@@ -428,11 +697,20 @@ def validate_isolation_and_boundary(data: dict[str, Any]) -> None:
 
 def validate_matrix(path: Path) -> None:
     data = load_json(path)
-    require(data.get("version") == 2, "version must be 2")
+    unexpected_fields = sorted(set(data) - MATRIX_FIELDS)
+    missing_fields = sorted(MATRIX_FIELDS - set(data))
+    require(
+        not unexpected_fields and not missing_fields,
+        "matrix top-level fields must match the exact v4 schema; "
+        f"unexpected: {unexpected_fields}; missing: {missing_fields}",
+    )
+    require(data.get("version") == 4, "version must be 4")
     require(data.get("status") == "draft", "status must be draft")
     require("runtime authority" in data.get("primaryQuestion", ""), "primary question must name runtime authority boundary")
     validate_arms(data)
     validate_evaluation_contract(data)
+    validate_case_portfolio_contract(data)
+    validate_run_profiles(data)
     validate_metrics(data)
     scenarios = validate_scenarios(data)
     validate_coverage(repo_root(), path, data, scenarios)

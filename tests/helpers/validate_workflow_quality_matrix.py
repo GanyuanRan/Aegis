@@ -52,6 +52,9 @@ EXPECTED_IDS = {
     "layer-stop-user-falsifier-correction",
     "topology-conjunctive-cluster-collapses-to-spec-gap",
     "topology-independent-compound-divergent",
+    "premature-root-existing-default-generator",
+    "premature-root-canonical-owner-spec-generator",
+    "quick-exit-true-local-typo",
     "strong-opinion-product-risk-lens",
     "strong-opinion-plan-pressure-test",
     "architecture-integrity-higher-level-path",
@@ -160,6 +163,8 @@ CONTRACT_REQUIREMENTS = {
         "Pre-Edit Owner-Fit Decision",
         "Pre-Claim Gate",
         "Topology Card",
+        "Deeper Cause Challenge",
+        "Quick Exit Proof",
         "Minimality Check",
     ],
     "test-driven-development": [
@@ -1041,6 +1046,30 @@ REQUIRED_LAYER_FIELDS = {
     "topology",
 }
 
+REQUIRED_DEEPER_CAUSE_FIELDS = {
+    "required",
+    "claimedCause",
+    "causalStatus",
+    "upstreamGenerator",
+    "recurrencePath",
+    "counterfactualIntervention",
+    "deeperCandidate",
+    "rejectionEvidence",
+    "recurrenceClosed",
+    "topologyProof",
+}
+
+REQUIRED_QUICK_EXIT_FIELDS = {
+    "required",
+    "canonicalLocalOwner",
+    "originAndTermination",
+    "excludedUpstreamDependencies",
+    "historySearch",
+    "samePatternSearch",
+    "variantCounterfactual",
+    "causalStatus",
+}
+
 
 def require(condition: bool, message: str) -> None:
     if not condition:
@@ -1276,12 +1305,20 @@ def validate_layer_stop_samples(by_id: dict[str, dict[str, Any]]) -> None:
         divergent.get("layerStopCard", {}).get("topology") == "independent-compound",
         "independent compound sample must classify topology as independent-compound",
     )
-    for forbidden in ("merge-two-roots-into-one", "skip-member-necessity-test"):
+    for forbidden in ("merge-two-roots-into-one", "skip-independent-path-proof"):
         require(
             forbidden in divergent.get("mustNotDo", []),
             f"independent compound sample must forbid {forbidden}",
         )
-    for signal in ("divergent-chains", "independent-compound", "both-roots-fixed"):
+    for signal in (
+        "divergent-chains",
+        "independent-compound",
+        "same-incident",
+        "per-root-path",
+        "independence",
+        "shared-upstream-exclusion",
+        "both-roots-fixed",
+    ):
         require(
             signal in divergent.get("verificationSignal", ""),
             f"independent compound sample must require {signal}",
@@ -1313,6 +1350,79 @@ def validate_layer_stop_samples(by_id: dict[str, dict[str, Any]]) -> None:
     )
 
 
+def validate_deeper_cause_samples(by_id: dict[str, dict[str, Any]]) -> None:
+    pressure_cases = {
+        "premature-root-existing-default-generator": "proximate",
+        "premature-root-canonical-owner-spec-generator": "deepest-confirmed-root-unknown",
+    }
+    for sample_id, expected_status in pressure_cases.items():
+        item = sample(by_id, sample_id)
+        require(
+            item.get("expectedPrimarySkill") == "systematic-debugging",
+            f"{sample_id} must route to systematic-debugging",
+        )
+        challenge = item.get("deeperCauseChallenge")
+        require(isinstance(challenge, dict), f"{sample_id} must define deeperCauseChallenge")
+        missing_fields = sorted(REQUIRED_DEEPER_CAUSE_FIELDS - challenge.keys())
+        require(
+            not missing_fields,
+            f"{sample_id} deeperCauseChallenge missing fields: {', '.join(missing_fields)}",
+        )
+        require(challenge.get("required") is True, f"{sample_id} must require deeperCauseChallenge")
+        require(
+            challenge.get("causalStatus") == expected_status,
+            f"{sample_id} causalStatus must be {expected_status}",
+        )
+        require(
+            challenge.get("recurrenceClosed") is False,
+            f"{sample_id} must keep recurrence open",
+        )
+        require(
+            "open" in challenge.get("rejectionEvidence", "").lower(),
+            f"{sample_id} rejection evidence must remain open",
+        )
+        require(
+            "open" in challenge.get("topologyProof", "").lower(),
+            f"{sample_id} topology proof must remain open",
+        )
+        for field in REQUIRED_DEEPER_CAUSE_FIELDS - {"required", "recurrenceClosed"}:
+            require(bool(challenge.get(field)), f"{sample_id} {field} must not be empty")
+
+    quick = sample(by_id, "quick-exit-true-local-typo")
+    require(
+        quick.get("expectedPrimarySkill") == "systematic-debugging",
+        "quick local typo must route to systematic-debugging",
+    )
+    require(
+        quick.get("deeperCauseChallenge", {}).get("required") is False,
+        "quick local typo must skip the full deeperCauseChallenge",
+    )
+    proof = quick.get("quickExitProof")
+    require(isinstance(proof, dict), "quick local typo must define quickExitProof")
+    missing_fields = sorted(REQUIRED_QUICK_EXIT_FIELDS - proof.keys())
+    require(
+        not missing_fields,
+        f"quick local typo quickExitProof missing fields: {', '.join(missing_fields)}",
+    )
+    require(proof.get("required") is True, "quick local typo must require quickExitProof")
+    require(proof.get("historySearch") == "negative", "quick local typo history search must be negative")
+    require(
+        proof.get("samePatternSearch") == "negative",
+        "quick local typo same-pattern search must be negative",
+    )
+    require(proof.get("causalStatus") == "root", "quick local typo causalStatus must be root")
+    require(
+        "negative" in proof.get("excludedUpstreamDependencies", ""),
+        "quick local typo upstream proof must be negative",
+    )
+    require(
+        "bug class" in proof.get("variantCounterfactual", ""),
+        "quick local typo counterfactual must eliminate the bug class",
+    )
+    for field in REQUIRED_QUICK_EXIT_FIELDS - {"required"}:
+        require(bool(proof.get(field)), f"quick local typo {field} must not be empty")
+
+
 def validate_matrix(path: Path) -> None:
     data = json.loads(path.read_text(encoding="utf-8"))
     samples, by_id = validate_shape(data)
@@ -1320,6 +1430,7 @@ def validate_matrix(path: Path) -> None:
     validate_contracts(data)
     validate_sample_rules(by_id)
     validate_layer_stop_samples(by_id)
+    validate_deeper_cause_samples(by_id)
 
 
 def main(argv: list[str]) -> int:

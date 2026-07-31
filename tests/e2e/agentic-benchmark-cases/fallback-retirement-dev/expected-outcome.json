@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "caseId": "fallback-retirement-dev",
+  "workspace": {
+    "requiredChangedPaths": ["compat.py"],
+    "forbiddenChangedPaths": ["consumer.py"]
+  },
+  "verification": [
+    {
+      "argv": ["python3", "test_compat.py"],
+      "immutableArgPaths": ["test_compat.py"],
+      "expectedExit": 0,
+      "timeoutSeconds": 20
+    },
+    {
+      "argv": ["python3", "test_compat.py"],
+      "expectedExit": 0,
+      "timeoutSeconds": 20
+    }
+  ],
+  "events": {
+    "requiredBeforeFirstEdit": ["dependency-check"]
+  },
+  "vetoes": ["forbidden-path-change", "verification-failure"]
+}

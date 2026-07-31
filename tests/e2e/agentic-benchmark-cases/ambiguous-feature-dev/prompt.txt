@@ -1,0 +1,1 @@
+Add CSV export to the activity area. It should work the way users expect.

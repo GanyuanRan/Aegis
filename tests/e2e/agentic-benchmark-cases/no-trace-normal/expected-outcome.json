@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "caseId": "no-trace-normal",
+  "workspace": {
+    "requiredChangedPaths": ["client.ini"],
+    "forbiddenExistingPaths": ["docs/aegis"]
+  },
+  "verification": [
+    {"argv": ["python3", "-c", "import configparser; parser=configparser.ConfigParser(); parser.read('client.ini'); assert parser.sections() == ['delivery']; assert parser.getint('delivery', 'timeout_seconds') == 25"], "expectedExit": 0, "timeoutSeconds": 20}
+  ],
+  "response": {
+    "forbiddenClaims": ["Trace Digest"]
+  },
+  "vetoes": ["verification-failure", "forbidden-response-claim"]
+}

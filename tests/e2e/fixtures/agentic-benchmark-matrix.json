@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 4,
   "status": "draft",
   "authorityBoundary": "advisory-method-pack-evidence-not-completion-authority",
   "primaryQuestion": "Does Aegis improve representative agent behavior for evidence, boundary, route, owner, retirement, and workspace discipline without becoming runtime authority?",
@@ -53,6 +53,22 @@
     "workflowQualityMatrix": "tests/e2e/fixtures/workflow-quality-matrix.json",
     "controlledReplayManifest": "tests/e2e/fixtures/replay-samples.json"
   },
+  "casePortfolio": {
+    "manifestPath": "tests/e2e/fixtures/agentic-benchmark-cases.json",
+    "implementationStatus": "implemented",
+    "schemaVersion": 1,
+    "caseCount": 30,
+    "scenarioClassCount": 10,
+    "partitions": {
+      "development": 10,
+      "held-out-normal": 10,
+      "held-out-boundary": 10
+    },
+    "arms": [
+      "baseline-no-aegis",
+      "aegis-auto"
+    ]
+  },
   "evaluationTiers": [
     {
       "id": "deterministic-static",
@@ -79,14 +95,13 @@
       ]
     },
     {
-      "id": "opt-in-live-repeated-held-out",
-      "implementationStatus": "contract-only",
+      "id": "opt-in-live-held-out",
+      "implementationStatus": "implemented",
       "defaultCi": false,
       "optIn": true,
-      "requiredEvidence": [
-        "repeated-run-evidence",
-        "held-out-evidence"
-      ]
+      "scoreSource": "arm-neutral-observable-outcome-analysis",
+      "requiresFrozenBatch": true,
+      "supportsPromotionEvidence": false
     },
     {
       "id": "sampled-blind-human-review",
@@ -98,6 +113,90 @@
         "high-variance-results",
         "non-discriminating-assertions"
       ]
+    }
+  ],
+  "maximumSupportedWorkers": 12,
+  "runProfiles": [
+    {
+      "id": "development-pilot",
+      "datasetPartitions": [
+        "development"
+      ],
+      "caseCount": 1,
+      "arms": [
+        "baseline-no-aegis",
+        "aegis-auto"
+      ],
+      "repetitionsPerCase": 1,
+      "validRunTarget": 2,
+      "paidAttemptCeiling": 2,
+      "workers": 2,
+      "wallClockBudgetSeconds": 300,
+      "preflightTimeoutSeconds": 30,
+      "perAttemptTimeoutSeconds": 240,
+      "infrastructureFailureLimit": 2,
+      "publicationEligible": false,
+      "publicationAuthority": "none",
+      "supportedEvidence": [],
+      "unsupportedEvidence": [
+        "held-out-evidence",
+        "repeated-run-evidence"
+      ]
+    },
+    {
+      "id": "standard-held-out",
+      "datasetPartitions": [
+        "held-out-normal",
+        "held-out-boundary"
+      ],
+      "caseCount": 20,
+      "arms": [
+        "baseline-no-aegis",
+        "aegis-auto"
+      ],
+      "repetitionsPerCase": 1,
+      "validRunTarget": 40,
+      "paidAttemptCeiling": 44,
+      "workers": 8,
+      "wallClockBudgetSeconds": 2700,
+      "preflightTimeoutSeconds": 30,
+      "perAttemptTimeoutSeconds": 240,
+      "infrastructureFailureLimit": 2,
+      "publicationEligible": true,
+      "publicationAuthority": "advisory-only",
+      "supportedEvidence": [
+        "held-out-evidence"
+      ],
+      "unsupportedEvidence": [
+        "repeated-run-evidence"
+      ]
+    },
+    {
+      "id": "extended-held-out",
+      "datasetPartitions": [
+        "held-out-normal",
+        "held-out-boundary"
+      ],
+      "caseCount": 20,
+      "arms": [
+        "baseline-no-aegis",
+        "aegis-auto"
+      ],
+      "repetitionsPerCase": 3,
+      "validRunTarget": 120,
+      "paidAttemptCeiling": 132,
+      "workers": 8,
+      "wallClockBudgetSeconds": 4800,
+      "preflightTimeoutSeconds": 30,
+      "perAttemptTimeoutSeconds": 240,
+      "infrastructureFailureLimit": 2,
+      "publicationEligible": true,
+      "publicationAuthority": "advisory-only",
+      "supportedEvidence": [
+        "held-out-evidence",
+        "repeated-run-evidence"
+      ],
+      "unsupportedEvidence": []
     }
   ],
   "promotionPolicy": {

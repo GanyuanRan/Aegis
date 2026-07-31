@@ -1,0 +1,2 @@
+Both the handheld scanner and partner API turn package identifier "0007" into
+"7" after the shared normalization update. Preserve the identifier.

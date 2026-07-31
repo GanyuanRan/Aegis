@@ -1,0 +1,347 @@
+{
+  "version": 1,
+  "status": "implemented",
+  "benchmarkMatrix": "tests/e2e/fixtures/agentic-benchmark-matrix.json",
+  "authorityBoundary": "advisory-method-pack-evidence-not-completion-authority",
+  "partitions": {
+    "development": 10,
+    "held-out-normal": 10,
+    "held-out-boundary": 10
+  },
+  "arms": [
+    "baseline-no-aegis",
+    "aegis-auto"
+  ],
+  "cases": [
+    {
+      "id": "ambiguous-feature-dev",
+      "scenarioClass": "ambiguous-feature-shaping",
+      "partition": "development",
+      "variant": "development",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/ambiguous-feature-dev/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/ambiguous-feature-dev/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/ambiguous-feature-dev/expected-outcome.json",
+      "benchmarkMetrics": ["route-correctness", "workspace-laziness", "prompt-bloat-risk"],
+      "liveEligible": true
+    },
+    {
+      "id": "ambiguous-feature-api-option",
+      "scenarioClass": "ambiguous-feature-shaping",
+      "partition": "held-out-normal",
+      "variant": "normal",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/ambiguous-feature-api-option/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/ambiguous-feature-api-option/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/ambiguous-feature-api-option/expected-outcome.json",
+      "benchmarkMetrics": ["route-correctness", "workspace-laziness", "prompt-bloat-risk"],
+      "liveEligible": true
+    },
+    {
+      "id": "ambiguous-feature-cross-module",
+      "scenarioClass": "ambiguous-feature-shaping",
+      "partition": "held-out-boundary",
+      "variant": "boundary",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/ambiguous-feature-cross-module/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/ambiguous-feature-cross-module/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/ambiguous-feature-cross-module/expected-outcome.json",
+      "benchmarkMetrics": ["route-correctness", "workspace-laziness", "prompt-bloat-risk"],
+      "liveEligible": true
+    },
+    {
+      "id": "shared-owner-bug-repair",
+      "scenarioClass": "shared-owner-bug-repair",
+      "partition": "development",
+      "variant": "development",
+      "promptPath": "tests/e2e/replay-samples/shared-owner-bug-repair/prompt.txt",
+      "seedProjectPath": "tests/e2e/fixtures/replay-projects/shared-owner-bug-repair",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/shared-owner-bug-repair/expected-outcome.json",
+      "benchmarkMetrics": ["owner-fix-accuracy", "evidence-freshness", "task-completeness"],
+      "liveEligible": true
+    },
+    {
+      "id": "shared-owner-normal",
+      "scenarioClass": "shared-owner-bug-repair",
+      "partition": "held-out-normal",
+      "variant": "normal",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/shared-owner-normal/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/shared-owner-normal/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/shared-owner-normal/expected-outcome.json",
+      "benchmarkMetrics": ["owner-fix-accuracy", "evidence-freshness", "task-completeness"],
+      "liveEligible": true
+    },
+    {
+      "id": "shared-owner-boundary",
+      "scenarioClass": "shared-owner-bug-repair",
+      "partition": "held-out-boundary",
+      "variant": "boundary",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/shared-owner-boundary/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/shared-owner-boundary/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/shared-owner-boundary/expected-outcome.json",
+      "benchmarkMetrics": ["owner-fix-accuracy", "evidence-freshness", "task-completeness"],
+      "liveEligible": true
+    },
+    {
+      "id": "change-necessity-before-edit",
+      "scenarioClass": "quick-bug-change-necessity",
+      "partition": "development",
+      "variant": "development",
+      "promptPath": "tests/e2e/replay-samples/change-necessity-before-edit/prompt.txt",
+      "seedProjectPath": "tests/e2e/fixtures/replay-projects/change-necessity-before-edit",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/change-necessity-before-edit/expected-outcome.json",
+      "benchmarkMetrics": ["route-correctness", "evidence-freshness", "owner-fix-accuracy", "task-completeness"],
+      "liveEligible": true
+    },
+    {
+      "id": "quick-bug-normal",
+      "scenarioClass": "quick-bug-change-necessity",
+      "partition": "held-out-normal",
+      "variant": "normal",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/quick-bug-normal/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/quick-bug-normal/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/quick-bug-normal/expected-outcome.json",
+      "benchmarkMetrics": ["route-correctness", "evidence-freshness", "owner-fix-accuracy", "task-completeness"],
+      "liveEligible": true
+    },
+    {
+      "id": "quick-bug-boundary",
+      "scenarioClass": "quick-bug-change-necessity",
+      "partition": "held-out-boundary",
+      "variant": "boundary",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/quick-bug-boundary/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/quick-bug-boundary/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/quick-bug-boundary/expected-outcome.json",
+      "benchmarkMetrics": ["route-correctness", "evidence-freshness", "owner-fix-accuracy", "task-completeness"],
+      "liveEligible": true
+    },
+    {
+      "id": "tiny-source-dev",
+      "scenarioClass": "tiny-new-source-path-change-necessity",
+      "partition": "development",
+      "variant": "development",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/tiny-source-dev/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/tiny-source-dev/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/tiny-source-dev/expected-outcome.json",
+      "benchmarkMetrics": ["route-correctness", "prompt-bloat-risk", "task-completeness"],
+      "liveEligible": true
+    },
+    {
+      "id": "tiny-source-normal",
+      "scenarioClass": "tiny-new-source-path-change-necessity",
+      "partition": "held-out-normal",
+      "variant": "normal",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/tiny-source-normal/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/tiny-source-normal/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/tiny-source-normal/expected-outcome.json",
+      "benchmarkMetrics": ["route-correctness", "prompt-bloat-risk", "task-completeness"],
+      "liveEligible": true
+    },
+    {
+      "id": "tiny-source-boundary",
+      "scenarioClass": "tiny-new-source-path-change-necessity",
+      "partition": "held-out-boundary",
+      "variant": "boundary",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/tiny-source-boundary/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/tiny-source-boundary/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/tiny-source-boundary/expected-outcome.json",
+      "benchmarkMetrics": ["route-correctness", "prompt-bloat-risk", "task-completeness"],
+      "liveEligible": true
+    },
+    {
+      "id": "completion-evidence-boundary",
+      "scenarioClass": "completion-claim-with-missing-evidence",
+      "partition": "development",
+      "variant": "development",
+      "promptPath": "tests/e2e/replay-samples/completion-evidence-boundary/prompt.txt",
+      "seedProjectPath": "tests/e2e/fixtures/replay-projects/completion-evidence-boundary",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/completion-evidence-boundary/expected-outcome.json",
+      "benchmarkMetrics": ["false-completion-rate", "evidence-freshness", "authority-boundary"],
+      "liveEligible": true
+    },
+    {
+      "id": "completion-normal",
+      "scenarioClass": "completion-claim-with-missing-evidence",
+      "partition": "held-out-normal",
+      "variant": "normal",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/completion-normal/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/completion-normal/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/completion-normal/expected-outcome.json",
+      "benchmarkMetrics": ["false-completion-rate", "evidence-freshness", "authority-boundary"],
+      "liveEligible": true
+    },
+    {
+      "id": "completion-boundary",
+      "scenarioClass": "completion-claim-with-missing-evidence",
+      "partition": "held-out-boundary",
+      "variant": "boundary",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/completion-boundary/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/completion-boundary/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/completion-boundary/expected-outcome.json",
+      "benchmarkMetrics": ["false-completion-rate", "evidence-freshness", "authority-boundary"],
+      "liveEligible": true
+    },
+    {
+      "id": "fallback-retirement-dev",
+      "scenarioClass": "fallback-retirement-cleanup",
+      "partition": "development",
+      "variant": "development",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/fallback-retirement-dev/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/fallback-retirement-dev/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/fallback-retirement-dev/expected-outcome.json",
+      "benchmarkMetrics": ["retirement-track-coverage", "authority-boundary", "task-completeness"],
+      "liveEligible": true
+    },
+    {
+      "id": "fallback-retirement-normal",
+      "scenarioClass": "fallback-retirement-cleanup",
+      "partition": "held-out-normal",
+      "variant": "normal",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/fallback-retirement-normal/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/fallback-retirement-normal/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/fallback-retirement-normal/expected-outcome.json",
+      "benchmarkMetrics": ["retirement-track-coverage", "authority-boundary", "task-completeness"],
+      "liveEligible": true
+    },
+    {
+      "id": "fallback-retirement-boundary",
+      "scenarioClass": "fallback-retirement-cleanup",
+      "partition": "held-out-boundary",
+      "variant": "boundary",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/fallback-retirement-boundary/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/fallback-retirement-boundary/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/fallback-retirement-boundary/expected-outcome.json",
+      "benchmarkMetrics": ["retirement-track-coverage", "authority-boundary", "task-completeness"],
+      "liveEligible": true
+    },
+    {
+      "id": "tiny-fast-dev",
+      "scenarioClass": "tiny-fast-path",
+      "partition": "development",
+      "variant": "development",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/tiny-fast-dev/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/tiny-fast-dev/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/tiny-fast-dev/expected-outcome.json",
+      "benchmarkMetrics": ["workspace-laziness", "prompt-bloat-risk", "route-correctness"],
+      "liveEligible": true
+    },
+    {
+      "id": "tiny-fast-normal",
+      "scenarioClass": "tiny-fast-path",
+      "partition": "held-out-normal",
+      "variant": "normal",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/tiny-fast-normal/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/tiny-fast-normal/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/tiny-fast-normal/expected-outcome.json",
+      "benchmarkMetrics": ["workspace-laziness", "prompt-bloat-risk", "route-correctness"],
+      "liveEligible": true
+    },
+    {
+      "id": "tiny-fast-boundary",
+      "scenarioClass": "tiny-fast-path",
+      "partition": "held-out-boundary",
+      "variant": "boundary",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/tiny-fast-boundary/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/tiny-fast-boundary/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/tiny-fast-boundary/expected-outcome.json",
+      "benchmarkMetrics": ["workspace-laziness", "prompt-bloat-risk", "route-correctness"],
+      "liveEligible": true
+    },
+    {
+      "id": "trace-digest-dev",
+      "scenarioClass": "requested-white-box-trace-digest",
+      "partition": "development",
+      "variant": "development",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/trace-digest-dev/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/trace-digest-dev/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/trace-digest-dev/expected-outcome.json",
+      "benchmarkMetrics": ["trace-digest-coverage", "rule-effect-attribution", "skill-call-stability", "authority-boundary"],
+      "liveEligible": true
+    },
+    {
+      "id": "trace-digest-normal",
+      "scenarioClass": "requested-white-box-trace-digest",
+      "partition": "held-out-normal",
+      "variant": "normal",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/trace-digest-normal/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/trace-digest-normal/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/trace-digest-normal/expected-outcome.json",
+      "benchmarkMetrics": ["trace-digest-coverage", "rule-effect-attribution", "skill-call-stability", "authority-boundary"],
+      "liveEligible": true
+    },
+    {
+      "id": "trace-digest-boundary",
+      "scenarioClass": "requested-white-box-trace-digest",
+      "partition": "held-out-boundary",
+      "variant": "boundary",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/trace-digest-boundary/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/trace-digest-boundary/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/trace-digest-boundary/expected-outcome.json",
+      "benchmarkMetrics": ["trace-digest-coverage", "rule-effect-attribution", "skill-call-stability", "authority-boundary"],
+      "liveEligible": true
+    },
+    {
+      "id": "no-trace-dev",
+      "scenarioClass": "negative-fast-path-no-trace-digest",
+      "partition": "development",
+      "variant": "development",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/no-trace-dev/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/no-trace-dev/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/no-trace-dev/expected-outcome.json",
+      "benchmarkMetrics": ["trace-digest-coverage", "workspace-laziness", "prompt-bloat-risk"],
+      "liveEligible": true
+    },
+    {
+      "id": "no-trace-normal",
+      "scenarioClass": "negative-fast-path-no-trace-digest",
+      "partition": "held-out-normal",
+      "variant": "normal",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/no-trace-normal/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/no-trace-normal/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/no-trace-normal/expected-outcome.json",
+      "benchmarkMetrics": ["trace-digest-coverage", "workspace-laziness", "prompt-bloat-risk"],
+      "liveEligible": true
+    },
+    {
+      "id": "no-trace-boundary",
+      "scenarioClass": "negative-fast-path-no-trace-digest",
+      "partition": "held-out-boundary",
+      "variant": "boundary",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/no-trace-boundary/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/no-trace-boundary/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/no-trace-boundary/expected-outcome.json",
+      "benchmarkMetrics": ["trace-digest-coverage", "workspace-laziness", "prompt-bloat-risk"],
+      "liveEligible": true
+    },
+    {
+      "id": "destructive-stop-dev",
+      "scenarioClass": "destructive-cleanup-hard-stop",
+      "partition": "development",
+      "variant": "development",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/destructive-stop-dev/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/destructive-stop-dev/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/destructive-stop-dev/expected-outcome.json",
+      "benchmarkMetrics": ["authority-boundary", "task-completeness", "evidence-freshness"],
+      "liveEligible": true
+    },
+    {
+      "id": "destructive-stop-normal",
+      "scenarioClass": "destructive-cleanup-hard-stop",
+      "partition": "held-out-normal",
+      "variant": "normal",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/destructive-stop-normal/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/destructive-stop-normal/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/destructive-stop-normal/expected-outcome.json",
+      "benchmarkMetrics": ["authority-boundary", "task-completeness", "evidence-freshness"],
+      "liveEligible": true
+    },
+    {
+      "id": "destructive-stop-boundary",
+      "scenarioClass": "destructive-cleanup-hard-stop",
+      "partition": "held-out-boundary",
+      "variant": "boundary",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/destructive-stop-boundary/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/destructive-stop-boundary/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/destructive-stop-boundary/expected-outcome.json",
+      "benchmarkMetrics": ["authority-boundary", "task-completeness", "evidence-freshness"],
+      "liveEligible": true
+    }
+  ]
+}

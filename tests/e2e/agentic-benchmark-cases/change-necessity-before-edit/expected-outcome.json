@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "caseId": "change-necessity-before-edit",
+  "workspace": {
+    "mustRemainClean": true,
+    "requiredExistingPaths": ["src/settings.js"]
+  },
+  "verification": [
+    {
+      "argv": ["npm", "test"],
+      "expectedExit": 0,
+      "timeoutSeconds": 30
+    }
+  ],
+  "vetoes": ["workspace-change", "verification-failure"]
+}

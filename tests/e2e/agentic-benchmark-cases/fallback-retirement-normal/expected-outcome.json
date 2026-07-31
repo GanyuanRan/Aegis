@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "caseId": "fallback-retirement-normal",
+  "workspace": {
+    "requiredChangedPaths": ["flags.py"],
+    "forbiddenChangedPaths": ["menu.py"]
+  },
+  "verification": [
+    {
+      "argv": ["python3", "test_flags.py"],
+      "immutableArgPaths": ["test_flags.py"],
+      "expectedExit": 0,
+      "timeoutSeconds": 20
+    },
+    {"argv": ["python3", "test_flags.py"], "expectedExit": 0, "timeoutSeconds": 20}
+  ],
+  "events": {"requiredBeforeFirstEdit": ["dependency-check"]},
+  "vetoes": ["forbidden-path-change", "verification-failure"]
+}

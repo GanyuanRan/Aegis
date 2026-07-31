@@ -13,16 +13,24 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from validate_agentic_benchmark_matrix import (
+    AUTHORITY_BOUNDARY,
+    CONTROLLED_REPLAY_SCORE_SOURCE,
+    CONTROLLED_REPLAY_TIER,
+    CURRENT_CONTROLLED_REPLAY_ARMS,
+    CURRENT_CONTROLLED_REPLAY_COMPARISON,
+    CURRENT_CONTROLLED_REPLAY_EXPECTED_PASS,
+    DEVELOPMENT_PARTITION,
+    validate_arms,
+    validate_evaluation_contract,
+)
 
-AUTHORITY_BOUNDARY = "advisory-method-pack-evidence-not-completion-authority"
 SOURCE_PROJECT_POLICY = "controlled-fixture-projects-only"
 WORKSPACE_POLICY = "copy-seed-to-temp-per-arm"
 COVERAGE_MAPPING_POLICY = "exact-bidirectional-with-benchmark-matrix"
-CONTROLLED_REPLAY_TIER = "controlled-replay"
-DEVELOPMENT_PARTITION = "development"
 REPORT_VERSION = 1
 REPORT_TYPE = "controlled-replay-advisory"
-SCORE_SOURCE = "static-transcript-contract-analysis"
+SCORE_SOURCE = CONTROLLED_REPLAY_SCORE_SOURCE
 
 REQUIRED_SAMPLE_CONTROLS = {
     "fresh-temporary-workspace-per-run",
@@ -45,37 +53,6 @@ EXPECTED_CONTROLLED_REPLAY_MAPPING = {
     "shared-owner-bug-repair": "shared-owner-bug-repair",
     "completion-evidence-boundary": "completion-claim-with-missing-evidence",
 }
-
-REQUIRED_EVALUATION_TIERS = {
-    "deterministic-static",
-    CONTROLLED_REPLAY_TIER,
-    "opt-in-live-repeated-held-out",
-    "sampled-blind-human-review",
-}
-
-REQUIRED_PROMOTION_EVIDENCE = {
-    "held-out-evidence",
-    "repeated-run-evidence",
-    "no-primary-metric-regression",
-}
-
-REQUIRED_PROMOTION_REVIEWS = {
-    "high-variance-results",
-    "non-discriminating-assertions",
-}
-
-REQUIRED_ARMS = {"baseline-no-aegis", "aegis-auto", "aegis-explicit", "previous-aegis"}
-CURRENT_CONTROLLED_REPLAY_ARMS = {"baseline-no-aegis", "aegis-auto"}
-CURRENT_CONTROLLED_REPLAY_EXPECTED_PASS = {
-    "baseline-no-aegis": False,
-    "aegis-auto": True,
-}
-CURRENT_CONTROLLED_REPLAY_COMPARISON = {
-    "strongerArm": "aegis-auto",
-    "weakerArm": "baseline-no-aegis",
-    "expectation": "stronger-passes-and-scores-higher",
-}
-
 
 def require(condition: bool, message: str) -> None:
     if not condition:
@@ -103,102 +80,11 @@ def relative_path(root: Path, path: Path) -> str:
 
 def load_benchmark_contract(root: Path, matrix_path: str) -> dict[str, Any]:
     matrix = load_json(resolve_repo_path(root, matrix_path, "benchmarkMatrix"))
-    require(matrix.get("version") == 2, "benchmark matrix version must be 2")
+    require(matrix.get("version") == 4, "benchmark matrix version must be 4")
     require(matrix.get("authorityBoundary") == AUTHORITY_BOUNDARY, "benchmark matrix boundary drifted")
+    validate_arms(matrix)
     validate_evaluation_contract(matrix)
     return matrix
-
-
-def validate_evaluation_contract(matrix: dict[str, Any]) -> None:
-    arms = matrix.get("arms", [])
-    require(isinstance(arms, list), "benchmark arms must be a list")
-    require(all(isinstance(arm, dict) for arm in arms), "each arm must be an object")
-    arm_ids = [arm.get("id") for arm in arms]
-    require(all(isinstance(arm_id, str) and arm_id for arm_id in arm_ids), "arm ids must be non-empty strings")
-    require(len(arm_ids) == len(set(arm_ids)), "arms must contain unique object ids")
-    missing_arms = sorted(REQUIRED_ARMS - set(arm_ids))
-    require(not missing_arms, f"missing benchmark arms: {', '.join(missing_arms)}")
-    arms_by_id = {arm["id"]: arm for arm in arms}
-    for arm in arms:
-        require(arm.get("requiresIsolatedConfig") is True, f"{arm.get('id')} must isolate config")
-    previous = arms_by_id.get("previous-aegis")
-    require(isinstance(previous, dict), "benchmark matrix must define previous-aegis")
-    require(previous.get("implementationStatus") == "contract-only", "previous-aegis must remain contract-only")
-    require(previous.get("availability") == "conditional", "previous-aegis must be conditional")
-    require(
-        previous.get("useWhen") == "evaluating-candidate-skill-or-workflow-revision",
-        "previous-aegis must only evaluate candidate skill or workflow revisions",
-    )
-    require(
-        previous.get("requiredInControlledReplaySamples") is False,
-        "previous-aegis must not be required in current controlled replay samples",
-    )
-
-    tiers = matrix.get("evaluationTiers", [])
-    require(isinstance(tiers, list), "evaluationTiers must be a list")
-    tiers_by_id = {tier.get("id"): tier for tier in tiers if isinstance(tier, dict)}
-    require(len(tiers_by_id) == len(tiers), "evaluationTiers must contain unique object ids")
-    require(set(tiers_by_id) == REQUIRED_EVALUATION_TIERS, "evaluationTiers must define the four-tier contract exactly")
-
-    deterministic = tiers_by_id["deterministic-static"]
-    require(
-        deterministic.get("implementationStatus") == "implemented" and deterministic.get("defaultCi") is True,
-        "deterministic-static must be the implemented default CI tier",
-    )
-    require(deterministic.get("supportsPromotionEvidence") is False, "deterministic-static cannot support promotion evidence")
-    controlled = tiers_by_id[CONTROLLED_REPLAY_TIER]
-    require(controlled.get("implementationStatus") == "implemented", "controlled-replay must be implemented")
-    require(controlled.get("defaultCi") is False, "controlled-replay must not be the default CI tier")
-    require(controlled.get("executionShape") == "single-static-captured-transcript", "controlled-replay must remain single static replay")
-    require(controlled.get("datasetPartitions") == [DEVELOPMENT_PARTITION], "controlled-replay must remain development-only")
-    require(controlled.get("scoreSource") == SCORE_SOURCE, "controlled-replay score source drifted")
-    require(controlled.get("supportsPromotionEvidence") is False, "controlled-replay cannot support promotion evidence")
-    require(
-        {"variance-evidence", "held-out-evidence", "blind-review-evidence", "candidate-promotion-evidence"}.issubset(
-            set(controlled.get("unsupportedClaims", []))
-        ),
-        "controlled-replay must forbid variance, held-out, blind-review, and promotion claims",
-    )
-    live = tiers_by_id["opt-in-live-repeated-held-out"]
-    require(live.get("implementationStatus") == "contract-only", "live repeated/held-out tier must remain contract-only")
-    require(
-        live.get("defaultCi") is False and live.get("optIn") is True,
-        "live repeated/held-out tier must be opt-in outside default CI",
-    )
-    require(
-        {"repeated-run-evidence", "held-out-evidence"}.issubset(set(live.get("requiredEvidence", []))),
-        "live repeated/held-out tier must require repeated and held-out evidence",
-    )
-    blind = tiers_by_id["sampled-blind-human-review"]
-    require(blind.get("implementationStatus") == "contract-only", "blind human review tier must remain contract-only")
-    require(blind.get("defaultCi") is False, "blind human review tier must not run in default CI")
-    require(
-        blind.get("sampled") is True and blind.get("armIdentityBlinded") is True,
-        "human review must be sampled and blind",
-    )
-    require(
-        REQUIRED_PROMOTION_REVIEWS.issubset(set(blind.get("escalationTriggers", []))),
-        "blind human review must cover variance and non-discriminating assertion escalation",
-    )
-
-    promotion = matrix.get("promotionPolicy", {})
-    require(isinstance(promotion, dict), "promotionPolicy must be an object")
-    require(promotion.get("authority") == "advisory-only", "promotionPolicy must remain advisory-only")
-    require(promotion.get("candidateScope") == "skill-or-workflow-revision", "promotionPolicy candidate scope drifted")
-    require(
-        REQUIRED_PROMOTION_EVIDENCE.issubset(set(promotion.get("requiredEvidence", []))),
-        "promotionPolicy must require held-out, repeated, and no-primary-regression evidence",
-    )
-    require(
-        REQUIRED_PROMOTION_REVIEWS.issubset(set(promotion.get("reviewTriggers", []))),
-        "promotionPolicy must review high variance and non-discriminating assertions",
-    )
-    require(
-        {"promote-candidate", "modify-skill-or-workflow", "modify-baseline"}.issubset(
-            set(promotion.get("automaticActionsForbidden", []))
-        ),
-        "promotionPolicy must forbid automatic promotion and skill/baseline modification",
-    )
 
 
 def validate_prompt(prompt_path: Path, sample_id: str) -> None:

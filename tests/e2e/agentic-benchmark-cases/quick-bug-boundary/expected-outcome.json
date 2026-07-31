@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "caseId": "quick-bug-boundary",
+  "workspace": {
+    "requiredChangedPaths": ["quota.py"]
+  },
+  "verification": [
+    {
+      "argv": ["python3", "test_quota.py"],
+      "immutableArgPaths": ["test_quota.py"],
+      "expectedExit": 0,
+      "timeoutSeconds": 20
+    },
+    {"argv": ["python3", "test_quota.py"], "expectedExit": 0, "timeoutSeconds": 20}
+  ],
+  "events": {"requiredBeforeFirstEdit": ["implementation-rationale"]},
+  "vetoes": ["verification-failure"]
+}

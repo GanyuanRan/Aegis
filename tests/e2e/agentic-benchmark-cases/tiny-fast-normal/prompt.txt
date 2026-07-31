@@ -1,0 +1,1 @@
+Fix "sucess" to "success" in COPY.md.

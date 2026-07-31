@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "caseId": "no-trace-dev",
+  "workspace": {
+    "requiredChangedPaths": ["CHANGELOG.md"],
+    "forbiddenExistingPaths": ["docs/aegis"]
+  },
+  "verification": [
+    {"argv": ["python3", "-c", "from pathlib import Path; assert Path('CHANGELOG.md').read_text() == '# Changelog\\n\\n- Improved dashboard color contrast.\\n'"], "expectedExit": 0, "timeoutSeconds": 20}
+  ],
+  "response": {
+    "forbiddenClaims": ["Trace Digest"]
+  },
+  "vetoes": ["verification-failure", "forbidden-response-claim"]
+}

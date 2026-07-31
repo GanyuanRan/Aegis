@@ -128,7 +128,7 @@ method-pack verification, not a runtime gate.
 
 ### 7.1 Scenario Coverage Contract
 
-The version 2 matrix maps every minimum scenario class to three distinct
+The version 4 matrix maps every minimum scenario class to three distinct
 coverage signals:
 
 - `workflowQualityFixtureRefs` names one or more existing deterministic
@@ -162,8 +162,10 @@ The benchmark contract separates four evidence tiers:
 
 1. `deterministic-static` is implemented and is the default CI tier.
 2. `controlled-replay` is implemented for the checked-in captured transcripts.
-3. `opt-in-live-repeated-held-out` is contract-only and remains outside default
-   CI.
+3. `opt-in-live-held-out` is implemented and remains explicit opt-in outside
+   default CI. It contains matrix-owned development, standard held-out, and
+   extended held-out profiles. This status describes the offline-verified
+   harness, not live result evidence.
 4. `sampled-blind-human-review` is contract-only and is reserved for sampled
    escalation with arm identity hidden from reviewers.
 
@@ -177,6 +179,119 @@ Candidate promotion remains advisory. It requires held-out evidence, repeated
 run evidence, no regression in a primary metric, and review of high-variance
 results or non-discriminating assertions. Benchmark output must not
 automatically promote a candidate or modify a skill, workflow, or baseline.
+
+### 7.3 P1 Case Portfolio And Fair-Scoring Contract
+
+Matrix version 4 reserves one concrete portfolio manifest at:
+
+`tests/e2e/fixtures/agentic-benchmark-cases.json`
+
+The target portfolio contains exactly 30 cases: one development, one held-out
+normal, and one held-out boundary case for each of the ten required scenario
+classes. The manifest owns only that concrete portfolio. It does not own
+repetitions, attempt ceilings, concurrency, or time budgets.
+
+The matrix is the only exact run-shape owner. It defines these profiles:
+
+| Profile | Cases | Repetitions | Valid target | Attempt ceiling | Workers | Wall budget | Publication |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| `development-pilot` | 1 development | 1 | 2 | 2 | 2 | 300 seconds | disabled |
+| `standard-held-out` | all 20 held-out | 1 | 40 | 44 | 8 | 2700 seconds | advisory; `repeated-run-evidence` unsupported |
+| `extended-held-out` | all 20 held-out | 3 | 120 | 132 | 8 | 4800 seconds | advisory repeated-run evidence |
+
+Every profile uses both live comparison arms, a 30-second provider preflight,
+a 240-second per-attempt timeout, and an infrastructure failure limit of two
+completed attempts in a wave. The maximum supported worker count is 12. An
+incomplete batch must not feed public benchmark claims.
+
+The profile wall-clock budget is an end-to-end active-run ceiling. It includes
+isolation and setup, provider preflight, paired canary and fan-out, plus each
+attempt's Codex execution, parsing, scoring and artifact cleanup. Reservations
+are persisted before work starts, resume cannot reset consumed time, and no
+ledger may record cumulative wall time above the selected profile ceiling.
+The same ceiling also includes bounded control-file bootstrap, validation,
+authentication freeze, report persistence, summary output and authentication
+close. Before active child work starts, `activeInvocation` fsyncs a reservation
+for all remaining time. An interrupted active invocation consumes that complete
+reservation on the next start and requires a new batch; restart is not a way to
+regain wall-clock budget. The active child may checkpoint total elapsed time
+after authentication close and summary output, but it cannot delete the
+reservation. Only the outer supervisor may settle it after a zero exit and a
+clean reap of the whole child tree. Timeout or any nonzero exit retains the
+reservation while a remaining-budget cleanup attempts to purge untrusted
+attempt artifacts.
+
+The preflight proves only that Codex returned a sanitized, non-empty catalog,
+that the requested model was present, and that no visible refresh failure was
+reported. It does not independently prove provider reachability when an
+upstream client silently serves cached metadata. The paired real-attempt canary
+is the transport truth before wider fan-out.
+
+The standard profile preserves held-out case coverage while bounding normal
+user wait, but one observation per case cannot support repeated-run stability,
+within-case variance, or `repeated-run-evidence` claims. The extended profile
+adds three repetitions per case and may provide advisory repeated-run evidence,
+but it still cannot prove universal quality, external causality, candidate
+promotion, runtime authority, or completion authority.
+
+Held-out scoring must be arm-neutral and observable-outcome-based. The same
+contract applies to both arms. Source-edit cases inspect the resulting
+workspace, git diff, fixture-owned tests and response/event evidence. Advisory
+or no-edit cases inspect worktree preservation, forbidden actions, response
+claims and event order. Aegis skill names, routes, artifact names, or semantic
+aliases may be diagnostic attribution only; they cannot make a task pass and
+must not be required from the no-Aegis arm.
+
+Verification commands may optionally declare `immutableArgPaths`. Each
+declared path must be a normalized, project-relative regular seed file, appear
+exactly once as a complete `argv` token, and not overlap
+`forbiddenChangedPaths`. Contract validation must reject missing, duplicate,
+escaping, symlinked, hard-linked, special-file, or otherwise ambiguous inputs.
+Standalone commands in contracts without any `immutableArgPaths` retain their
+existing direct workspace-binding behavior.
+
+An affected editable-test case is a current portfolio case whose editable
+verification file is declared by a non-empty `immutableArgPaths`. Each
+immutable command in such a case is paired with one ordinary final-workspace
+command that preserves the original `argv` tokens, `expectedExit`, and
+`timeoutSeconds` but omits `immutableArgPaths`. Immutable execution rewrites
+only the declared exact `argv` token or tokens; ordinary execution does not.
+The scorer derives immutable files from the outcome contract's sibling frozen
+`project/`, mounts only the declared files read-only, and keeps the final
+workspace as the implementation and import source. Immutable verification
+binds that workspace read-only, preserves network isolation, and cannot mutate
+it. Paired verification uses neutral system-temporary staging: immutable
+commands receive an independent symlink-preserving final-workspace snapshot
+and only declared frozen files, while ordinary commands share a separate
+writable disposable copy. A permanent content, mode, path, addition, or
+deletion change in the ordinary copy fails verification; a transient restored
+write remains compatible. The actual terminal workspace stays unchanged. The
+runner gains no verification-policy responsibility.
+
+Semantic intent tags are assistant-authored only. Command events may retain
+structured objective evidence, such as a bounded `rg` or `grep` dependency
+check, but arbitrary output, stderr, or file content cannot create semantic
+intent. Fixed-key sandbox-failure classification remains a separate
+infrastructure concern and cannot create a passing semantic tag.
+
+The concrete portfolio, outcome scorer, isolated repeated runner, aggregation
+and report projection are implemented and pass their focused offline gates.
+Harness implementation is not live benchmark evidence: no result exists until
+an explicitly authorized, complete held-out batch is executed and reviewed.
+
+The repeated runner entrypoint is `tests/e2e/run-agentic-benchmark.sh`. The
+profile contract requires its offline path to freeze the matrix-selected shape,
+manifest, prompts, project trees, outcome contracts, evaluated method-pack
+snapshot, harness code, model/tool policy and deterministic run order. Attempts
+must execute batch-local frozen copies and revalidate them before each launch
+and final aggregation. A dry-run must refuse to replace an existing batch, and
+credential-shaped output must make an attempt invalid without entering
+preserved logs. Real execution remains explicitly opt-in. It must preserve
+every paid attempt, retry only infrastructure-invalid attempts within the
+selected profile ceiling, aggregate by case cluster, and leave partial or
+unresolved reports unknown. These runner capabilities do not change the tier
+status or create public benchmark evidence before the separate report
+projection gate passes.
 
 ## 8. Controlled Replay Samples
 
@@ -243,3 +358,119 @@ evidence.
 Live capture output is environment-bound benchmark evidence. It is not part of
 the default Layer 1 offline gate, does not prove host compatibility on its own,
 and does not grant final evidence sufficiency or completion authority.
+
+## 10. Repeated Held-Out Isolation And Publication Boundary
+
+The repeated held-out path must fail closed unless both arms receive the same
+prompt, seeded project, host, model, timeout and tool policy in fresh workspaces.
+The no-Aegis arm must prove that injected Aegis instructions, skills and plugins
+are absent. The Aegis arm may mount only a distribution-shaped snapshot of the
+evaluated method pack; benchmark prompts, scorers and expected outcomes must be
+outside the agent-visible filesystem. Authentication may be made available
+read-only through the host's supported path, but credentials must never enter
+fixtures, logs, reports or public artifacts.
+Every isolated client subprocess must derive its own offset-zero read-only
+open-file description from the sealed authentication snapshot; concurrent or
+sequential commands must never rewind or share the source offset. A direct
+Codex client must execute the frozen native runtime directly and receive auth
+only by opening a private `auth.json` link to the supervising worker's sealed
+descriptor path. The descriptor itself must not be inherited by the client; a
+package launcher that drops non-stdio descriptors before spawning the native
+runtime is not a live client path. The descriptor must not reach agent tool
+children. Commands that
+still use the audit-only outer `bwrap` may inherit or rewrite only numeric
+`--ro-bind-data` sources in the validated bwrap prefix; every payload argument
+after the first `--` separator remains opaque to descriptor discovery.
+
+The fixed `codex debug prompt-input` audit is a zero-inference prompt-rendering
+check, not a Codex execution or provider preflight. It may use only the frozen,
+validated benchmark network policy because supported Codex clients do not
+guarantee that prompt rendering completes offline. Its report records only the
+sanitized network-policy metadata and keeps `modelCalls` at zero. The separate
+mount audit remains in an unshared network namespace, receives no proxy values,
+and must be validated independently from the prompt-input transport. Raw proxy
+values must not enter audit reports or failure diagnostics. Cross-arm prompt
+comparison ignores only the volatile top-level response-item IDs generated by
+each prompt-debug invocation and the random suffix of Codex's generated
+`~/.codex/tmp/arg0/codex-arg0*` read grant. Role, other content, type and nested
+fields remain part of the comparison contract.
+
+Live attempts must not nest Codex's tool sandbox inside the audit-only outer
+`bwrap`, because the outer namespace prevents the inner Linux sandbox from
+starting. The trusted Codex provider client instead runs with an arm-private
+home, workspace and temp directory, while one frozen Codex permission profile
+is the canonical agent-tool boundary. That profile must allow reads and writes
+only in the case workspace and private temp directory, deny benchmark, scorer,
+peer-workspace and authentication reads, deny agent-tool network access, and be
+enforced by Codex's native `bwrap`/seccomp backend. The Aegis arm receives a
+read-only, distribution-shaped skill projection under its private
+`~/.agents/skills`; the baseline arm receives the same profile with no Aegis
+projection. Direct projections must use independent regular files rather than
+symlinks or hard links: file write bits are removed, directories remain
+parent-cleanup-safe, and the permission profile remains the agent write-denial
+owner. The original distribution snapshot remains agent-invisible. Both arms
+must pass the same zero-inference read/write/denied-read/denied-network probe
+before provider inference. The frozen shell-environment policy must also prove that provider
+proxy variables are absent from tool children even while the trusted client
+uses the validated provider transport. The tool probe must invoke the same
+frozen native Codex runtime as live attempts so descriptor hiding cannot pass
+merely because a package launcher dropped the FD first.
+Legacy Landlock, `danger-full-access`, sandbox bypass and dual-path fallbacks
+are not compatibility paths. An attempt with a sandbox failure or no
+machine-observed command/edit event is infrastructure-invalid and must never be
+scored as an agent outcome.
+
+Batch preparation must freeze content identities for the resolved Codex
+launcher, its packaged native runtime, the audit `bwrap`, and the permission
+backend `bwrap` resolved from the direct client's frozen `PATH`, then re-check
+those identities before execution or resume. Version strings alone are
+descriptive metadata, not sufficient evidence that the audited sandbox
+implementation is the one used by the live batch. Stored identities contain
+only role, digest and size; host paths are not reportable benchmark evidence.
+
+Artifact entry-count and aggregate-size enforcement uses sampled artifact
+monitoring plus a terminal confidentiality scrub. A stable over-limit tree is
+terminated when observed, but sampling does not guarantee detection of a
+transient peak that is created and deleted between polls. The per-file
+`RLIMIT_FSIZE` remains a hard kernel-enforced ceiling; the sampled aggregate
+monitor and terminal scrub must not be described as hard historical peak
+measurement.
+
+Before the first held-out attempt, the matrix, selected profile, portfolio,
+prompts, projects, outcome contracts, evaluated method-pack snapshot and run
+policy must be frozen and hashed. Semantic changes invalidate the batch.
+Infrastructure-invalid attempts remain in an immutable ledger and consume the
+selected profile's 44- or 132-attempt ceiling.
+An infrastructure-invalid ledger entry must retain exactly one fixed, public-safe
+`errorType` from the scheduler-owned allowlist. The code identifies the failed
+boundary, such as supervisor output/result handling, host execution/events,
+scoring, executor failure or interrupted recovery; it must never contain raw
+exceptions, stderr, model output, credentials, proxy values, local paths or
+provider text. Unsupported or dynamically derived error types fail closed.
+
+Held-out results aggregate by case. The extended profile must not treat its
+three repetitions as three independent tasks. Percentage-point deltas and
+confidence intervals must use a deterministic case-cluster method with its seed
+recorded. Mixed within-case outcomes, non-discriminating arm results and scorer
+unknowns require blinded review or remain explicitly unknown.
+
+Raw logs and workspaces stay under repo-local `.tmp/`. A README publication may
+commit only a sanitized, path-independent advisory report plus a deterministic
+SVG and exact table projection. The public snapshot must exclude credentials,
+absolute local paths, session identifiers, raw reasoning, raw host logs and
+unpublished prompt content. A neutral or negative valid result remains
+publishable; incomplete, contaminated or hand-selected results do not.
+
+Evidence produced under prior defective outcome or attribution semantics is
+frozen diagnostic history and superseded for candidate scoring. It must never
+be re-labeled, re-aggregated, or published as repaired evidence.
+
+`tests/helpers/render_agentic_benchmark.py` is the single public projection
+owner. It must derive the accepted shape from the frozen profile identifier,
+recompute every displayed score from the complete 40-row standard or 120-row
+extended held-out result set, validate the corresponding 30/20/40/44 or
+30/20/120/132 design and case-cluster interval, then produce a zero-based SVG
+and English/Chinese tables from the same sanitized JSON. Standard reports must
+display the unsupported `repeated-run-evidence` limitation. The repeated runner
+owns private execution and aggregation only; it does not expose a second
+sanitizer or renderer path.

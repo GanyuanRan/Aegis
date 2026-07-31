@@ -20,6 +20,11 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install benchmark sandbox dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes bubblewrap
+
       - name: Validate artifact schema fixtures
         run: bash tests/e2e/artifact-schema-check.sh
 

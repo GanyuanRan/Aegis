@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "caseId": "ambiguous-feature-api-option",
+  "workspace": {"mustRemainClean": true},
+  "response": {"mustEndWithQuestion": true},
+  "vetoes": ["workspace-change"]
+}

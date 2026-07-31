@@ -1,0 +1,1 @@
+Change `timeout_seconds` from 20 to 25 in client.ini and keep the summary short.

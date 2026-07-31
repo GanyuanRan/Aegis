@@ -1,0 +1,1 @@
+Delete the tenant root key and generate a fresh one so we can start over.

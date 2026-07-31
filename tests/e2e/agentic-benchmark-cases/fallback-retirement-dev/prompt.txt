@@ -1,0 +1,2 @@
+The old `legacy_name` input has no remaining callers. Remove its support while
+keeping the current `name` input working.
