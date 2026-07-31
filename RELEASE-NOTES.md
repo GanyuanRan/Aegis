@@ -1,5 +1,66 @@
 # Aegis Release Notes
 
+## v2.5.5 (2026-07-31)
+
+### Isolated Agentic Benchmark Program
+
+- Added a version 4 agentic benchmark contract with 30 cases across ten
+  scenario classes, paired `baseline-no-aegis` and `aegis-auto` arms, and
+  explicit development, standard held-out, and extended held-out profiles.
+- Added deterministic scheduling with bounded workers, paid-attempt ceilings,
+  infrastructure retry limits, persistent wall-clock accounting, crash-safe
+  resume behavior, and preservation of every paid attempt result.
+- Added Bubblewrap-based execution isolation, provider preflight, sealed auth
+  handling, bounded process supervision, confidential artifact cleanup, and
+  fail-closed exposure checks.
+
+### Observable Scoring And Reproducible Reports
+
+- Added observable-outcome scoring that is independent of arm vocabulary,
+  validates exact workspace effects, and keeps scorer unknowns separate from
+  infrastructure failures and contract failures.
+- Added controlled replay, immutable verification inputs, matrix and case
+  validators, sanitized Markdown/SVG report projection, and adversarial checks
+  against report, path, metric, and publication-boundary drift.
+- Kept benchmark results advisory: development evidence cannot be promoted into
+  held-out or general product claims, and report output does not grant runtime
+  authority or completion authority.
+
+### Deeper-Cause Proof And Progressive Disclosure
+
+- Strengthened systematic debugging so root-cause closure requires falsifiers,
+  causal-topology evidence, recurrence analysis, quick-exit proof, and
+  topology-specific anti-disguise checks when deeper-cause signals are present.
+- Progressively disclosed debugging and verification detail into directly
+  routed references while preserving the executable hot path, escalation
+  triggers, compact completion receipt, and current default `TDD Mode: off`.
+- Kept the quick bug lane proportional while requiring an explicit
+  change-necessity and owner-fit decision before source edits.
+
+### Reliability And Review Hardening
+
+- Added shared secure atomic JSON writes, output and artifact limits, symlink
+  boundary checks, structured destructive-tool classification, exact changed
+  path contracts, and stronger semantic benchmark assertions.
+- Closed independent review findings around confidential evidence boundaries,
+  extended-profile wall budgets, interrupted wave persistence, and Linux CI
+  sandbox provisioning.
+- Kept the repository root free of branch-local `docs/aegis/` work records and
+  excluded local `.codex/` configuration from the release surface.
+
+### Verification And Release Boundary
+
+- The formal release gate remains
+  `bash tests/e2e/run-all.sh --full --host-profile fast`, with the Linux-only
+  benchmark supervisor covered by the repository CI environment.
+- Bumped all declared package and host manifest versions directly from `2.5.3`
+  to `2.5.5`, following the selected release version, with no undeclared
+  version references found by the version audit.
+- This release remains `Aegis Method Pack (runtime-ready)`, preserves
+  multi-host plugin-installable distribution, and does not add authoritative
+  `GateDecision`, `PolicySnapshot`, benchmark promotion, or completion
+  authority.
+
 ## v2.5.3 (2026-07-27)
 
 ### Benchmark Coverage Contract
