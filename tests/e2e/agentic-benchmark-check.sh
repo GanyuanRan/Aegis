@@ -492,7 +492,7 @@ assert_contains "$baseline" "automatically promote a candidate" \
     "benchmark baseline keeps candidate promotion advisory"
 assert_contains "$baseline" "exactly 30 cases" \
     "benchmark baseline defines the concrete thirty-case target"
-assert_contains "$baseline" "arm-neutral and observable-outcome based" \
+assert_contains "$baseline" "arm-neutral and observable-outcome-based" \
     "benchmark baseline requires fair live outcome scoring"
 assert_contains "$baseline" "44- or 132-attempt ceiling" \
     "benchmark baseline bounds paid retry attempts"
