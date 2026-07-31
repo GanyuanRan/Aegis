@@ -263,6 +263,36 @@ class SchedulerTest(unittest.TestCase):
         self.assertEqual([attempt["targetId"] for attempt in state["attempts"]], expected)
         self.assertEqual([attempt["attemptNumber"] for attempt in state["attempts"]], list(range(1, 9)))
 
+    def test_system_exit_commits_every_paid_sibling_before_propagating(self):
+        frozen = batch(case_count=2, workers=2)
+        state = ledger()
+        with tempfile.TemporaryDirectory(prefix="agentic-scheduler-fatal-", dir=self.root / ".tmp") as value:
+            ledger_path = Path(value) / "ledger.json"
+
+            def executor(_target, attempt_number, _timeout_seconds):
+                if attempt_number == 1:
+                    raise SystemExit("auth drift")
+                return valid()
+
+            with self.assertRaisesRegex(SystemExit, "auth drift"):
+                execute_schedule(frozen, state, ledger_path, executor, monotonic=TickClock())
+            persisted = json.loads(ledger_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(persisted, state)
+        self.assertNotIn("activeWave", state)
+        self.assertEqual(state["cumulativeWallSeconds"], 1.0)
+        self.assertEqual(
+            [
+                (attempt["status"], attempt.get("invalidReason"), attempt.get("errorType"))
+                for attempt in state["attempts"]
+            ],
+            [
+                ("invalid", "infrastructure", "executor-exception"),
+                ("valid", None, None),
+            ],
+        )
+        self.assertEqual(state["scheduler"], {"status": "running", "authority": "advisory-execution-state", "reason": "wave-committed"})
+
     def test_invalid_retry_consumes_ceiling_until_exhausted(self):
         frozen = batch(case_count=2, workers=2, max_attempts=6)
 

@@ -688,8 +688,9 @@ def _run_wave(
     targets: list[dict[str, Any]],
     timeout_seconds: float,
     workers: int,
-) -> dict[int, dict[str, Any]]:
+) -> tuple[dict[int, dict[str, Any]], SystemExit | None]:
     results: dict[int, dict[str, Any]] = {}
+    fatal: SystemExit | None = None
     with ThreadPoolExecutor(max_workers=min(workers, len(attempts))) as pool:
         futures = {
             pool.submit(executor, target, attempt["attemptNumber"], timeout_seconds): attempt["attemptNumber"]
@@ -699,6 +700,14 @@ def _run_wave(
             attempt_number = futures[future]
             try:
                 result = future.result()
+            except SystemExit as exc:
+                if fatal is None:
+                    fatal = exc
+                result = {
+                    "status": "invalid",
+                    "invalidReason": "infrastructure",
+                    "errorType": "executor-exception",
+                }
             except Exception:  # fail closed while retaining a stable diagnostic code
                 result = {
                     "status": "invalid",
@@ -706,7 +715,7 @@ def _run_wave(
                     "errorType": "executor-exception",
                 }
             results[attempt_number] = _validate_result(result)
-    return results
+    return results, fatal
 
 
 def execute_schedule(
@@ -772,7 +781,7 @@ def execute_schedule(
         _atomic_json(ledger_path, ledger)
 
         started = monotonic()
-        results = _run_wave(executor, attempts, targets, timeout_seconds, batch["workers"])
+        results, fatal = _run_wave(executor, attempts, targets, timeout_seconds, batch["workers"])
         finished = monotonic()
         _require(finished >= started, "monotonic clock moved backwards")
         for attempt in attempts:
@@ -792,6 +801,8 @@ def execute_schedule(
             "wall-clock-deadline-overrun" if overrun else "wave-committed",
         )
         _atomic_json(ledger_path, ledger)
+        if fatal is not None:
+            raise fatal
         if overrun:
             return ledger
 

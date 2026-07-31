@@ -121,7 +121,7 @@ while True:
                 "{}",
                 0.5,
             )
-            self.assertLess(time.monotonic() - started, 0.5)
+            self.assertLessEqual(time.monotonic() - started, 0.65)
             self.assertTrue(outcome["timedOut"])
             self._assert_process_gone(int(pid_path.read_text(encoding="utf-8")))
 

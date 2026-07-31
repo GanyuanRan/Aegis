@@ -36,6 +36,21 @@ assert_contains() {
     fi
 }
 
+assert_contains_all() {
+    local file="$1"
+    local label="$2"
+    shift 2
+
+    local pattern
+    for pattern in "$@"; do
+        if ! grep -qE "$pattern" "$file"; then
+            fail "$label"
+            return
+        fi
+    done
+    pass "$label"
+}
+
 assert_not_contains() {
     local file="$1"
     local pattern="$2"
@@ -663,8 +678,9 @@ assert_contains "skills/systematic-debugging/SKILL.md" "AEGIS_MINIMALITY_REFEREN
     "systematic debugging points to minimality reference"
 assert_contains "skills/systematic-debugging/SKILL.md" "Layer Stop Card" \
     "systematic debugging main names the layer-stop escalation trigger"
-assert_contains "skills/systematic-debugging/SKILL.md" "advanced-debugging-governance.md.*before another fix|before another fix.*advanced-debugging-governance.md" \
-    "systematic debugging main directly triggers advanced escalation guidance"
+assert_contains_all "skills/systematic-debugging/SKILL.md" \
+    "systematic debugging main directly triggers advanced escalation guidance" \
+    "advanced-debugging-governance.md" "before another fix"
 assert_contains "skills/systematic-debugging/SKILL.md" "repair-added patch-shape" \
     "systematic debugging directly routes added hard signals"
 assert_contains "skills/systematic-debugging/SKILL.md" "wrong-owner/downstream repair" \
@@ -693,8 +709,9 @@ assert_contains "skills/systematic-debugging/advanced-debugging-governance.md" "
     "advanced debugging reference owns the layer-stop falsifier field"
 assert_not_contains "skills/systematic-debugging/SKILL.md" "Current Stop Layer:" \
     "systematic debugging main does not duplicate the detailed layer stop card"
-assert_contains "skills/systematic-debugging/SKILL.md" "root-cause-claim-contract.md.*before claiming a root cause|before claiming a root cause.*root-cause-claim-contract.md" \
-    "systematic debugging main directly triggers the causal proof contract"
+assert_contains_all "skills/systematic-debugging/SKILL.md" \
+    "systematic debugging main directly triggers the causal proof contract" \
+    "root-cause-claim-contract.md" "before claiming a root cause"
 assert_contains "skills/systematic-debugging/root-cause-claim-contract.md" "Falsifier Checked" \
     "root-cause contract owns falsifier proof"
 assert_contains "skills/systematic-debugging/root-cause-claim-contract.md" "Pre-Claim Gate Pass" \
@@ -771,8 +788,9 @@ assert_contains "$verification_skill" "Complexity control.*completion-time delta
     "verification skill preserves completion-time complexity semantics"
 assert_contains "$verification_skill" "Next most valuable verification" \
     "verification skill reports next highest-value verification in the unified receipt"
-assert_contains "$verification_skill" "Evidence strength.*Uncovered risk|Evidence strength.*Uncovered risk" \
-    "verification skill folds evidence slots into the compact receipt"
+assert_contains_all "$verification_skill" \
+    "verification skill folds evidence slots into the compact receipt" \
+    "Evidence strength" "Uncovered risk"
 assert_contains "$verification_skill" "Key judgment.*owner/root cause/requirement/completion boundary" \
     "verification skill preserves key-judgment semantics"
 assert_contains "$verification_skill" "Avoided misfix.*fallback/duplicate/test accommodation/scope growth" \
@@ -849,7 +867,7 @@ assert_contains "$verification_expanded" "Design Defect" \
     "verification skill includes design defect result"
 assert_contains "$verification_expanded" "Implementation Drift" \
     "verification skill includes implementation drift result"
-assert_contains "$verification_expanded" "scope: requirements | architecture | both" \
+assert_contains "$verification_expanded" "scope: requirements \| architecture \| both" \
     "verification skill includes defect drift scope taxonomy"
 assert_contains "$verification_expanded" "ADR Backfill Check" \
     "verification skill preserves ADR backfill as triggered detail"
