@@ -650,7 +650,18 @@ For standard-path tasks, every round MUST complete the minimum reflection:
 
 Where:
 
-- If `DeeperCause` cannot be clearly answered as "no", do not exit directly
+- `DeeperCause` is not a self-judged yes/no stop. Before a non-trivial root
+  claim, identify the upstream generator and recurrence path, state a
+  bug-class counterfactual, generate and reject a plausible deeper candidate
+  with evidence, classify causal status, and run topology / anti-disguise proof.
+- A green local intervention proves effectiveness at that point, not that the
+  recurrence generator is closed. If recurrence remains open, report
+  `proximate`, `contributing`, or `deepest-confirmed-root-unknown`, not `root`.
+- The quick bug lane may skip the full challenge only with negative proof that
+  the bad value/state originates and terminates at the canonical local owner,
+  upstream producer/config/default/contract/policy/spec dependencies are
+  excluded, history and same-pattern searches are negative, and a variant
+  counterfactual eliminates the bug class.
 - If `Evidence` cannot support the current judgment, do not package inferences as conclusions
 - If there remain issues not yet drilled upward to indivisible root causes, do not treat the diagnostic task as complete
 - Diagnosis must drill upward layer by layer from symptoms (L1 Symptom → L2 Logic → L3 System → L4 Architecture → L5 Cross-system Contract → L6 Platform/Framework Constraint → L7 Spec Gap); the chain's endpoint is "the root cause that cannot be further decomposed", not a fixed layer
@@ -922,7 +933,9 @@ This process baseline should be projected into the following skills as a priorit
     hot path, and light delegation to owner workflows for Change Necessity
 - `systematic-debugging`
   - Explicitly cover the "Symptom → Logic → System → Architecture" diagnostic
-    layers and surface Change Necessity before repair code
+    layers, require falsifiable recurrence/deeper-candidate proof before root
+    claims, preserve a negative-proof quick exit, and surface Change Necessity
+    before repair code
 - `writing-plans`
   - Introduce impact, compat, retirement, Change Necessity, and verification
     perspectives

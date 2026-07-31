@@ -33,6 +33,63 @@ Do **not** run it for the quick bug lane when the fix is at the canonical owner
 of a single-component, single-owner bug and no patch-shape signal fires. Keep
 simple tasks cheap.
 
+## Deeper Cause Challenge
+
+Before any non-trivial root claim, account for the mechanism that can regenerate
+the failure. A locally effective intervention proves that the selected point is
+causal; it does not prove that the point is the recurrence generator.
+
+Run the full challenge when an upstream producer, configuration, default,
+contract, policy, or specification dependency has not been excluded. Record:
+
+```text
+Deeper Cause Challenge:
+- Claimed cause:
+- Causal status: root | proximate | contributing | deepest-confirmed-root-unknown | external-terminal
+- Upstream generator:
+- Recurrence path:
+- Counterfactual intervention:
+- Plausible deeper candidate:
+- Rejection evidence:
+- Recurrence status: closed | open
+- Topology / anti-disguise proof:
+```
+
+The causal statuses mean:
+
+- `root`: the recurrence generator is accounted for and closed;
+- `proximate`: the mechanism directly produces the symptom but can be regenerated upstream;
+- `contributing`: the mechanism changes likelihood or severity without independently generating the bug class;
+- `deepest-confirmed-root-unknown`: evidence confirms the deepest observed mechanism but ends before root closure;
+- `external-terminal`: the actionable chain ends at a proven T-class boundary.
+
+A `root` claim requires all of these: the upstream generator is accounted for,
+the recurrence path is closed, the counterfactual eliminates the relevant bug
+class rather than one sample, at least one plausible deeper candidate is
+rejected with evidence, and the topology / anti-disguise proof passes. If any
+item remains open, use `proximate`, `contributing`, or
+`deepest-confirmed-root-unknown`; never promote the deepest observed mechanism
+to root by default.
+
+### Quick Exit Proof
+
+The quick bug lane may skip the full challenge only with explicit negative
+proof:
+
+```text
+Quick Exit Proof:
+- Canonical local owner:
+- Origin and termination: bad value/state originates and terminates here
+- Upstream producer/config/default/contract/policy/spec: excluded with evidence
+- History and same-pattern searches: negative
+- Variant counterfactual: eliminates the bug class
+- Causal status: root
+```
+
+If any quick-exit field is unknown or positive, leave the quick lane and run the
+full challenge. A familiar file, canonical owner, or green local test is not a
+substitute for this proof.
+
 ## The Five Gate Checks
 
 A root-cause claim passes only when all five are satisfied. Each turns a

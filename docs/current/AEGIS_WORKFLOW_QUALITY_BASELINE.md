@@ -286,6 +286,15 @@ Pass criteria:
 - the card includes a `Falsifier` so new evidence can correct the diagnosis
 - the card includes a `User Intervention Point` so the user can challenge the
   layer, owner, or authority source early
+- non-trivial root claims include a `Deeper Cause Challenge` that identifies the
+  upstream generator, recurrence path, bug-class counterfactual, plausible
+  deeper candidate and rejection evidence, causal status, and topology /
+  anti-disguise proof
+- a green local intervention cannot close an open recurrence path or promote a
+  `proximate` / `deepest-confirmed-root-unknown` mechanism to `root`
+- the quick lane skips the full challenge only through a `Quick Exit Proof`
+  covering local origin/termination, negative upstream/history/same-pattern
+  evidence, and a bug-class variant counterfactual
 - fast-path Q&A about debugging concepts does not emit a full layer card
 - the card remains advisory method-pack output, not a `GateDecision`,
   `PolicySnapshot`, or completion authority
@@ -815,7 +824,9 @@ Reproduction: command/input and result
 Root Cause: evidence-backed owner and cause
 Layer Stop Card: stop layer, topology, checked path, evidence, excluded layers, falsifier, user intervention point, next action
 Pre-Claim Gate: causal closure, falsifier checked, adversarial self-refutation, topology classified, layer ceiling proof — required before claiming root cause when a patch-shape signal fires
-Topology Card: explicit causal topology (single-root / single-root-multi-symptom / chain / independent-compound / conjunctive-cluster / disjunctive-or) with member necessity and sufficiency tests and anti-disguise check
+Topology Card: explicit causal topology (single-root / single-root-multi-symptom / chain / independent-compound / conjunctive-cluster / disjunctive-or) with topology-specific member proof and anti-disguise check
+Deeper Cause Challenge: claimed cause, causal status, upstream generator, recurrence path, counterfactual, deeper candidate, rejection evidence, recurrence status, topology / anti-disguise proof
+Quick Exit Proof: canonical local owner, origin/termination, negative upstream/history/same-pattern evidence, variant counterfactual, root status
 Change Necessity: user-visible need, no-change / non-code option, why code change, minimum boundary, decision
 Fix Boundary: canonical owner, compatibility, non-edits
 Minimality Check: smallest textual diff, existing owner / reuse path, correct owner, bug class fixed, new branch/fallback, old path retirement, verdict
@@ -840,6 +851,12 @@ naming) or the diagnosis crosses a component boundary. The gate turns a
 self-judged stop into a checkable, falsifiable claim; it is advisory
 method-pack discipline, not a `GateDecision`, `PolicySnapshot`, or completion
 authority.
+
+Use the `Deeper Cause Challenge` before every non-trivial root claim and when an
+upstream producer/config/default/contract/policy/spec dependency remains
+unexcluded. If the recurrence generator stays open, preserve `proximate`,
+`contributing`, or `deepest-confirmed-root-unknown` status. Keep true local bugs
+cheap only when the `Quick Exit Proof` is complete.
 
 When a patch-shape/ripple/H-class or bounded compatibility slice passes local
 verification, its checkpoint state still carries `PatchShape`,

@@ -675,8 +675,8 @@ assert_contains "skills/systematic-debugging/SKILL.md" "uninspected same-symptom
     "systematic debugging directly routes repeated-fix history"
 assert_contains "skills/systematic-debugging/SKILL.md" "missing compound" \
     "systematic debugging begins the compound closure trigger"
-assert_contains "skills/systematic-debugging/SKILL.md" "member/necessity/anti-disguise" \
-    "systematic debugging directly routes compound closure gaps"
+assert_contains "skills/systematic-debugging/SKILL.md" "topology-specific member/anti-disguise proof" \
+    "systematic debugging directly routes topology-specific compound closure gaps"
 assert_contains "skills/systematic-debugging/SKILL.md" "unclear/disputed stop" \
     "systematic debugging directly routes unclear stop layers"
 assert_contains "skills/systematic-debugging/SKILL.md" "outside-repo authority.*unmigrated" \

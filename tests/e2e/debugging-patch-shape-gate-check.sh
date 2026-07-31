@@ -58,6 +58,7 @@ debugging_skill="skills/systematic-debugging/SKILL.md"
 debugging_advanced="skills/systematic-debugging/advanced-debugging-governance.md"
 root_cause_contract="skills/systematic-debugging/root-cause-claim-contract.md"
 process_baseline="docs/current/AEGIS_PROCESS_BASELINE.md"
+workflow_baseline="docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md"
 
 assert_contains "$debugging_skill" "drill upward through diagnostic layers" \
     "debugging hot path uses source-oriented diagnostic wording"
@@ -121,8 +122,8 @@ assert_contains "$debugging_skill" "pattern/anomaly/duplicate/wrong-owner/downst
     "debugging hot path routes remaining closure evidence"
 assert_contains "$debugging_skill" "missing compound" \
     "debugging hot path begins the compound-proof trigger"
-assert_contains "$debugging_skill" "member/necessity/anti-disguise" \
-    "debugging hot path routes compound-proof gaps"
+assert_contains "$debugging_skill" "topology-specific member/anti-disguise proof" \
+    "debugging hot path routes topology-specific compound-proof gaps"
 assert_contains "$debugging_skill" "unclear/disputed stop" \
     "debugging hot path routes unclear layer stops"
 assert_contains "$debugging_skill" "outside-repo authority.*unmigrated" \
@@ -137,10 +138,16 @@ assert_contains "$debugging_advanced" "H10.*re-parses raw text|H10.*re-infers ac
     "advanced debugging owner keeps H10 downstream re-inference signal"
 assert_contains "$debugging_advanced" "H13.*observed sample" \
     "advanced debugging owner keeps H13 sample-only patch signal"
-assert_contains "$debugging_advanced" "H14.*topology is.*conjunctive-cluster.*member set is not enumerated" \
-    "advanced debugging owner keeps H14 cluster member enumeration signal"
+assert_contains "$debugging_advanced" "H14: topology-specific member proof" \
+    "advanced debugging owner keeps topology-specific H14 signal"
+assert_contains "$debugging_advanced" "lacks same-incident activity, per-root path proof, independence" \
+    "independent compound uses per-root independence proof instead of conjunctive necessity"
 assert_contains "$debugging_advanced" "H15.*anti-disguise check" \
     "advanced debugging owner keeps H15 anti-disguise signal"
+assert_contains "$debugging_advanced" "H16.*upstream generator or recurrence path remains open" \
+    "advanced debugging keeps open-recurrence root-claim signal"
+assert_contains "$debugging_advanced" "H17.*quick lane was used without" \
+    "advanced debugging keeps unsupported quick-exit signal"
 assert_contains "$root_cause_contract" "Pre-Claim Gate" \
     "root-cause contract owns Pre-Claim Gate"
 assert_contains "$root_cause_contract" "Causal Topology Gate" \
@@ -149,6 +156,26 @@ assert_contains "$root_cause_contract" "Falsifier Checked" \
     "root-cause contract owns falsifier proof"
 assert_contains "$root_cause_contract" "anti-disguise check" \
     "root-cause contract owns compound anti-disguise proof"
+assert_line "$root_cause_contract" "## Deeper Cause Challenge" \
+    "root-cause contract owns the deeper-cause challenge"
+assert_contains "$root_cause_contract" "Causal status: root \| proximate \| contributing \| deepest-confirmed-root-unknown \| external-terminal" \
+    "deeper-cause challenge classifies causal status"
+assert_contains "$root_cause_contract" "Upstream generator:" \
+    "deeper-cause challenge records the upstream generator"
+assert_contains "$root_cause_contract" "Recurrence path:" \
+    "deeper-cause challenge records recurrence"
+assert_contains "$root_cause_contract" "Plausible deeper candidate:" \
+    "deeper-cause challenge actively generates a deeper candidate"
+assert_contains "$root_cause_contract" "Rejection evidence:" \
+    "deeper-cause challenge rejects candidates with evidence"
+assert_line "$root_cause_contract" "### Quick Exit Proof" \
+    "root-cause contract owns the quick-exit proof"
+assert_contains "$root_cause_contract" "Origin and termination: bad value/state originates and terminates here" \
+    "quick-exit proof requires local origin and termination"
+assert_contains "$root_cause_contract" "History and same-pattern searches: negative" \
+    "quick-exit proof requires negative pattern evidence"
+assert_contains "$root_cause_contract" "Variant counterfactual: eliminates the bug class" \
+    "quick-exit proof requires a bug-class counterfactual"
 assert_contains "$root_cause_contract" "necessity test" \
     "root-cause contract owns member necessity proof"
 assert_line "$root_cause_contract" "#### Conjunctive cluster proof" \
@@ -175,6 +202,12 @@ assert_contains "$debugging_advanced" "D6.*topology is explicitly classified" \
     "advanced debugging owner keeps D6 topology closeout signal"
 assert_contains "$debugging_advanced" "D7.*anti-disguise check has been run" \
     "advanced debugging owner keeps D7 anti-disguise closeout signal"
+assert_contains "$debugging_advanced" "D8.*recurrence generator is accounted for" \
+    "advanced debugging requires recurrence closure for root status"
+assert_contains "$debugging_advanced" "D9.*Quick Exit Proof.*complete" \
+    "advanced debugging requires complete quick-exit proof"
+assert_not_contains "$debugging_advanced" "independent-compound.*necessity-tested" \
+    "independent compound does not inherit conjunctive necessity wording"
 
 assert_contains "$process_baseline" "keyword, phrase, regex, negation-word list" \
     "process baseline defines patch-shape ripple signals"
@@ -192,6 +225,18 @@ assert_contains "$process_baseline" "correct owner and abstraction layer" \
     "process baseline ties minimality to owner and abstraction layer"
 assert_contains "$process_baseline" "Diagnosis must drill upward layer by layer" \
     "process baseline uses upward drilling wording"
+assert_contains "$process_baseline" "DeeperCause.*not a self-judged yes/no stop" \
+    "process baseline replaces self-judged deeper-cause closure"
+assert_contains "$process_baseline" "green local intervention proves effectiveness.*not that the" \
+    "process baseline distinguishes local effectiveness from recurrence closure"
+assert_contains "$workflow_baseline" "Deeper Cause Challenge" \
+    "workflow baseline requires the deeper-cause challenge"
+assert_contains "$workflow_baseline" "Quick Exit Proof" \
+    "workflow baseline preserves the lightweight negative-proof lane"
+assert_contains "$debugging_skill" "upstream producer/config/default/contract/spec remains unexcluded" \
+    "debugging main routes unexcluded upstream generators to causal proof"
+assert_contains "$debugging_skill" "open recurrence/unsupported root status" \
+    "debugging main routes unsupported root closeout signals"
 
 assert_not_contains "$debugging_skill" "Drill Down Through Diagnostic Layers|drill down through diagnostic layers|before descending|Continue drilling|Re-drill" \
     "debugging skill retired conflicting downward-drill wording"

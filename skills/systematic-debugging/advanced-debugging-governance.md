@@ -113,8 +113,16 @@ Before claiming debugging complete, classify countable signals.
 - H10: downstream logic re-parses raw text or re-infers action/state while typed intent, normalized state, contract, or another source-of-truth exists.
 - H11: artifact/cache/readback symptoms were patched without producer proof.
 - H12: duplicate owners remain without a retirement trigger.
-- H14: topology is `conjunctive-cluster` or `independent-compound` but the member set is not enumerated or necessity-tested.
+- H14: topology-specific member proof is incomplete: a `conjunctive-cluster`
+  lacks per-member necessity or set sufficiency, or an `independent-compound`
+  lacks same-incident activity, per-root path proof, independence, or
+  shared-upstream exclusion.
 - H15: topology was declared compound/cluster without running the anti-disguise check.
+- H16: an upstream generator or recurrence path remains open while the causal
+  status is reported as `root`.
+- H17: the quick lane was used without local origin/termination, negative
+  upstream/history/same-pattern evidence, and a bug-class variant
+  counterfactual.
 
 ### T-class: stop drilling and disclose mitigation
 
@@ -133,8 +141,14 @@ same-pattern occurrences are handled; no unnecessary path/fallback grew; and
 Minimality Check says `sufficient repair` or retains a bounded patch with a
 deletion trigger.
 
-- D6: causal topology is explicitly classified by `root-cause-claim-contract.md`; compound members are enumerated and necessity-tested when applicable.
+- D6: causal topology is explicitly classified by
+  `root-cause-claim-contract.md`; conjunctive members pass necessity/set
+  sufficiency, while independent roots pass same-incident, per-root path,
+  independence, and shared-upstream proof.
 - D7: anti-disguise check has been run for any compound/cluster classification.
+- D8: the recurrence generator is accounted for and causal status matches the
+  remaining evidence; open recurrence is not labeled `root`.
+- D9: when the full challenge is skipped, the `Quick Exit Proof` is complete.
 
 Then rerun `Goal | DeeperCause | Evidence | Risk/Unknown | Decision`, confirm
 the source rather than the sample was fixed, state retirement delta, and assign

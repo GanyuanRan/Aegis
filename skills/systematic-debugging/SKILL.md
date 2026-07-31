@@ -9,8 +9,8 @@ Bug, failure, or unexpected behavior:
 
 1. **Isolate** — read error, reproduce, inspect the diff, and drill upward through diagnostic layers:
    L1 symptom → L2 logic → L3 system → L4 architecture → L5 cross-system
-   contract → L6 platform → L7 spec gap. Stop only when no deeper why remains
-   or a T-class boundary makes the cause unactionable.
+   contract → L6 platform → L7 spec gap. Stop only when causal proof accounts
+   for the recurrence generator or reaches a T-class boundary.
 2. **Identify owner** — compare working behavior, trace the bad value, locate the
    canonical owner, and treat duplicate owners as a finding.
 3. **Decide before editing** — Before fixing, run Patch-Shape Triage and Ripple Signal Triage when shared logic,
@@ -27,8 +27,8 @@ Bug, failure, or unexpected behavior:
    proportion to risk, review architecture, and close both repair and
    retirement tracks. If any symptom remains, stop and diagnose it separately.
 
-Done: confidence ≥ B, DeeperCause = `no` with evidence, tracks explicit,
-and no H-class signal.
+Done: confidence ≥ B, causal status matches recurrence evidence or an external
+terminal, tracks explicit, no H signal, and required D evidence passes.
 
 ## Core invariant
 
@@ -38,8 +38,9 @@ not the smallest textual diff; it is the smallest sufficient owner-level repair.
 ## Quick bug lane
 
 For a low-risk, reproducible, single-owner bug with no patch-shape signal, keep
-the readback compact: `Symptom`, `Reproduction`, `Root Cause`,
-`Aegis Visibility`, `Change Necessity`, `Fix Boundary`, and `Verification`.
+the readback compact: `Symptom`, `Reproduction`, `Root Cause`, `Change
+Necessity`, `Fix Boundary`, and `Verification`. Skip the causal card only when
+the causal-proof owner's `Quick Exit Proof` passes.
 Quick bug lane must surface Change Necessity before source edits. One sentence
 may cover the user-visible need, no-change/non-code option, why code must
 change, minimum boundary, and an explicit decision token such as
@@ -90,8 +91,8 @@ A locally green test does not erase triage. Before unplanned repair, compare
 invariant, owner, patch shape, and topology; a renamed carrier is not a new direction.
 
 If the diagnosis crosses L3, a patch-shape signal fires, a user disputes the
-root claim, a prior fix leaves a symptom, or compound/root topology is
-plausible, read
+root claim, a prior fix leaves a symptom, compound/root topology is plausible,
+or an upstream producer/config/default/contract/spec remains unexcluded, read
 `root-cause-claim-contract.md` **before claiming a root cause**. It is the sole
 owner of the Pre-Claim Gate, causal-closure/falsifier proof, layer-ceiling
 proof, and Causal Topology Gate.
@@ -176,7 +177,8 @@ persistent / divergent repair or three failures; for unclear/disputed stop /
 Layer Stop Card / intervention; or plausible compound root. Closeout triggers:
 repair-added patch-shape; multi-site/one-regression;
 remaining pattern/anomaly/duplicate/wrong-owner/downstream repair;
-uninspected same-symptom fix; missing compound member/necessity/anti-disguise;
+uninspected same-symptom fix; open recurrence/unsupported root status;
+missing compound topology-specific member/anti-disguise proof;
 outside-repo authority; unmigrated
 published-contract break; undefined spec; missing permission/info. They route H/T/D;
 detail is not causal proof.
@@ -196,18 +198,14 @@ affected downstream path. Records are advisory, not completion authority.
 
 ## Closure
 
-Always report two tracks:
+Always report:
 
-- **Repair** — root cause, canonical owner, smallest necessary change,
-  compatibility boundary, and verification.
-- **Retirement** — old owner/fallback/patch, whether it remains active, the
-  only retention reason, deletion trigger, and removal verification.
+- **Repair** — cause, owner, smallest change, compatibility, verification.
+- **Retirement** — old path status, retention reason/trigger, removal check.
 
-Confirm the original anomaly is gone, same-pattern occurrences are handled,
-the repair did not silently move authority, and complexity/retirement surfaces
-did not grow without proof. Confidence: A = direct evidence and regression
-coverage; B = strong evidence with bounded unknowns; C = partial evidence and
-must not be presented as resolved.
+Confirm the reproduction, same-pattern handling, authority, complexity, and
+retirement. Confidence: A = direct regression evidence; B = strong evidence
+with bounded unknowns; C = partial and not resolved.
 
 `Trace Digest` may summarize audit evidence; never expose chain-of-thought or
 replace root-cause, rule-effect, and verification evidence.
