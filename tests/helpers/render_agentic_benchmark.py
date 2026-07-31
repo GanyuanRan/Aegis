@@ -838,7 +838,7 @@ def self_test(print_golden: bool = False) -> None:
         root = Path(value)
         report = sanitize_private(synthetic_private("positive"))
         outputs = projection_bundle(report)
-        for name, content in zip(("result.json", "result.svg", "result.en.md", "result.zh.md"), outputs):
+        for name, content in zip(("result.json", "result.svg", "result.en.md", "result.zh.md"), outputs, strict=True):
             atomic_text(root / name, content)
         require(not any(OUTPUT_PRIVATE_PATTERN.search(path.read_text(encoding="utf-8")) for path in root.iterdir()), "projection contains private execution material")
 
@@ -866,6 +866,19 @@ def self_test(print_golden: bool = False) -> None:
         else:
             raise SystemExit("render command accepted an unresolved review")
 
+        partial_outputs = (root / "partial.svg", root / "partial.en.md", root / "partial.zh.txt")
+        try:
+            render_command(argparse.Namespace(
+                report=root / "result.json",
+                svg=partial_outputs[0],
+                markdown_en=partial_outputs[1],
+                markdown_zh=partial_outputs[2],
+            ))
+        except SystemExit:
+            require(not any(path.exists() for path in partial_outputs), "invalid suffix created a partial projection bundle")
+        else:
+            raise SystemExit("render command accepted an invalid projection suffix")
+
         with tempfile.TemporaryDirectory(prefix="agentic-render-victim-") as external_value:
             victim = Path(external_value) / "victim.txt"
             victim.write_text("outside-safe\n", encoding="utf-8")
@@ -883,7 +896,7 @@ def self_test(print_golden: bool = False) -> None:
             require(not list(root.glob(".blocked-output.*.tmp")), "failed atomic write left a temporary file")
         else:
             raise SystemExit("atomic write unexpectedly replaced a directory")
-    print("Agentic benchmark renderer self-test passed: 6 profile goldens, 2 proxy-retry projections, 37 negative cases.")
+    print("Agentic benchmark renderer self-test passed: 6 profile goldens, 2 proxy-retry projections, 38 negative cases.")
 
 
 def sanitize_command(args: argparse.Namespace) -> None:
@@ -906,6 +919,7 @@ def render_command(args: argparse.Namespace) -> None:
     )
     for path, content, suffix in outputs:
         require(path.suffix == suffix, f"projection output must use {suffix}: {path.name}")
+    for path, content, _suffix in outputs:
         atomic_text(path, content)
     print(json.dumps({"batchId": report["batchId"], "deterministicProjection": True}, sort_keys=True))
 

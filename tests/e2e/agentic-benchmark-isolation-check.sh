@@ -139,7 +139,10 @@ refused(
 )
 
 writable_auth = command.copy()
-writable_auth[writable_auth.index("--ro-bind")] = "--bind"
+auth_target = "/home/benchmark/.codex/auth.json"
+auth_target_index = writable_auth.index(auth_target)
+assert writable_auth[auth_target_index - 2] == "--ro-bind"
+writable_auth[auth_target_index - 2] = "--bind"
 refused(
     "writable auth mount",
     lambda: validate_bwrap_command(

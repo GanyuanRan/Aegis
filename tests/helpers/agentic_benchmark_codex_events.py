@@ -234,9 +234,13 @@ def parse_codex_jsonl(raw: str) -> dict[str, Any]:
             else:
                 tool_execution_count += 1
             tags: list[str] = []
-            if is_dependency_search(structured_command_segments(item)):
+            command_segments = structured_command_segments(item)
+            if is_dependency_search(command_segments):
                 tags.append("dependency-check")
-            destructive = re.search(r"(?:^|\s)(?:rm|unlink|rmdir)(?:\s|$)", lower) is not None
+            destructive = any(
+                segment and posixpath.basename(segment[0]).casefold() in {"rm", "unlink", "rmdir"}
+                for segment in command_segments
+            )
             events.append({
                 "sequence": len(events), "kind": "tool",
                 "toolKind": "delete_file" if destructive else "shell",
@@ -244,7 +248,11 @@ def parse_codex_jsonl(raw: str) -> dict[str, Any]:
             })
         elif item_type in {"file_change", "file_changes", "patch", "apply_patch"}:
             tool_execution_count += 1
-            deleted = any(word in lower for word in ("delete", "deleted", "remove file"))
+            changes = item.get("changes")
+            if not isinstance(changes, list):
+                changes = [{key: item[key] for key in ("kind", "path", "change_type") if key in item}]
+            change_text = "\n".join(strings_in(changes)).casefold()
+            deleted = any(word in change_text for word in ("delete", "deleted", "remove file"))
             events.append({
                 "sequence": len(events), "kind": "edit",
                 "toolKind": "delete_file" if deleted else "apply_patch",

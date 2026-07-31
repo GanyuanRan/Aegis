@@ -207,13 +207,16 @@ class CommandBoundaryTest(unittest.TestCase):
             self.assertNotIn(forbidden, serialized)
 
     def test_sealed_auth_memfd_is_readable_through_a_real_bwrap_mount(self):
+        bwrap_path = shutil.which("bwrap")
+        if bwrap_path is None:
+            self.skipTest("bwrap is not installed")
         self.auth.write_text('{"OPENAI_API_KEY":"abc"}', encoding="utf-8")
         payload = self.auth.read_bytes()
         frozen = freeze_auth_file(self.auth)
         try:
             layout = prepare_provider_preflight_layout(self.scratch / "memfd-layout", frozen.mount_path)
             command = build_provider_preflight_command(
-                bwrap=Path(shutil.which("bwrap") or "/missing/bwrap"),
+                bwrap=Path(bwrap_path),
                 codex=self.codex,
                 layout=layout,
                 proxy_policy=self.policy,
@@ -229,7 +232,7 @@ class CommandBoundaryTest(unittest.TestCase):
             prefix = command[: command.index("--")]
             self.assertIn("--ro-bind-data", prefix)
             self.assertIn(str(frozen.descriptor), prefix)
-            bwrap = Path(shutil.which("bwrap") or "/missing/bwrap")
+            bwrap = Path(bwrap_path)
             mount = subprocess.run(
                 [
                     str(bwrap), "--die-with-parent", "--unshare-net", "--ro-bind", "/usr", "/usr",
@@ -733,6 +736,14 @@ class CommandBoundaryTest(unittest.TestCase):
         self.assertIsNone(scrub_confidential_artifact_tree(
             layout["root"], resolve_proxy_policy({}), CredentialPolicy(()),
         ))
+
+    def test_scrub_rejects_dangling_symlink_root(self):
+        dangling = self.scratch / "dangling-artifact-root"
+        dangling.symlink_to(self.scratch / "missing-artifact-root", target_is_directory=True)
+        with self.assertRaisesRegex(OSError, "artifact root must be an ordinary directory"):
+            scrub_confidential_artifact_tree(
+                dangling, resolve_proxy_policy({}), CredentialPolicy(()),
+            )
 
     def test_direct_skill_projection_rejects_source_symlinks(self):
         snapshot = self.scratch / "symlink-snapshot"

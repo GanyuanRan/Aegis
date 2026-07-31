@@ -536,7 +536,7 @@ def supervise_operation(
     except (TypeError, json.JSONDecodeError):
         if operation == "attempt":
             return _invalid("infrastructure", elapsed, "supervisor-result-invalid-json")
-        raise SystemExit(f"benchmark {operation} returned an invalid result")
+        raise SystemExit(f"benchmark {operation} returned an invalid result") from None
     if not isinstance(result, dict):
         if operation == "attempt":
             return _invalid("infrastructure", elapsed, "supervisor-result-invalid-shape")

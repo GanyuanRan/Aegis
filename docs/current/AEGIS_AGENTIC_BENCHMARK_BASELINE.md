@@ -234,7 +234,7 @@ adds three repetitions per case and may provide advisory repeated-run evidence,
 but it still cannot prove universal quality, external causality, candidate
 promotion, runtime authority, or completion authority.
 
-Held-out scoring must be arm-neutral and observable-outcome based. The same
+Held-out scoring must be arm-neutral and observable-outcome-based. The same
 contract applies to both arms. Source-edit cases inspect the resulting
 workspace, git diff, fixture-owned tests and response/event evidence. Advisory
 or no-edit cases inspect worktree preservation, forbidden actions, response

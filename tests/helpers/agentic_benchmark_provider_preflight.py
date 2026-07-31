@@ -480,9 +480,11 @@ def scrub_confidential_artifact_tree(
     entry_count = 0
     total_bytes = 0
     proxy_markers = _proxy_markers(proxy_policy)
+    if root.is_symlink():
+        raise OSError("artifact root must be an ordinary directory")
     if not root.exists():
         return None
-    if root.is_symlink() or not root.is_dir():
+    if not root.is_dir():
         raise OSError("artifact root must be an ordinary directory")
     root_device = root.stat().st_dev
 
@@ -687,9 +689,11 @@ def scrub_stale_confidential_artifacts(
     credential_policy: CredentialPolicy,
     remove_entry: DirectoryRemover,
 ) -> None:
+    if attempts_root.is_symlink():
+        raise SystemExit("attempts artifact root must be an ordinary directory")
     if not attempts_root.exists():
         return
-    if attempts_root.is_symlink() or not attempts_root.is_dir():
+    if not attempts_root.is_dir():
         raise SystemExit("attempts artifact root must be an ordinary directory")
     unsafe_completed = False
     for attempt_root in sorted(attempts_root.iterdir()):

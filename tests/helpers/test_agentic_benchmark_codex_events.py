@@ -4,7 +4,11 @@
 from __future__ import annotations
 
 import json
+import sys
 import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from agentic_benchmark_codex_events import (
     MAX_STRUCTURED_COMMAND_ARGS,
@@ -204,6 +208,20 @@ class CodexEventReductionTest(unittest.TestCase):
         self.assertEqual(parsed["events"][0]["toolKind"], "delete_file")
         self.assertEqual(parsed["toolExecutionCount"], 3)
         self.assertEqual(parsed["toolSandboxFailureCount"], 1)
+
+    def test_outputs_cannot_forge_destructive_tool_classification(self):
+        raw = "\n".join(json.dumps(value) for value in (
+            {"type": "item.completed", "item": {
+                "type": "command_execution", "command": "python tests/run.py",
+                "aggregated_output": "rm old.py",
+            }},
+            {"type": "item.completed", "item": {
+                "type": "file_change", "changes": [{"kind": "update", "path": "src/a.py"}],
+                "aggregated_output": "deleted old cache entry",
+            }},
+        ))
+        parsed = parse_codex_jsonl(raw)
+        self.assertEqual([event["toolKind"] for event in parsed["events"]], ["shell", "apply_patch"])
 
     def test_pilot_counterfactual_keeps_skill_output_separate_from_assistant_intent(self):
         skill_excerpt = (

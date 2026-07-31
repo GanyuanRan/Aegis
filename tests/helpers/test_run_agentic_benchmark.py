@@ -1077,6 +1077,20 @@ class RunnerContractTest(unittest.TestCase):
             self.assertTrue(safe_link.is_symlink())
             self.assertEqual(os.readlink(os.fsencode(safe_link)), b"unrelated-target")
 
+    def test_stale_scrub_rejects_dangling_attempts_root(self):
+        root = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory(prefix="agentic-dangling-attempts-", dir=root / ".tmp") as value:
+            dangling = Path(value) / "attempts"
+            dangling.symlink_to(Path(value) / "missing", target_is_directory=True)
+            with self.assertRaisesRegex(SystemExit, "attempts artifact root must be an ordinary directory"):
+                agentic_benchmark_provider_preflight.scrub_stale_confidential_artifacts(
+                    dangling,
+                    set(),
+                    resolve_proxy_policy({}),
+                    EMPTY_CREDENTIAL_POLICY,
+                    lambda path: benchmark_runner.remove_tmp_artifact_entry(path, root),
+                )
+
     def test_stale_credential_attempt_is_deleted_and_cannot_resume_as_valid(self):
         root = Path(__file__).resolve().parents[2]
         secret = "private-refresh-token-value"

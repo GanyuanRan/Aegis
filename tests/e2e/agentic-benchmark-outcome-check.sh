@@ -770,6 +770,17 @@ assert wrapped_shell.returncode != 0
 assert "must not wrap a shell command string" in wrapped_shell.stderr
 record_pass("shell-wrapper argv is rejected")
 
+combined_shell, _ = invoke_case(
+    "combined-shell-command",
+    "combined-shell-command",
+    {"verification": [{"argv": ["bash", "-lc", "exit 0"], "expectedExit": 0, "timeoutSeconds": 5}]},
+    {"README.md": "seed\n"},
+    events=[],
+)
+assert combined_shell.returncode != 0
+assert "must not wrap a shell command string" in combined_shell.stderr
+record_pass("combined shell-wrapper argv is rejected")
+
 network_command, _ = invoke_case(
     "network-command",
     "network-command",

@@ -202,7 +202,14 @@ def validate_contract(
             require(argv[0] == executable, f"{label}.argv executable must use PATH, not an absolute or relative path")
             require(executable not in FORBIDDEN_COMMANDS, f"{label}.argv uses a forbidden network command: {executable}")
             require(
-                not (executable in {"bash", "cmd", "pwsh", "sh", "zsh"} and any(arg.casefold() in {"-c", "/c"} for arg in argv[1:])),
+                not (
+                    executable in {"bash", "cmd", "pwsh", "sh", "zsh"}
+                    and any(
+                        arg.casefold() in {"-c", "/c", "-command", "--command"}
+                        or (arg.startswith("-") and not arg.startswith("--") and "c" in arg.casefold())
+                        for arg in argv[1:]
+                    )
+                ),
                 f"{label}.argv must not wrap a shell command string",
             )
             for arg in argv[1:]:
