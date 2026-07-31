@@ -111,6 +111,7 @@ elif mutation in {
     "standard-paid-attempt-ceiling",
     "standard-workers",
     "standard-wall-budget",
+    "extended-wall-budget",
     "standard-preflight-timeout",
     "standard-attempt-timeout",
     "standard-infrastructure-limit",
@@ -141,6 +142,8 @@ elif mutation in {
         profiles["standard-held-out"]["workers"] = 13
     elif mutation == "standard-wall-budget":
         profiles["standard-held-out"]["wallClockBudgetSeconds"] = 2699
+    elif mutation == "extended-wall-budget":
+        profiles["extended-held-out"]["wallClockBudgetSeconds"] = 4799
     elif mutation == "standard-preflight-timeout":
         profiles["standard-held-out"]["preflightTimeoutSeconds"] = 31
     elif mutation == "standard-attempt-timeout":
