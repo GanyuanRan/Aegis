@@ -213,6 +213,52 @@ authority.
 TDD Mode is method-pack guidance only. It does not grant runtime authority,
 final completion authority, or permission to skip verification.
 
+### 3.0c.1 Task-Level Git Lifecycle
+
+`docs/adr/ADR-0003-current-branch-first-git-lifecycle.md` is the canonical
+decision for task-level Git behavior:
+
+> Modification tasks prefer the current branch; verified work commits at the
+> task boundary; branch only for history divergence; worktree only for
+> concurrent checkout; the creator owns cleanup.
+
+Before the first write, a modification workflow records a read-only
+`TaskStartSnapshot`: root, `HEAD`, branch/detached state, upstream divergence,
+staged/unstaged/untracked paths, active Git operations, existing worktrees, and
+the initial task-owned path boundary. The snapshot stays in current task state
+or an existing handoff/checkpoint; it does not create a new registry or repo
+artifact.
+
+Current behavior rules:
+
+- `main`/`master`, task complexity, TDD, planning, or subagents do not alone
+  justify a branch or worktree.
+- Disjoint user-local state may remain when scoped staging can preserve it;
+  overlapping, ambiguous, or unsafe staged state is not guessed, stashed,
+  reset, cleaned, or committed.
+- Successful modification tasks default to one local commit per coherent task
+  or independently verifiable/revertible slice. Read-only, no-change,
+  `no commit`, and failed-verification tasks create no normal commit.
+- The coordinating agent is the single Git mutation owner. Same-task
+  subagents share the workspace and return edits plus evidence; they do not
+  independently commit or create Git resources.
+- Automatic amend, rebase, reset, pull, stash, force operations, broad staging,
+  push, PR, merge, tag, release, and remote deletion are outside this default.
+- Commit/readback failure preserves the work and blocks task-clean or cleanup
+  claims. The final Git receipt distinguishes `Task clean` from
+  `Repository clean` and reports retained resources with reasons.
+- Aegis-created worktrees use an existing ignored project convention or an
+  external user-level temporary location; worktree creation does not itself
+  justify a `.gitignore` commit.
+- Cleanup requires fresh ownership and integration evidence, supports
+  merge/fast-forward and squash/rebase proof shapes, removes a worktree before
+  its branch, and never force-cleans dirty, locked, unknown, or user-owned
+  resources.
+
+The approved ADR now outranks conflicting inherited skill wording. Until those
+skill projections are revised and verified, such wording is classified as
+architecture-scoped `Implementation Drift`, not an alternative Git owner.
+
 ### 3.0d Strong-Opinion Review Lenses
 
 Strong-Opinion Review Lenses are compact task-specific checks that make Aegis
@@ -930,26 +976,43 @@ This process baseline should be projected into the following skills as a priorit
     add it to the always-loaded hot path
 - `using-aegis`
   - Add complexity routing, project workspace creation boundary, prompt hygiene
-    hot path, and light delegation to owner workflows for Change Necessity
+    hot path, light delegation to owner workflows for Change Necessity, and no
+    unconditional branch/worktree routing for modification tasks
+- `using-git-worktrees`
+  - Become an exception-only worktree necessity, safe placement, creation, and
+    ownership-aware cleanup guidance surface; never modify `.gitignore` merely
+    to create a worktree
 - `systematic-debugging`
   - Explicitly cover the "Symptom → Logic → System → Architecture" diagnostic
     layers, require falsifiable recurrence/deeper-candidate proof before root
-    claims, preserve a negative-proof quick exit, and surface Change Necessity
-    before repair code
+    claims, preserve a negative-proof quick exit, surface Change Necessity, and
+    record the task-start Git snapshot before repair edits
 - `writing-plans`
   - Introduce impact, compat, retirement, Change Necessity, and verification
-    perspectives
+    perspectives; commit at coherent Task/slice boundaries, not micro-steps
 - `test-driven-development`
   - Position TDD as the implementation discipline for approved atomic tasks,
     preventing medium/high-complexity tasks from bypassing planning, and confirm
-    code-change necessity before strict RED/GREEN enters production edits
+    code-change necessity before strict RED/GREEN enters production edits;
+    TDD does not imply branch/worktree creation
+- `executing-plans`
+  - Reuse the current branch/workspace by default, record task-start state, and
+    preserve one coordinator-owned Git mutation path across task slices
+- `subagent-driven-development`
+  - Keep same-task subagents in one workspace and make the coordinator the only
+    default stage/commit/branch/worktree owner
+- `finishing-a-development-branch`
+  - Separate integration choice from checkout lifetime, release safe temporary
+    worktrees before branch deletion, and verify merge-strategy-specific cleanup
 - `requesting-code-review`
   - Add evidence sufficiency, requirements/product alignment, Design Defect /
     Implementation Drift checks, and missing ADR / baseline sync findings for
     durable architecture decisions
 - `verification-before-completion`
   - Align with reflection, QA, final output semantic slots, and ADR Auto Backfill for
-    completed medium/high work that touched architecture surfaces
+    completed medium/high work that touched architecture surfaces; own commit
+    eligibility/readback evidence and the compact Git receipt without granting
+    commit or integration authority
 
 ---
 

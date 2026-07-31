@@ -678,6 +678,38 @@ These ceilings are maintenance constraints for capability-preserving skill
 payloads. They are not benchmark performance results and do not claim lower
 latency, token usage, cost, or model-context occupancy.
 
+### 3.22 Task-Level Git Lifecycle Quality
+
+Task-level Git behavior should leave users with verified, reversible history,
+not a growing inventory of agent-created workspaces. The canonical decision is
+`docs/adr/ADR-0003-current-branch-first-git-lifecycle.md`.
+
+Pass criteria:
+
+- a read-only task-start snapshot makes task-owned delta distinguishable from
+  pre-existing staged, unstaged, and untracked user state
+- ordinary sequential modifications stay on the current branch, including
+  `main`/`master` when no higher authority requires independent history
+- successful modification tasks create one local commit per coherent task or
+  verifiable/revertible slice; micro-steps, read-only tasks, no-change tasks,
+  failed verification, and `no commit` do not create normal commits
+- a single coordinating agent owns staging, commit, branch, and worktree
+  mutation; same-task subagents share the workspace and do not race Git state
+- branch creation requires real history divergence; automatic worktree creation
+  requires concurrent checkout or dirty-state protection that cannot safely be
+  handled in the current workspace
+- worktree placement never requires a task-unrelated `.gitignore` commit, and
+  setup is project-authority-led rather than blind dependency installation
+- failure preserves recoverable work: no hook bypass, implicit pull/stash,
+  history rewrite, broad staging, force cleanup, or false task-clean claim
+- merge/fast-forward and squash/rebase use appropriate fresh integration
+  evidence; unknown ownership or integration state retains the resource
+- cleanup reads back both Git registration and the exact path, including
+  bounded handling for Windows residual directories
+- the final Git receipt reports branch, commit or non-commit reason,
+  `Task clean`, `Repository clean`, and created/removed/retained resources
+  without turning local Git state into completion authority
+
 ---
 
 ## 4. Compact Output Contracts

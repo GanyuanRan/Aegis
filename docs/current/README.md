@@ -79,6 +79,7 @@ The public current set is:
 - `docs/current/AEGIS_KNOWN_LIMITATIONS.md`
 - `docs/adr/ADR-0001-aegis-method-pack-is-not-runtime-core.md`
 - `docs/adr/ADR-0002-kimi-native-plugin-is-the-automatic-entry.md`
+- `docs/adr/ADR-0003-current-branch-first-git-lifecycle.md`
 
 ## 5. Document Roles
 
