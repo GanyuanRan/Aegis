@@ -1,5 +1,60 @@
 # Aegis Release Notes
 
+## v2.6.3 (2026-08-01)
+
+### Current-Branch-First Git Lifecycle
+
+- Made the current branch and workspace the default for ordinary coding tasks;
+  complexity, planning, TDD, subagents, or a `main` / `master` branch name no
+  longer justify a branch or worktree by themselves.
+- Added a pre-write `TaskStartSnapshot`, coordinator-only Git mutation
+  ownership, task-owned scoped staging, one coherent verified local commit,
+  and explicit task-clean versus repository-clean readback.
+- Limited branches to genuinely independent histories and worktrees to
+  concurrent checkout or blocking unrelated dirty state; paired temporary
+  resources with creator-owned, evidence-led cleanup.
+
+### Capability-Preserving Context Budgets
+
+- Replaced single hard size ceilings with warning targets and larger hard
+  ceilings for high-frequency skills, plus route-bundle budgets for debugging,
+  plan execution, and long-task flows.
+- Made capability gates precede size gates so required routing, semantic slots,
+  stop signals, owner rules, and discoverable reference triggers cannot be
+  deleted merely to satisfy a byte limit.
+- Restored the authority fast path, explicit passive `CONTEXT-MAP.md` /
+  `CONTEXT.md` lookup, conditional subagent execution, strict-TDD authorization
+  markers, authority-before-worktree placement, and complete
+  commit-through-handoff stop signals.
+
+### Regression And Distribution Safety
+
+- Added deterministic budget-band tests, route-bundle checks, semantic-context
+  assertions, worktree ordering checks, TDD-off contract coverage, and complete
+  integration-stop assertions.
+- Made the Kimi Code deterministic harness select `python3`, `py -3`, or
+  `python` by verified availability, and made the repository test package
+  explicit so Windows environments cannot resolve an unrelated package named
+  `tests`.
+- Verified the repaired behavior with the same read-only `gpt-5.6-sol` /
+  `xhigh` pressure scenarios before and after the change; all six repaired
+  decisions are now explicit in the owning skills.
+- Reviewed all four manually copied global user-rule projections. No manual
+  re-copy is required because this release changes task-specific skill behavior
+  without changing profile-owned activation, TDD-default, authority-priority,
+  or base completion-evidence semantics.
+
+### Verification And Release Boundary
+
+- The formal release gate remains
+  `bash tests/e2e/run-all.sh --full --host-profile fast`; this release is
+  published only after that gate and the version audit pass.
+- Bumped all declared package and host manifest versions from `2.6.0` to
+  `2.6.3` through `scripts/bump-version.sh`.
+- This release remains `Aegis Method Pack (runtime-ready)` and does not add
+  authoritative `GateDecision`, `PolicySnapshot`, runtime authority, or
+  completion authority.
+
 ## v2.6.0 (2026-07-31)
 
 ### Measured Agentic Benchmark
