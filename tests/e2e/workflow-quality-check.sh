@@ -63,6 +63,22 @@ assert_not_contains() {
     fi
 }
 
+assert_before() {
+    local file="$1"
+    local first_pattern="$2"
+    local second_pattern="$3"
+    local label="$4"
+    local first_line second_line
+
+    first_line="$(grep -nE "$first_pattern" "$file" | head -n 1 | cut -d: -f1 || true)"
+    second_line="$(grep -nE "$second_pattern" "$file" | head -n 1 | cut -d: -f1 || true)"
+    if [[ -n "$first_line" && -n "$second_line" && "$first_line" -lt "$second_line" ]]; then
+        pass "$label"
+    else
+        fail "$label"
+    fi
+}
+
 echo "=== Workflow Quality Check ==="
 
 baseline="docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md"
@@ -492,6 +508,12 @@ assert_not_contains "skills/using-aegis/SKILL.md" "Stage handoff" \
     "using-aegis avoids stiff stage handoff wording"
 assert_contains "skills/using-aegis/SKILL.md" "ArchitectureReviewRequired" \
     "using-aegis marks architecture review required signal"
+assert_contains_all "skills/using-aegis/SKILL.md" \
+    "using-aegis preserves authority fast path and passive context semantics" \
+    "README/ADR/rules/baseline, else" 'CONTEXT-MAP\.md' 'CONTEXT\.md' \
+    "passively use relevant"
+assert_contains "skills/using-aegis/SKILL.md" "literal/explanatory uses do not" \
+    "using-aegis excludes explanatory grilling mentions"
 
 for skill_file in \
     "skills/goal-framing/SKILL.md" \
@@ -652,6 +674,9 @@ assert_contains "skills/writing-plans/SKILL.md" "TDD Route Guard" \
     "writing plans record route authority before task decomposition"
 assert_contains "skills/executing-plans/SKILL.md" "TDD Route Guard" \
     "executing plans verify route authority before task execution"
+assert_contains_all "skills/executing-plans/SKILL.md" \
+    "executing plans keeps strict step markers behind explicit authority" \
+    "Decision: strict" "Write failing test" "Verify RED" "GREEN" "REFACTOR"
 assert_contains "skills/subagent-driven-development/SKILL.md" "Inherit the parent TDD decision" \
     "subagents inherit rather than force TDD"
 assert_contains "skills/writing-skills/SKILL.md" "loading.*test-driven-development" \
@@ -1086,6 +1111,11 @@ assert_contains "skills/executing-plans/SKILL.md" "TaskStartSnapshot" \
 assert_contains "skills/executing-plans/SKILL.md" "coordinator is the Git mutation owner" \
     "plan execution has one Git mutation owner"
 assert_contains_all "skills/executing-plans/SKILL.md" \
+    "plan execution conditionally prefers subagents without requiring them" \
+    "subagents are available" "prefer.*subagent-driven-development" \
+    "does not block" "Same-task agents share one workspace" \
+    "remains the only Git mutation owner"
+assert_contains_all "skills/executing-plans/SKILL.md" \
     "plan execution separates branch history from worktree checkout" \
     "Reuse the current branch unless" "independent history" "worktree still requires"
 assert_not_contains "skills/executing-plans/SKILL.md" "REQUIRED.*using-git-worktrees|Never start implementation on main/master" \
@@ -1098,6 +1128,12 @@ assert_contains "skills/using-git-worktrees/SKILL.md" 'Never edit or commit `\.g
     "worktree creation cannot add a task-unrelated ignore commit"
 assert_contains "skills/using-git-worktrees/SKILL.md" 'Do not infer `npm install`' \
     "worktree setup follows project authority instead of blind install"
+assert_contains_all "skills/using-git-worktrees/SKILL.md" \
+    "worktree placement reads project authority and convention" \
+    'AGENTS\.md' 'CLAUDE\.md' "current authority" "worktree convention"
+assert_before "skills/using-git-worktrees/SKILL.md" 'AGENTS\.md' \
+    '^## Step 2: Safe Placement' \
+    "worktree authority read happens before placement"
 assert_not_contains "skills/using-git-worktrees/SKILL.md" "Add appropriate line to .gitignore|Auto-detect and run appropriate setup" \
     "worktree workflow retires inherited setup mutations"
 assert_contains "skills/finishing-a-development-branch/SKILL.md" "Step 1: Environment and Ownership Detection" \
@@ -1132,6 +1168,14 @@ assert_contains "skills/verification-before-completion/SKILL.md" "TaskStartSnaps
 assert_contains_all "skills/verification-before-completion/SKILL.md" \
     "completion receipt distinguishes task and repository cleanliness" \
     "Task clean" "Repository clean" "Task-clean never implies repo-clean"
+assert_contains_all "skills/verification-before-completion/SKILL.md" \
+    "completion keeps every integration and handoff stop signal explicit" \
+    "commit, push, PR, merge, tag, publish, release, or handoff" \
+    "retained old logic lacks a retention reason and retirement trigger"
+assert_contains_all "$baseline" \
+    "workflow quality uses capability-first two-tier context budgets" \
+    "warning target" "hard ceiling" "route-bundle budgets" \
+    "required semantic slots, routes"
 assert_contains_all "skills/using-aegis/references/codex-tools.md" \
     "Codex mapping points to current Git lifecycle entry steps" \
     "using-git-worktrees.*Step 0" "finishing-a-development-branch.*Step 1"

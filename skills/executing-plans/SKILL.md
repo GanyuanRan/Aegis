@@ -16,6 +16,11 @@ slice to its plan, checkpoint, drift or verification boundary. At completion,
 pass plan adherence, evidence, complexity and residual risk to
 `verification-before-completion` for the unified receipt.
 
+If subagents are available and the plan has genuinely independent tasks,
+prefer `subagent-driven-development`; lack of subagent support does not block
+inline execution. Same-task agents share one workspace, and the coordinator
+remains the only Git mutation owner.
+
 ## The Process
 
 ### Step 1: Load and Review Plan
@@ -33,7 +38,9 @@ pass plan adherence, evidence, complexity and residual risk to
    user/project authority; plan approval or risk labels are not authority. An
    off-mode missing record may be repaired only as `Mode: off / Decision:
    skipped` without loading TDD. Missing/unsupported auto decisions return to
-   plan review. Do not infer `strict` during execution.
+   plan review. Only `Decision: strict` with recorded strict authority may
+   authorize steps named `Write failing test`, `Verify RED`, `GREEN`, or
+   `REFACTOR`. Do not infer `strict` during execution.
 6. If concerns: Raise them with your human partner before starting
 7. Before the first write, capture `TaskStartSnapshot`: root, `HEAD`, branch or
    detached state, upstream divergence, staged/unstaged/untracked paths, active

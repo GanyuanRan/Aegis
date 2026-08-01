@@ -113,6 +113,10 @@ Root improvement rule:
   safety fields.
 - Scale output depth by task complexity and risk.
 - Prefer compact output contracts over broad template expansion.
+- Treat skill context budgets as two-tier maintenance controls: crossing a
+  warning target requests review, while only crossing the hard ceiling fails.
+  Semantic capability and discoverable routing remain the acceptance boundary;
+  size pressure never authorizes deleting required behavior.
 - Apply the Micro-Slice Artifact Budget when long tasks split into many tiny
   slices: reuse the parent spec/plan, use a compact Slice Card, and avoid
   per-slice plan/spec files unless a new durable boundary appears.

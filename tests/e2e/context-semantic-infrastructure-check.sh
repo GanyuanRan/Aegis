@@ -69,6 +69,11 @@ for consumer in "${consumers[@]}"; do
         "$consumer does not duplicate active write policy"
 done
 
+assert_contains skills/using-aegis/SKILL.md 'CONTEXT-MAP\.md.*CONTEXT\.md' \
+    "using-aegis names passive context files explicitly"
+assert_contains skills/using-aegis/SKILL.md 'passively use relevant' \
+    "using-aegis keeps passive context consumption on non-trivial routes"
+
 assert_contains docs/current/AEGIS_PROCESS_BASELINE.md 'Semantic Context Infrastructure' \
     "process baseline owns the shared semantic contract"
 assert_contains docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md \

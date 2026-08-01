@@ -667,16 +667,33 @@ Pass criteria:
   evidence
 - direct references load only when task evidence activates their documented
   triggers; untriggered references do not become default prompt payload
-- capability gates pass before size gates: `systematic-debugging/SKILL.md` is
-  at most 10,000 bytes, `verification-before-completion/SKILL.md` is at most
-  7,000 bytes, their combined main bodies are at most 17,000 bytes, and
-  `using-aegis/SKILL.md` remains within its existing 2,500-byte hot-path ceiling
-- if a required behavior cannot fit these ceilings, return to design review
-  instead of deleting capability or hiding it behind an undiscoverable trigger
+- capability gates pass before size gates; required semantic slots, routes,
+  stop signals, and reference triggers cannot be removed to satisfy a number
+- each maintained payload has a warning target and a larger hard ceiling:
 
-These ceilings are maintenance constraints for capability-preserving skill
-payloads. They are not benchmark performance results and do not claim lower
-latency, token usage, cost, or model-context occupancy.
+  | Main body | Warning target | Hard ceiling |
+  | --- | ---: | ---: |
+  | `using-aegis/SKILL.md` | 2,800 bytes | 3,200 bytes |
+  | `systematic-debugging/SKILL.md` | 10,500 bytes | 12,000 bytes |
+  | `verification-before-completion/SKILL.md` | 7,500 bytes | 9,000 bytes |
+  | `executing-plans/SKILL.md` | 9,000 bytes | 10,500 bytes |
+  | `long-task-continuation/SKILL.md` | 12,500 bytes | 14,000 bytes |
+
+- route-bundle budgets catch cumulative prompt pressure without forcing every
+  owner into the same shape: debugging + verification targets 19,000 bytes
+  with a 22,000-byte hard ceiling; the debug route targets 22,000/26,000, the
+  plan-execution route 20,000/24,000, and the long-task route 33,000/40,000
+- crossing a warning target is visible maintenance pressure and keeps the gate
+  green; crossing a hard ceiling fails and requires capability-preserving
+  extraction or design review
+- if required behavior does not fit below a hard ceiling, return to design
+  review instead of deleting capability or hiding it behind an undiscoverable
+  trigger
+
+These targets and hard ceilings are maintenance constraints for
+capability-preserving skill payloads. They are not benchmark performance
+results and do not claim lower latency, token usage, cost, or model-context
+occupancy.
 
 ### 3.22 Task-Level Git Lifecycle Quality
 

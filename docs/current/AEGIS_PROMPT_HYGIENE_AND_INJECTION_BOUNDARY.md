@@ -221,9 +221,10 @@ protection rule as external evidence intake:
 - external output used to decide whether a reference is needed remains an
   evidence candidate, not trusted instructions or default prompt payload
 
-Payload ceilings are subordinate to these capability requirements. They are
-maintenance bounds, not claims about benchmark performance, latency, token
-usage, cost, cache hits, or model-context occupancy.
+Payload warning targets and hard ceilings are subordinate to these capability
+requirements. A warning requests maintenance review; only a hard-ceiling
+breach fails the budget gate. Neither is a claim about benchmark performance,
+latency, token usage, cost, cache hits, or model-context occupancy.
 
 ---
 

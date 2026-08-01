@@ -15,10 +15,17 @@ evidence sufficiency, requirement acceptance, or completion authority.
 
 ## Stop Signals
 
-Stop for uncertain/agent-only evidence, before commit/push/PR/merge/release or
-handoff, when task completion is mistaken for requirement acceptance, or when
-governance, retirement, or complexity closure is unresolved. Destructive or
-irreversible work needs scoped permission; warnings or broad assent do not grant it.
+Stop before claiming or advancing when:
+
+- evidence is uncertain, stale, agent-only, or narrower than the claim;
+- the next action is commit, push, PR, merge, tag, publish, release, or handoff;
+- task/slice completion is being treated as accepted requirement satisfaction;
+- governance or retirement lacks repair/retirement evidence;
+- retained old logic lacks a retention reason and retirement trigger; or
+- complexity closure is unresolved.
+
+Destructive or irreversible work needs scoped permission; warnings or broad
+assent do not grant it.
 
 ## Required Evidence Slots
 

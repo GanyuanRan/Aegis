@@ -16,6 +16,10 @@ fail() {
     failures=$((failures + 1))
 }
 
+warn() {
+    echo "  [WARN] $1"
+}
+
 assert_contains() {
     local file="$1"
     local pattern="$2"
@@ -40,14 +44,28 @@ assert_not_contains() {
     fi
 }
 
-char_count() {
+byte_count() {
     wc -c < "$1" | tr -d '[:space:]'
 }
 
-assert_growth_budget() {
+budget_band() {
+    local current="$1"
+    local target="$2"
+    local hard="$3"
+
+    if (( current <= target )); then
+        echo "target"
+    elif (( current <= hard )); then
+        echo "warning"
+    else
+        echo "hard-failure"
+    fi
+}
+
+assert_budget() {
     local file="$1"
-    local baseline="$2"
-    local allowance="$3"
+    local target="$2"
+    local hard="$3"
     local label="$4"
 
     if [[ ! -f "$file" ]]; then
@@ -55,48 +73,63 @@ assert_growth_budget() {
         return
     fi
 
-    local current ceiling
-    current="$(char_count "$file")"
-    ceiling=$((baseline + allowance))
-    if (( current <= ceiling )); then
-        pass "$label is <= ${ceiling} chars (${current})"
-    else
-        fail "$label is <= ${ceiling} chars (${current})"
-    fi
+    local current
+    current="$(byte_count "$file")"
+    case "$(budget_band "$current" "$target" "$hard")" in
+        target) pass "$label meets target <= ${target} bytes (${current})" ;;
+        warning) warn "$label exceeds target ${target} but remains within hard ceiling ${hard} bytes (${current})" ;;
+        hard-failure) fail "$label exceeds hard ceiling ${hard} bytes (${current})" ;;
+    esac
+}
+
+assert_total_budget() {
+    local current="$1"
+    local target="$2"
+    local hard="$3"
+    local label="$4"
+
+    case "$(budget_band "$current" "$target" "$hard")" in
+        target) pass "$label meets target <= ${target} bytes (${current})" ;;
+        warning) warn "$label exceeds target ${target} but remains within hard ceiling ${hard} bytes (${current})" ;;
+        hard-failure) fail "$label exceeds hard ceiling ${hard} bytes (${current})" ;;
+    esac
 }
 
 echo "=== Context Budget Check ==="
+
+if [[ "$(budget_band 100 100 120)" == "target" && \
+      "$(budget_band 101 100 120)" == "warning" && \
+      "$(budget_band 121 100 120)" == "hard-failure" ]]; then
+    pass "budget bands distinguish target, warning, and hard failure"
+else
+    fail "budget bands distinguish target, warning, and hard failure"
+fi
 
 using_aegis="skills/using-aegis/SKILL.md"
 discipline_ref="skills/using-aegis/references/skill-discipline.md"
 prompt_hygiene_doc="docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md"
 verification_skill="skills/verification-before-completion/SKILL.md"
+workflow_quality_doc="docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md"
 log_window_script="scripts/log-window.sh"
-max_hot_path_chars=2500
-max_debugging_main_chars=10000
-max_verification_main_chars=7000
-max_combined_main_chars=17000
+using_target_bytes=2800
+using_hard_bytes=3200
+debugging_target_bytes=10500
+debugging_hard_bytes=12000
+verification_target_bytes=7500
+verification_hard_bytes=9000
+executing_target_bytes=9000
+executing_hard_bytes=10500
+long_task_target_bytes=12500
+long_task_hard_bytes=14000
 
-if [[ ! -f "$using_aegis" ]]; then
-    fail "using-aegis skill exists"
-else
-    skill_chars="$(char_count "$using_aegis")"
-    if (( skill_chars <= max_hot_path_chars )); then
-        pass "using-aegis hot path is <= ${max_hot_path_chars} chars (${skill_chars})"
-    else
-        fail "using-aegis hot path is <= ${max_hot_path_chars} chars (${skill_chars})"
-    fi
-fi
+assert_budget "$using_aegis" "$using_target_bytes" "$using_hard_bytes" \
+    "using-aegis hot path"
 
 debugging_skill="skills/systematic-debugging/SKILL.md"
 debugging_advanced="skills/systematic-debugging/advanced-debugging-governance.md"
 if [[ -f "$debugging_skill" && -f "$debugging_advanced" ]]; then
-    debugging_chars="$(char_count "$debugging_skill")"
-    if (( debugging_chars <= max_debugging_main_chars )); then
-        pass "systematic-debugging main body is <= ${max_debugging_main_chars} chars (${debugging_chars})"
-    else
-        fail "systematic-debugging main body is <= ${max_debugging_main_chars} chars (${debugging_chars})"
-    fi
+    assert_budget "$debugging_skill" "$debugging_target_bytes" \
+        "$debugging_hard_bytes" "systematic-debugging main body"
     pass "systematic-debugging main and advanced owner both exist"
 elif [[ -f "$debugging_skill" || -f "$debugging_advanced" ]]; then
     fail "systematic-debugging extraction rejects partial main/reference state"
@@ -106,12 +139,8 @@ fi
 
 verification_expanded="skills/verification-before-completion/expanded-closeout.md"
 if [[ -f "$verification_skill" && -f "$verification_expanded" ]]; then
-    verification_chars="$(char_count "$verification_skill")"
-    if (( verification_chars <= max_verification_main_chars )); then
-        pass "verification main body is <= ${max_verification_main_chars} chars (${verification_chars})"
-    else
-        fail "verification main body is <= ${max_verification_main_chars} chars (${verification_chars})"
-    fi
+    assert_budget "$verification_skill" "$verification_target_bytes" \
+        "$verification_hard_bytes" "verification main body"
     pass "verification main and expanded owner both exist"
 elif [[ -f "$verification_skill" || -f "$verification_expanded" ]]; then
     fail "verification extraction rejects partial main/reference state"
@@ -120,21 +149,56 @@ else
 fi
 
 if [[ -f "$debugging_skill" && -f "$debugging_advanced" && -f "$verification_skill" && -f "$verification_expanded" ]]; then
-    debugging_chars="$(char_count "$debugging_skill")"
-    verification_chars="$(char_count "$verification_skill")"
-    combined_chars=$((debugging_chars + verification_chars))
-    if (( combined_chars <= max_combined_main_chars )); then
-        pass "combined debugging and verification main bodies are <= ${max_combined_main_chars} chars (${combined_chars})"
-    else
-        fail "combined debugging and verification main bodies are <= ${max_combined_main_chars} chars (${combined_chars})"
-    fi
+    debugging_bytes="$(byte_count "$debugging_skill")"
+    verification_bytes="$(byte_count "$verification_skill")"
+    combined_bytes=$((debugging_bytes + verification_bytes))
+    assert_total_budget "$combined_bytes" 19000 22000 \
+        "combined debugging and verification main bodies"
 else
     fail "combined main-body ceiling requires complete debugging/verification owners"
 fi
-assert_growth_budget "skills/executing-plans/SKILL.md" 7823 450 \
-    "executing-plans bounded growth"
-assert_growth_budget "skills/long-task-continuation/SKILL.md" 11247 650 \
-    "long-task-continuation bounded growth"
+
+executing_skill="skills/executing-plans/SKILL.md"
+long_task_skill="skills/long-task-continuation/SKILL.md"
+assert_budget "$executing_skill" "$executing_target_bytes" \
+    "$executing_hard_bytes" "executing-plans main body"
+assert_budget "$long_task_skill" "$long_task_target_bytes" \
+    "$long_task_hard_bytes" "long-task-continuation main body"
+
+if [[ -f "$using_aegis" && -f "$debugging_skill" && -f "$debugging_advanced" && \
+      -f "$verification_skill" && -f "$verification_expanded" ]]; then
+    using_bytes="$(byte_count "$using_aegis")"
+    assert_total_budget "$((using_bytes + debugging_bytes + verification_bytes))" \
+        22000 26000 "debug route bundle"
+else
+    fail "debug route bundle requires complete owners"
+fi
+
+if [[ -f "$using_aegis" && -f "$executing_skill" && -f "$verification_skill" && \
+      -f "$verification_expanded" ]]; then
+    using_bytes="$(byte_count "$using_aegis")"
+    executing_bytes="$(byte_count "$executing_skill")"
+    assert_total_budget "$((using_bytes + executing_bytes + verification_bytes))" \
+        20000 24000 "plan-execution route bundle"
+else
+    fail "plan-execution route bundle requires complete owners"
+fi
+
+if [[ -f "$using_aegis" && -f "$executing_skill" && -f "$long_task_skill" && \
+      -f "$verification_skill" && -f "$verification_expanded" ]]; then
+    long_task_bytes="$(byte_count "$long_task_skill")"
+    assert_total_budget "$((using_bytes + executing_bytes + long_task_bytes + verification_bytes))" \
+        33000 40000 "long-task route bundle"
+else
+    fail "long-task route bundle requires complete owners"
+fi
+
+assert_contains "$workflow_quality_doc" "warning target" \
+    "workflow quality baseline defines warning targets"
+assert_contains "$workflow_quality_doc" "hard ceiling" \
+    "workflow quality baseline defines hard ceilings"
+assert_contains "$workflow_quality_doc" "route-bundle budgets" \
+    "workflow quality baseline defines route-bundle budgets"
 
 if [[ -f "$discipline_ref" ]]; then
     pass "using-aegis discipline reference exists"

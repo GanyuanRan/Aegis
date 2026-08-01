@@ -13,10 +13,11 @@ otherwise proceed normally.
 ## Hot Path
 
 1. User/project instructions outrank Aegis.
-2. Active codebase question/"what next": check README/ADR/rules/baseline, then bounded
-   index-first scan. Use mapped context; compose `establishing-project-context`
-   only for semantic delta/conflict. Evidence-only baselines.
-3. `grill me`/`grill this plan`/`审问我`/`盘问我`/`拷问我` route to `brainstorming`; literal use does not.
+2. Active codebase question/"what next": check README/ADR/rules/baseline, else
+   bounded index-first scan. Non-trivial owners passively use relevant
+   `CONTEXT-MAP.md`/`CONTEXT.md`; compose `establishing-project-context` only
+   for semantic delta/conflict. Create baselines only with evidence.
+3. Direct grilling or plan/design pressure-tests (`grill me`, `grill this plan`, `审问我`, `盘问我`, `拷问我`) route to `brainstorming`; literal/explanatory uses do not.
 4. `/aegis-goal` or `Aegis goal:` loads `goal-framing` before routing.
 5. Bug, failure, regression, or unexpected behavior routes to `systematic-debugging`; quick bug lane owns Change Necessity before source edits.
 6. Classify before implementation/start/resume/compaction. Low: intent, baseline, verification. Medium/high: baseline read-set + plan. TDD: off=no auto route/load; auto=strict/light/skipped; explicit request applies. Spec Brief or Design Spec only for ambiguous/contract/cross-module medium/high work. Shared/core/contract/cross-module never low without evidence. Source edits/new paths: owner workflow surfaces Change Necessity.

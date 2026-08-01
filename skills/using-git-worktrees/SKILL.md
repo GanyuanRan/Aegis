@@ -30,6 +30,11 @@ Stop on detached HEAD, unresolved conflicts, or an active merge/rebase/
 cherry-pick/revert/bisect. Preserve user state: no automatic stash, reset,
 clean, broad staging, or commit.
 
+Before deciding necessity or placement, read the smallest relevant project
+`AGENTS.md`, `CLAUDE.md`, current authority, and existing worktree convention.
+Repository policy may require or forbid isolation and owns any approved
+in-repo location; do not discover that policy after creating the checkout.
+
 ## Step 1: Necessity Decision
 
 Create at most one task-owned worktree only when one of these is true:
@@ -72,8 +77,8 @@ its status. Do not use force flags.
 
 ## Step 4: Authority-Led Setup and Baseline
 
-Read the project's agent guide, install docs, lockfiles, and existing scripts.
-Run only setup the project explicitly requires. Do not infer `npm install`,
+Read the project's install docs, lockfiles, and existing setup scripts. Run
+only setup the project explicitly requires. Do not infer `npm install`,
 `cargo build`, `pip install`, `poetry install`, or dependency downloads merely
 from manifest presence.
 
