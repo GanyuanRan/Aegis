@@ -1,5 +1,45 @@
 # Aegis Release Notes
 
+## v2.6.5 (2026-08-01)
+
+### Agent-Owned Plan Execution Routing
+
+- Planning handoffs now select subagent-driven or inline execution
+  automatically from task shape, available host capabilities, and safe
+  workspace conditions instead of stopping for a routine user choice.
+- Subagent unavailability now falls back to inline execution. A dirty workspace
+  alone no longer decides the execution route, and user confirmation remains
+  reserved for unresolved authorization, privacy, paid-service, external-side
+  effect, irreversible-action, scope, or safe-workspace boundaries.
+- Retired the obsolete mandatory execution-choice fixtures and aligned the
+  workflow quality contract with the agent-owned routing rule.
+
+### Lighter Public Benchmark Presentation
+
+- Shortened the English and Chinese README benchmark sections while retaining
+  the measured overall contract pass-rate improvement from `60.00%` to
+  `90.00%` and the unsafe-outcome reduction from `11.67%` to `5.00%`.
+- Reduced the public SVG to those two overall comparison panels and moved Quick
+  Install earlier, so installation guidance is easier to reach.
+- Kept the detailed sanitized JSON, bilingual result reports, scenario tables,
+  methodology, and limitations as linked evidence rather than duplicating them
+  in the README. The renderer remains the deterministic projection owner.
+
+### Verification And Release Boundary
+
+- Corrected the representative Codex smoke prompt so the entry router can load
+  the relevant task-specific skill before the runner asks for a bounded first
+  step; the safety instruction still forbids implementation and file changes.
+- Reviewed the four manually copied global user-rule projections. No manual
+  re-copy is required because the routing change is owned by the planning
+  workflow and does not change profile-owned activation, TDD-default,
+  authority-priority, or base completion-evidence semantics.
+- Bumped all declared package and host manifest versions from `2.6.3` to
+  `2.6.5` through `scripts/bump-version.sh`.
+- This release remains `Aegis Method Pack (runtime-ready)` and does not add
+  authoritative `GateDecision`, `PolicySnapshot`, runtime authority, or
+  completion authority.
+
 ## v2.6.3 (2026-08-01)
 
 ### Current-Branch-First Git Lifecycle

@@ -19,7 +19,7 @@ fi
 if [ "${CODEX_SMOKE_SUFFIX+x}" = "x" ]; then
     codex_smoke_suffix="$CODEX_SMOKE_SUFFIX"
 else
-    codex_smoke_suffix="For this smoke test, do not attempt full implementation. Briefly state the first skill/workflow you would use and the first next step only."
+    codex_smoke_suffix="For this smoke test, do not attempt implementation or modify files. Load the relevant task-specific skill, then briefly state that workflow's first next step only."
 fi
 codex_helper_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 codex_parser_script="$codex_helper_dir/parse_codex_skills.py"
