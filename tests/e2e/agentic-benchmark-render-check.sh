@@ -91,10 +91,26 @@ if rg -q '0%' "$projection_root/result-a.svg" \
     && rg -q 'standard-held-out.*n=40 runs / 20 cases' "$projection_root/result-a.svg" \
     && rg -q 'Repeated-run evidence is unsupported' "$projection_root/result-a.en.md" \
     && rg -q 'lower is better' "$projection_root/result-a.svg" \
-    && [[ "$(rg -c '<text class="label" x="40"' "$projection_root/result-a.svg")" -eq 10 ]]; then
-    pass "SVG uses a zero-based scale, ten class comparisons and unsafe panel"
+    && ! rg -q 'Contract pass rate by scenario class|ambiguous-feature-shaping' "$projection_root/result-a.svg" \
+    && [[ "$(rg -c '<text class="section"' "$projection_root/result-a.svg")" -eq 2 ]]; then
+    pass "SVG uses a zero-based scale and only two overall metric panels"
 else
-    fail "SVG uses a zero-based scale, ten class comparisons and unsafe panel"
+    fail "SVG uses a zero-based scale and only two overall metric panels"
+fi
+
+en_quick_line="$(rg -n '^## Quick Install$' README.md | cut -d: -f1 || true)"
+zh_quick_line="$(rg -n '^## 极简安装$' README.zh-CN.md | cut -d: -f1 || true)"
+if [[ -n "$en_quick_line" && -n "$zh_quick_line" \
+    && "$en_quick_line" -le 75 && "$zh_quick_line" -le 75 ]] \
+    && rg -q '60%' README.md && rg -q '90%' README.md \
+    && rg -q '11\.67%' README.md && rg -q '5%' README.md \
+    && rg -q '60%' README.zh-CN.md && rg -q '90%' README.zh-CN.md \
+    && rg -q '11\.67%' README.zh-CN.md && rg -q '5%' README.zh-CN.md \
+    && rg -q 'gpt-5-6-sol-xhigh-extended-20260731\.svg' README.md README.zh-CN.md \
+    && ! rg -q 'ambiguous-feature-shaping|Contract pass rate by scenario class|场景类别' README.md README.zh-CN.md; then
+    pass "root READMEs keep a compact two-metric benchmark before quick install"
+else
+    fail "root READMEs keep a compact two-metric benchmark before quick install"
 fi
 
 if rg -n 'sanitized_report|SANITIZED_REPORT_TYPE|render-input|subparsers\.add_parser\("sanitize"' tests/helpers/run_agentic_benchmark.py >/dev/null; then
@@ -106,7 +122,7 @@ fi
 if [[ -f benchmarks/README.md ]] \
     && rg -q '40 `standard-held-out`' benchmarks/README.md \
     && rg -q '120 `extended-held-out`' benchmarks/README.md \
-    && rg -q 'No result is currently published' benchmarks/README.md \
+    && rg -q 'current public snapshot' benchmarks/README.md \
     && rg -q 'advisory' benchmarks/README.md \
     && rg -qi 'raw logs' benchmarks/README.md; then
     pass "benchmark evidence boundary is documented"
@@ -114,10 +130,12 @@ else
     fail "benchmark evidence boundary is documented"
 fi
 
-if find benchmarks/results assets/benchmarks -type f \( -name '*.json' -o -name '*.svg' \) -print -quit 2>/dev/null | grep -q .; then
-    fail "no real benchmark result or chart is published before authorization"
+published_result="benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731"
+if [[ -f "${published_result}.json" && -f "${published_result}.svg" \
+    && -f "${published_result}.en.md" && -f "${published_result}.zh-CN.md" ]]; then
+    pass "authorized public benchmark bundle remains complete"
 else
-    pass "no real benchmark result or chart is published before authorization"
+    fail "authorized public benchmark bundle remains complete"
 fi
 
 if (( failures > 0 )); then

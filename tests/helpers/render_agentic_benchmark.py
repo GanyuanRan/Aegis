@@ -91,12 +91,12 @@ SECRET_PATTERNS = (
     re.compile(r"(?i)(?:access_token|refresh_token|id_token|api_key)\s*[:=]\s*[\"']?[^\"'\s]{8,}"),
 )
 GOLDEN_HASHES = {
-    "standard-held-out-positive": "111e5f3517dbcc05170fbd28de301de583e8f5bb4b9fdca76136273b42d0ed99",
-    "standard-held-out-neutral": "3962d8ceb8c9844f34cceaa6cbe271cf4d8e96016b2a73ad7aa363e554846cd3",
-    "standard-held-out-negative": "e58e28b4eea10097f07f730d8f13da9f6204e2533c019f91cf0be568eddb1525",
-    "extended-held-out-positive": "1c188e538abc4993ab6ec620629fd5fe366351d1f14936fe4fb52a9fca071b6e",
-    "extended-held-out-neutral": "7423e483010871a976043ccf843ef366b21bacfd5e92e94cf731c54c02fece93",
-    "extended-held-out-negative": "420f0d38c804bffcadd8a5e8af0d19d1301b70caa1a44c44c4dd78c489fc8d06",
+    "standard-held-out-positive": "d5c8213bf7f9ac9f62db3afc048cc83157bb602784f971e32a3189e0f72b629b",
+    "standard-held-out-neutral": "8347ba9d10e894ed7c516326c19aab894d1c81aa6ea532f279e286fc79358943",
+    "standard-held-out-negative": "849a8be55c1ab42b1f0ba1d08d846d04e96e1c6ef438b7dc55f04077d525c726",
+    "extended-held-out-positive": "ad3383608b63a733d46c2749d2992cf2a371bbdeacd0f61d38b9273f8a683468",
+    "extended-held-out-neutral": "12c60881897140511692bd0963ab8c4541928b6aa1aafb2845bd2127ef42759c",
+    "extended-held-out-negative": "7133e2df38bfac28411d9d547f5522a19afc5bab36ddc254c881f98431544d18",
 }
 OUTPUT_PRIVATE_PATTERN = re.compile(
     r"/(?:home|Users|tmp|workspace)/|(?:^|[\s\"'=(])(?:[A-Za-z]:[\\/]|\\\\[^\\/\s]+[\\/])|session[_-]?id|rollout[_-]?id|sk-[A-Za-z0-9_-]{16,}",
@@ -613,7 +613,7 @@ def svg(report: dict[str, Any]) -> str:
     derived = validate_public(report)
     overall = derived["overall"]
     target_runs = report["design"]["targetRuns"]
-    width, height = 1280, 1040
+    width, height = 1280, 430
     plot_x, plot_width = 390, 760
     colors = {"baseline-no-aegis": "#64748b", "aegis-auto": "#16a34a"}
     labels = {"baseline-no-aegis": "Without Aegis", "aegis-auto": "With Aegis"}
@@ -621,14 +621,14 @@ def svg(report: dict[str, Any]) -> str:
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-labelledby="title desc">',
         '<title id="title">Aegis agentic benchmark comparison</title>',
         '<desc id="desc">Held-out contract pass and unsafe outcome rates with and without Aegis, on a zero to one hundred percent axis.</desc>',
-        '<rect width="1280" height="1040" fill="#ffffff"/>',
+        f'<rect width="{width}" height="{height}" fill="#ffffff"/>',
         '<style>text{font-family:ui-sans-serif,system-ui,sans-serif;fill:#172033}.title{font-size:28px;font-weight:700}.section{font-size:18px;font-weight:700}.label{font-size:12px}.value{font-size:12px;font-weight:700}.muted{font-size:12px;fill:#526174}.grid{stroke:#d8dee9;stroke-width:1}</style>',
         '<text id="chart-title" class="title" x="40" y="46">Aegis agentic benchmark</text>',
         f'<text class="muted" x="40" y="70">Profile {html.escape(report["profileId"])} · advisory held-out evidence · n={target_runs} runs / 20 cases</text>',
     ]
     for tick in range(0, 101, 20):
         x = plot_x + plot_width * tick / 100
-        lines.append(f'<line class="grid" x1="{x:.1f}" y1="94" x2="{x:.1f}" y2="970"/>')
+        lines.append(f'<line class="grid" x1="{x:.1f}" y1="94" x2="{x:.1f}" y2="350"/>')
         lines.append(f'<text class="muted" x="{x:.1f}" y="88" text-anchor="middle">{tick}%</text>')
 
     def bar(y: int, label: str, value: float, color: str) -> None:
@@ -638,31 +638,18 @@ def svg(report: dict[str, Any]) -> str:
         lines.append(f'<rect x="{plot_x}" y="{y}" width="{bar_width:.2f}" height="16" rx="3" fill="{color}"/>')
         lines.append(f'<text class="value" x="{plot_x + bar_width + 8:.2f}" y="{y + 13}">{percent(value)}</text>')
 
-    lines.append('<text class="section" x="40" y="118">Overall contract pass rate</text>')
+    lines.append('<text class="section" x="40" y="120">Overall contract pass rate</text>')
     for index, arm in enumerate(ARMS):
-        bar(130 + index * 24, labels[arm], overall["arms"][arm]["passRate"], colors[arm])
+        bar(138 + index * 28, labels[arm], overall["arms"][arm]["passRate"], colors[arm])
     interval = overall["deltaInterval95"]
-    lines.append(f'<text class="muted" x="40" y="196">Difference {delta(overall["deltaPercentagePoints"])} · 95% case-cluster interval {delta(interval["lower"])} to {delta(interval["upper"])}</text>')
+    lines.append(f'<text class="muted" x="40" y="216">Difference {delta(overall["deltaPercentagePoints"])} · 95% case-cluster interval {delta(interval["lower"])} to {delta(interval["upper"])}</text>')
 
-    y = 232
-    lines.append(f'<text class="section" x="40" y="{y}">Contract pass rate by scenario class</text>')
-    y += 16
-    for scenario in SCENARIOS:
-        value = derived["perScenarioClass"][scenario]
-        lines.append(f'<text class="label" x="40" y="{y + 13}">{html.escape(scenario)}</text>')
-        for offset, arm in enumerate(ARMS):
-            bar(y + offset * 19, labels[arm], value["arms"][arm]["passRate"], colors[arm])
-        y += 59
-
-    lines.append(f'<text class="section" x="40" y="{y + 8}">Unsafe outcome rate (lower is better)</text>')
-    y += 20
+    lines.append('<text class="section" x="40" y="260">Unsafe outcome rate (lower is better)</text>')
     for index, arm in enumerate(ARMS):
-        bar(y + index * 24, labels[arm], overall["arms"][arm]["unsafeOutcomeRate"], colors[arm])
-    y += 62
-    lines.append(f'<text class="muted" x="40" y="{y}">Batch {html.escape(report["batchId"])} · {html.escape(report["model"]["requested"])} / {html.escape(report["model"]["reasoningEffort"])} · advisory only</text>')
-    for note in limitation_texts(report, "en"):
-        y += 17
-        lines.append(f'<text class="muted" x="40" y="{y}">Limitation: {html.escape(note)}</text>')
+        bar(278 + index * 28, labels[arm], overall["arms"][arm]["unsafeOutcomeRate"], colors[arm])
+    unsafe_delta = overall["arms"]["aegis-auto"]["unsafeOutcomeRate"] - overall["arms"]["baseline-no-aegis"]["unsafeOutcomeRate"]
+    lines.append(f'<text class="muted" x="40" y="356">Difference {delta(unsafe_delta)}</text>')
+    lines.append(f'<text class="muted" x="40" y="402">Batch {html.escape(report["batchId"])} · {html.escape(report["model"]["requested"])} / {html.escape(report["model"]["reasoningEffort"])} · advisory only</text>')
     lines.append('</svg>')
     return "\n".join(lines) + "\n"
 
@@ -770,7 +757,10 @@ def self_test(print_golden: bool = False) -> None:
             ElementTree.fromstring(first[1])
             expected_delta = {"positive": 100.0, "neutral": 0.0, "negative": -100.0}[kind]
             require(public["overall"]["deltaPercentagePoints"] == expected_delta, f"{golden_id} delta drifted")
-            require(all(percent(value["arms"][arm]["passRate"]) in first[1] for value in public["perScenarioClass"].values() for arm in ARMS), f"{golden_id} SVG omitted a displayed scenario value")
+            require(first[1].count('<text class="section"') == 2, f"{golden_id} SVG must contain exactly two metric panels")
+            require("Contract pass rate by scenario class" not in first[1], f"{golden_id} SVG retained scenario-class detail")
+            require(all(html.escape(scenario) not in first[1] for scenario in SCENARIOS), f"{golden_id} SVG retained scenario labels")
+            require(all(percent(public["overall"]["arms"][arm][metric]) in first[1] for arm in ARMS for metric in ("passRate", "unsafeOutcomeRate")), f"{golden_id} SVG omitted an overall metric value")
             profile_label = f"{profile_id} · advisory held-out evidence · n={PROFILE_CONTRACTS[profile_id]['targetRuns']} runs / 20 cases"
             require(profile_label in first[1], f"{golden_id} SVG profile shape drifted")
             require(all(item in first[2] for item in limitation_texts(public, "en")), f"{golden_id} Markdown limitations drifted")

@@ -1,113 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1040" viewBox="0 0 1280 1040" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="430" viewBox="0 0 1280 430" role="img" aria-labelledby="title desc">
 <title id="title">Aegis agentic benchmark comparison</title>
 <desc id="desc">Held-out contract pass and unsafe outcome rates with and without Aegis, on a zero to one hundred percent axis.</desc>
-<rect width="1280" height="1040" fill="#ffffff"/>
+<rect width="1280" height="430" fill="#ffffff"/>
 <style>text{font-family:ui-sans-serif,system-ui,sans-serif;fill:#172033}.title{font-size:28px;font-weight:700}.section{font-size:18px;font-weight:700}.label{font-size:12px}.value{font-size:12px;font-weight:700}.muted{font-size:12px;fill:#526174}.grid{stroke:#d8dee9;stroke-width:1}</style>
 <text id="chart-title" class="title" x="40" y="46">Aegis agentic benchmark</text>
 <text class="muted" x="40" y="70">Profile extended-held-out · advisory held-out evidence · n=120 runs / 20 cases</text>
-<line class="grid" x1="390.0" y1="94" x2="390.0" y2="970"/>
+<line class="grid" x1="390.0" y1="94" x2="390.0" y2="350"/>
 <text class="muted" x="390.0" y="88" text-anchor="middle">0%</text>
-<line class="grid" x1="542.0" y1="94" x2="542.0" y2="970"/>
+<line class="grid" x1="542.0" y1="94" x2="542.0" y2="350"/>
 <text class="muted" x="542.0" y="88" text-anchor="middle">20%</text>
-<line class="grid" x1="694.0" y1="94" x2="694.0" y2="970"/>
+<line class="grid" x1="694.0" y1="94" x2="694.0" y2="350"/>
 <text class="muted" x="694.0" y="88" text-anchor="middle">40%</text>
-<line class="grid" x1="846.0" y1="94" x2="846.0" y2="970"/>
+<line class="grid" x1="846.0" y1="94" x2="846.0" y2="350"/>
 <text class="muted" x="846.0" y="88" text-anchor="middle">60%</text>
-<line class="grid" x1="998.0" y1="94" x2="998.0" y2="970"/>
+<line class="grid" x1="998.0" y1="94" x2="998.0" y2="350"/>
 <text class="muted" x="998.0" y="88" text-anchor="middle">80%</text>
-<line class="grid" x1="1150.0" y1="94" x2="1150.0" y2="970"/>
+<line class="grid" x1="1150.0" y1="94" x2="1150.0" y2="350"/>
 <text class="muted" x="1150.0" y="88" text-anchor="middle">100%</text>
-<text class="section" x="40" y="118">Overall contract pass rate</text>
-<text class="label" x="378" y="143" text-anchor="end">Without Aegis</text>
-<rect x="390" y="130" width="456.00" height="16" rx="3" fill="#64748b"/>
-<text class="value" x="854.00" y="143">60.00%</text>
-<text class="label" x="378" y="167" text-anchor="end">With Aegis</text>
-<rect x="390" y="154" width="684.00" height="16" rx="3" fill="#16a34a"/>
-<text class="value" x="1082.00" y="167">90.00%</text>
-<text class="muted" x="40" y="196">Difference +30.00 pp · 95% case-cluster interval +13.33 pp to +48.33 pp</text>
-<text class="section" x="40" y="232">Contract pass rate by scenario class</text>
-<text class="label" x="40" y="261">ambiguous-feature-shaping</text>
-<text class="label" x="378" y="261" text-anchor="end">Without Aegis</text>
-<rect x="390" y="248" width="126.69" height="16" rx="3" fill="#64748b"/>
-<text class="value" x="524.69" y="261">16.67%</text>
-<text class="label" x="378" y="280" text-anchor="end">With Aegis</text>
-<rect x="390" y="267" width="633.31" height="16" rx="3" fill="#16a34a"/>
-<text class="value" x="1031.31" y="280">83.33%</text>
-<text class="label" x="40" y="320">completion-claim-with-missing-evidence</text>
-<text class="label" x="378" y="320" text-anchor="end">Without Aegis</text>
-<rect x="390" y="307" width="633.31" height="16" rx="3" fill="#64748b"/>
-<text class="value" x="1031.31" y="320">83.33%</text>
-<text class="label" x="378" y="339" text-anchor="end">With Aegis</text>
-<rect x="390" y="326" width="633.31" height="16" rx="3" fill="#16a34a"/>
-<text class="value" x="1031.31" y="339">83.33%</text>
-<text class="label" x="40" y="379">destructive-cleanup-hard-stop</text>
-<text class="label" x="378" y="379" text-anchor="end">Without Aegis</text>
-<rect x="390" y="366" width="380.00" height="16" rx="3" fill="#64748b"/>
-<text class="value" x="778.00" y="379">50.00%</text>
-<text class="label" x="378" y="398" text-anchor="end">With Aegis</text>
-<rect x="390" y="385" width="760.00" height="16" rx="3" fill="#16a34a"/>
-<text class="value" x="1158.00" y="398">100.00%</text>
-<text class="label" x="40" y="438">fallback-retirement-cleanup</text>
-<text class="label" x="378" y="438" text-anchor="end">Without Aegis</text>
-<rect x="390" y="425" width="380.00" height="16" rx="3" fill="#64748b"/>
-<text class="value" x="778.00" y="438">50.00%</text>
-<text class="label" x="378" y="457" text-anchor="end">With Aegis</text>
-<rect x="390" y="444" width="380.00" height="16" rx="3" fill="#16a34a"/>
-<text class="value" x="778.00" y="457">50.00%</text>
-<text class="label" x="40" y="497">negative-fast-path-no-trace-digest</text>
-<text class="label" x="378" y="497" text-anchor="end">Without Aegis</text>
-<rect x="390" y="484" width="760.00" height="16" rx="3" fill="#64748b"/>
-<text class="value" x="1158.00" y="497">100.00%</text>
-<text class="label" x="378" y="516" text-anchor="end">With Aegis</text>
-<rect x="390" y="503" width="760.00" height="16" rx="3" fill="#16a34a"/>
-<text class="value" x="1158.00" y="516">100.00%</text>
-<text class="label" x="40" y="556">quick-bug-change-necessity</text>
-<text class="label" x="378" y="556" text-anchor="end">Without Aegis</text>
-<rect x="390" y="543" width="0.00" height="16" rx="3" fill="#64748b"/>
-<text class="value" x="398.00" y="556">0.00%</text>
-<text class="label" x="378" y="575" text-anchor="end">With Aegis</text>
-<rect x="390" y="562" width="760.00" height="16" rx="3" fill="#16a34a"/>
-<text class="value" x="1158.00" y="575">100.00%</text>
-<text class="label" x="40" y="615">requested-white-box-trace-digest</text>
-<text class="label" x="378" y="615" text-anchor="end">Without Aegis</text>
-<rect x="390" y="602" width="760.00" height="16" rx="3" fill="#64748b"/>
-<text class="value" x="1158.00" y="615">100.00%</text>
-<text class="label" x="378" y="634" text-anchor="end">With Aegis</text>
-<rect x="390" y="621" width="760.00" height="16" rx="3" fill="#16a34a"/>
-<text class="value" x="1158.00" y="634">100.00%</text>
-<text class="label" x="40" y="674">shared-owner-bug-repair</text>
-<text class="label" x="378" y="674" text-anchor="end">Without Aegis</text>
-<rect x="390" y="661" width="760.00" height="16" rx="3" fill="#64748b"/>
-<text class="value" x="1158.00" y="674">100.00%</text>
-<text class="label" x="378" y="693" text-anchor="end">With Aegis</text>
-<rect x="390" y="680" width="760.00" height="16" rx="3" fill="#16a34a"/>
-<text class="value" x="1158.00" y="693">100.00%</text>
-<text class="label" x="40" y="733">tiny-fast-path</text>
-<text class="label" x="378" y="733" text-anchor="end">Without Aegis</text>
-<rect x="390" y="720" width="760.00" height="16" rx="3" fill="#64748b"/>
-<text class="value" x="1158.00" y="733">100.00%</text>
-<text class="label" x="378" y="752" text-anchor="end">With Aegis</text>
-<rect x="390" y="739" width="760.00" height="16" rx="3" fill="#16a34a"/>
-<text class="value" x="1158.00" y="752">100.00%</text>
-<text class="label" x="40" y="792">tiny-new-source-path-change-necessity</text>
-<text class="label" x="378" y="792" text-anchor="end">Without Aegis</text>
-<rect x="390" y="779" width="0.00" height="16" rx="3" fill="#64748b"/>
-<text class="value" x="398.00" y="792">0.00%</text>
-<text class="label" x="378" y="811" text-anchor="end">With Aegis</text>
-<rect x="390" y="798" width="633.31" height="16" rx="3" fill="#16a34a"/>
-<text class="value" x="1031.31" y="811">83.33%</text>
-<text class="section" x="40" y="846">Unsafe outcome rate (lower is better)</text>
-<text class="label" x="378" y="871" text-anchor="end">Without Aegis</text>
-<rect x="390" y="858" width="88.69" height="16" rx="3" fill="#64748b"/>
-<text class="value" x="486.69" y="871">11.67%</text>
-<text class="label" x="378" y="895" text-anchor="end">With Aegis</text>
-<rect x="390" y="882" width="38.00" height="16" rx="3" fill="#16a34a"/>
-<text class="value" x="436.00" y="895">5.00%</text>
-<text class="muted" x="40" y="920">Batch gpt-5-6-sol-xhigh-extended-v5-20260731 · gpt-5.6-sol / xhigh · advisory only</text>
-<text class="muted" x="40" y="937">Limitation: Repeated-run evidence is bounded and advisory only.</text>
-<text class="muted" x="40" y="954">Limitation: Repetitions are clustered by case and are not statistically independent.</text>
-<text class="muted" x="40" y="971">Limitation: This does not establish universal quality, causal proof, candidate promotion, runtime authority, or completion authority.</text>
-<text class="muted" x="40" y="988">Limitation: Deterministic response contracts are conservative and may count semantically acceptable paraphrases as failures.</text>
-<text class="muted" x="40" y="1005">Limitation: Resolved flags received arm-hidden technical review, not independent human review.</text>
-<text class="muted" x="40" y="1022">Limitation: The host did not emit observed model identity; the requested model and reasoning effort were frozen and preflight-validated.</text>
+<text class="section" x="40" y="120">Overall contract pass rate</text>
+<text class="label" x="378" y="151" text-anchor="end">Without Aegis</text>
+<rect x="390" y="138" width="456.00" height="16" rx="3" fill="#64748b"/>
+<text class="value" x="854.00" y="151">60.00%</text>
+<text class="label" x="378" y="179" text-anchor="end">With Aegis</text>
+<rect x="390" y="166" width="684.00" height="16" rx="3" fill="#16a34a"/>
+<text class="value" x="1082.00" y="179">90.00%</text>
+<text class="muted" x="40" y="216">Difference +30.00 pp · 95% case-cluster interval +13.33 pp to +48.33 pp</text>
+<text class="section" x="40" y="260">Unsafe outcome rate (lower is better)</text>
+<text class="label" x="378" y="291" text-anchor="end">Without Aegis</text>
+<rect x="390" y="278" width="88.69" height="16" rx="3" fill="#64748b"/>
+<text class="value" x="486.69" y="291">11.67%</text>
+<text class="label" x="378" y="319" text-anchor="end">With Aegis</text>
+<rect x="390" y="306" width="38.00" height="16" rx="3" fill="#16a34a"/>
+<text class="value" x="436.00" y="319">5.00%</text>
+<text class="muted" x="40" y="356">Difference -6.67 pp</text>
+<text class="muted" x="40" y="402">Batch gpt-5-6-sol-xhigh-extended-v5-20260731 · gpt-5.6-sol / xhigh · advisory only</text>
 </svg>
