@@ -14,7 +14,7 @@ description: "Use when you have a spec or requirements for a multi-step task, be
   2. File map: what files created/modified, clear boundaries, follow existing patterns
   3. Bite-sized tasks (2-5 min each): exact file paths, complete code, exact commands, expected output
   4. Self-review: spec coverage, placeholders, type consistency, compatibility, verification, dual-track
-  5. Save → offer execution choice (subagent-driven or inline)
+  5. Save → select and announce the execution route; proceed unless a real authorization or safety boundary requires the user
 → Plan must answer: problem, baseline, files, compat, verification, risks, retirement.
 → Escalate from Planless Slice Lane to a durable plan when the slice adds a new owner, contract, schema, public API, architecture boundary, migration, persistence, security/permission, distribution/release surface, or unclear verification boundary.
 
@@ -423,21 +423,36 @@ Fix issues inline. Re-review is not needed — just fix and move on.
 ## Execution Handoff
 
 After saving the plan, render the `Execution Readiness View` when the handoff
-criteria above apply. Then offer execution choice:
+criteria above apply. The agent owns the execution-route decision; do not ask
+the user to choose merely because both routes are viable.
 
-**"Plan complete and saved to `docs/aegis/plans/<filename>.md`. Two execution options:**
+Select `subagent-driven` when subagents are available, the plan has
+genuinely independent tasks with bounded ownership, and the
+review/context benefit justifies the coordination. Otherwise select `inline`.
+Lack or denial of subagent support falls back to inline execution instead of blocking the task.
+A dirty workspace alone does not select either route; apply the Git ownership,
+overlap, and isolation rules separately.
 
-**1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
+Ask the user only when route selection crosses an unresolved authorization,
+privacy, paid-resource, external-action, or irreversible boundary; changes the
+approved scope or acceptance contract; or no safe route can preserve existing
+workspace ownership. When no such boundary exists, proceed immediately.
 
-**2. Inline Execution** - Execute tasks in this session using executing-plans, batch execution with checkpoints
+State the decision compactly:
 
-**Which approach?"**
+```text
+Execution Route:
+- Decision: subagent-driven | inline
+- Evidence:
+- Fallback:
+- User confirmation required: no | yes — <specific unresolved boundary>
+```
 
-**If Subagent-Driven chosen:**
+**If `subagent-driven`:**
 - **REQUIRED SUB-SKILL:** Use aegis:subagent-driven-development
 - Fresh subagent per task + two-stage review
 
-**If Inline Execution chosen:**
+**If `inline`:**
 - **REQUIRED SUB-SKILL:** Use aegis:executing-plans
 - Batch execution with checkpoints for review
 

@@ -1106,6 +1106,12 @@ assert_contains "skills/writing-plans/SKILL.md" "one scoped commit only after th
     "writing plans use coherent task commits"
 assert_not_contains "skills/writing-plans/SKILL.md" "dedicated worktree|Frequent commits" \
     "writing plans retire inherited worktree and micro-commit defaults"
+assert_contains_all "skills/writing-plans/SKILL.md" \
+    "writing plans auto-select execution route without transferring routine decisions" "agent owns the execution-route decision" \
+    "genuinely independent tasks" "falls back to inline execution" "dirty workspace alone does not select either route" \
+    "User confirmation required" "proceed immediately"
+assert_not_contains "skills/writing-plans/SKILL.md" "offer execution choice|Two execution options|Which approach\?" \
+    "writing plans retire the mandatory user execution-choice prompt"
 assert_contains "skills/executing-plans/SKILL.md" "TaskStartSnapshot" \
     "plan execution captures task-start Git evidence"
 assert_contains "skills/executing-plans/SKILL.md" "coordinator is the Git mutation owner" \
