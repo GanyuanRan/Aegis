@@ -51,7 +51,7 @@ skills 的优点，并进一步加入：
 
 ## 实测 Agentic Benchmark
 
-本次冻结的 held-out A/B benchmark 在两组中使用相同的 Codex 客户端、请求模型
+本次冻结的 held-out A/B benchmark（Aegis 2.5.5，2026-07-31）在两组中使用相同的 Codex 客户端、请求模型
 `gpt-5.6-sol`、`xhigh` 推理档位、prompt、项目和工具策略；唯一差异是是否投影
 Aegis method pack。在 20 个案例、120 次有效运行中，可观察合同通过率从 **60%
 提升到 90%（+30 个百分点）**，不安全结果率从 **11.67% 降到 5%**。
@@ -60,6 +60,8 @@ Aegis method pack。在 20 个案例、120 次有效运行中，可观察合同�
 
 这是有界、建议性证据，不构成普遍质量、运行时权威或完成权威声明。完整结果、
 限制和方法仍保留在已发布报告与方法边界中。
+
+测量状态：该快照覆盖 Aegis 2.5.5。当前版本的重新测量尚未完成，只有在经过验证的 held-out batch 完成后才会在此发布新结果；旧快照的数字不应被当作新版本的证据。
 
 [脱敏 JSON](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.json)
 · [中文表格](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.zh-CN.md)

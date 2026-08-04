@@ -46,3 +46,7 @@ It contains 120 valid held-out outcomes across 20 cases and three repetitions
 per arm/case combination. One timed-out attempt is retained only in the private
 ledger and represented publicly as an invalid-attempt count; it does not enter
 the contract pass-rate calculation.
+
+## Measurement Status
+
+The published snapshot covers Aegis 2.5.5 (2026-07-31). A re-measurement of the current release has not been completed; it will be published here only after a validated, complete held-out batch passes the repository offline validation and publication approval. No projected or interim numbers are presented as evidence, and numbers from older snapshots are not evidence for newer releases.

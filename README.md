@@ -51,7 +51,8 @@ architecture boundary, or verification path is clear.
 
 ## Measured Agentic Benchmark
 
-A frozen held-out A/B benchmark used the same Codex client, requested
+A frozen held-out A/B benchmark (Aegis 2.5.5, 2026-07-31) used the same
+Codex client, requested
 `gpt-5.6-sol` model, `xhigh` reasoning effort, prompts, projects, and tool
 policy in both arms; only the Aegis method-pack projection differed. Across 120
 valid runs on 20 cases, the observable contract pass rate rose from **60% to
@@ -62,6 +63,8 @@ valid runs on 20 cases, the observable contract pass rate rose from **60% to
 This is bounded advisory evidence, not a universal quality, runtime-authority,
 or completion-authority claim. Full details and limitations remain in the
 published report and methodology.
+
+Measurement status: this snapshot covers Aegis 2.5.5. A re-measurement of the current release is pending and will be published here only after a validated held-out batch completes; numbers from older snapshots must not be read as evidence for newer releases.
 
 [Sanitized JSON](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.json)
 · [English table](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.en.md)
