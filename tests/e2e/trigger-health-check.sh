@@ -158,8 +158,23 @@ assert_contains "skills/brainstorming/SKILL.md" "at most three independent decis
     "fast grilling mode limits batched questions to independent decisions"
 assert_contains "skills/brainstorming/SKILL.md" "PR, diff, or current-code review" \
     "grilling mode keeps implementation review out of the interview"
+assert_contains "skills/brainstorming/SKILL.md" 'compose `anti-entropy-governance`' \
+    "brainstorming keeps the anti-entropy composition hook for retirement decisions"
+assert_contains "skills/systematic-debugging/SKILL.md" '`anti-entropy-governance`' \
+    "debugging keeps the anti-entropy composition hook for delete-vs-retain decisions"
+assert_contains "skills/anti-entropy-governance/SKILL.md" "## Gap Taxonomy" \
+    "anti-entropy keeps the gap taxonomy for post-retirement repair"
+assert_contains "skills/anti-entropy-governance/SKILL.md" "Auto-Compose Boundary" \
+    "anti-entropy keeps its composition-only boundary"
+
+if [ -f "tests/skill-triggering/prompts/anti-entropy-governance.txt" ]; then
+    pass "anti-entropy live trigger probe exists"
+else
+    fail "anti-entropy live trigger probe missing"
+fi
 
 "${PYTHON_CMD[@]}" - <<'PY'
+
 from pathlib import Path
 
 failures = []
