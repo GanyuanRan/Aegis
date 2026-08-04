@@ -1227,5 +1227,65 @@ class RunnerContractTest(unittest.TestCase):
                 self.assertNotIn("private scorer detail", json.dumps(result, sort_keys=True))
 
 
+class PromptPolicyTest(unittest.TestCase):
+    """Frozen-prompt environment-note opt-in keeps the default batch contract stable."""
+
+    def _case_fixture(self, root: Path) -> tuple[dict, Path]:
+        prompt = root / "prompts"
+        seed = root / "seeds"
+        contracts = root / "contracts"
+        prompt.mkdir(); seed.mkdir(); contracts.mkdir()
+        (prompt / "prompt.txt").write_text("The task prompt.\n", encoding="utf-8")
+        (seed / "README.md").write_text("# seed\n", encoding="utf-8")
+        (contracts / "contract.json").write_text('{"version": 1}\n', encoding="utf-8")
+        case = {
+            "id": "case-note",
+            "scenarioClass": "scenario-note",
+            "partition": "development",
+            "promptPath": "prompts/prompt.txt",
+            "seedProjectPath": "seeds",
+            "outcomeContractPath": "contracts/contract.json",
+        }
+        return case, root
+
+    def test_default_freeze_preserves_source_prompt_and_hash(self):
+        with tempfile.TemporaryDirectory(prefix="agentic-prompt-policy-") as value:
+            root = Path(value)
+            case, source = self._case_fixture(root)
+            with mock.patch.dict(os.environ, {}, clear=False):
+                if "AEGIS_AGENTIC_BENCHMARK_PROMPT_NO_GIT_NOTE" in os.environ:
+                    del os.environ["AEGIS_AGENTIC_BENCHMARK_PROMPT_NO_GIT_NOTE"]
+                frozen = benchmark_runner.freeze_case(root, root / "out", case)
+            prompt_copy = root / "out" / "frozen-cases" / case["id"] / "prompt.txt"
+            self.assertEqual(prompt_copy.read_text(encoding="utf-8"), (source / "prompts/prompt.txt").read_text(encoding="utf-8"))
+            self.assertEqual(frozen["promptHash"], benchmark_runner.file_hash(source / "prompts/prompt.txt"))
+            self.assertFalse(frozen.get("noGitWriteNote", False))
+
+    def test_no_git_note_opt_in_appends_to_frozen_prompt(self):
+        with tempfile.TemporaryDirectory(prefix="agentic-prompt-policy-") as value:
+            root = Path(value)
+            case, source = self._case_fixture(root)
+            with mock.patch.dict(os.environ, {"AEGIS_AGENTIC_BENCHMARK_PROMPT_NO_GIT_NOTE": "1"}, clear=False):
+                self.assertTrue(benchmark_runner.prompt_no_git_note_enabled())
+                frozen = benchmark_runner.freeze_case(root, root / "out", case)
+            prompt_copy = root / "out" / "frozen-cases" / case["id"] / "prompt.txt"
+            text = prompt_copy.read_text(encoding="utf-8")
+            self.assertTrue(text.endswith(benchmark_runner.NO_GIT_WRITE_PROMPT_NOTE + "\n"))
+            self.assertIn("git metadata read-only", text)
+            self.assertIn("apply_patch edit tool", text)
+            self.assertEqual(frozen["promptHash"], benchmark_runner.file_hash(prompt_copy))
+            self.assertNotEqual(frozen["promptHash"], benchmark_runner.file_hash(source / "prompts/prompt.txt"))
+            self.assertFalse(benchmark_runner.prompt_no_git_note_enabled())
+
+    def test_prompt_policy_batch_marker_matches_env(self):
+        with mock.patch.dict(os.environ, {"AEGIS_AGENTIC_BENCHMARK_PROMPT_NO_GIT_NOTE": "1"}, clear=False):
+            self.assertTrue(benchmark_runner.prompt_no_git_note_enabled())
+            self.assertIsNotNone(benchmark_runner.NO_GIT_WRITE_PROMPT_NOTE)
+        with mock.patch.dict(os.environ, {}, clear=False):
+            if "AEGIS_AGENTIC_BENCHMARK_PROMPT_NO_GIT_NOTE" in os.environ:
+                del os.environ["AEGIS_AGENTIC_BENCHMARK_PROMPT_NO_GIT_NOTE"]
+            self.assertFalse(benchmark_runner.prompt_no_git_note_enabled())
+
+
 if __name__ == "__main__":
     unittest.main()

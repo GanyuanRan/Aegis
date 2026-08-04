@@ -244,13 +244,33 @@ def schedule_targets(
     return targets
 
 
+NO_GIT_WRITE_PROMPT_NOTE = (
+    "Environment note: this sandbox keeps git metadata read-only, so git write "
+    "commands (add, commit, checkout, push, reset) fail. Do not run git write "
+    "commands. Use the apply_patch edit tool to modify files; do not modify "
+    "files with shell redirection (cat >, printf >>, sed -i). Verify with the "
+    "provided verification commands."
+)
+
+
+def prompt_no_git_note_enabled() -> bool:
+    """Opt-in environment note appended to frozen prompts for both arms."""
+    return os.environ.get("AEGIS_AGENTIC_BENCHMARK_PROMPT_NO_GIT_NOTE") == "1"
+
+
 def freeze_case(root: Path, output_root: Path, case: dict[str, Any]) -> dict[str, Any]:
     prompt = root / case["promptPath"]
     project = root / case["seedProjectPath"]
     contract = root / case["outcomeContractPath"]
     destination = output_root / "frozen-cases" / case["id"]
     destination.mkdir(parents=True)
-    shutil.copy2(prompt, destination / "prompt.txt")
+    prompt_text = prompt.read_text(encoding="utf-8")
+    if prompt_no_git_note_enabled():
+        if not prompt_text.endswith("\n"):
+            prompt_text += "\n"
+        prompt_text += NO_GIT_WRITE_PROMPT_NOTE + "\n"
+    prompt_copy = destination / "prompt.txt"
+    prompt_copy.write_text(prompt_text, encoding="utf-8")
     shutil.copytree(project, destination / "project")
     shutil.copy2(contract, destination / "expected-outcome.json")
     frozen = {
@@ -258,16 +278,16 @@ def freeze_case(root: Path, output_root: Path, case: dict[str, Any]) -> dict[str
         "scenarioClass": case["scenarioClass"],
         "partition": case["partition"],
         "sourcePromptPath": case["promptPath"],
-        "promptHash": file_hash(prompt),
+        "promptHash": file_hash(prompt_copy),
         "sourceSeedProjectPath": case["seedProjectPath"],
         "seedProjectHash": hash_tree(project),
         "sourceOutcomeContractPath": case["outcomeContractPath"],
         "outcomeContractHash": file_hash(contract),
-        "frozenPromptPath": (destination / "prompt.txt").relative_to(output_root).as_posix(),
+        "frozenPromptPath": prompt_copy.relative_to(output_root).as_posix(),
         "frozenSeedProjectPath": (destination / "project").relative_to(output_root).as_posix(),
         "frozenOutcomeContractPath": (destination / "expected-outcome.json").relative_to(output_root).as_posix(),
     }
-    require(file_hash(destination / "prompt.txt") == frozen["promptHash"], f"frozen prompt copy drifted: {case['id']}")
+    require(file_hash(prompt_copy) == frozen["promptHash"], f"frozen prompt copy drifted: {case['id']}")
     require(hash_tree(destination / "project") == frozen["seedProjectHash"], f"frozen project copy drifted: {case['id']}")
     require(file_hash(destination / "expected-outcome.json") == frozen["outcomeContractHash"], f"frozen outcome copy drifted: {case['id']}")
     return frozen
@@ -486,6 +506,10 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
             "modelClientNetwork": "provider-access-required",
             "agentToolNetwork": "restricted-by-codex-sandbox",
             "approvalPolicy": "never",
+        },
+        "promptPolicy": {
+            "noGitWriteNote": prompt_no_git_note_enabled(),
+            "noteText": NO_GIT_WRITE_PROMPT_NOTE if prompt_no_git_note_enabled() else None,
         },
         "matrixPath": relative_repo_path(root, matrix_path),
         "matrixHash": file_hash(matrix_path),

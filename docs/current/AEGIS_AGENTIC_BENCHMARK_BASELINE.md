@@ -434,6 +434,26 @@ are not compatibility paths. An attempt with a sandbox failure or no
 machine-observed command/edit event is infrastructure-invalid and must never be
 scored as an agent outcome.
 
+### Provider tracks and model-agnostic edit observability
+
+Custom provider tracks (enabled through `AEGIS_BENCHMARK_CODEX_CONFIG` /
+`AEGIS_BENCHMARK_MODEL_CATALOG`) may opt into a frozen environment prompt note
+with `AEGIS_AGENTIC_BENCHMARK_PROMPT_NO_GIT_NOTE=1`. The note is appended to the
+frozen prompt of every case for both arms at batch preparation, recorded in the
+batch `promptPolicy`, and frozen by the batch digest. It states that the frozen
+workspace-write profile keeps git metadata read-only and that file edits should
+use the edit tool instead of shell redirection. It does not change the task
+statement, scoring contract, sandbox profile, or arm isolation; provider-track
+results remain model-specific and are not comparable to the published
+`gpt-5.6-sol` snapshot.
+
+The Codex event reducer classifies machine-observed shell file writes
+(`apply_patch` invocation, `>` / `>>` redirection to a workspace-relative path,
+`sed -i`, and `tee`) as `edit` events in addition to the built-in edit-tool
+events. This keeps the before-first-edit contract model-agnostic: hosts whose
+models edit through shell commands instead of the built-in edit tool are scored
+on the same observable evidence as models that use the edit tool directly.
+
 Batch preparation must freeze content identities for the resolved Codex
 launcher, its packaged native runtime, the audit `bwrap`, and the permission
 backend `bwrap` resolved from the direct client's frozen `PATH`, then re-check

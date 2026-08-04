@@ -258,6 +258,53 @@ class CodexEventReductionTest(unittest.TestCase):
         self.assertNotIn("implementation-rationale", output_only["events"][0]["tags"])
         self.assertIn("implementation-rationale", with_assistant["events"][1]["tags"])
 
+    def test_shell_file_writes_are_edit_events(self):
+        writes = (
+            "/bin/bash -lc \"cat > compat.py <<'EOF'\ndef display_name(payload):\n    return payload.get('name')\nEOF\ncat compat.py\"",
+            "/bin/bash -lc 'printf \"x\\n\" >> README.md'",
+            "/bin/bash -lc 'sed -i \"s/old/new/\" compat.py'",
+            "/bin/bash -lc \"apply_patch <<'PATCH'\n*** Update File: compat.py\n*** End of File\nPATCH\"",
+            "/bin/bash -lc 'echo new > notes.txt'",
+        )
+        for command in writes:
+            with self.subTest(command=command[:50]):
+                parsed = parse_codex_jsonl(json.dumps({"type": "item.completed", "item": {
+                    "type": "command_execution", "command": command,
+                }}))
+                self.assertEqual(parsed["events"][0]["toolKind"], "edit")
+
+    def test_non_writing_shell_commands_stay_shell_events(self):
+        reads = (
+            "/bin/bash -lc 'grep -rn legacy_name .'",
+            "/bin/bash -lc 'python3 test_compat.py'",
+            "/bin/bash -lc 'cat compat.py consumer.py test_compat.py'",
+            "/bin/bash -lc 'which apply_patch'",
+            "/bin/bash -lc 'touch marker.txt'",
+            "/bin/bash -lc 'echo x > /dev/null'",
+            "/bin/bash -lc 'git diff --stat'",
+        )
+        for command in reads:
+            with self.subTest(command=command[:50]):
+                parsed = parse_codex_jsonl(json.dumps({"type": "item.completed", "item": {
+                    "type": "command_execution", "command": command,
+                }}))
+                self.assertEqual(parsed["events"][0]["toolKind"], "shell")
+
+    def test_dependency_check_before_shell_edit_satisfies_order_contract(self):
+        raw = "\n".join(json.dumps(value) for value in (
+            {"type": "item.completed", "item": {
+                "type": "command_execution", "command": "grep -rn legacy_name .",
+            }},
+            {"type": "item.completed", "item": {
+                "type": "command_execution",
+                "command": "cat > compat.py <<'EOF'\ndef display_name(payload):\n    return payload.get('name')\nEOF",
+            }},
+        ))
+        parsed = parse_codex_jsonl(raw)
+        events = parsed["events"]
+        self.assertEqual(events[0]["tags"], ["dependency-check"])
+        self.assertEqual(events[1]["toolKind"], "edit")
+
 
 if __name__ == "__main__":
     unittest.main()

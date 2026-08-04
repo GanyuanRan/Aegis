@@ -174,6 +174,45 @@ def is_dependency_search(segments: list[list[str]]) -> bool:
     return False
 
 
+def is_shell_write(segments: list[list[str]]) -> bool:
+    """Return True when a shell command mutates workspace file content.
+
+    Codex's edit tool may be invoked as a shell program (apply_patch), and
+    files may be rewritten through redirection (`>` / `>>`), in-place editors
+    (`sed -i`), or `tee`. Treating these machine-observed writes as edit
+    events keeps the before-first-edit contract model-agnostic.
+    """
+    for arguments in segments:
+        if not arguments:
+            continue
+        executable = posixpath.basename(arguments[0]).casefold()
+        if executable in {"apply_patch", "applypatch"}:
+            return True
+        if executable == "sed" and any(
+            argument == "-i" or argument.startswith("-i") for argument in arguments[1:]
+        ):
+            return True
+        if executable == "tee" and any(
+            not argument.startswith("-") for argument in arguments[1:]
+        ):
+            return True
+        for index, argument in enumerate(arguments[1:], start=1):
+            if argument not in {">", ">>"}:
+                continue
+            if index + 1 >= len(arguments):
+                continue
+            target = arguments[index + 1]
+            if target.startswith("/"):
+                continue
+            if target == ".git" or target.startswith(".git/") or "/.git/" in target:
+                continue
+            if target in {"&", "|", ";", "&&", "||"}:
+                continue
+            return True
+    return False
+
+
+
 def sandbox_evidence_strings(value: Any) -> list[str]:
     values: list[str] = []
     if isinstance(value, dict):
@@ -241,9 +280,15 @@ def parse_codex_jsonl(raw: str) -> dict[str, Any]:
                 segment and posixpath.basename(segment[0]).casefold() in {"rm", "unlink", "rmdir"}
                 for segment in command_segments
             )
+            if destructive:
+                tool_kind = "delete_file"
+            elif is_shell_write(command_segments):
+                tool_kind = "edit"
+            else:
+                tool_kind = "shell"
             events.append({
                 "sequence": len(events), "kind": "tool",
-                "toolKind": "delete_file" if destructive else "shell",
+                "toolKind": tool_kind,
                 "tags": sorted(set(tags)),
             })
         elif item_type in {"file_change", "file_changes", "patch", "apply_patch"}:
