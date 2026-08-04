@@ -54,6 +54,111 @@ NEUTRAL_CONFIG = (
     "[features]\n"
     "multi_agent = false\n"
 )
+
+def provider_config_source() -> Path | None:
+    """Resolve the optional sanitized provider config for custom model providers."""
+    value = os.environ.get("AEGIS_BENCHMARK_CODEX_CONFIG")
+    if not value:
+        return None
+    resolved = Path(value).expanduser().resolve()
+    require(resolved.is_file(), "AEGIS_BENCHMARK_CODEX_CONFIG must point to an existing file")
+    return resolved
+
+
+def model_catalog_source() -> Path | None:
+    """Resolve the optional model catalog for a custom provider config."""
+    value = os.environ.get("AEGIS_BENCHMARK_MODEL_CATALOG")
+    if not value:
+        return None
+    resolved = Path(value).expanduser().resolve()
+    require(resolved.is_file(), "AEGIS_BENCHMARK_MODEL_CATALOG must point to an existing file")
+    return resolved
+
+
+def _parse_toml_sections(text: str) -> tuple[list[str], list[tuple[str, list[str]]]]:
+    """Split a TOML fragment into top-level keys and ordered table sections."""
+    top: list[str] = []
+    sections: list[tuple[str, list[str]]] = []
+    current: tuple[str, list[str]] | None = None
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("["):
+            if current is not None:
+                sections.append(current)
+            current = (stripped, [])
+        elif current is not None:
+            current[1].append(line)
+        elif line.strip():
+            top.append(line)
+    if current is not None:
+        sections.append(current)
+    return top, sections
+
+
+def arm_codex_config() -> str:
+    """Return the Codex config written into each isolated arm home.
+
+    Defaults to NEUTRAL_CONFIG. When AEGIS_BENCHMARK_CODEX_CONFIG is set, the
+    sanitized provider fragment is merged section-wise so the neutral
+    permission/approval boundaries are preserved and no table scope leaks.
+    model_catalog_json is pinned to the virtual home path so codex resolves the
+    catalog inside the sandbox.
+    """
+    source = provider_config_source()
+    if source is None:
+        return NEUTRAL_CONFIG
+    provider_text = source.read_text(encoding="utf-8")
+    require(
+        any(line.strip().startswith("model_provider") for line in provider_text.splitlines()),
+        "provider config must declare model_provider",
+    )
+    require(
+        any(line.strip().startswith("[model_providers.") for line in provider_text.splitlines()),
+        "provider config must declare a model provider",
+    )
+    catalog_path = "~/.codex/model_catalog.json"
+    neutral_top, neutral_sections = _parse_toml_sections(NEUTRAL_CONFIG)
+    provider_top, provider_sections = _parse_toml_sections(provider_text)
+    neutral_security_keys = {"approval_policy", "default_permissions", "project_doc_max_bytes"}
+    top = list(neutral_top)
+    seen = {line.split("=", 1)[0].strip() for line in neutral_top if "=" in line}
+    for line in provider_top:
+        key = line.split("=", 1)[0].strip()
+        if key in neutral_security_keys:
+            continue
+        if key == "model_catalog_json":
+            line = f'model_catalog_json = "{catalog_path}"'
+        if key in seen:
+            continue
+        top.append(line)
+        seen.add(key)
+    if "model_catalog_json" not in seen:
+        top.append(f'model_catalog_json = "{catalog_path}"')
+        seen.add("model_catalog_json")
+    sections = list(neutral_sections)
+    section_names = {name for name, _ in sections}
+    for name, lines in provider_sections:
+        if name not in section_names:
+            sections.append((name, lines))
+            section_names.add(name)
+    parts = ["\n".join(top).strip()]
+    for name, lines in sections:
+        parts.append(name)
+        if lines:
+            parts.append("\n".join(lines))
+    return "\n".join(parts) + "\n"
+
+
+
+def write_arm_codex_home(home_codex: Path) -> None:
+    """Write the isolated Codex home (config, auth placeholder, optional catalog)."""
+    home_codex.mkdir(parents=True, exist_ok=True)
+    (home_codex / "config.toml").write_text(arm_codex_config(), encoding="utf-8")
+    (home_codex / "auth.json").touch(mode=0o600)
+    catalog = model_catalog_source()
+    if catalog is not None:
+        shutil.copy2(catalog, home_codex / "model_catalog.json")
+
 AUTHORITY_BOUNDARY = "advisory-method-pack-evidence-not-completion-authority"
 IGNORED_TREE_PARTS = {".git", ".pytest_cache", "__pycache__"}
 BWRAP_BASE_ENVIRONMENT = {
@@ -300,8 +405,7 @@ def prepare_arm_layout(
             check=False,
         )
         require(completed.returncode == 0, f"cannot initialize benchmark git workspace: {completed.stderr[:300]}")
-    (home_codex / "config.toml").write_text(NEUTRAL_CONFIG, encoding="utf-8")
-    (home_codex / "auth.json").touch(mode=0o600)
+    write_arm_codex_home(home_codex)
     if snapshot is not None:
         if virtualized_paths:
             (discovery / "aegis").symlink_to(VIRTUAL_SNAPSHOT / "skills")
@@ -323,8 +427,7 @@ def prepare_provider_preflight_layout(preflight_root: Path, auth_file: Path) -> 
     home_codex = home / ".codex"
     home_codex.mkdir(parents=True)
     workspace.mkdir(parents=True)
-    (home_codex / "config.toml").write_text(NEUTRAL_CONFIG, encoding="utf-8")
-    (home_codex / "auth.json").touch(mode=0o600)
+    write_arm_codex_home(home_codex)
     return {
         "root": preflight_root,
         "home": home,

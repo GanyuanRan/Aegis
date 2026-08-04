@@ -33,7 +33,9 @@ from agentic_benchmark_isolation import (
     direct_codex_environment,
     hash_tree,
     network_policy_metadata,
+    model_catalog_source,
     prepare_arm_layout,
+    provider_config_source,
     prepare_distribution_snapshot,
     redact_proxy_output,
     remove_tmp_artifact_entry,
@@ -349,6 +351,33 @@ def verify_batch(batch: dict[str, Any], root: Path, output_root: Path) -> ProxyP
     require(file_hash(output_root / batch["frozenManifestPath"]) == batch["manifestHash"], "frozen case manifest drifted")
     for artifact in batch["harnessArtifacts"]:
         require(file_hash(root / artifact["path"]) == artifact["hash"], f"benchmark harness changed after prepare: {artifact['path']}")
+    provider_meta = batch.get("providerConfig")
+    if provider_meta is None:
+        require(
+            provider_config_source() is None and model_catalog_source() is None,
+            "provider config environment was set after batch preparation",
+        )
+    else:
+        require(
+            provider_config_source() is not None and model_catalog_source() is not None,
+            "provider config environment is required to resume this batch",
+        )
+        require(
+            file_hash(output_root / provider_meta["frozenConfigPath"]) == provider_meta["configSha256"],
+            "frozen provider config drifted",
+        )
+        require(
+            file_hash(output_root / provider_meta["frozenCatalogPath"]) == provider_meta["catalogSha256"],
+            "frozen model catalog drifted",
+        )
+        require(
+            file_hash(provider_config_source()) == provider_meta["configSha256"],
+            "provider config environment drifted from the frozen batch",
+        )
+        require(
+            file_hash(model_catalog_source()) == provider_meta["catalogSha256"],
+            "model catalog environment drifted from the frozen batch",
+        )
     for frozen in batch["frozenCases"]:
         require(file_hash(output_root / frozen["frozenPromptPath"]) == frozen["promptHash"], f"frozen prompt drifted: {frozen['caseId']}")
         require(hash_tree(output_root / frozen["frozenSeedProjectPath"]) == frozen["seedProjectHash"], f"frozen seed project drifted: {frozen['caseId']}")
@@ -394,6 +423,12 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
     snapshot = prepare_distribution_snapshot(root, output_root / "distribution-snapshot")
     frozen_contracts = output_root / "frozen-contracts"
     frozen_contracts.mkdir()
+    provider_source = provider_config_source()
+    catalog_source = model_catalog_source()
+    if provider_source is not None:
+        require(catalog_source is not None, "AEGIS_BENCHMARK_MODEL_CATALOG is required when AEGIS_BENCHMARK_CODEX_CONFIG is set")
+        shutil.copy2(provider_source, frozen_contracts / "provider-config.toml")
+        shutil.copy2(catalog_source, frozen_contracts / "model-catalog.json")
     shutil.copy2(matrix_path, frozen_contracts / "matrix.json")
     shutil.copy2(manifest_path, frozen_contracts / "cases.json")
     codex_executable = resolve_host_executable(
@@ -435,6 +470,16 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
         **profile_fields(profile),
         "modelPolicy": model_policy,
         "networkPolicy": network_policy_metadata(proxy_policy),
+        "providerConfig": (
+            {
+                "frozenConfigPath": "frozen-contracts/provider-config.toml",
+                "configSha256": file_hash(provider_source),
+                "frozenCatalogPath": "frozen-contracts/model-catalog.json",
+                "catalogSha256": file_hash(catalog_source),
+            }
+            if provider_source is not None
+            else None
+        ),
         "toolPolicy": {
             "codexSandbox": "permission-profile-workspace",
             "codexSandboxBackend": "permission-profile-bwrap",

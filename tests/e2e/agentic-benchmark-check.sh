@@ -927,6 +927,54 @@ else
     fail "frozen batch input drift emits the expected diagnostic"
 fi
 
+PROVIDER_TMP="$(mktemp -d "$REPO_ROOT/.tmp/provider-config-test.XXXXXX")"
+cat > "$PROVIDER_TMP/provider-config.toml" <<'EOF'
+model_provider = "custom"
+model_catalog_json = "/tmp/stale-model-catalog.json"
+model = "DeepSeek-V4-Flash-0731"
+model_reasoning_effort = "max"
+
+[model_providers]
+[model_providers.custom]
+name = "custom"
+wire_api = "responses"
+requires_openai_auth = false
+base_url = "https://example.invalid/api/v1"
+experimental_bearer_token = "QC-benchmark-test-token"
+EOF
+cat > "$PROVIDER_TMP/model-catalog.json" <<'EOF'
+{"models": [{"slug": "DeepSeek-V4-Flash-0731", "supported_reasoning_levels": [{"effort": "max"}]}]}
+EOF
+if AEGIS_BENCHMARK_CODEX_CONFIG="$PROVIDER_TMP/provider-config.toml" \
+   AEGIS_BENCHMARK_MODEL_CATALOG="$PROVIDER_TMP/model-catalog.json" \
+   "${PYTHON_CMD[@]}" - "$PROVIDER_TMP" <<'PY'
+import os
+import sys
+from pathlib import Path
+
+sys.path.insert(0, "tests/helpers")
+
+import agentic_benchmark_isolation as isolation
+
+root = Path(sys.argv[1])
+config = isolation.arm_codex_config()
+assert 'approval_policy = "never"' in config, "neutral config must be preserved"
+assert "[model_providers.custom]" in config, "provider config must be merged"
+assert 'model_catalog_json = "~/.codex/model_catalog.json"' in config, "catalog path must be HOME-relative"
+home_codex = root / "home" / ".codex"
+isolation.write_arm_codex_home(home_codex)
+assert (home_codex / "config.toml").is_file()
+assert (home_codex / "model_catalog.json").is_file()
+assert (home_codex / "model_catalog.json").read_text(encoding="utf-8").strip() == '{"models": [{"slug": "DeepSeek-V4-Flash-0731", "supported_reasoning_levels": [{"effort": "max"}]}]}'
+print("  [PASS] custom provider config merges into isolated arm homes")
+PY
+then
+    :
+else
+    fail "custom provider config merge into isolated arm homes"
+fi
+rm -rf -- "$PROVIDER_TMP"
+
 if (( failures > 0 )); then
     echo ""
     echo "Agentic benchmark check failed with $failures issue(s)."
