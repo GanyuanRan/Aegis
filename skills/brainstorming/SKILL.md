@@ -63,7 +63,7 @@ Pace: deep (default) | fast (user-requested)
 
 ## Route Away / Doc Necessity Gate
 
-Do not force this workflow onto low-complexity or mechanical work. A tiny
+Do not force this workflow onto low-complexity work. A tiny
 wording edit, single-owner bug fix, simple config/status question, local
 utility change, or mechanical multi-file change can proceed through concise
 intent, baseline check, TDD/debugging, and verification without any new
