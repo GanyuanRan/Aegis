@@ -35,43 +35,43 @@
     <a href="docs/current/AEGIS_FAST_TRACK_PLAYBOOK_ZH.md">速通秘籍</a>
 </p>
 
+> **Plan before you edit. Prove before you say "done". Keep simple work cheap.**
+
 ## Why Aegis
 
-Aegis is a **Superpowers upgrade** for teams using AI coding agents on real
-software work. It keeps the useful idea of composable skills, then adds:
+Aegis is a method pack for teams using AI coding agents on real software work.
+It makes agents:
 
-- baseline-first planning before risky changes
-- evidence before completion claims
-- repair track plus retirement track for bugs, fallbacks, and compatibility paths
-- workflow quality guardrails so simple tasks stay cheap
-- portable method-pack skills across skill-aware hosts
+- **plan before they edit** — baseline-first planning before risky changes
+- **prove before they claim "done"** — evidence before completion claims
+- **fix forward without leaving ghosts** — repair track plus retirement track
+  for bugs, fallbacks, and compatibility paths
+- **stay cheap on simple work** — workflow quality guardrails
+- **move between hosts** — portable method-pack skills across skill-aware hosts
 
 Aegis is useful when agents otherwise start coding before the goal, owner,
 architecture boundary, or verification path is clear.
 
 ## Measured Agentic Benchmark
 
-A frozen held-out A/B benchmark (Aegis 2.5.5, 2026-07-31) used the same
-Codex client, requested
-`gpt-5.6-sol` model, `xhigh` reasoning effort, prompts, projects, and tool
-policy in both arms; only the Aegis method-pack projection differed. Across 120
-valid runs on 20 cases, the observable contract pass rate rose from **60% to
-90% (+30 pp)**, while unsafe outcomes fell from **11.67% to 5%**.
+A frozen held-out A/B benchmark (Aegis 2.5.5, 2026-07-31) used the same Codex
+client, `gpt-5.6-sol` model, `xhigh` effort, prompts, projects, and tool policy
+in both arms; only the Aegis projection differed. Across 120 valid runs on 20
+cases: contract pass rate **60% → 90% (+30 pp)**; unsafe outcomes **11.67% → 5%**.
 
 ![Aegis agentic benchmark: with and without Aegis](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.svg)
 
-This is bounded advisory evidence, not a universal quality, runtime-authority,
-or completion-authority claim. Full details and limitations remain in the
-published report and methodology.
+Bounded advisory evidence, not a universal-quality or completion-authority
+claim; full details in the published report and methodology.
 
 Measurement status: this snapshot covers Aegis 2.5.5. A re-measurement of the current release is pending and will be published here only after a validated held-out batch completes; numbers from older snapshots must not be read as evidence for newer releases.
 
-[Sanitized JSON](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.json)
-· [English table](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.en.md)
-· [中文表格](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.zh-CN.md)
-· [Methodology and evidence boundary](docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md)
+[Sanitized JSON](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.json) · [English table](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.en.md) · [中文表格](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.zh-CN.md) · [Methodology and evidence boundary](docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md)
 
 ## Quick Install
+
+New here? The fastest start is one prompt to your agent — the full
+install-and-verify flow is below.
 
 Give this prompt to your AI coding agent:
 
@@ -232,6 +232,12 @@ Read:
 - [Release checklist](docs/current/AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md)
 - [Current authority map](docs/current/README.md)
 - [Contributing](CONTRIBUTING.md)
+
+## Community & Extending
+
+- Feedback and discussion: [GitHub Discussions](https://github.com/GanyuanRan/Aegis/discussions) · [Issues](https://github.com/GanyuanRan/Aegis/issues) · [LINUX DO](https://linux.do/t/topic/2108966/20) · [DEV.to](https://dev.to/_879c5a0279451d52e43c3/aegis-a-method-pack-for-more-reliable-ai-coding-agents-1gfm)
+- Extend Aegis: write your own skill with `aegis:writing-skills`; see the [Workflow Guide](docs/current/AEGIS_WORKFLOW_GUIDE.md).
+- Follow along: [RELEASE-NOTES.md](RELEASE-NOTES.md) · [Releases](https://github.com/GanyuanRan/Aegis/releases)
 
 ## Relationship To Superpowers
 

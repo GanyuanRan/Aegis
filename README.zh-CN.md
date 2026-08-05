@@ -35,40 +35,36 @@
     <a href="docs/current/AEGIS_FAST_TRACK_PLAYBOOK.md">Fast-Track Playbook</a>
 </p>
 
+> **动手前先规划，说“完成”前先给证据，简单任务保持轻量。**
+
 ## 为什么需要 Aegis
 
-Aegis 是面向真实软件工作的 **Superpowers 升级版**。它保留 composable
-skills 的优点，并进一步加入：
+Aegis 是面向真实软件工作的方法包，让 agent：
 
-- baseline first：高风险改动前先读当前项目事实
-- evidence before completion：没有 fresh verification evidence，不声明完成
-- repair track + retirement track：修复问题时同步说明旧路径保留或退役
-- 工作流质量（Workflow Quality）护栏：简单任务保持轻量，风险升高才展开
-- 多宿主可移植 method-pack skills
+- **动手前先规划**——baseline-first：高风险改动前先读当前项目事实
+- **说“完成”前先给证据**——没有 fresh verification evidence，不声明完成
+- **修复时不留下“幽灵路径”**——repair track + retirement track：修复问题时同步说明旧路径保留或退役
+- **简单任务保持轻量**——工作流质量（Workflow Quality）护栏，风险升高才展开
+- **多宿主可移植**——多宿主 method-pack skills
 
 当 agent 容易在目标、owner、架构边界或验证路径不清楚时就开始写代码，Aegis
 能把工作拉回更稳的工程节奏。
 
 ## 实测 Agentic Benchmark
 
-本次冻结的 held-out A/B benchmark（Aegis 2.5.5，2026-07-31）在两组中使用相同的 Codex 客户端、请求模型
-`gpt-5.6-sol`、`xhigh` 推理档位、prompt、项目和工具策略；唯一差异是是否投影
-Aegis method pack。在 20 个案例、120 次有效运行中，可观察合同通过率从 **60%
-提升到 90%（+30 个百分点）**，不安全结果率从 **11.67% 降到 5%**。
+本次冻结的 held-out A/B benchmark（Aegis 2.5.5，2026-07-31）在两组中使用相同的 Codex 客户端、`gpt-5.6-sol` 模型、`xhigh` 推理档位、prompt、项目和工具策略；唯一差异是是否投影 Aegis method pack。在 20 个案例、120 次有效运行中：合同通过率 **60% → 90%（+30 个百分点）**，不安全结果率 **11.67% → 5%**。
 
 ![Aegis Agentic Benchmark 使用前后对比](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.svg)
 
-这是有界、建议性证据，不构成普遍质量、运行时权威或完成权威声明。完整结果、
-限制和方法仍保留在已发布报告与方法边界中。
+有界、建议性证据，不构成普遍质量或完成权威声明；完整结果与方法见已发布报告。
 
 测量状态：该快照覆盖 Aegis 2.5.5。当前版本的重新测量尚未完成，只有在经过验证的 held-out batch 完成后才会在此发布新结果；旧快照的数字不应被当作新版本的证据。
 
-[脱敏 JSON](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.json)
-· [中文表格](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.zh-CN.md)
-· [English table](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.en.md)
-· [方法与证据边界](docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md)
+[脱敏 JSON](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.json) · [中文表格](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.zh-CN.md) · [English table](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.en.md) · [方法与证据边界](docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md)
 
 ## 极简安装
+
+第一次使用？最快路径是把下面这段话交给你的 agent，完整安装与验证流程就在其中。
 
 把下面这段话交给你的 AI 编程 Agent：
 
@@ -215,6 +211,12 @@ bash tests/e2e/layer1-fast-check.sh --host-profile none
 - [发布检查清单](docs/current/AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md)
 - [当前 authority map](docs/current/README.md)
 - [贡献说明](CONTRIBUTING.md)
+
+## 社区与扩展
+
+- 反馈与讨论：[GitHub Discussions](https://github.com/GanyuanRan/Aegis/discussions) · [Issues](https://github.com/GanyuanRan/Aegis/issues) · [LINUX DO](https://linux.do/t/topic/2108966/20) · [DEV.to](https://dev.to/_879c5a0279451d52e43c3/aegis-a-method-pack-for-more-reliable-ai-coding-agents-1gfm)
+- 扩展 Aegis：使用 aegis:writing-skills 写自己的 skill；参见[工作流指南](docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md)。
+- 关注发布：[RELEASE-NOTES.md](RELEASE-NOTES.md) · [Releases](https://github.com/GanyuanRan/Aegis/releases)
 
 ## 与 Superpowers 的关系
 
