@@ -314,6 +314,8 @@ def _terminal_transport_count(attempts: list[dict[str, Any]]) -> int:
 
 
 def _wave_stop_reason(batch: dict[str, Any], wave_number: int, wave: list[dict[str, Any]]) -> str | None:
+    if batch.get("transportRetry") is True:
+        return None
     transport_failures = _terminal_transport_count(wave)
     if wave_number == 1 and transport_failures:
         return "paired-canary-transport-failure"

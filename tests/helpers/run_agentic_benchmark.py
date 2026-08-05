@@ -258,6 +258,15 @@ def prompt_no_git_note_enabled() -> bool:
     return os.environ.get("AEGIS_AGENTIC_BENCHMARK_PROMPT_NO_GIT_NOTE") == "1"
 
 
+def transport_retry_enabled() -> bool:
+    """Opt-in scheduler semantics: retry transport-invalid attempts instead of
+    stopping the batch at the first paired-canary or circuit-open condition.
+
+    Provider tracks may hit transient network failures; with this opt-in the
+    wall-clock budget and paid-attempt ceiling become the binding limits."""
+    return os.environ.get("AEGIS_AGENTIC_BENCHMARK_TRANSPORT_RETRY") == "1"
+
+
 def freeze_case(root: Path, output_root: Path, case: dict[str, Any]) -> dict[str, Any]:
     prompt = root / case["promptPath"]
     project = root / case["seedProjectPath"]
@@ -511,6 +520,7 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
             "noGitWriteNote": prompt_no_git_note_enabled(),
             "noteText": NO_GIT_WRITE_PROMPT_NOTE if prompt_no_git_note_enabled() else None,
         },
+        "transportRetry": transport_retry_enabled(),
         "matrixPath": relative_repo_path(root, matrix_path),
         "matrixHash": file_hash(matrix_path),
         "frozenMatrixPath": "frozen-contracts/matrix.json",

@@ -165,6 +165,22 @@ class SchedulerTest(unittest.TestCase):
         self.assertEqual(len(state["attempts"]), 2)
         self.assertEqual(state["scheduler"]["reason"], "paired-canary-transport-failure")
 
+    def test_transport_retry_opt_in_retries_canary_transport_failure(self):
+        frozen = batch(case_count=3, max_attempts=8)
+        frozen["transportRetry"] = True
+        calls = []
+
+        def executor(_target, attempt_number, _timeout_seconds):
+            calls.append(attempt_number)
+            if attempt_number in (1, 2):
+                return infrastructure()
+            return valid()
+
+        state = self.execute(frozen, ledger(), executor)
+        self.assertNotEqual(state["scheduler"]["reason"], "paired-canary-transport-failure")
+        self.assertGreaterEqual(len(state["attempts"]), 4)
+        self.assertEqual(state["scheduler"]["status"], "complete")
+
     def test_infrastructure_error_type_is_required_allowlisted_and_infrastructure_only(self):
         for error_type in sorted(scheduler.INFRASTRUCTURE_ERROR_TYPES):
             with self.subTest(accepted=error_type):

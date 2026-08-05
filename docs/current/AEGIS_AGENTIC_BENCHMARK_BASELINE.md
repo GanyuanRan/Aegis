@@ -447,7 +447,13 @@ workspace-write profile keeps git metadata read-only and that file edits should
 use the edit tool instead of shell redirection. It does not change the task
 statement, scoring contract, sandbox profile, or arm isolation; provider-track
 results remain model-specific and are not comparable to the published
-`gpt-5.6-sol` snapshot.
+`gpt-5.6-sol` snapshot. Provider tracks may also opt into
+`AEGIS_AGENTIC_BENCHMARK_TRANSPORT_RETRY=1`, which records `transportRetry` in
+the frozen batch and makes the wall-clock budget and paid-attempt ceiling the
+binding limits instead of stopping the batch at the first paired-canary or
+circuit-open transport failure. This exists because custom provider networks
+can drop streams transiently; without it, one wave-1 transport failure aborts
+the whole batch.
 
 The Codex event reducer classifies machine-observed shell file writes
 (`apply_patch` invocation, `>` / `>>` redirection to a workspace-relative path,

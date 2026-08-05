@@ -1286,6 +1286,14 @@ class PromptPolicyTest(unittest.TestCase):
                 del os.environ["AEGIS_AGENTIC_BENCHMARK_PROMPT_NO_GIT_NOTE"]
             self.assertFalse(benchmark_runner.prompt_no_git_note_enabled())
 
+    def test_transport_retry_marker_matches_env(self):
+        with mock.patch.dict(os.environ, {"AEGIS_AGENTIC_BENCHMARK_TRANSPORT_RETRY": "1"}, clear=False):
+            self.assertTrue(benchmark_runner.transport_retry_enabled())
+        with mock.patch.dict(os.environ, {}, clear=False):
+            if "AEGIS_AGENTIC_BENCHMARK_TRANSPORT_RETRY" in os.environ:
+                del os.environ["AEGIS_AGENTIC_BENCHMARK_TRANSPORT_RETRY"]
+            self.assertFalse(benchmark_runner.transport_retry_enabled())
+
 
 if __name__ == "__main__":
     unittest.main()
