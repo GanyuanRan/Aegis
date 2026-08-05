@@ -317,6 +317,9 @@ def popen_with_independent_memfd_offsets(
             os.close(descriptor)
 
 
+MAX_AUTH_PAYLOAD_BYTES = 1_048_576
+
+
 def popen_with_independent_auth_link(
     command: list[str],
     *,
@@ -324,7 +327,14 @@ def popen_with_independent_auth_link(
     auth_link: Path,
     **kwargs: Any,
 ) -> subprocess.Popen[str]:
-    """Expose a parent-held sealed auth FD by path without inheriting it."""
+    """Materialize the parent-held sealed auth content without inheriting it.
+
+    Codex CLI 0.146.0 stalls for ~80-100 seconds per startup when auth.json is
+    a symlink into /proc (inotify/auth reload path), which pushes provider
+    attempts past the per-attempt timeout. The sealed descriptor content is
+    therefore written once as a private regular file in the isolated home; the
+    descriptor itself is never inherited and remains parent-held.
+    """
 
     if "pass_fds" in kwargs or "close_fds" in kwargs:
         raise TypeError("auth-link process spawn owns descriptor inheritance")
@@ -345,8 +355,20 @@ def popen_with_independent_auth_link(
         raise SystemExit("sealed auth descriptor is unavailable") from exc
     if source_offset != 0:
         raise SystemExit("sealed auth descriptor offset drifted")
+    try:
+        payload_size = os.fstat(source_descriptor).st_size
+    except OSError as exc:
+        raise SystemExit("sealed auth descriptor size is unavailable") from exc
+    if payload_size <= 0 or payload_size > MAX_AUTH_PAYLOAD_BYTES:
+        raise SystemExit("sealed auth descriptor size is out of bounds")
+    payload = os.pread(source_descriptor, payload_size, 0)
     auth_link.unlink()
-    auth_link.symlink_to(f"/proc/{os.getpid()}/fd/{source_descriptor}")
+    descriptor = os.open(auth_link, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    try:
+        with os.fdopen(descriptor, "wb", closefd=True) as handle:
+            handle.write(payload)
+    finally:
+        os.chmod(auth_link, 0o600)
     return subprocess.Popen(command, close_fds=True, **kwargs)
 
 
@@ -613,6 +635,24 @@ def finalize_confidential_artifacts(
     return exposure
 
 
+def _remove_stage_isolated_homes(stage_root: Path, remove_directory: DirectoryRemover) -> None:
+    """Remove disposable isolated layout homes before scanning a stage tree.
+
+    Live client auth is materialized as a private regular `auth.json` inside
+    each isolated layout home; the confidential scan must not report that
+    disposable secret file as an artifact exposure. This mirrors the attempt
+    path, which removes the isolated home before scanning the attempt root.
+    """
+    if not stage_root.is_dir() or stage_root.is_symlink():
+        return
+    for child in sorted(stage_root.iterdir()):
+        if not child.is_dir() or child.is_symlink():
+            continue
+        home = child / "home"
+        if home.is_dir() and not home.is_symlink():
+            remove_directory(home)
+
+
 def finalize_confidential_stage(
     stage_root: Path,
     proxy_policy: ProxyPolicy,
@@ -622,6 +662,7 @@ def finalize_confidential_stage(
     """Scan a disposable writable stage tree, then remove it on every path."""
 
     try:
+        _remove_stage_isolated_homes(stage_root, remove_directory)
         exposure = scrub_confidential_artifact_tree(stage_root, proxy_policy, credential_policy)
     except (OSError, SystemExit) as exc:
         try:

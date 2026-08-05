@@ -416,7 +416,7 @@ class CommandBoundaryTest(unittest.TestCase):
         finally:
             frozen.close()
 
-    def test_direct_client_auth_link_uses_parent_held_offset_zero_descriptor(self):
+    def test_direct_client_auth_link_materializes_sealed_auth_as_private_file(self):
         self.auth.write_text('{"OPENAI_API_KEY":"abc"}', encoding="utf-8")
         frozen = freeze_auth_file(self.auth)
         auth_link = self.scratch / "direct-home/.codex/auth.json"
@@ -429,10 +429,9 @@ class CommandBoundaryTest(unittest.TestCase):
                 )
             self.assertNotIn("pass_fds", popen.call_args.kwargs)
             self.assertIs(popen.call_args.kwargs["close_fds"], True)
-            self.assertEqual(
-                auth_link.readlink(),
-                Path(f"/proc/{os.getpid()}/fd/{frozen.descriptor}"),
-            )
+            self.assertFalse(auth_link.is_symlink())
+            self.assertEqual(auth_link.read_text(encoding="utf-8"), '{"OPENAI_API_KEY":"abc"}')
+            self.assertEqual(auth_link.stat().st_mode & 0o777, 0o600)
             self.assertEqual(os.lseek(frozen.descriptor, 0, os.SEEK_CUR), 0)
         finally:
             frozen.close()
@@ -1047,6 +1046,52 @@ class SanitizedPreflightTest(unittest.TestCase):
         )
         self.assertEqual(int(isolation_group.strip()), os.getpgrp())
         self.assertEqual(int(preflight.stdout.strip()), os.getpgrp())
+
+    def test_finalize_confidential_stage_removes_isolated_homes_before_scan(self):
+        import shutil
+        import tempfile
+        from agentic_benchmark_provider_preflight import CredentialPolicy, finalize_confidential_stage, resolve_proxy_policy
+        stage = Path(tempfile.mkdtemp(prefix="agentic-stage-cleanup-"))
+        try:
+            home_codex = stage / "baseline-no-aegis/home/.codex"
+            home_codex.mkdir(parents=True)
+            (home_codex / "auth.json").write_text('{"OPENAI_API_KEY":"abc"}', encoding="utf-8")
+            (stage / "baseline-no-aegis/workspace/notes.txt").parent.mkdir(parents=True)
+            (stage / "baseline-no-aegis/workspace/notes.txt").write_text("benign", encoding="utf-8")
+            policy = CredentialPolicy(("OPENAI_API_KEY", "abc"))
+            exposure = finalize_confidential_stage(
+                stage,
+                resolve_proxy_policy({}),
+                policy,
+                lambda path: shutil.rmtree(path),
+            )
+            self.assertIsNone(exposure)
+            self.assertFalse(stage.exists())
+        finally:
+            if stage.exists():
+                shutil.rmtree(stage)
+
+    def test_finalize_confidential_stage_removes_each_arm_home(self):
+        import shutil
+        import tempfile
+        from agentic_benchmark_provider_preflight import CredentialPolicy, finalize_confidential_stage, resolve_proxy_policy
+        stage = Path(tempfile.mkdtemp(prefix="agentic-stage-cleanup-"))
+        try:
+            for arm in ("baseline-no-aegis", "aegis-auto"):
+                home_codex = stage / f"{arm}/home/.codex"
+                home_codex.mkdir(parents=True)
+                (home_codex / "auth.json").write_text('{"OPENAI_API_KEY":"abc"}', encoding="utf-8")
+            exposure = finalize_confidential_stage(
+                stage,
+                resolve_proxy_policy({}),
+                CredentialPolicy(("OPENAI_API_KEY", "abc")),
+                lambda path: shutil.rmtree(path),
+            )
+            self.assertIsNone(exposure)
+            self.assertFalse(stage.exists())
+        finally:
+            if stage.exists():
+                shutil.rmtree(stage)
 
 
 if __name__ == "__main__":
