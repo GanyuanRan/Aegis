@@ -79,7 +79,10 @@ The helper owns file shape, ADR numbering, supersession markers, and
 ADR gate passed, or whether baseline sync is semantically sufficient.
 
 If the ADR gate or owner-surface decision says `skip`, do not create or amend
-ADR files just because the helper exists.
+ADR files just because the helper exists. An ADR signal in a design/plan is a
+note for later completion, not an ADR file. Create/amend/supersede an ADR only
+for an executed durable decision; if an existing ADR already covers the
+decision surface, amend it instead of creating a sibling.
 
 ## Baseline Sync Closure
 

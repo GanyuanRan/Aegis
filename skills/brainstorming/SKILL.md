@@ -61,13 +61,24 @@ Pace: deep (default) | fast (user-requested)
 4. End when the user says to stop, defer, or that the questions are sufficient. Summarize confirmed decisions, assumptions, unresolved questions, and the next optional step. That summary does not grant completion authority.
 5. If the user asks to proceed after the interview, return to the normal brainstorming design gate. A design/spec still needs the required approval before planning or implementation.
 
-## Route Away When It Is Small
+## Route Away / Doc Necessity Gate
 
-Do not force this workflow onto low-complexity work. A tiny wording edit,
-single-owner bug fix, simple config/status question, or local utility change
-can proceed through concise intent, baseline check, TDD/debugging, and
-verification. If uncertainty or impact grows, escalate back here and write the
-smallest stabilizing spec.
+Do not force this workflow onto low-complexity or mechanical work. A tiny
+wording edit, single-owner bug fix, simple config/status question, local
+utility change, or mechanical multi-file change can proceed through concise
+intent, baseline check, TDD/debugging, and verification without any new
+document. Run the Doc Necessity Gate before writing any spec, plan, ADR, or
+baseline artifact:
+
+1. Does an existing spec/plan/ADR/baseline already cover this change surface?
+   -> Update that owner document in place; never create a sibling document.
+2. Is the surface durable/irreversible (schema, public API, owner, dependency
+   direction, migration, compat-path retirement), cross-session/cross-person
+   handoff, approval-gated, or authority-required?
+   -> Yes: write the smallest artifact for that surface (see Documentation).
+   -> No: write no document; keep compact drafts in-session.
+3. Re-check at edit time and at closeout; escalate to the smallest stabilizing
+   spec if uncertainty or impact grows.
 
 ## Checklist
 
@@ -82,7 +93,7 @@ You MUST create a task for each of these items and complete them in order:
 5. **Run existence check when adding new surfaces** — only if an approach adds a new owner, skill, artifact, adapter, fallback, workflow step, or benchmark metric
 6. **Propose 2-3 approaches** — with trade-offs and your recommendation
 7. **Present design** — in sections scaled to complexity, get user approval where required
-8. **Write spec artifact** — save a Spec Brief or Design Spec under `docs/aegis/specs/` when persistent requirements are needed
+8. **Write spec artifact** — only after the Doc Necessity Gate passes and no existing owner spec/plan covers the surface; if covered, update that document instead of creating a sibling
 9. **Spec self-review** — check for placeholders, contradictions, ambiguity, scope, boundary
 10. **User reviews written spec** — ask user to review before proceeding
 11. **Transition to implementation** — invoke writing-plans skill (terminal state)
@@ -299,7 +310,9 @@ create accepted architecture memory from unexecuted ideas.
    - Design Spec: `docs/aegis/specs/YYYY-MM-DD-<topic>-design.md` for high
      complexity, architecture, contract, migration, cross-module, or ambiguous
      behavior requiring user review.
-   Specs always go to `specs/` — never to `work/`.
+   Specs always go to `specs/` — never to `work/`. `docs/aegis/work/`
+   holds session-level drafts, not project documents; only promote a draft to
+   `specs/` or `plans/` when the Doc Necessity Gate passes.
 
 3. **Update INDEX.md:**
    Prefer configured Aegis workspace support: `python <aegis-workspace-helper> append-index --root
@@ -309,6 +322,9 @@ create accepted architecture memory from unexecuted ideas.
    After the append, run `python <aegis-workspace-helper> check --root
    <target-project-root>` when configured workspace support is available. This validates
    structure and index coverage only; it does not grant completion authority.
+   INDEX bookkeeping: creating a document registers it; updating an existing
+   document does not change the index; superseding or deleting a document
+   updates the index.
 
 4. Commit the design document to git.
 
@@ -317,6 +333,9 @@ create accepted architecture memory from unexecuted ideas.
    when they materially shaped the design.
 
 6. Record explicit non-goals and compatibility boundaries so the later implementation plan does not drift.
+7. Cross-repo changes: decide per change surface per repo; a durable
+   cross-repo contract is recorded as an ADR in the owning repo, with the other
+   side carrying only its local impact (mirror relationship, no duplication).
 
 **Spec Self-Review:**
 After writing the spec document, look at it with fresh eyes:

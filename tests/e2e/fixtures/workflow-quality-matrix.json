@@ -1049,6 +1049,28 @@
       "workspacePolicy": "no-workspace",
       "expectedArtifacts": [],
       "verificationSignal": "git-diff-check-or-lint-readback-without-anti-entropy"
+    },
+    {
+      "id": "mechanical-change-updates-existing-spec-no-sibling",
+      "prompt": "This change stays inside the approved spec's scope. Update the affected sections of the existing spec in place; do not create a new spec or plan document.",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": ["writing-plans"],
+      "mustNotDo": ["create-sibling-spec-when-owner-spec-exists", "create-new-plan-for-micro-slice-without-trigger", "record-unexecuted-ideas-as-accepted-memory"],
+      "expectedOutputShape": "doc-necessity-gate-update-existing-owner-doc",
+      "workspacePolicy": "reuse-parent-plan-and-workstream-when-no-new-durable-boundary",
+      "expectedArtifacts": [],
+      "verificationSignal": "updated-existing-owner-spec-in-place-and-index-unchanged"
+    },
+    {
+      "id": "mechanical-multi-file-change-writes-no-docs",
+      "prompt": "Rename a local variable across three files in one module; no contract or API change. Implement and verify without creating spec, plan, or ADR documents.",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["force-design-spec", "create-project-workspace-records", "create-plan-doc-for-mechanical-task", "create-new-doc-without-doc-necessity-gate"],
+      "expectedOutputShape": "short-change-summary-and-verification",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "git-diff-check-or-targeted-readback"
     }
   ],
   "compactOutputContracts": {
