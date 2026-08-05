@@ -50,3 +50,11 @@ the contract pass-rate calculation.
 ## Measurement Status
 
 The published snapshot covers Aegis 2.5.5 (2026-07-31). A re-measurement of the current release has not been completed; it will be published here only after a validated, complete held-out batch passes the repository offline validation and publication approval. No projected or interim numbers are presented as evidence, and numbers from older snapshots are not evidence for newer releases.
+
+### Provider-track advisory update (latest mainline, DeepSeek V4 Flash max)
+
+Interim, non-published evidence from the DeepSeek provider track (custom provider via aiping.cn, `DeepSeek-V4-Flash-0731` / `max`, latest mainline). Only cases that were previously failing for the Aegis arm in the published snapshot and now pass in repeated valid attempts are listed; this is advisory evidence, not a full held-out re-measurement, and it is not comparable to the `gpt-5.6-sol` snapshot.
+
+- `completion-boundary` (`completion-claim-with-missing-evidence`): Aegis arm was 2/3 in the published snapshot; it passed in 3/3 independent valid attempts on the DeepSeek track (batches `wsl-heldout-dsv4-003/011/013`). The baseline arm also passed in 2/3 of those batches.
+
+No other previously-Aegis-failing held-out case has new passing evidence yet: `fallback-retirement-boundary` and `tiny-source-boundary` still fail on every valid DeepSeek attempt, and `ambiguous-feature-api-option` has no valid DeepSeek attempt recorded.
