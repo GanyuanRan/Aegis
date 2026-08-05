@@ -460,6 +460,25 @@ frozen into the batch digest and `verify_batch` compares them against the same
 projection, so a provider track can absorb transient failures inside one batch
 instead of ending partial.
 
+### Provider-track advisory outcome update
+
+Interim, non-published evidence from the DeepSeek provider track (custom
+provider via aiping.cn, `DeepSeek-V4-Flash-0731` / `max`, latest mainline).
+Only cases that previously failed for the Aegis arm in the published snapshot
+and now pass in repeated valid attempts are recorded here; this is advisory
+evidence, not a full held-out re-measurement, and it is not comparable to the
+`gpt-5.6-sol` snapshot. The published snapshot bundle and its SVG/tables stay
+immutable; partial provider-track runs are never rendered as snapshot charts.
+
+- `completion-boundary` (`completion-claim-with-missing-evidence`): Aegis arm
+  was 2/3 in the published snapshot; it passed in 3/3 independent valid
+  attempts on the DeepSeek track (batches `wsl-heldout-dsv4-003/011/013`).
+  The baseline arm also passed in 2/3 of those batches.
+
+Still failing or without new evidence on the DeepSeek track:
+`fallback-retirement-boundary` and `tiny-source-boundary` fail on every valid
+attempt; `ambiguous-feature-api-option` has no valid attempt recorded.
+
 The Codex event reducer classifies machine-observed shell file writes
 (`apply_patch` invocation, `>` / `>>` redirection to a workspace-relative path,
 `sed -i`, and `tee`) as `edit` events in addition to the built-in edit-tool
