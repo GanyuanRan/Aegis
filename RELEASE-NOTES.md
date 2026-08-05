@@ -1,5 +1,62 @@
 # Aegis Release Notes
 
+## v2.6.7 (2026-08-05)
+
+### Doc Necessity Gate
+
+Aegis now writes project documents only when they are actually needed,
+instead of defaulting every task into a spec/plan/ADR ceremony.
+
+- `using-aegis` carries a compact Doc Necessity Gate in its hot path: docs only
+  for durable/irreversible, cross-session, approval-gated, or
+  authority-required change surfaces.
+- A change surface already covered by a spec/plan/ADR/baseline updates that
+  owner document in place; sibling documents are never created.
+- Mechanical multi-file changes write no docs; the commit message and code
+  comments are the record.
+- `brainstorming` gates the spec step behind the necessity check and keeps
+  `docs/aegis/work/` drafts session-level; INDEX follows create/update/
+  supersede; cross-repo durable contracts use the owning repo's ADR with a
+  mirror relationship.
+- `writing-plans` opens the Planless Slice Lane to mechanical changes without a
+  parent document; `recording-architecture-decisions` keeps ADR signals in
+  designs/plans separate from ADR files.
+- Workflow-quality matrix adds reverse samples for "update existing spec" and
+  "no docs for mechanical multi-file change".
+
+### Agentic Benchmark Provider Track
+
+The agentic benchmark can now run on custom model providers (DeepSeek V4 Flash
+max via aiping.cn) and complete to scoreable results.
+
+- Custom model providers via `AEGIS_BENCHMARK_CODEX_CONFIG` /
+  `AEGIS_BENCHMARK_MODEL_CATALOG`, frozen into the batch digest.
+- `AEGIS_AGENTIC_BENCHMARK_PROMPT_NO_GIT_NOTE=1` appends a frozen environment
+  note (read-only git, use the edit tool) to both arms.
+- Shell file writes (`apply_patch` invocation, redirection, `sed -i`, `tee`)
+  are classified as edit events so before-first-edit scoring is
+  model-agnostic.
+- Sealed auth is materialized as a private file instead of a `/proc` symlink,
+  removing an ~80-100s Codex startup stall; stage cleanup removes isolated
+  homes before the confidential scan.
+- `AEGIS_AGENTIC_BENCHMARK_TRANSPORT_RETRY=1` retries transport-invalid
+  attempts instead of stopping the batch;
+  `AEGIS_AGENTIC_BENCHMARK_RETRY_HEADROOM=1` raises the provider-track attempt
+  ceiling and wall budget.
+- Advisory outcome: `completion-boundary` now passes 3/3 valid attempts on the
+  DeepSeek track (published snapshot was 2/3), recorded in `benchmarks/README`
+  and `docs/current` as advisory evidence, not a full re-measurement.
+
+### Verification And Release Boundary
+
+- Benchmark, workflow-quality, trigger-health, context-budget, and render
+  gates pass; the published snapshot bundle stays immutable.
+- The two weak-scenario pilots produce scoreable results on both arms; a full
+  held-out re-measurement remains pending a stable provider window and is not
+  presented as a snapshot.
+- Bumped all declared package and host manifest versions from `2.6.5` to
+  `2.6.7` through `scripts/bump-version.sh`.
+
 ## v2.6.5 (2026-08-01)
 
 ### Agent-Owned Plan Execution Routing

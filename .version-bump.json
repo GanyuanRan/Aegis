@@ -23,7 +23,8 @@
       ".opencode/package-lock.json",
       "test-subagent-driven-development-integration.sh",
       ".version-bump.json",
-      "scripts/bump-version.sh"
+      "scripts/bump-version.sh",
+      "docs/archive"
     ]
   }
 }
