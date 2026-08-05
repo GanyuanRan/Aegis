@@ -1294,6 +1294,40 @@ class PromptPolicyTest(unittest.TestCase):
                 del os.environ["AEGIS_AGENTIC_BENCHMARK_TRANSPORT_RETRY"]
             self.assertFalse(benchmark_runner.transport_retry_enabled())
 
+    def test_retry_headroom_marker_matches_env(self):
+        with mock.patch.dict(os.environ, {"AEGIS_AGENTIC_BENCHMARK_RETRY_HEADROOM": "1"}, clear=False):
+            self.assertTrue(benchmark_runner.retry_headroom_enabled())
+        with mock.patch.dict(os.environ, {}, clear=False):
+            if "AEGIS_AGENTIC_BENCHMARK_RETRY_HEADROOM" in os.environ:
+                del os.environ["AEGIS_AGENTIC_BENCHMARK_RETRY_HEADROOM"]
+            self.assertFalse(benchmark_runner.retry_headroom_enabled())
+
+    def test_profile_fields_apply_retry_headroom_only_when_enabled(self):
+        profile = {
+            "id": "fake-profile",
+            "datasetPartitions": ["held-out-normal"],
+            "caseCount": 20,
+            "arms": ["baseline-no-aegis", "aegis-auto"],
+            "workers": 8,
+            "wallClockBudgetSeconds": 3600.0,
+            "preflightTimeoutSeconds": 30,
+            "perAttemptTimeoutSeconds": 480,
+            "infrastructureFailureLimit": 2,
+            "repetitionsPerCase": 1,
+            "validRunTarget": 40,
+            "paidAttemptCeiling": 44,
+        }
+        with mock.patch.dict(os.environ, {}, clear=False):
+            if "AEGIS_AGENTIC_BENCHMARK_RETRY_HEADROOM" in os.environ:
+                del os.environ["AEGIS_AGENTIC_BENCHMARK_RETRY_HEADROOM"]
+            fields = benchmark_runner.profile_fields(profile)
+            self.assertEqual(fields["maxAttempts"], 44)
+            self.assertEqual(fields["wallClockBudgetSeconds"], 3600.0)
+        with mock.patch.dict(os.environ, {"AEGIS_AGENTIC_BENCHMARK_RETRY_HEADROOM": "1"}, clear=False):
+            fields = benchmark_runner.profile_fields(profile)
+            self.assertEqual(fields["maxAttempts"], benchmark_runner.RETRY_HEADROOM_MAX_ATTEMPTS)
+            self.assertEqual(fields["wallClockBudgetSeconds"], benchmark_runner.RETRY_HEADROOM_WALL_SECONDS)
+
 
 if __name__ == "__main__":
     unittest.main()

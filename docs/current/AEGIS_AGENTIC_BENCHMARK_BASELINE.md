@@ -453,7 +453,12 @@ the frozen batch and makes the wall-clock budget and paid-attempt ceiling the
 binding limits instead of stopping the batch at the first paired-canary or
 circuit-open transport failure. This exists because custom provider networks
 can drop streams transiently; without it, one wave-1 transport failure aborts
-the whole batch.
+the whole batch. For the same reason, `AEGIS_AGENTIC_BENCHMARK_RETRY_HEADROOM=1`
+projects the provider-track batch with a higher paid-attempt ceiling (64) and
+wall-clock budget (7200s) than the frozen matrix profile; both values are
+frozen into the batch digest and `verify_batch` compares them against the same
+projection, so a provider track can absorb transient failures inside one batch
+instead of ending partial.
 
 The Codex event reducer classifies machine-observed shell file writes
 (`apply_patch` invocation, `>` / `>>` redirection to a workspace-relative path,

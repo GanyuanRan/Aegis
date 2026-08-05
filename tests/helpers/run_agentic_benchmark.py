@@ -267,6 +267,17 @@ def transport_retry_enabled() -> bool:
     return os.environ.get("AEGIS_AGENTIC_BENCHMARK_TRANSPORT_RETRY") == "1"
 
 
+RETRY_HEADROOM_MAX_ATTEMPTS = 64
+RETRY_HEADROOM_WALL_SECONDS = 7200.0
+
+
+def retry_headroom_enabled() -> bool:
+    """Opt-in provider-track headroom: raise the paid-attempt ceiling and wall
+    budget so transient provider network failures can be retried within one
+    batch. Default stays identical to the frozen matrix profile."""
+    return os.environ.get("AEGIS_AGENTIC_BENCHMARK_RETRY_HEADROOM") == "1"
+
+
 def freeze_case(root: Path, output_root: Path, case: dict[str, Any]) -> dict[str, Any]:
     prompt = root / case["promptPath"]
     project = root / case["seedProjectPath"]
@@ -313,6 +324,9 @@ def profile_fields(profile: dict[str, Any]) -> dict[str, Any]:
         "preflightTimeoutSeconds", "perAttemptTimeoutSeconds", "infrastructureFailureLimit",
     )}
     fields.update(profileId=profile["id"], repetitions=profile["repetitionsPerCase"], targetRunCount=profile["validRunTarget"], maxAttempts=profile["paidAttemptCeiling"])
+    if retry_headroom_enabled():
+        fields["maxAttempts"] = RETRY_HEADROOM_MAX_ATTEMPTS
+        fields["wallClockBudgetSeconds"] = RETRY_HEADROOM_WALL_SECONDS
     return fields
 
 
