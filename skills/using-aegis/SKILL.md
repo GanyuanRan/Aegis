@@ -5,6 +5,10 @@ description: "Use when starting a turn or checking Aegis skill routing."
 
 <SUBAGENT-STOP>Skip for subagents.</SUBAGENT-STOP>
 
+<EXPLICIT-MODE-GATE>
+If activation mode is explicit and this request did not explicitly invoke Aegis or a named skill, stay on the fast path; do not route to any Aegis skill. Explicit invocation proceeds normally.
+</EXPLICIT-MODE-GATE>
+
 <EXTREMELY-IMPORTANT>
 You have Aegis. Load explicit/relevant Aegis skill before response/action;
 otherwise proceed normally.

@@ -225,8 +225,19 @@ Minimum samples:
 | Simple factual Q&A | none or `using-aegis` only | none | Force full workflow |
 | Tiny wording edit | none or fast path | none | Create project workspace records |
 | Tiny edit with an existing glossary | none or fast path | none | Read/write context or emit context ceremony |
+| Simple task under `activation_mode = "explicit"` on a native-direct-skill host (Codex) | none (fast path) | `using-aegis` only when explicitly invoked | Load doc/checklist skills by host semantic match; force full workflow |
 
 The matrix checks both false negatives and false positives.
+
+The `explicit`-mode row above is a reverse sample verified on a real
+native-direct-skill host (Codex v0.146.0, 2026-08-06): with activation mode
+`explicit`, a trivial task stays on the fast path, while a task whose wording
+matches a doc/checklist skill description still gets loaded by the host
+matcher. The method pack handles this at the skill execution layer through the
+`EXPLICIT-MODE-GATE` in doc/checklist workflows, which fast-exits when
+activation mode is `explicit` and the user did not explicitly invoke Aegis or
+the skill by name. The sample is now locked in
+`tests/e2e/fixtures/trigger-health-matrix.json` as `explicit-mode-simple-task`.
 
 ---
 

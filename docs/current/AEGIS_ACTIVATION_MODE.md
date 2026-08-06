@@ -17,7 +17,7 @@ This document is not responsible for answering the following questions:
 - Final policy enforcement of a future runtime core
 - Per-host internal token budget implementation
 - Automatic TDD strictness; see `docs/current/AEGIS_TDD_MODE.md`
-- Whether the host-native skill matcher still auto-matches a skill when bootstrap is not injected
+- Whether the host-native skill matcher still auto-matches a skill when bootstrap is not injected; Aegis cannot control whether a host loads a skill, and the method-pack skill-execution gate only governs what happens after the skill is already loaded
 
 ---
 
@@ -162,6 +162,31 @@ Kimi Code CLI uses installation profiles to make this boundary enforceable:
 Writing `activation_mode = "explicit"` does not disable Kimi's plugin or
 override its native session-start contract. The user must switch the Kimi
 installation profile and then `/reload` or open `/new`.
+
+---
+
+## 5a. Skill Execution-Layer Gate (native-discovery hosts)
+
+On hosts that rely on native skill discovery without an Aegis bootstrap hook
+(such as Codex), `explicit` cannot prevent the host matcher from loading a
+skill. To honor the user's explicit intent anyway, the method pack adds an
+`EXPLICIT-MODE-GATE` to doc/checklist workflows:
+
+- `using-aegis` (router)
+- `brainstorming`
+- `writing-plans`
+- `verification-before-completion`
+
+The gate says: when activation mode is `explicit` and the current request did
+not explicitly invoke Aegis or the loaded skill by name, the skill exits back
+to the fast path without its checklist, ceremony, or document requirements.
+Explicit invocation still proceeds normally.
+
+The gate is advisory method-pack discipline executed by the model, not an
+authoritative runtime gate. It does not stop the host from loading the skill
+(the host matcher remains outside Aegis control), and it does not change the
+`explicit` semantics defined in this document: skills remain installed,
+discoverable, and explicitly invocable.
 
 ---
 

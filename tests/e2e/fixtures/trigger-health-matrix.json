@@ -184,6 +184,14 @@
       "allowedSecondarySkills": [],
       "mustNotDo": ["create-project-workspace-records"],
       "failureLayer": "false-positive"
+    },
+    {
+      "id": "explicit-mode-simple-task",
+      "prompt": "Activation mode is explicit and I only need a quick answer: what version is this checkout on and is the working tree clean?",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": ["using-aegis"],
+      "mustNotDo": ["force-full-workflow", "load-doc-checklist-skill-by-host-match", "create-project-workspace-records"],
+      "failureLayer": "false-positive"
     }
   ],
   "failureReportFields": [

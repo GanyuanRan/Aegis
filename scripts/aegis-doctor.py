@@ -13,6 +13,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 
@@ -89,6 +90,132 @@ def file_content_matches(current: Path, expected: Path) -> bool:
 
 def default_config_path() -> Path:
     return Path.home() / ".config" / "aegis" / "config.toml"
+
+
+AGENTS_MD_BEGIN = "<!-- AEGIS-ROUTING-BEGIN -->"
+AGENTS_MD_END = "<!-- AEGIS-ROUTING-END -->"
+AGENTS_MD_ROUTING_FEATURE = "已安装 Aegis 时"
+AGENTS_MD_EXPLICIT_CONTENT = (
+    "已安装 Aegis 时：仅在用户显式调用 Aegis 或点名具体 Aegis skill 时"
+    "加载对应 skill 或 workflow；简单任务直接 fast-path，"
+    "不列清单、不写文档、不做仪式。"
+)
+AGENTS_MD_AUTO_CONTENT = (
+    "已安装 Aegis 时：\n\n"
+    "- 每轮开始先判断是否有相关 Aegis skill；匹配时加载并遵循该 skill\n"
+    "- 复杂、诊断、架构、重构、contract、跨模块变更默认走 Aegis 对应 workflow\n"
+    "- Aegis skill 是方法层执行纪律，不是项目事实 source of truth，也不是 runtime authority"
+)
+
+
+def default_agents_md_path() -> Path:
+    return Path.home() / ".codex" / "AGENTS.md"
+
+
+def agents_md_state_path() -> Path:
+    return Path.home() / ".config" / "aegis" / "agents-md-state.json"
+
+
+def read_agents_md_state(path: Path) -> dict[str, object]:
+    if not path.is_file():
+        return {}
+    return load_json_object(path, "agents-md state")
+
+
+def write_agents_md_state(path: Path, state: dict[str, object]) -> None:
+    write_text_lf(path, json.dumps(state, indent=2, ensure_ascii=False) + "\n")
+
+
+def agents_md_block_bounds(text: str) -> tuple[int, int]:
+    start = text.find(AGENTS_MD_BEGIN)
+    if start < 0:
+        return -1, -1
+    end = text.find(AGENTS_MD_END, start)
+    if end < 0:
+        raise DoctorError("AGENTS.md has AEGIS-ROUTING-BEGIN without AEGIS-ROUTING-END")
+    return start, end + len(AGENTS_MD_END)
+
+
+def agents_md_wrap(content: str) -> str:
+    return f"{AGENTS_MD_BEGIN}\n{content.rstrip()}\n{AGENTS_MD_END}\n"
+
+
+def agents_md_routing_bounds(text: str, feature_idx: int) -> tuple[int, int]:
+    start = text.rfind("\n", 0, feature_idx) + 1
+    end = start
+    while end < len(text):
+        nl = text.find("\n", end)
+        if nl == -1:
+            end = len(text)
+            break
+        line = text[end:nl]
+        if line.startswith("#"):
+            break
+        end = nl + 1
+    if end - start > 4000:
+        raise DoctorError(
+            "AGENTS.md routing paragraph is unexpectedly large; "
+            "restore from backup and manage manually"
+        )
+    return start, end
+
+
+def apply_agents_md(mode: str, path: Path, state_path: Path) -> dict[str, object]:
+    """Manage the Aegis routing block in the Codex user AGENTS.md.
+
+    Migration on first use, then block replacement only. Raises DoctorError
+    before any write on failure so the caller keeps config write atomic.
+    """
+    if not path.is_file():
+        return {"agentsMd": "skipped", "reason": "no-agents-md-file"}
+    original = path.read_text(encoding="utf-8")
+    state = read_agents_md_state(state_path)
+    start, end = agents_md_block_bounds(original)
+
+    if start < 0:
+        feature_idx = original.find(AGENTS_MD_ROUTING_FEATURE)
+        if feature_idx < 0:
+            auto_content = AGENTS_MD_AUTO_CONTENT
+            block_text = agents_md_wrap(auto_content)
+            new_text = original.rstrip() + "\n\n" + block_text + "\n"
+            state["original_routing_block"] = auto_content
+        else:
+            block_start, block_end = agents_md_routing_bounds(original, feature_idx)
+            auto_content = original[block_start:block_end].strip("\n")
+            block_text = agents_md_wrap(auto_content)
+            new_text = original[:block_start] + block_text + original[block_end:]
+            state["original_routing_block"] = auto_content
+        backup_path = path.with_name(f"{path.name}.bak-aegis-{int(time.time())}")
+        backup_path.write_text(original, encoding="utf-8")
+        state["agents_md_path"] = path.as_posix()
+        state["backup"] = backup_path.as_posix()
+        write_agents_md_state(state_path, state)
+        original = new_text
+        start, end = agents_md_block_bounds(original)
+        migrated = True
+    else:
+        migrated = False
+
+    if mode == "explicit":
+        inner = AGENTS_MD_EXPLICIT_CONTENT
+    else:
+        inner = state.get("original_routing_block")
+        if not isinstance(inner, str) or not inner.strip():
+            raise DoctorError(
+                "AGENTS.md routing block exists but agents-md state has no original text; "
+                "restore from backup or manage manually"
+            )
+    new_text = original[:start] + agents_md_wrap(inner) + original[end:]
+    if "\r\n" in original:
+        new_text = new_text.replace("\n", "\r\n")
+    write_text_lf(path, new_text)
+    return {
+        "agentsMd": "updated",
+        "mode": mode,
+        "migrated": migrated,
+        "backup": state.get("backup"),
+        "reason": None,
+    }
 
 
 def resolve_kimi_home(value: str | None) -> Path:
@@ -391,6 +518,9 @@ def activation_mode_result(args: argparse.Namespace) -> dict[str, object]:
         raise DoctorError("activation-mode requires one of: auto, explicit")
     if not helper.is_file():
         raise DoctorError(f"Aegis workspace helper unavailable: {helper}")
+    agents_md: dict[str, object] = {"agentsMd": "skipped", "reason": "disabled"}
+    if not getattr(args, "no_agents_md", False):
+        agents_md = apply_agents_md(mode, default_agents_md_path(), agents_md_state_path())
     write_config(config_path, root, helper, mode)
     return {
         "ok": True,
@@ -399,6 +529,9 @@ def activation_mode_result(args: argparse.Namespace) -> dict[str, object]:
         "configPath": config_path.as_posix(),
         "methodPackRoot": root.as_posix(),
         "workspaceHelper": helper.as_posix(),
+        "agentsMd": agents_md.get("agentsMd"),
+        "agentsMdReason": agents_md.get("reason"),
+        "agentsMdBackup": agents_md.get("backup"),
         "restartRequired": True,
         "note": (
             "Activation mode is read by host bootstrap/profile setup. "
@@ -714,6 +847,14 @@ def print_text(result: dict[str, object]) -> None:
     if result.get("command") == "activation-mode":
         print(f"Aegis activation mode set to {result['activationMode']}.")
         print(f"Config path: {result['configPath']}")
+        agents_md = result.get("agentsMd")
+        if agents_md == "updated":
+            print("Codex AGENTS.md routing block updated.")
+            backup = result.get("agentsMdBackup")
+            if backup:
+                print(f"Backup: {backup}")
+        elif agents_md == "skipped" and result.get("agentsMdReason") != "disabled":
+            print(f"AGENTS.md management skipped ({result['agentsMdReason']}).")
         print("Restart or start a new host session for the change to take effect.")
         return
 
@@ -778,6 +919,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--host-profile",
         choices=(KIMI_AUTO_PROFILE, KIMI_EXPLICIT_PROFILE),
         help="optional host-native verification profile",
+    )
+    parser.add_argument(
+        "--no-agents-md",
+        action="store_true",
+        help="skip Codex AGENTS.md routing-block management in activation-mode (config only)",
     )
     parser.add_argument(
         "--kimi-home",

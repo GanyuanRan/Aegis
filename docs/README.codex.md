@@ -132,6 +132,31 @@ that tells Codex to start every conversation with Aegis. You can still invoke
 Aegis directly by naming a skill, such as `aegis:using-aegis` or
 `aegis:brainstorming`.
 
+**How `explicit` works on Codex.** Because Codex has no Aegis bootstrap hook,
+`AEGIS_ACTIVATION_MODE=explicit` does not stop Codex from auto-loading a skill
+whose description matches the task. The method pack handles this at the skill
+execution layer: doc/checklist workflows (`using-aegis`, `brainstorming`,
+`writing-plans`, `verification-before-completion`) carry an
+`EXPLICIT-MODE-GATE` that fast-exits when activation mode is `explicit` and the
+user did not explicitly invoke Aegis or the skill by name. Explicit invocation
+(e.g. `use aegis:brainstorming`) still works normally.
+
+**One-command AGENTS.md management.** `aegis-doctor.py activation-mode
+explicit|auto` can also manage the Aegis routing block in
+`~/.codex/AGENTS.md` so auto-loading noise drops instead of just being exited
+after load:
+
+- First run: backs up `~/.codex/AGENTS.md`, wraps the existing Aegis routing
+  paragraph in an `AEGIS-ROUTING-BEGIN/END` marker block, and records the
+  original text in `~/.config/aegis/agents-md-state.json`.
+- `explicit`: the block is replaced with the narrowed version (Aegis only on
+  explicit invocation; simple tasks stay on the fast path).
+- `auto`: the block is restored to the recorded original text, so automatic
+  Aegis routing behavior is unchanged.
+- Skip AGENTS.md management with `--no-agents-md` (config only).
+- Manual rollback: restore the backup file, e.g.
+  `Copy-Item "$env:USERPROFILE\.codex\AGENTS.md.bak-aegis-<ts>" "$env:USERPROFILE\.codex\AGENTS.md"`.
+
 TDD mode defaults to `off`. `AEGIS_TDD_MODE=auto` or
 `aegis-doctor.py tdd-mode auto` enables Aegis-side automatic TDD route
 semantics, but this does not directly control Codex's native matcher. Keep the

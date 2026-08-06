@@ -166,6 +166,14 @@ assert_contains "skills/anti-entropy-governance/SKILL.md" "## Gap Taxonomy" \
     "anti-entropy keeps the gap taxonomy for post-retirement repair"
 assert_contains "skills/anti-entropy-governance/SKILL.md" "Auto-Compose Boundary" \
     "anti-entropy keeps its composition-only boundary"
+assert_contains "skills/using-aegis/SKILL.md" "<EXPLICIT-MODE-GATE>" \
+    "router carries the explicit-mode gate"
+assert_contains "skills/brainstorming/SKILL.md" "<EXPLICIT-MODE-GATE>" \
+    "brainstorming carries the explicit-mode gate"
+assert_contains "skills/writing-plans/SKILL.md" "<EXPLICIT-MODE-GATE>" \
+    "writing-plans carries the explicit-mode gate"
+assert_contains "skills/verification-before-completion/SKILL.md" "<EXPLICIT-MODE-GATE>" \
+    "verification-before-completion carries the explicit-mode gate"
 
 if [ -f "tests/skill-triggering/prompts/anti-entropy-governance.txt" ]; then
     pass "anti-entropy live trigger probe exists"
@@ -340,6 +348,16 @@ if "skip-baseline-alignment" not in review_sample.get("mustNotDo", []):
     raise SystemExit("high-risk merge review sample must forbid skipping baseline alignment")
 if "treat-review-as-completion-authority" not in review_sample.get("mustNotDo", []):
     raise SystemExit("high-risk merge review sample must protect authority boundary")
+
+explicit_sample = next((s for s in samples if s.get("id") == "explicit-mode-simple-task"), None)
+if not explicit_sample:
+    raise SystemExit("missing explicit-mode-simple-task sample")
+if explicit_sample.get("expectedPrimarySkill") is not None:
+    raise SystemExit("explicit-mode-simple-task must stay on the fast path")
+if "load-doc-checklist-skill-by-host-match" not in explicit_sample.get("mustNotDo", []):
+    raise SystemExit("explicit-mode-simple-task must forbid loading doc/checklist skills by host match")
+if explicit_sample.get("failureLayer") != "false-positive":
+    raise SystemExit("explicit-mode-simple-task must use false-positive failure layer")
 
 print("  [PASS] trigger-health matrix has representative positive and negative samples")
 PY
