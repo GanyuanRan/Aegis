@@ -22,7 +22,7 @@
 
 <p align="center">
     <strong>Aegis Method Pack</strong><br/>
-    Baseline-first, evidence-driven workflow discipline for AI coding agents.
+    Make your AI coding agent trustworthy: fewer reworks, safer changes, proof before "done".
 </p>
 
 <p align="center">
@@ -35,22 +35,31 @@
     <a href="docs/current/AEGIS_FAST_TRACK_PLAYBOOK_ZH.md">速通秘籍</a>
 </p>
 
-> **Plan before you edit. Prove before you say "done". Keep simple work cheap.**
+> **Stop babysitting your agent.** Aegis makes your agent plan against your real
+> baseline before it edits, prove completion with fresh evidence, and leave simple
+> tasks alone — you get **fewer reworks, safer changes, and less blind trust in "done"**.
 
-## Why Aegis
+## What You Get
 
-Aegis is a method pack for teams using AI coding agents on real software work.
-It makes agents:
+Aegis is a method pack that makes AI coding agents work like disciplined
+engineers — so you don't have to watch them.
 
-- **plan before they edit** — baseline-first planning before risky changes
-- **prove before they claim "done"** — evidence before completion claims
-- **fix forward without leaving ghosts** — repair track plus retirement track
-  for bugs, fallbacks, and compatibility paths
-- **stay cheap on simple work** — workflow quality guardrails
-- **move between hosts** — portable method-pack skills across skill-aware hosts
+- **Fewer reworks.** Your agent aligns with your project's real baseline —
+  owners, contracts, boundaries — before touching code. It stops guessing, and
+  so do you.
+- **Safer changes.** Measured on a frozen held-out A/B benchmark: contract
+  pass rate **60% → 90%**, unsafe outcomes **11.67% → 5%**.
+- **Proof before "done".** Completion claims ship with fresh verification
+  evidence, covered scope, and residual risk. You read evidence, not vibes.
+- **No ghost code.** Retired fallbacks and old paths are tracked or removed
+  with a retirement trigger — technical debt stops accumulating silently.
+- **Simple tasks stay simple.** Trivial requests stay on the fast path;
+  ceremony only appears when the task genuinely needs it.
+- **One method pack, every host.** The same discipline works across Codex,
+  Claude Code, OpenCode, Kimi, and other skill-aware hosts.
 
-Aegis is useful when agents otherwise start coding before the goal, owner,
-architecture boundary, or verification path is clear.
+> The numbers above are bounded advisory evidence from the frozen benchmark
+> below, not a universal-quality or completion-authority claim.
 
 ## Measured Agentic Benchmark
 

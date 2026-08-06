@@ -22,7 +22,7 @@
 
 <p align="center">
     <strong>Aegis Method Pack</strong><br/>
-    面向 AI 编程 agent 的 baseline-first、evidence-driven 工作流程纪律包。
+    让 AI 编程 agent 变得可信：少返工、更安全、说“完成”前先给证据。
 </p>
 
 <p align="center">
@@ -35,20 +35,30 @@
     <a href="docs/current/AEGIS_FAST_TRACK_PLAYBOOK.md">Fast-Track Playbook</a>
 </p>
 
-> **动手前先规划，说“完成”前先给证据，简单任务保持轻量。**
+> **别再全程盯着 agent 干活。** Aegis 让 agent 动手前先对齐你的真实基线、
+> 完成前先给证据、简单任务不打扰你——你拿到的是：**更少返工、更安全、
+> 不用盲信“done”**。
 
-## 为什么需要 Aegis
+## 你能得到什么
 
-Aegis 是面向真实软件工作的方法包，让 agent：
+Aegis 是一套方法包，让 AI 编程 agent 像有工程纪律的人一样干活——你不需要
+全程盯梢。
 
-- **动手前先规划**——baseline-first：高风险改动前先读当前项目事实
-- **说“完成”前先给证据**——没有 fresh verification evidence，不声明完成
-- **修复时不留下“幽灵路径”**——repair track + retirement track：修复问题时同步说明旧路径保留或退役
-- **简单任务保持轻量**——工作流质量（Workflow Quality）护栏，风险升高才展开
-- **多宿主可移植**——多宿主 method-pack skills
+- **更少返工。** agent 动手前先对齐项目真实基线（owner、契约、边界），
+  不再靠猜，你也不用为猜错买单。
+- **更安全的改动。** 冻结的 held-out A/B 实测：合同通过率 **60% → 90%**，
+  不安全结果 **11.67% → 5%**。
+- **说“完成”前先给证据。** 每个完成声明都带 fresh 验证证据、覆盖范围与
+  残余风险——你读的是证据，不是感觉。
+- **不留幽灵代码。** 退役的 fallback 和旧路径会被显式跟踪或带退役触发条件
+  移除，技术债不再悄悄累积。
+- **简单任务保持简单。** 平凡请求留在 fast-path，只有任务真正需要时才展开
+  仪式。
+- **一套方法包，多宿主通用。** Codex、Claude Code、OpenCode、Kimi 等
+  skill-aware 宿主体验一致。
 
-当 agent 容易在目标、owner、架构边界或验证路径不清楚时就开始写代码，Aegis
-能把工作拉回更稳的工程节奏。
+> 上面的数字来自下方冻结 benchmark 的有界建议性证据，不构成普遍质量或完成
+> 权威声明。
 
 ## 实测 Agentic Benchmark
 
