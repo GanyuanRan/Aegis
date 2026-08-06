@@ -1,6 +1,6 @@
 {
   "name": "aegis",
-  "version": "2.6.7",
+  "version": "2.6.8",
   "description": "Aegis method-pack workflows for planning, debugging, review, verification, and delivery",
   "author": {
     "name": "Aegis Maintainers"

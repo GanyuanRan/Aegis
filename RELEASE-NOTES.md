@@ -1,5 +1,40 @@
 # Aegis Release Notes
 
+## v2.6.8 (2026-08-06)
+
+### Activation Explicit Skill-Execution Gate
+
+`explicit` 激活模式现在真正解决"简单任务仍被自动列清单"：即使宿主
+（如 Codex）按 skill description 语义匹配自动加载了文档/清单类 skill，在
+`explicit` 且用户未显式点名 Aegis 或该 skill 时，skill 也会快速退出到
+fast-path，不执行 Checklist / 设计 / 文档仪式；显式调用（如
+`use aegis:brainstorming`）保持完整可用。
+
+- `using-aegis`、`brainstorming`、`writing-plans`、
+  `verification-before-completion` 增加 `<EXPLICIT-MODE-GATE>`，作为方法层
+  advisory 执行约束（不改变 explicit 官方语义：skills 保持可发现、可显式
+  调用；不新增 off/hidden 模式；junction 不动）。
+- `aegis-doctor.py activation-mode explicit|auto` 现在同时管理 Codex 用户级
+  `~/.codex/AGENTS.md` 的 Aegis 路由区块：首次执行自动备份并包裹既有路由
+  段落（原文记录在 `~/.config/aegis/agents-md-state.json`）；`explicit` 收窄
+  为"仅显式调用时使用 Aegis"，`auto` 恢复迁移时保存的原文，保证 auto 自动
+  调用行为不变；`--no-agents-md` 可跳过该管理（仅写配置）；AGENTS.md 处理
+  失败时不写 config（原子性）。
+- 文档与语义同步：`AEGIS_ACTIVATION_MODE.md` 新增 §5a Skill Execution-Layer
+  Gate（native-discovery 宿主）；`README.codex.md` 说明 Codex 下 explicit 的
+  实际效果与一键 AGENTS.md 管理；trigger-health L7 反向样本
+  `explicit-mode-simple-task` 转正式，workflow-quality 增加对应反向样本。
+
+### Verification
+
+- 真机五臂（codex v0.146.0 / DeepSeek-V4-Flash-0731）：explicit + 平凡任务 =
+  fast-path；explicit + 模糊需求 = 无 brainstorming 仪式；explicit + 显式调用
+  = 完整 brainstorming 流程；auto 恢复 = AGENTS.md 区块恢复原文 + config
+  auto；auto 回归 = 行为不变。
+- 自动门：trigger-health / workflow-quality / context-budget /
+  boundary-compliance 全部通过；`aegis-doctor.py` 的 AGENTS.md 区块管理通过
+  单元测试（迁移/备份/原文恢复/往返）。
+
 ## v2.6.7 (2026-08-05)
 
 ### Doc Necessity Gate
