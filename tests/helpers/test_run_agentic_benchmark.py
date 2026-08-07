@@ -1311,7 +1311,7 @@ class PromptPolicyTest(unittest.TestCase):
             "workers": 8,
             "wallClockBudgetSeconds": 3600.0,
             "preflightTimeoutSeconds": 30,
-            "perAttemptTimeoutSeconds": 480,
+            "perAttemptTimeoutSeconds": 960,
             "infrastructureFailureLimit": 2,
             "repetitionsPerCase": 1,
             "validRunTarget": 40,

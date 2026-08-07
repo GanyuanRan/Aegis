@@ -553,10 +553,10 @@ live-tier-in-progress|live harness implementation status regression|live held-ou
 standard-valid-run-target|standard valid-run target drift|standard-held-out.validRunTarget must be 40|matrix-only
 standard-paid-attempt-ceiling|standard paid-attempt ceiling drift|standard-held-out.paidAttemptCeiling must be 44|matrix-only
 standard-workers|unsupported standard worker count|standard-held-out.workers must be 8|matrix-only
-standard-wall-budget|standard wall budget drift|standard-held-out.wallClockBudgetSeconds must be 3600|matrix-only
-extended-wall-budget|extended wall budget drift|extended-held-out.wallClockBudgetSeconds must be 9000|matrix-only
+standard-wall-budget|standard wall budget drift|standard-held-out.wallClockBudgetSeconds must be 7200|matrix-only
+extended-wall-budget|extended wall budget drift|extended-held-out.wallClockBudgetSeconds must be 18000|matrix-only
 standard-preflight-timeout|standard preflight timeout drift|standard-held-out.preflightTimeoutSeconds must be 30|matrix-only
-standard-attempt-timeout|standard attempt timeout drift|standard-held-out.perAttemptTimeoutSeconds must be 480|matrix-only
+standard-attempt-timeout|standard attempt timeout drift|standard-held-out.perAttemptTimeoutSeconds must be 960|matrix-only
 standard-infrastructure-limit|standard infrastructure failure limit drift|standard-held-out.infrastructureFailureLimit must be 2|matrix-only
 standard-repeat-overclaim|standard repeated-run evidence overclaim|standard-held-out.unsupportedEvidence must be ['repeated-run-evidence']|matrix-only
 development-publication|development publication drift|development-pilot.publicationEligible must be False|matrix-only
@@ -710,9 +710,9 @@ import sys
 from pathlib import Path
 
 profiles = {
-    "development-pilot": (1, 2, 2, 2, 600),
-    "standard-held-out": (20, 40, 44, 8, 3600),
-    "extended-held-out": (20, 120, 132, 8, 9000),
+    "development-pilot": (1, 2, 2, 2, 1200),
+    "standard-held-out": (20, 40, 44, 8, 7200),
+    "extended-held-out": (20, 120, 132, 8, 18000),
 }
 for path in sys.argv[1:]:
     batch_path = Path(path)
