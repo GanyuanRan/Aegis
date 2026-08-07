@@ -298,12 +298,39 @@ const resolveSkillSource = (homeDir) => {
   };
 };
 
+const ROUTING_GUARD_MARKER = 'AEGIS_ROUTING_GUARD';
+
+const READONLY_TOOLS = new Set([
+  'read',
+  'glob',
+  'grep',
+  'webfetch',
+  'websearch',
+  'context7_resolve-library-id',
+  'context7_get-library-docs',
+  'sequential-thinking_sequentialthinking'
+]);
+
+const getSessionState = (state, sessionID) => {
+  if (state.size > 500) state.clear();
+  let entry = state.get(sessionID);
+  if (!entry) {
+    entry = { sawSkillCall: false, guardFired: false };
+    state.set(sessionID, entry);
+  }
+  return entry;
+};
+
+const buildRoutingGuardText = () => `\n[${ROUTING_GUARD_MARKER}] No routing decision was recorded before this session's first non-readonly tool call. If this task is non-trivial, call the \`skill\` tool now and load the matching Aegis skill (for example brainstorming, systematic-debugging, writing-plans, or verification-before-completion); otherwise explicitly declare \`Route: fast-path\` with a reason. Advisory only; execution continues.\n`;
+
 export const AegisPlugin = async ({ client, directory }) => {
   const homeDir = resolveHomeDir();
   const { methodPackRoot, skillsDir: aegisSkillsDir, bundledSkillsDir } = resolveSkillSource(homeDir);
   const envConfigDir = normalizePath(process.env.OPENCODE_CONFIG_DIR, homeDir);
   const configDir = envConfigDir || path.join(homeDir, '.config/opencode');
   const globalSkillsDir = path.join(configDir, 'skills');
+
+  const sessionState = new Map();
 
   // Keep Aegis skills inside an OpenCode-native discovery path.
   // The host currently documents ~/.config/opencode/skills as a supported
@@ -336,7 +363,7 @@ You have Aegis.
 
 Aegis TDD mode: ${tddMode(homeDir)}. off is the default and disables automatic TDD while verification-before-completion still applies; auto routes strict TDD only when risk warrants.
 
-**IMPORTANT: The compact using-aegis hot path is included below. For task-specific workflows, use OpenCode's native \`skill\` tool to load only the relevant skill or reference.**
+**ROUTING CONTRACT (this turn):** Before your first non-readonly tool call you MUST either (1) call the \`skill\` tool and load the relevant Aegis skill for this task, or (2) explicitly declare \`Route: fast-path\` with a one-line reason. There is no silent pass: doing neither triggers a visible routing-guard marker on your first non-readonly tool call. The compact using-aegis hot path is already loaded below, so do not load it again; load the task-specific skill a rule below matches, or declare fast-path.
 
 ${content}
 
@@ -371,6 +398,28 @@ ${toolMapping}
       if (firstUser.parts.some(p => p.type === 'text' && p.text.includes('EXTREMELY_IMPORTANT'))) return;
       const ref = firstUser.parts[0];
       firstUser.parts.unshift({ ...ref, type: 'text', text: bootstrap });
+    },
+
+    // Record skill loading so the routing guard can see it.
+    'tool.execute.before': async ({ tool, sessionID }) => {
+      if (tool === 'skill') getSessionState(sessionState, sessionID).sawSkillCall = true;
+    },
+
+    // Routing guard: in auto mode, visibly flag the first non-readonly tool
+    // call that happens without a recorded skill load. Advisory only; never
+    // blocks execution. explicit mode disables it together with bootstrap
+    // injection.
+    'tool.execute.after': async ({ tool, sessionID }, output) => {
+      if (activationMode(homeDir) !== 'auto') return;
+      const state = getSessionState(sessionState, sessionID);
+      if (tool === 'skill') {
+        state.sawSkillCall = true;
+        return;
+      }
+      if (state.sawSkillCall || state.guardFired) return;
+      if (READONLY_TOOLS.has(tool)) return;
+      state.guardFired = true;
+      output.output = `${buildRoutingGuardText()}${output.output ?? ''}`;
     }
   };
 };

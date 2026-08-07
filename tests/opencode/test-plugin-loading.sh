@@ -115,5 +115,116 @@ else
     exit 1
 fi
 
+# Test 8: Verify bootstrap contains the routing contract
+echo "Test 8: Checking bootstrap routing contract..."
+if grep -q 'ROUTING CONTRACT' "$AEGIS_PLUGIN_FILE" \
+    && grep -q 'Route: fast-path' "$AEGIS_PLUGIN_FILE"; then
+    echo "  [PASS] Bootstrap declares a routing contract with fast-path escape"
+else
+    echo "  [FAIL] Bootstrap routing contract markers missing"
+    exit 1
+fi
+
+# Test 9: Verify routing guard hooks are present
+echo "Test 9: Checking routing guard hooks..."
+if grep -q 'tool.execute.after' "$AEGIS_PLUGIN_FILE" \
+    && grep -q 'AEGIS_ROUTING_GUARD' "$AEGIS_PLUGIN_FILE" \
+    && grep -q 'sawSkillCall' "$AEGIS_PLUGIN_FILE"; then
+    echo "  [PASS] Routing guard hooks and marker are present"
+else
+    echo "  [FAIL] Routing guard implementation missing"
+    exit 1
+fi
+
+# Test 10: Verify routing guard behavior (functional)
+echo "Test 10: Checking routing guard behavior..."
+aegis_config_file="$TEST_HOME/.config/aegis/config.toml"
+saved_config=""
+if [ -f "$aegis_config_file" ]; then
+    saved_config=$(cat "$aegis_config_file")
+fi
+cat > "$aegis_config_file" <<EOF
+activation_mode = "auto"
+EOF
+
+node --input-type=module <<'EOF'
+import path from 'path';
+import { pathToFileURL } from 'url';
+
+const pluginPath = process.env.AEGIS_PLUGIN_FILE;
+const module = await import(pathToFileURL(pluginPath).href);
+const hooks = await module.AegisPlugin({ client: {}, directory: path.dirname(pluginPath) });
+const after = hooks['tool.execute.after'];
+const before = hooks['tool.execute.before'];
+
+const check = (name, condition) => {
+    if (!condition) {
+        console.error(`  [FAIL] ${name}`);
+        process.exit(1);
+    }
+    console.log(`  [PASS] ${name}`);
+};
+
+// s1: first non-readonly call without skill load must be flagged
+let out = { title: '', output: 'ok' };
+await after({ tool: 'bash', sessionID: 's1', callID: 'c1', args: {} }, out);
+check('guard flags first non-readonly call', out.output.includes('AEGIS_ROUTING_GUARD'));
+
+// s1: second non-readonly call must not be flagged again
+out = { title: '', output: 'ok2' };
+await after({ tool: 'edit', sessionID: 's1', callID: 'c2', args: {} }, out);
+check('guard fires once per session', !out.output.includes('AEGIS_ROUTING_GUARD'));
+
+// s2: skill load before work suppresses the guard
+out = { title: '', output: 'ok' };
+await before({ tool: 'skill', sessionID: 's2', callID: 'c0' }, {});
+await after({ tool: 'bash', sessionID: 's2', callID: 'c1', args: {} }, out);
+check('skill load suppresses guard', !out.output.includes('AEGIS_ROUTING_GUARD'));
+
+// s3: readonly tools never trigger the guard
+out = { title: '', output: 'ok' };
+await after({ tool: 'read', sessionID: 's3', callID: 'c1', args: {} }, out);
+check('readonly tools are exempt', !out.output.includes('AEGIS_ROUTING_GUARD'));
+out = { title: '', output: 'ok' };
+await after({ tool: 'bash', sessionID: 's3', callID: 'c2', args: {} }, out);
+check('guard still flags later work', out.output.includes('AEGIS_ROUTING_GUARD'));
+EOF
+if [ $? -ne 0 ]; then
+    exit 1
+fi
+
+# Test 10b: explicit mode disables the guard
+cat > "$aegis_config_file" <<EOF
+activation_mode = "explicit"
+EOF
+
+node --input-type=module <<'EOF'
+import path from 'path';
+import { pathToFileURL } from 'url';
+
+const pluginPath = process.env.AEGIS_PLUGIN_FILE;
+const module = await import(pathToFileURL(pluginPath).href);
+const hooks = await module.AegisPlugin({ client: {}, directory: path.dirname(pluginPath) });
+const after = hooks['tool.execute.after'];
+
+const out = { title: '', output: 'ok' };
+await after({ tool: 'bash', sessionID: 's4', callID: 'c1', args: {} }, out);
+if (out.output.includes('AEGIS_ROUTING_GUARD')) {
+    console.error('  [FAIL] explicit mode must disable the routing guard');
+    process.exit(1);
+}
+console.log('  [PASS] explicit mode disables the routing guard');
+EOF
+if [ $? -ne 0 ]; then
+    exit 1
+fi
+
+# Restore the previous config for later tests
+if [ -n "$saved_config" ]; then
+    printf '%s\n' "$saved_config" > "$aegis_config_file"
+else
+    rm -f "$aegis_config_file"
+fi
+
 echo ""
 echo "=== All plugin loading tests passed ==="

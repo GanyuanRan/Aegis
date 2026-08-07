@@ -212,10 +212,11 @@ Replace `vX.Y.Z` with an existing Aegis release tag.
 
 ## How It Works
 
-The plugin does two things:
+The plugin does three things:
 
 1. **Injects compact bootstrap context** via the `experimental.chat.messages.transform` hook, adding aegis awareness to the first user message without repeating a system message every turn.
 2. **Mirrors aegis skills into OpenCode's native global skills path** (`~/.config/opencode/skills/`) so the host discovers them using its documented skill search rules.
+3. **Routing guard** (auto mode only): tracks whether the session recorded an explicit routing decision (a `skill` tool load) before its first non-readonly tool call. If not, the first such tool call carries a visible advisory marker (`AEGIS_ROUTING_GUARD`) prompting the agent to load the matching Aegis skill or explicitly declare `Route: fast-path`. The guard is advisory and never blocks tool execution; `explicit` mode disables it together with bootstrap injection.
 
 When `method_pack_root` is configured in `~/.config/aegis/config.toml`, that
 configured checkout becomes the canonical source for the mirrored skills view.
@@ -296,6 +297,18 @@ The JSON should include
 2. Restart OpenCode after config changes
 3. Check whether `AEGIS_ACTIVATION_MODE=explicit` is set; explicit mode
    intentionally disables automatic bootstrap injection
+
+### Routing guard marker appearing
+
+The `AEGIS_ROUTING_GUARD` marker is advisory. It appears on the first
+non-readonly tool call of a session when the agent made no routing decision:
+it loaded no Aegis skill and declared no fast-path. This is expected behavior
+for fast-path-eligible tasks; the agent can simply declare `Route: fast-path`
+and continue. To quiet the guard for a task, load the matching Aegis skill via
+the `skill` tool first. To disable the guard entirely, set
+`activation_mode = "explicit"` in `~/.config/aegis/config.toml` (or
+`AEGIS_ACTIVATION_MODE=explicit`), which also disables bootstrap injection.
+The guard never blocks tool execution.
 
 ## Getting Help
 
