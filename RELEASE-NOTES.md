@@ -1,5 +1,46 @@
 # Aegis Release Notes
 
+## v2.6.9 (2026-08-08)
+
+### OpenCode 宿主路由守卫与路由契约
+
+修复 OpenCode 宿主「skills 可发现、bootstrap 已注入，但模型可能不加载任何
+Aegis skill 就开工」的路由强度缺口——这是 OpenCode 与 Claude Code 适配层的
+本质差异：OpenCode 的 skills 是纯 on-demand 机制，宿主没有任何强制路由
+能力，因此由插件补齐。
+
+- `.opencode/plugins/aegis.js` 的 bootstrap 注入从「软建议」升级为
+  **ROUTING CONTRACT**：首个非只读工具调用前必须二选一——调用 `skill` 工具
+  加载本任务相关的 Aegis skill，或显式声明 `Route: fast-path` + 理由；两件
+  都不做会在首个非只读工具调用时触发可见的守卫标记。同时明确
+  `using-aegis` 全文已内嵌在 bootstrap 中、无需重复加载。
+- 新增 **routing guard**（`tool.execute.before` / `tool.execute.after`）：
+  auto 模式下记录每会话是否发生过 skill 加载；首个非只读工具调用若没有任何
+  路由决策，在工具输出前缀注入 `AEGIS_ROUTING_GUARD` 可见提示。非阻塞、
+  每会话最多一次、只读工具（read/glob/grep/webfetch/context7/sequential-
+  thinking）豁免、会话状态容量封顶 500 自动清理；`explicit` 模式与 bootstrap
+  注入同源关闭。
+- 测试：`tests/opencode/test-plugin-loading.sh` 新增 6 项路由守卫功能断言
+  （触发/每会话一次/skill 加载豁免/只读豁免/事后补发/explicit 关闭），
+  `tests/opencode/run-tests.sh` 全绿。
+
+### Agentic Benchmark 预算放宽
+
+为慢速自定义 provider 抬高运行预算，三处 profile 定义（check 脚本内嵌、
+校验脚本、fixture 矩阵）同步一致：
+
+- `development-pilot`: wall budget 600→1200s，attempt timeout 480→960s
+- `standard-held-out`: wall budget 3600→7200s，attempt timeout 480→960s
+- `extended-held-out`: wall budget 9000→18000s，attempt timeout 480→960s
+
+### Verification
+
+- OpenCode 套件：`tests/opencode/run-tests.sh` 全过（含 6 项新守卫断言）。
+- 自动门：context-budget / boundary-compliance / governance-completion-
+  contract / parse-codex-skills 全部通过；layer1-fast-check 35/36，唯一失败
+  为 agentic-benchmark 的 offline Codex fixture 平台检查（环境受限，stash
+  基线复现，与本次改动无关）。
+
 ## v2.6.8 (2026-08-06)
 
 ### Activation Explicit Skill-Execution Gate
