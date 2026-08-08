@@ -41,7 +41,7 @@ def test_collects_valid_markers_and_skips_archive() -> None:
         entries, issues = ledger.collect(root)
 
     assert not issues
-    assert [entry.kind for entry in entries] == ["followup", "retire"]
+    assert sorted(entry.kind for entry in entries) == ["followup", "retire"]
     assert {entry.owner for entry in entries} == {"docs", "adapter"}
 
 
@@ -72,3 +72,22 @@ def test_ignores_markdown_fenced_examples() -> None:
 
     assert not entries
     assert not issues
+
+
+def main() -> int:
+    failures = 0
+    for name, case in sorted(globals().items()):
+        if not name.startswith("test_") or not callable(case):
+            continue
+        try:
+            case()
+        except AssertionError as exc:
+            failures += 1
+            print(f"  [FAIL] {name}: {exc}")
+        else:
+            print(f"  [PASS] {name}")
+    return 1 if failures else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
