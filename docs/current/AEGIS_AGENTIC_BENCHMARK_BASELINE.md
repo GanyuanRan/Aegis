@@ -196,12 +196,12 @@ The matrix is the only exact run-shape owner. It defines these profiles:
 
 | Profile | Cases | Repetitions | Valid target | Attempt ceiling | Workers | Wall budget | Publication |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| `development-pilot` | 1 development | 1 | 2 | 2 | 2 | 600 seconds | disabled |
-| `standard-held-out` | all 20 held-out | 1 | 40 | 44 | 8 | 3600 seconds | advisory; `repeated-run-evidence` unsupported |
-| `extended-held-out` | all 20 held-out | 3 | 120 | 132 | 8 | 9000 seconds | advisory repeated-run evidence |
+| `development-pilot` | 1 development | 1 | 2 | 2 | 2 | 1200 seconds | disabled |
+| `standard-held-out` | all 20 held-out | 1 | 40 | 44 | 8 | 7200 seconds | advisory; `repeated-run-evidence` unsupported |
+| `extended-held-out` | all 20 held-out | 3 | 120 | 132 | 8 | 18000 seconds | advisory repeated-run evidence |
 
 Every profile uses both live comparison arms, a 30-second provider preflight,
-a 480-second per-attempt timeout, and an infrastructure failure limit of two
+a 960-second per-attempt timeout, and an infrastructure failure limit of two
 completed attempts in a wave. The maximum supported worker count is 12. An
 incomplete batch must not feed public benchmark claims.
 
