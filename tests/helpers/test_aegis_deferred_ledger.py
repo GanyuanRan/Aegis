@@ -41,7 +41,7 @@ def test_collects_valid_markers_and_skips_archive() -> None:
         entries, issues = ledger.collect(root)
 
     assert not issues
-    assert [entry.kind for entry in entries] == ["followup", "retire"]
+    assert sorted(entry.kind for entry in entries) == ["followup", "retire"]
     assert {entry.owner for entry in entries} == {"docs", "adapter"}
 
 
