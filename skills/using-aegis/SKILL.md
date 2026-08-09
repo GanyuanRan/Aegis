@@ -25,7 +25,7 @@ otherwise proceed normally.
 3. Direct grilling or plan/design pressure-tests (`grill me`, `grill this plan`, `审问我`, `盘问我`, `拷问我`) route to `brainstorming`; literal/explanatory uses do not.
 4. `/aegis-goal` or `Aegis goal:` loads `goal-framing` before routing.
 5. Bug, failure, regression, or unexpected behavior routes to `systematic-debugging`; quick bug lane owns Change Necessity before source edits.
-6. Classify before implementation/start/resume/compaction. Low: intent, baseline, verification. Medium/high: baseline read-set + plan (session-internal; docs only when durable cross-session). TDD: off=no auto route/load; auto=strict/light/skipped; explicit request applies. Spec Brief or Design Spec only for ambiguous/contract/cross-module medium/high work. Shared/core/contract/cross-module never low w/o evidence. Source edits/new paths: owner workflow surfaces Change Necessity.
+6. Classify before implementation/start/resume/compaction. Low: intent, baseline, verification. Medium/high: baseline read-set + plan (session-internal by default; docs only when the work needs durable cross-session direction or approval - Doc Necessity Gate). TDD: off=no auto route/load; auto=strict/light/skipped; explicit request applies. Spec Brief or Design Spec only for ambiguous/contract/cross-module medium/high work. Shared/core/contract/cross-module never low without evidence. Source edits/new paths: owner workflow surfaces Change Necessity.
 7. Before the first repo write, the coordinator records `TaskStartSnapshot`.
    Complexity, TDD, planning, or subagents alone do not
    justify branch/worktree creation.
