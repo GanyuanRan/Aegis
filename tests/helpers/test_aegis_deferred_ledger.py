@@ -58,6 +58,21 @@ def test_reports_missing_required_fields() -> None:
     assert "verification" in issues[0].message
 
 
+def test_issue_paths_are_repository_relative() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        write(root / "docs" / "unparsable.md", f'# {FOLLOWUP} owner="docs\n')
+        write(root / "docs" / "incomplete.md", f"# {FOLLOWUP} owner=docs\n")
+
+        entries, issues = ledger.collect(root)
+
+    assert not entries
+    assert sorted(issue.path for issue in issues) == [
+        "docs/incomplete.md",
+        "docs/unparsable.md",
+    ]
+
+
 def test_ignores_markdown_fenced_examples() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
