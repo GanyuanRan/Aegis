@@ -22,7 +22,7 @@ Re-copy or merge it when release notes announce an Advanced profile change.
 ### Planning and Change Control
 
 - For non-trivial work, extend the Lite pre-implementation check with explicit non-goals, baseline references, and verification targets.
-- For Aegis-routed work, use a baseline read set and a plan proportional to task complexity. Add spec/design review only for complex, ambiguous, contract, or cross-module work.
+- For Aegis-routed work, use a baseline read set and a session-internal plan proportional to task complexity; write a plan/spec document only when the work needs durable cross-session direction. Add spec/design review only for complex, ambiguous, contract, or cross-module work.
 - TDD mode defaults to `off`. Follow the configured TDD mode or an explicit user/project request; task complexity alone does not authorize strict TDD.
 - For active project questions or "what next" requests, check baseline candidates first. If none are usable, do a bounded repo scan, create a lightweight baseline only when project content is sufficient, and still answer the original question.
 - Create Aegis project records lazily. Prefer existing project docs and create minimal `docs/aegis/` records only when the active workflow needs persistent state.

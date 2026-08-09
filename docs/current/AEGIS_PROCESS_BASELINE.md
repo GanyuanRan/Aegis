@@ -900,9 +900,10 @@ the preferred authority when they already own the truth.
 
 - **Low complexity**: concise intent + baseline check → TDD Route +
   verification, no `work/` created
-- **Medium complexity**: baseline read-set + Spec Brief or requirements + plan
-  + atomic tasks → TDD Route + verification; create `work/` only when a process
-  trail is needed
+- **Medium complexity**: baseline read-set + session-internal plan + atomic
+  tasks → TDD Route + verification; write a `Spec Brief` or a plan document
+  only when what/why/acceptance needs pinning before planning and no existing
+  owner doc covers it; create `work/` only when a process trail is needed
 - **High complexity**: Design Spec + plan + user confirmation → TDD Route +
   verification, `work/` created
 
