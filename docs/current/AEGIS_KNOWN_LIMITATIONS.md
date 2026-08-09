@@ -449,7 +449,39 @@ request.
 
 ---
 
-### 2.19 CC GUI Structural Support Is Not Yet Fresh Host Closeout
+### 2.19 OMP Structural Support Is Not Yet Fresh Host Closeout
+
+**Retained Item**
+- OMP (Oh My Pi) is a structural host target, not release-level fresh smoke
+  verdict
+
+**Retention Reason**
+- OMP is a fork of Pi that keeps Agent Skills discovery. Its `agents` provider
+  reads `~/.agents/skills/`, so the shared Aegis copy-based skill view is
+  visible to OMP without OMP-specific packaging.
+- OMP honors `alwaysApply: true` skill frontmatter (full content injected into
+  the system prompt), which Aegis now uses for `using-aegis`.
+- OMP auto-discovers extensions under `~/.omp/agent/extensions/` and accepts
+  `omp.extensions` / `pi.extensions` package manifests; Aegis ships an
+  `extensions/` bundle (`extensions/shared/` core + `extensions/omp/` adapter)
+  shared with the Pi extension.
+- A current OMP runtime smoke is still required before claiming host closeout.
+
+**Observation Metric**
+- `docs/README.omp.md`
+- `bash tests/e2e/omp-host-boundary-check.sh`
+- Future OMP install smoke that proves `~/.agents/skills/` discovery,
+  `alwaysApply` injection of `using-aegis`, and extension loading from
+  `~/.omp/agent/extensions/`
+
+**Retirement Trigger**
+- When OMP has a verified install path that proves both skill discovery and
+  `alwaysApply` / extension injection without turning Aegis into an
+  authoritative runtime core
+
+---
+
+### 2.20 CC GUI Structural Support Is Not Yet Fresh Host Closeout
 
 **Retained Item**
 - CC GUI is a structural JetBrains IDEA host target, not release-level fresh
@@ -489,7 +521,7 @@ request.
 
 ---
 
-### 2.20 GitHub Copilot Structural Support Is Not Yet Fresh Host Closeout
+### 2.21 GitHub Copilot Structural Support Is Not Yet Fresh Host Closeout
 
 **Retained Item**
 - GitHub Copilot is a structural host target, not a release-level fresh smoke
@@ -518,7 +550,7 @@ request.
 
 ---
 
-### 2.21 Qoder Structural Support Is Not Yet Fresh Host Closeout
+### 2.22 Qoder Structural Support Is Not Yet Fresh Host Closeout
 
 **Retained Item**
 - Qoder is a structural host target, not a release-level fresh smoke verdict
@@ -544,7 +576,7 @@ request.
 
 ---
 
-### 2.22 Kimi Code CLI Structural Support Is Not Yet Fresh Host Closeout
+### 2.23 Kimi Code CLI Structural Support Is Not Yet Fresh Host Closeout
 
 **Retained Item**
 - Kimi Code CLI is a structural host target, not a release-level fresh smoke
@@ -594,7 +626,7 @@ request.
 
 ---
 
-### 2.23 ZCode Structural Support Is Not Yet Fresh Host Closeout
+### 2.24 ZCode Structural Support Is Not Yet Fresh Host Closeout
 
 **Retained Item**
 - ZCode is a structural host target, not release-level fresh smoke verdict
@@ -631,7 +663,7 @@ request.
 
 ---
 
-### 2.24 Grok Build Structural Support Is Not Yet Fresh Host Closeout
+### 2.25 Grok Build Structural Support Is Not Yet Fresh Host Closeout
 
 **Retained Item**
 - Grok Build is a structural host target, not a release-level fresh smoke
