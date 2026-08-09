@@ -1,6 +1,7 @@
 ---
 name: using-aegis
 description: "Use when starting a turn or checking Aegis skill routing."
+alwaysApply: true
 ---
 
 <SUBAGENT-STOP>Skip for subagents.</SUBAGENT-STOP>

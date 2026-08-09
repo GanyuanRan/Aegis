@@ -12,6 +12,14 @@
   "pi": {
     "skills": [
       "./skills"
+    ],
+    "extensions": [
+      "./extensions/pi"
+    ]
+  },
+  "omp": {
+    "extensions": [
+      "./extensions/omp"
     ]
   }
 }
