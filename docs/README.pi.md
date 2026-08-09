@@ -141,6 +141,9 @@ Expected result:
 - Pi can see Aegis skills such as `using-aegis`, `systematic-debugging`, and
   `brainstorming`.
 - Pi can load the relevant skill on demand.
+- In automatic mode, Pi's session context includes the compact Aegis hot path
+  (injected by the Aegis extension) and the routing guard appears on the first
+  non-readonly tool call when no routing decision was recorded.
 - The installed Aegis method-pack root remains available for workspace support.
 - Aegis remains a method pack; `GateDecision` and completion authority remain
   outside this repository.
@@ -216,11 +219,20 @@ Restart Pi or run `/reload` after updating so the host reloads skill metadata.
 
 ## Activation Mode
 
-Pi uses native skill discovery and routing. It does not currently use an Aegis
-bootstrap hook from this repository.
+Aegis ships a Pi extension under `extensions/pi/`, declared through the
+`pi.extensions` manifest entry in the repository root `package.json`. When the
+Aegis package is installed with `pi install git:github.com/GanyuanRan/Aegis`,
+Pi loads the extension from the package, and Aegis injects its compact
+`using-aegis` hot path into every LLM call in automatic mode, plus a routing
+guard that visibly flags the first non-readonly tool call when no routing
+decision was recorded. This mirrors the OpenCode plugin behavior through Pi's
+extension events (`context` injection + `tool_call`/`tool_result` guard).
 
-That means `AEGIS_ACTIVATION_MODE=explicit` does not override Pi's own skill
-matcher by itself. For explicit use, ask Pi to load an Aegis skill directly,
+Pi still uses its native skill discovery and routing for on-demand skill
+loading. The Aegis extension does not replace Pi's own skill matcher.
+
+`AEGIS_ACTIVATION_MODE=explicit` disables the automatic bootstrap injection and
+the routing guard. In explicit mode, ask Pi to load an Aegis skill directly,
 such as `/skill:using-aegis`, or name the skill in your request.
 
 You can still write the shared user-local Aegis config from the installed
@@ -238,8 +250,9 @@ cd <aegis-method-pack-root>
 python scripts/aegis-doctor.py activation-mode auto
 ```
 
-Restart Pi or run `/reload` after changing local Aegis config. For this host,
-the command does not override Pi's native matcher.
+Restart Pi or run `/reload` after changing local Aegis config. The config
+switch gates Aegis's own extension injection; it does not override Pi's native
+matcher by itself.
 
 ## Uninstalling
 

@@ -226,5 +226,86 @@ else
     rm -f "$aegis_config_file"
 fi
 
+# Test 11: update self-check resets a stale Bun cache without touching non-cache installs
+echo "Test 11: Checking update self-check..."
+node --input-type=module <<'EOF'
+import path from 'path';
+import { pathToFileURL } from 'url';
+import fs from 'fs';
+
+const pluginPath = process.env.AEGIS_PLUGIN_FILE;
+const module = await import(pathToFileURL(pluginPath).href);
+
+const check = (name, condition) => {
+    if (!condition) {
+        console.error(`  [FAIL] ${name}`);
+        process.exit(1);
+    }
+    console.log(`  [PASS] ${name}`);
+};
+
+const testHome = process.env.TEST_HOME;
+const fakeCacheRoot = path.join(testHome, '.cache/opencode/packages/aegis@git+https_/github.com/GanyuanRan/Aegis.git');
+const fakePluginDir = path.join(fakeCacheRoot, 'node_modules/aegis/.opencode/plugins');
+const fakePackageRoot = path.join(fakeCacheRoot, 'node_modules/aegis');
+fs.mkdirSync(fakePluginDir, { recursive: true });
+fs.writeFileSync(path.join(fakePackageRoot, 'package.json'), JSON.stringify({ name: 'aegis', version: '1.0.0' }, null, 2));
+const configDir = path.join(testHome, '.config/opencode');
+
+// Non-cache install (the repo checkout / test fixture) is never touched.
+const repoInstall = module.resolveCacheInstall(path.dirname(pluginPath));
+check('non-cache install resolves to null', repoInstall === null);
+
+const cacheInstall = module.resolveCacheInstall(fakePluginDir);
+check(
+    'cache install resolves package root and cache key dir',
+    cacheInstall !== null && cacheInstall.packageRoot === fakePackageRoot && cacheInstall.cacheKeyDir === fakeCacheRoot
+);
+
+let headValue = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+const fakeExecGitHead = async () => headValue;
+const statePath = path.join(configDir, '.aegis-plugin-state.json');
+fs.rmSync(statePath, { force: true });
+
+// First check anchors the remote HEAD and deletes nothing.
+let result = await module.performUpdateCheck({ pluginDir: fakePluginDir, configDir, execGitHead: fakeExecGitHead, logger: { error: () => {} } });
+check('first check anchors without deleting', result.status === 'anchored' && fs.existsSync(fakeCacheRoot));
+
+// Same HEAD: no-op.
+result = await module.performUpdateCheck({ pluginDir: fakePluginDir, configDir, execGitHead: fakeExecGitHead, logger: { error: () => {} } });
+check('same remote HEAD is current', result.status === 'current' && fs.existsSync(fakeCacheRoot));
+
+// Remote moved: cache entry is reset and reminder is set.
+headValue = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+result = await module.performUpdateCheck({ pluginDir: fakePluginDir, configDir, execGitHead: fakeExecGitHead, logger: { error: () => {} } });
+check('remote move resets the cache entry', result.status === 'cache-reset' && !fs.existsSync(fakeCacheRoot));
+const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+check('cache reset records updatePending', state.updatePending === true);
+
+// A failed git probe never blocks or deletes.
+fs.mkdirSync(fakePackageRoot, { recursive: true });
+fs.writeFileSync(path.join(fakePackageRoot, 'package.json'), JSON.stringify({ name: 'aegis', version: '1.0.0' }, null, 2));
+const failingGit = async () => { throw new Error('git not found'); };
+result = await module.performUpdateCheck({ pluginDir: fakePluginDir, configDir, execGitHead: failingGit, logger: { error: () => {} } });
+check('git failure skips silently without deleting', result.status === 'check-failed' && fs.existsSync(fakeCacheRoot));
+
+// After restart with a new cached version, the pending reminder is cleared.
+const state2 = { installedVersion: '1.0.0', updatePending: true, lastRemoteHead: 'bbb' };
+fs.writeFileSync(statePath, JSON.stringify(state2, null, 2));
+fs.writeFileSync(path.join(fakePackageRoot, 'package.json'), JSON.stringify({ name: 'aegis', version: '2.0.0' }, null, 2));
+module.reconcilePendingUpdate(configDir, fakePackageRoot);
+check('restart with new version clears updatePending', module.readUpdateState(configDir).updatePending === undefined);
+
+// Same version still pending: reminder stays.
+const state3 = { installedVersion: '1.0.0', updatePending: true, lastRemoteHead: 'bbb' };
+fs.writeFileSync(statePath, JSON.stringify(state3, null, 2));
+fs.writeFileSync(path.join(fakePackageRoot, 'package.json'), JSON.stringify({ name: 'aegis', version: '1.0.0' }, null, 2));
+module.reconcilePendingUpdate(configDir, fakePackageRoot);
+check('same version keeps updatePending', module.readUpdateState(configDir).updatePending === true);
+EOF
+if [ $? -ne 0 ]; then
+    exit 1
+fi
+
 echo ""
 echo "=== All plugin loading tests passed ==="

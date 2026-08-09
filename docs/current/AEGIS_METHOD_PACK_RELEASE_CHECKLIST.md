@@ -111,11 +111,12 @@ The following host documentation must be re-read before release:
 10. `docs/README.cc-gui.md`
 11. `docs/README.kimi-code.md`
 12. `docs/README.pi.md`
-13. `docs/README.openclaw.md`
-14. `docs/README.hermes-agent.md`
-15. `docs/README.zcode.md`
-16. `docs/README.grok-build.md`
-17. `docs/testing.md`
+13. `docs/README.omp.md`
+14. `docs/README.openclaw.md`
+15. `docs/README.hermes-agent.md`
+16. `docs/README.zcode.md`
+17. `docs/README.grok-build.md`
+18. `docs/testing.md`
 
 Confirm:
 
@@ -153,6 +154,9 @@ Confirm:
   Aegis-owned
 - Pi CLI is described as a structural Agent Skills / Pi package host surface,
   not current release-level fresh smoke closeout
+- OMP (Oh My Pi) is described as a structural `~/.agents/skills/` skill-view
+  host surface with `alwaysApply` native injection plus an optional extension
+  routing guard, not current release-level fresh smoke closeout
 - OpenClaw is described as individual local `SKILL.md` skill-directory install,
   not a canonical whole-repo `git:GanyuanRan/Aegis` install
 - Hermes Agent is described as structural skill-host exposure until a fresh

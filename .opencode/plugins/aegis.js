@@ -9,17 +9,18 @@ import path from 'path';
 import fs from 'fs';
 import os from 'os';
 import { fileURLToPath } from 'url';
+import { execFile } from 'node:child_process';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MIRROR_MANIFEST_FILE = '.aegis-mirror-manifest.json';
 
 // Simple frontmatter extraction (avoid dependency on skills-core for bootstrap)
 const extractAndStripFrontmatter = (content) => {
-  const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
   if (!match) return { frontmatter: {}, content };
 
   const frontmatterStr = match[1];
-  const body = match[2];
+  const body = match[2].replace(/\r\n/g, '\n');
   const frontmatter = {};
 
   for (const line of frontmatterStr.split('\n')) {
@@ -300,6 +301,158 @@ const resolveSkillSource = (homeDir) => {
 
 const ROUTING_GUARD_MARKER = 'AEGIS_ROUTING_GUARD';
 
+// Update self-check: OpenCode caches git plugins under
+// ~/.cache/opencode/packages/<key>/node_modules/<pkg> via Bun and does not
+// re-fetch on restart. To avoid stranding users on stale plugin versions, the
+// plugin compares the remote HEAD against a recorded anchor on startup; when
+// the remote moved, the cache entry is reset so the next launch re-installs.
+const GIT_REMOTE = 'https://github.com/GanyuanRan/Aegis.git';
+const UPDATE_STATE_FILE = '.aegis-plugin-state.json';
+const UPDATE_REMINDER_TEXT =
+  '**Aegis update:** a newer Aegis release was detected and the OpenCode plugin cache was reset. Restart OpenCode to load the updated plugin.';
+
+export const resolveCacheInstall = (pluginDir) => {
+  // Bun caches git plugins as nested directories under
+  // ~/.cache/opencode/packages/<git-url-parts...>/node_modules/aegis
+  const packageRoot = path.resolve(pluginDir, '..', '..');
+  const nodeModulesDir = path.dirname(packageRoot);
+  if (path.basename(nodeModulesDir) !== 'node_modules') return null;
+
+  let name = '';
+  try {
+    name = JSON.parse(fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8')).name || '';
+  } catch {
+    return null;
+  }
+  if (name !== 'aegis') return null;
+
+  // The cache entry to reset is the git package directory holding node_modules.
+  const cacheKeyDir = path.dirname(nodeModulesDir);
+
+  // Walk up to confirm the cache-key directory lives under
+  // <something>/.cache/opencode/packages/... so we never delete a local checkout.
+  let cursor = cacheKeyDir;
+  for (let i = 0; i < 12; i += 1) {
+    const parent = path.dirname(cursor);
+    if (path.basename(cursor) === 'packages') {
+      const opencodeCacheDir = parent;
+      const cacheRoot = path.dirname(opencodeCacheDir);
+      const isBunCache =
+        path.basename(opencodeCacheDir) === 'opencode' && path.basename(cacheRoot) === '.cache';
+      return isBunCache ? { packageRoot, cacheKeyDir } : null;
+    }
+    cursor = parent;
+  }
+  return null;
+};
+
+export const readUpdateState = (configDir) => {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(configDir, UPDATE_STATE_FILE), 'utf8')) || {};
+  } catch {
+    return {};
+  }
+};
+
+const writeUpdateState = (configDir, state) => {
+  try {
+    fs.writeFileSync(path.join(configDir, UPDATE_STATE_FILE), JSON.stringify(state, null, 2) + '\n', 'utf8');
+  } catch {
+    // State bookkeeping must never break startup.
+  }
+};
+
+const readCachedVersion = (packageRoot) => {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8')).version || 'unknown';
+  } catch {
+    return 'unknown';
+  }
+};
+
+const defaultExecGitHead = async (remote, timeoutMs = 3000) => {
+  return new Promise((resolve) => {
+    execFile('git', ['ls-remote', remote, 'HEAD'], { timeout: timeoutMs }, (err, stdout) => {
+      if (err) return resolve(null);
+      const head = stdout.trim().split(/\s+/)[0];
+      resolve(head || null);
+    });
+  });
+};
+
+// Startup self-check. Never blocks startup: any failure is a silent skip.
+// Exported so tests can inject a fake execGitHead and a fake plugin location.
+export const performUpdateCheck = async ({
+  pluginDir,
+  configDir,
+  execGitHead = defaultExecGitHead,
+  now = () => new Date(),
+  logger = console
+}) => {
+  const cache = resolveCacheInstall(pluginDir);
+  if (!cache) return { status: 'not-cache-install' };
+
+  const state = readUpdateState(configDir);
+  const version = readCachedVersion(cache.packageRoot);
+  const nextState = { ...state, installedVersion: version, lastCheckedAt: now().toISOString() };
+
+  let remoteHead = null;
+  try {
+    remoteHead = await execGitHead(GIT_REMOTE);
+  } catch {
+    remoteHead = null;
+  }
+
+  if (!remoteHead) {
+    writeUpdateState(configDir, nextState);
+    return { status: 'check-failed', version };
+  }
+
+  nextState.lastRemoteHead = remoteHead;
+
+  if (!state.lastRemoteHead) {
+    // First check on this cache: record the anchor, do not delete anything.
+    writeUpdateState(configDir, nextState);
+    return { status: 'anchored', version, remoteHead };
+  }
+
+  if (state.lastRemoteHead === remoteHead) {
+    writeUpdateState(configDir, nextState);
+    return { status: 'current', version, remoteHead };
+  }
+
+  // Remote moved: reset the Bun cache entry so the next launch installs the
+  // latest release. The running plugin keeps working until then.
+  try {
+    fs.rmSync(cache.cacheKeyDir, { recursive: true, force: true });
+    nextState.updatePending = true;
+    writeUpdateState(configDir, nextState);
+    return { status: 'cache-reset', version, remoteHead };
+  } catch (err) {
+    logger.error('[aegis] update self-check could not reset the plugin cache:', err.message);
+    return { status: 'reset-failed', version, remoteHead };
+  }
+};
+
+// After a cache reset, the next launch runs the freshly installed plugin. Clear
+// the pending reminder once the cached version actually changed.
+export const reconcilePendingUpdate = (configDir, packageRoot) => {
+  try {
+    const state = readUpdateState(configDir);
+    if (!state.updatePending) return;
+    const currentVersion = readCachedVersion(packageRoot);
+    if (state.installedVersion && currentVersion !== 'unknown' && state.installedVersion !== currentVersion) {
+      const { updatePending, ...rest } = state;
+      writeUpdateState(configDir, rest);
+    }
+  } catch {
+    // Bookkeeping only; never break startup.
+  }
+};
+
+const pendingUpdateReminder = (configDir) =>
+  readUpdateState(configDir).updatePending ? `\n\n${UPDATE_REMINDER_TEXT}` : '';
+
 const READONLY_TOOLS = new Set([
   'read',
   'glob',
@@ -340,6 +493,22 @@ export const AegisPlugin = async ({ client, directory }) => {
   // a second host-local checkout.
   ensureSkillMirror(aegisSkillsDir, globalSkillsDir, bundledSkillsDir);
 
+  // Update self-check (fire-and-forget, never blocks startup): when the plugin
+  // runs from OpenCode's Bun cache and the remote HEAD moved, reset the cache
+  // entry so the next launch re-installs the latest release.
+  reconcilePendingUpdate(configDir, path.resolve(__dirname, '..', '..'));
+  performUpdateCheck({ pluginDir: __dirname, configDir })
+    .then((result) => {
+      if (result.status === 'cache-reset') {
+        console.log(`[aegis] update self-check: reset stale plugin cache (cached ${result.version}); restart OpenCode to load the latest release`);
+      } else if (result.status === 'not-cache-install') {
+        // Development checkout or test environment; nothing to refresh.
+      }
+    })
+    .catch(() => {
+      // The self-check must never interfere with plugin startup.
+    });
+
   // Helper to generate compact bootstrap content
   const getBootstrapContent = () => {
     // Try to load using-aegis skill
@@ -360,6 +529,7 @@ Use OpenCode's native \`skill\` tool to list and load skills.`;
 
     return `<EXTREMELY_IMPORTANT>
 You have Aegis.
+${pendingUpdateReminder(configDir)}
 
 Aegis TDD mode: ${tddMode(homeDir)}. off is the default and disables automatic TDD while verification-before-completion still applies; auto routes strict TDD only when risk warrants.
 

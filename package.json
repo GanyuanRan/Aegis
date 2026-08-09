@@ -1,6 +1,6 @@
 {
   "name": "aegis",
-  "version": "2.6.9",
+  "version": "2.7.0",
   "type": "module",
   "main": ".opencode/plugins/aegis.js",
   "keywords": [
@@ -12,6 +12,14 @@
   "pi": {
     "skills": [
       "./skills"
+    ],
+    "extensions": [
+      "./extensions/pi"
+    ]
+  },
+  "omp": {
+    "extensions": [
+      "./extensions/omp"
     ]
   }
 }
