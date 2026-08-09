@@ -1,6 +1,6 @@
 ---
 name: subagent-driven-development
-description: "Use when executing implementation plans with independent tasks in the current session"
+description: "Use when executing a written implementation plan with independent tasks in the current session. For ad-hoc 2+ independent tasks without a plan, use dispatching-parallel-agents instead."
 ---
 
 # Execute

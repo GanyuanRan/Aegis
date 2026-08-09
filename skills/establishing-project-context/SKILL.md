@@ -1,6 +1,6 @@
 ---
 name: establishing-project-context
-description: "Use when the user asks to establish shared project language or project work exposes a resolved, vague, conflicting, renamed, or deprecated domain term that needs active semantic modeling."
+description: "Use when the user asks to establish shared project language, or project work exposes a conflicting, renamed, or deprecated domain term that needs active semantic modeling. Routine small tasks stay on the fast path."
 ---
 
 # Establishing Project Context

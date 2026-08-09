@@ -1,6 +1,6 @@
 ---
 name: finishing-a-development-branch
-description: "Use when verified work has an Aegis-created branch/worktree to integrate or clean up, or the user explicitly requests merge, PR, or branch lifecycle handling."
+description: "Use when verified work needs integration or cleanup of an existing task-created branch/worktree, or the user explicitly requests merge, PR, or branch lifecycle handling."
 ---
 
 # Finishing a Development Branch
