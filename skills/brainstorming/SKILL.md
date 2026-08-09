@@ -1,6 +1,6 @@
 ---
 name: brainstorming
-description: "Use when defining ambiguous or high-complexity new features, product behavior, UI/component design, architecture choices, contract changes, or medium/high-complexity design work before implementation, or when the user asks to grill or pressure-test a plan or design. Low-complexity or routine small requests stay on the fast path and do not belong here."
+description: "Use when defining ambiguous or high-complexity new features, product behavior, UI/component design, architecture choices, contract changes, or when grilling/pressure-testing a plan or design. Small requests stay on the fast path."
 ---
 
 <EXPLICIT-MODE-GATE>
