@@ -1,5 +1,45 @@
 # Aegis Release Notes
 
+## v2.7.0 (2026-08-09)
+
+### Pi CLI 与 OMP 宿主适配:自动注入 + 路由守卫
+
+Pi CLI 和 OMP(Oh My Pi,can1357/oh-my-pi)此前只能被动发现 skills,模型
+按需加载,没有强制路由能力。v2.7.0 为两个宿主补齐与 OpenCode 插件等价的
+自动路由机制:
+
+- 新增共享扩展核心 `extensions/shared/aegis-bootstrap.ts`:config 解析
+  (`~/.config/aegis/config.toml` 的 activation/tdd 模式 + 环境变量覆盖)、
+  紧凑 bootstrap 组装、路由守卫状态机(只读工具豁免、`SKILL.md`/`skill://`
+  识别为技能加载、每会话最多触发一次)、method-pack 根祖先遍历解析。
+- `extensions/pi/index.ts`(通过 `pi.extensions` 清单随包分发)与
+  `extensions/omp/index.ts`(OMP 扩展)为薄适配层,复用共享核心;auto 模式下
+  每次 LLM 调用前注入紧凑热路径,首个非只读工具调用无路由决策时在工具
+  结果前追加 `AEGIS_ROUTING_GUARD` 可见标记。`explicit` 模式关闭注入与守卫。
+- OMP 额外支持原生强制读取:`using-aegis/SKILL.md` 标记
+  `alwaysApply: true`,OMP 会把完整热路径注入系统提示词(其他宿主按 Agent
+  Skills 标准忽略该字段,无副作用)。
+- 兼容性:pi 复用 `~/.agents/skills/` 等既有发现路径;omp 通过 `agents`
+  provider 读取 `~/.agents/skills/`。
+- 文档:`docs/README.pi.md` 激活模式章节重写为扩展注入语义;新增
+  `docs/README.omp.md` 完整宿主指南;兼容矩阵、KNOWN_LIMITATIONS
+  (2.19 OMP 条目)、release checklist、prompt hygiene、README 宿主列表同步。
+- 测试:`tests/pi-omp-extensions/test-shared-core.sh`(21 项断言)、
+  `tests/e2e/omp-host-boundary-check.sh` 新增;pi/omp/opencode 既有检查全过。
+
+### OpenCode 插件更新自检:自动跟随发布
+
+OpenCode 通过 Bun 缓存 git 插件且 lockfile 化,重启不会自动重新拉取——
+此前文档声称「重启自动更新」与实际行为不符。v2.7.0 修复:
+
+- `.opencode/plugins/aegis.js` 每次启动执行更新自检:与远端 HEAD 锚点对比,
+  远端前进时自动重置 Bun 缓存条目并注入「请重启 OpenCode 完成升级」提醒;
+  重启后新版本插件自动清除提醒。offline/无 git 时静默跳过,绝不阻塞启动。
+- 首次锚定只记录不删除,旧缓存用户需一次性手动清缓存(文档已给命令),此后
+  全自动。
+- `docs/README.opencode.md` Updating 章节重写为真实机制 + 手动兜底命令。
+- 附带修复:frontmatter 剥离兼容 CRLF 行尾(shared 核心与 opencode 插件同步)。
+
 ## v2.6.9 (2026-08-08)
 
 ### OpenCode 宿主路由守卫与路由契约
