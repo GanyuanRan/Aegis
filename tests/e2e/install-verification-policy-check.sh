@@ -47,6 +47,7 @@ host_docs=(
     "docs/README.kimi-code.md"
     "docs/README.antigravity.md"
     "docs/README.pi.md"
+    "docs/README.omp.md"
     "docs/README.openclaw.md"
     "docs/README.hermes-agent.md"
     "docs/README.zcode.md"
