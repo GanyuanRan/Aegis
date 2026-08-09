@@ -85,7 +85,12 @@ def parse_line(path: Path, root: Path, line_number: int, line: str) -> tuple[Led
         try:
             fields = parse_fields(payload)
         except ValueError as exc:
-            return None, LedgerIssue(path.as_posix(), line_number, f"cannot parse marker fields: {exc}", line.strip())
+            return None, LedgerIssue(
+                path.relative_to(root).as_posix(),
+                line_number,
+                f"cannot parse marker fields: {exc}",
+                line.strip(),
+            )
         missing = [field for field in REQUIRED_FIELDS if not fields.get(field)]
         if missing:
             return None, LedgerIssue(
