@@ -194,11 +194,30 @@ Create project-specific skills in `.opencode/skills/` within your project.
 
 ## Updating
 
-Aegis updates automatically when you restart OpenCode. The plugin is re-installed from the git repository on each launch.
+OpenCode installs git plugins through Bun and caches them under
+`~/.cache/opencode/packages/` (Windows:
+`%USERPROFILE%\.cache\opencode\packages\`). Because the cache is lockfile-bound,
+OpenCode does **not** re-fetch the plugin on every launch by itself.
 
-If the user-local Aegis config already points to a canonical `method_pack_root`,
-restart OpenCode after updating that checkout so the plugin can refresh the
-generated OpenCode skills view from the same source.
+Aegis handles this for you: the plugin runs an update self-check on every
+startup. It compares the upstream HEAD of the Aegis repository against a local
+anchor; when the remote moved, it resets the stale cache entry automatically
+and shows a reminder in the injected bootstrap. **Just restart OpenCode to
+complete the upgrade** — the next launch re-installs the latest release with no
+manual steps.
+
+To force a manual refresh, delete the cached plugin package and restart
+OpenCode:
+
+```bash
+rm -rf ~/.cache/opencode/packages/aegis@git+https_/github.com/GanyuanRan/Aegis.git
+```
+
+Windows PowerShell:
+
+```powershell
+Remove-Item -Recurse -Force "$env:USERPROFILE\.cache\opencode\packages\aegis@git+https_\github.com\GanyuanRan\Aegis.git"
+```
 
 To pin a specific version, use a branch or tag:
 
@@ -208,7 +227,12 @@ To pin a specific version, use a branch or tag:
 }
 ```
 
-Replace `vX.Y.Z` with an existing Aegis release tag.
+Replace `vX.Y.Z` with an existing Aegis release tag. Pinned installs skip the
+automatic self-check reset; upgrade by bumping the pinned ref.
+
+If the user-local Aegis config already points to a canonical `method_pack_root`,
+restart OpenCode after updating that checkout so the plugin can refresh the
+generated OpenCode skills view from the same source.
 
 ## How It Works
 
