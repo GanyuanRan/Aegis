@@ -5,7 +5,9 @@
 # Tests whether Claude invokes a skill when the user explicitly requests it by name
 # (without using the plugin namespace prefix)
 #
-# Uses isolated HOME to avoid user context interference
+# Runs in a scratch project directory, but under the caller's real HOME, so the
+# locally installed Claude Code environment (user CLAUDE.md, skills, agents) is
+# in scope for every run
 
 set -e
 
@@ -81,7 +83,7 @@ Create login and register endpoints.
 Protect routes with JWT validation.
 EOF
 
-# Run CLI with isolated environment
+# Run CLI in the scratch project directory
 if [ "$TEST_CLI" = "codex" ]; then
     LOG_FILE="$OUTPUT_DIR/codex-output.log"
 else
