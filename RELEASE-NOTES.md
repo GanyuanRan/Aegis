@@ -1,5 +1,33 @@
 # Aegis Release Notes
 
+## v2.7.1 (2026-08-09)
+
+### 修复:小任务不再默认触发 spec/plan 文档创建
+
+此前复杂度路由与技能描述的措辞会让小需求被误判为需要产出 spec/plan
+文档。v2.7.1 收紧默认行为:
+
+- `AEGIS_PROCESS_BASELINE.md` §12.5:medium 任务改为「会话内计划」;仅在
+  what/why/acceptance 需要钉住且无既有 owner 文档覆盖时才写 Spec Brief 或
+  plan 文档。
+- `using-aegis` 热路径第 6 条:plan 明确「默认会话内,仅当需要跨会话持久
+  方向或审批时写文档(Doc Necessity Gate)」。
+- `brainstorming` / `writing-plans` 的路由描述收紧:低复杂度或常规小需求
+  留在 fast path,不再进入设计/计划流程。
+- `GLOBAL_USER_RULES_TEMPLATE`(中英)同步:会话内计划按复杂度相称,写
+  文档仅限需要持久方向时。
+
+### 修复:deferred ledger 问题路径改为相对扫描根
+
+- `scripts/aegis-deferred-ledger.py`:marker 字段解析失败时,issue 路径从
+  绝对路径改为相对扫描根,与 missing-fields 分支及正常条目保持一致。
+- 新增 `test_issue_paths_are_repository_relative` 回归测试。
+
+### 文档:修正 explicit-skill-request runner 的隔离声明
+
+- `tests/explicit-skill-requests/run-test.sh`:注释从「使用隔离 HOME」修正为
+  如实描述「在 scratch 项目目录、调用者真实 HOME 下运行」,与实际行为一致。
+
 ## v2.7.0 (2026-08-09)
 
 ### Pi CLI 与 OMP 宿主适配:自动注入 + 路由守卫
