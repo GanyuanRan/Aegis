@@ -1,5 +1,28 @@
 # Aegis Release Notes
 
+## v2.7.2 (2026-08-09)
+
+### 修复:路由描述收紧,消除三个主题的触发歧义
+
+基于 description 审计发现的路由层问题,收紧 6 个技能的路由描述
+(全部 ≤240 字符,Kimi Code 宿主要求):
+
+- **文档创建**:`establishing-project-context` 触发词收窄(移除宽泛的
+  "vague term",改为 conflicting/renamed/deprecated,并加
+  "Routine small tasks stay on the fast path");`first-principles-review`
+  的 "repeated fixes" 改为 "high-risk decisions" + 排除语——小任务不再被
+  拉进正式建模/review 流程。
+- **branch/worktree**:`finishing-a-development-branch` 措辞改为
+  "integration or cleanup of an existing task-created branch/worktree",
+  与 ADR-0003 的 exception-only 纪律对齐,不再暗示 Aegis 默认创建。
+- **subagent/会话路由**:`executing-plans`(跨会话)与
+  `subagent-driven-development`(当前会话)的区分标准写入双方 description;
+  `dispatching-parallel-agents` 明确为"无书面计划的 2+ 独立任务",消除与
+  SDD 的路由重叠;SDD 补 "ad-hoc tasks use dispatching-parallel-agents"。
+
+验证:22 个 Kimi-visible skill 元数据有效、context budget、workflow
+quality、TDD policy 检查全部通过。
+
 ## v2.7.1 (2026-08-09)
 
 ### 修复:小任务不再默认触发 spec/plan 文档创建
