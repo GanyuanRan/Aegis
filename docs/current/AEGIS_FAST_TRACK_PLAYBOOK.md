@@ -318,8 +318,8 @@ completion authority.
 | Turn approved intent into work | `Write the implementation plan for this approved design.` | Produces bounded tasks, owner/file map, compatibility, retirement, and verification. |
 | Execute a plan safely | `Execute this plan in slices and keep checkpoints.` | Re-checks boundaries, records evidence, and stops on drift. |
 | Use strict test-first work | `TDD Route: strict` / `Use strict TDD.` | Runs RED → GREEN → REFACTOR for a suitable approved slice. |
-| Parallelize independent work | `These tasks are independent; use parallel agents safely.` | Splits independent ownership and reviews combined evidence. |
-| Isolate feature work | `Use a worktree for this feature.` | Uses an isolated workspace when the host/repository workflow supports it. |
+| Parallelize independent work | `These tasks are independent; use parallel agents safely.` | Delegation only when coordination clearly beats inline cost; otherwise run inline. Splits independent ownership and reviews combined evidence. |
+| Isolate feature work | `Use a worktree for this feature.` | Exception-only: concurrent checkout, blocking unrelated dirty state, or explicit user/repository authority. Task complexity, TDD, planning, or subagents alone are not enough. |
 
 ### Review, Simplify, And Continue
 

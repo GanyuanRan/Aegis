@@ -292,8 +292,8 @@ helper-backed 生命周期提供 `init`、`new-work`、`add-checkpoint`、
 | 将确认意图转成任务 | `为已批准设计写实施计划。` | 产出有边界任务、owner/文件图、兼容、退役与验证。 |
 | 安全执行计划 | `分切片执行这个计划，并持续保存 checkpoint。` | 重查边界、记录证据，并在 drift 时停下。 |
 | 严格测试先行 | `TDD Route: strict` / `使用 strict TDD。` | 对合适且已确认的切片执行 RED → GREEN → REFACTOR。 |
-| 并行独立工作 | `这些任务彼此独立，安全使用并行 Agent。` | 按独立 owner 拆分，并审查汇总后的证据。 |
-| 隔离功能开发 | `这个功能使用 worktree。` | 宿主/仓库流程支持时使用隔离工作区。 |
+| 并行独立工作 | `这些任务彼此独立，安全使用并行 Agent。` | 仅当并行委派明显优于 inline 成本时使用，否则 inline 执行。按独立 owner 拆分，并审查汇总后的证据。 |
+| 隔离功能开发 | `这个功能使用 worktree。` | 仅限例外：并发 checkout、阻塞性的无关 dirty state、或用户/仓库明确 authority。任务复杂度、TDD、计划或 subagent 单独都不构成理由。 |
 
 ### 审查、简化与续接
 

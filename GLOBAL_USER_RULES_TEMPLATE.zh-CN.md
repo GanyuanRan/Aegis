@@ -22,6 +22,8 @@ profile 变化时，需要重新复制或手工合并。
 
 - 对非简单任务，在 Lite 的实施前检查基础上补充明确的非目标、baseline references 和验证目标。
 - 对已由 Aegis 路由的任务，按复杂度使用 baseline read set 和会话内 plan；仅当工作需要跨会话的持久方向时才写 plan/spec 文档。只有复杂、含歧义、contract 或跨模块任务才增加 spec/design review。
+- 仅当任务存在真正独立的 slice、owner 边界清晰且协调收益明显优于 inline 成本时才委派 subagent；否则 inline 执行。
+- 默认在当前分支与当前工作区完成。仅在有独立历史需求时建 branch；仅在并发 checkout、阻塞性的无关 dirty state 或用户/仓库明确 authority 时才建 worktree；任务复杂度、TDD、计划或使用 subagent 单独都不构成隔离理由。
 - TDD mode 默认是 `off`。遵循当前配置的 TDD mode 或用户/项目显式要求；任务复杂度本身不能授权 strict TDD。
 - 对项目问题或“下一步做什么”类请求，先检查 baseline 候选材料。若没有可用 baseline，做有边界的仓库扫描；只有项目内容足够时才建立轻量 baseline，同时仍回答原问题。
 - 懒创建 Aegis 项目记录。优先沿用项目已有文档；只有 active workflow 需要持久状态时才创建最小 `docs/aegis/` 记录。
