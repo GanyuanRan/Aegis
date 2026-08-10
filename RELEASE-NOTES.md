@@ -1,5 +1,32 @@
 # Aegis Release Notes
 
+## v2.7.5 (2026-08-10)
+
+### 反熵增治理:自动触发,执行仍需确认
+
+- `anti-entropy-governance` 触发机制从"仅显式请求"改为**自动触发**:任务触及
+  owner 塌缩、fallback 移除或 schema/持久化/source-of-truth 边界时自动出现,
+  识别反熵机会并给出 delete-first / compat-exception / confirmation-first
+  分类;破坏性执行仍保留显式范围确认硬门(泛化同意无效、需备份/回滚提示)。
+- 保持不进全局热路径预算;workflow-quality 断言同步更新。
+
+### 路由统一:subagent/inline 与 worktree 纪律对齐
+
+- 三个执行技能 description 统一补 "coordination benefit / otherwise inline"
+  兜底(`subagent-driven-development`、`dispatching-parallel-agents`、
+  `executing-plans`),与 writing-plans 内部条件一致。
+- `subagent-driven-development` 的 long-task 加载从"multi-task 强制"收窄为
+  "跨会话/handoff/需可恢复状态时";long-task-continuation 明确
+  "多步/todo/subagent 本身不构成 durable 记录理由,默认 inline checkpoint"。
+- 速通秘籍能力表与全局用户规则模板(中英)同步 subagent/worktree 纪律:
+  worktree 仅限并发 checkout、阻塞性 dirty state、用户/仓库明确 authority。
+
+### 贡献者修复:benchmark retry headroom 改为 floor 语义
+
+- `run_agentic_benchmark.py` retry headroom 从无条件覆盖改为取最大值,
+  不再把 extended-held-out(132/18000)错误降级到 64/7200;文档与回归测试
+  同步(#15,感谢 Ryan Chou)。
+
 ## v2.7.2 (2026-08-09)
 
 ### 修复:路由描述收紧,消除三个主题的触发歧义
