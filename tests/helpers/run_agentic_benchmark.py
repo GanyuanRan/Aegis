@@ -325,8 +325,13 @@ def profile_fields(profile: dict[str, Any]) -> dict[str, Any]:
     )}
     fields.update(profileId=profile["id"], repetitions=profile["repetitionsPerCase"], targetRunCount=profile["validRunTarget"], maxAttempts=profile["paidAttemptCeiling"])
     if retry_headroom_enabled():
-        fields["maxAttempts"] = RETRY_HEADROOM_MAX_ATTEMPTS
-        fields["wallClockBudgetSeconds"] = RETRY_HEADROOM_WALL_SECONDS
+        # Headroom is a floor, never a cap: profiles whose frozen ceiling or
+        # budget already exceeds the headroom constants keep their own values.
+        # Overwriting unconditionally lowered extended-held-out from 132/18000
+        # to 64/7200, which the scheduler then rejected because maxAttempts
+        # fell below the frozen schedule length.
+        fields["maxAttempts"] = max(fields["maxAttempts"], RETRY_HEADROOM_MAX_ATTEMPTS)
+        fields["wallClockBudgetSeconds"] = max(fields["wallClockBudgetSeconds"], RETRY_HEADROOM_WALL_SECONDS)
     return fields
 
 

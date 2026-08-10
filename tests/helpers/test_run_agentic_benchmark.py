@@ -1328,6 +1328,23 @@ class PromptPolicyTest(unittest.TestCase):
             self.assertEqual(fields["maxAttempts"], benchmark_runner.RETRY_HEADROOM_MAX_ATTEMPTS)
             self.assertEqual(fields["wallClockBudgetSeconds"], benchmark_runner.RETRY_HEADROOM_WALL_SECONDS)
 
+    def test_retry_headroom_never_lowers_a_frozen_profile(self):
+        root = Path(__file__).resolve().parents[2]
+        matrix_path = root / "tests" / "e2e" / "fixtures" / "agentic-benchmark-matrix.json"
+        profiles = json.loads(matrix_path.read_text(encoding="utf-8"))["runProfiles"]
+        self.assertTrue(profiles)
+        for profile in profiles:
+            with self.subTest(profile=profile["id"]):
+                with mock.patch.dict(os.environ, {}, clear=False):
+                    if "AEGIS_AGENTIC_BENCHMARK_RETRY_HEADROOM" in os.environ:
+                        del os.environ["AEGIS_AGENTIC_BENCHMARK_RETRY_HEADROOM"]
+                    frozen = benchmark_runner.profile_fields(profile)
+                with mock.patch.dict(os.environ, {"AEGIS_AGENTIC_BENCHMARK_RETRY_HEADROOM": "1"}, clear=False):
+                    headroom = benchmark_runner.profile_fields(profile)
+                self.assertGreaterEqual(headroom["maxAttempts"], frozen["maxAttempts"])
+                self.assertGreaterEqual(headroom["wallClockBudgetSeconds"], frozen["wallClockBudgetSeconds"])
+                self.assertGreaterEqual(headroom["maxAttempts"], headroom["targetRunCount"])
+
 
 if __name__ == "__main__":
     unittest.main()
