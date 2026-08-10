@@ -454,8 +454,9 @@ binding limits instead of stopping the batch at the first paired-canary or
 circuit-open transport failure. This exists because custom provider networks
 can drop streams transiently; without it, one wave-1 transport failure aborts
 the whole batch. For the same reason, `AEGIS_AGENTIC_BENCHMARK_RETRY_HEADROOM=1`
-projects the provider-track batch with a higher paid-attempt ceiling (64) and
-wall-clock budget (7200s) than the frozen matrix profile; both values are
+raises the provider-track paid-attempt ceiling to at least 64 and the
+wall-clock budget to at least 7200s; the headroom acts as a floor, so a profile
+whose frozen values are already larger keeps its own. Both values are
 frozen into the batch digest and `verify_batch` compares them against the same
 projection, so a provider track can absorb transient failures inside one batch
 instead of ending partial.
