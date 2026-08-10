@@ -1,6 +1,6 @@
 ---
 name: anti-entropy-governance
-description: "Use when retiring old logic, collapsing duplicate owners, removing fallbacks, or touching schema, persistence, or source-of-truth boundaries while deciding whether to delete old paths, retain compatibility, or stop for confirmation."
+description: "Use when touching retiring old logic, collapsing duplicate owners, removing fallbacks, or schema/persistence/source-of-truth boundaries; identify opportunities automatically; destructive execution requires explicit confirmation."
 ---
 
 # Anti-Entropy
@@ -56,7 +56,7 @@ Prefer composition from:
 - `verification-before-completion` for cleanup / retirement / compatibility /
   migration closeout
 
-Do not load this directly from `using-aegis` unless explicitly requested.
+Load automatically when the task touches owner collapse, fallback removal, or schema/persistence/source-of-truth boundaries. Automatic loading identifies and advises only; destructive execution still requires explicit scoped user confirmation.
 
 ## Core Principle
 

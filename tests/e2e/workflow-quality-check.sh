@@ -948,8 +948,10 @@ assert_contains "skills/anti-entropy-governance/SKILL.md" "Data Destruction Guar
     "anti-entropy skill defines data destruction guard"
 assert_contains "skills/anti-entropy-governance/SKILL.md" "generic agreement" \
     "anti-entropy skill rejects generic agreement as confirmation"
-assert_contains "skills/anti-entropy-governance/SKILL.md" "Do not load this directly from .*using-aegis.*unless explicitly requested" \
+assert_not_contains "skills/using-aegis/SKILL.md" "anti-entropy" \
     "anti-entropy skill stays out of the global hot path"
+assert_contains "skills/anti-entropy-governance/SKILL.md" "Load automatically when the task touches" \
+    "anti-entropy skill auto-triggers on entropy surfaces while gating destructive execution"
 assert_contains "skills/long-task-continuation/SKILL.md" "Minimal Reporting Shape" \
     "long-task continuation keeps minimal reporting shape"
 assert_contains "skills/executing-plans/SKILL.md" "Pre-Edit Complexity Check" \
