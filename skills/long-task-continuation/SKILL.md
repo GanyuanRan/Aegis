@@ -38,6 +38,8 @@ Use this skill when any of these are true:
 
 For short direct answers or one-command checks, do not force this protocol.
 
+Multi-step, todo-driven, or subagent-using tasks do not force durable records by themselves; keep an inline checkpoint unless the task also crosses sessions, needs handoff, or requires resumable state.
+
 ## Required Artifacts
 
 Maintain artifacts under `docs/aegis/work/YYYY-MM-DD-<slug>/`:

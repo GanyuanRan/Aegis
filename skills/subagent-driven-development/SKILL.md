@@ -1,6 +1,6 @@
 ---
 name: subagent-driven-development
-description: "Use when executing a written implementation plan with independent tasks in the current session. For ad-hoc 2+ independent tasks without a plan, use dispatching-parallel-agents instead."
+description: "Use when executing a written implementation plan with independent tasks in the current session where delegation beats inline coordination cost; otherwise inline. Ad-hoc 2+ tasks without a plan use dispatching-parallel-agents."
 ---
 
 # Execute
@@ -43,7 +43,7 @@ branches, and worktrees; implementers and reviewers edit/verify/report but do
 not mutate Git lifecycle state. Task complexity, TDD, planning, subagents, or a
 `main`/`master` name does not justify isolation by itself.
 
-Before multi-task plans: load long-task-continuation, create checkpoint, include in every implementer prompt.
+Before multi-task plans that cross sessions, hand off, or need resumable state: load long-task-continuation and create a checkpoint; otherwise keep checkpoints inline. Include the checkpoint in every implementer prompt.
 
 Before dispatching an implementer, build a `SubagentContextPacket` instead of
 passing full conversation history. Include:

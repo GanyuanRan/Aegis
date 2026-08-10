@@ -1,6 +1,6 @@
 ---
 name: dispatching-parallel-agents
-description: "Use when facing 2+ independent tasks without a written plan that can be worked on without shared state or sequential dependencies. Planned tasks in the current session use subagent-driven-development."
+description: "Use when facing 2+ independent tasks without a written plan, with no shared state or sequential dependencies, where parallel delegation beats inline cost; otherwise inline. Planned tasks use subagent-driven-development."
 ---
 
 # Dispatching Parallel Agents

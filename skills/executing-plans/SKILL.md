@@ -1,6 +1,6 @@
 ---
 name: executing-plans
-description: "Use when executing a written implementation plan across sessions or with review checkpoints. For same-session execution with independent tasks, use subagent-driven-development instead."
+description: "Use when executing a written implementation plan across sessions or with review checkpoints. Small or single-slice plans stay inline. For same-session independent tasks, use subagent-driven-development instead."
 ---
 
 # Executing Plans
