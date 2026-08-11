@@ -150,5 +150,6 @@ Workspace helper coverage:
 - `workspace-helper-resolution-check.sh` verifies that workflows resolve the
   helper from the installed method-pack support path and pass the target project
   separately with `--root`.
-- `long-task-continuation-check.sh` verifies that long-task `work/<slug>/`
-  records are routed through the workspace helper discipline.
+- `long-task-continuation-check.sh` verifies that long-task
+  `work/YYYY-MM-DD-<slug>/` records are routed through the workspace helper
+  discipline.
