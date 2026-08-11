@@ -354,6 +354,25 @@ def validate_immutable_case_pair(contract: dict[str, Any], case_id: str) -> None
     )
 
 
+def validate_case_semantics(outcome_contract: dict[str, Any], case_id: str) -> None:
+    if case_id != "change-necessity-before-edit":
+        return
+    workspace = outcome_contract.get("workspace", {})
+    require(
+        workspace.get("requiredChangedPaths") == ["src/settings.js"],
+        "change-necessity-before-edit must require the canonical settings owner to change",
+    )
+    events = outcome_contract.get("events", {})
+    require(
+        events.get("requiredBeforeFirstEdit") == ["implementation-rationale"],
+        "change-necessity-before-edit must require rationale before the first edit",
+    )
+    require(
+        "workspace-change" not in outcome_contract.get("vetoes", []),
+        "change-necessity-before-edit must not veto its required workspace change",
+    )
+
+
 def validate_case(
     case: dict[str, Any],
     scenarios: dict[str, dict[str, Any]],
@@ -408,6 +427,7 @@ def validate_case(
         case_id,
         immutable_project=sibling_project,
     )
+    validate_case_semantics(outcome_contract, case_id)
     validate_immutable_case_pair(outcome_contract, case_id)
     if has_immutable_arg_paths(outcome_contract):
         validate_immutable_project_owner(outcome_path, project_path, declared_seed_project, case_id)
