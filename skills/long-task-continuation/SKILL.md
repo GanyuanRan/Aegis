@@ -232,9 +232,9 @@ When resuming:
 7. Compare current worktree state with checkpoint claims.
 8. Compare the slice with the view's intent, scope, baseline, compatibility,
    retirement, test, and review locks.
-9. If checkpoint, baseline, context, view, and worktree disagree, compose
-   `establishing-project-context` for a semantic conflict; for any other
-   disagreement, pause or return to planning.
+9. If any disagreement exists among the checkpoint, baseline, context, view, and
+   worktree, compose `establishing-project-context` for a semantic conflict; for
+   any other disagreement, pause or return to planning.
 10. Before an unplanned repair, read retained invariant, owner seam, patch shape,
    and causal topology and route comparison to `systematic-debugging`; a new
    carrier name alone does not prove a new direction.
