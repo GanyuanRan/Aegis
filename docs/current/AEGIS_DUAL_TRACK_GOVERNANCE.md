@@ -42,13 +42,18 @@ Execution order:
 
 1. **Locate**: Where is the current duplicate owner / old fallback / historical patch
 2. **Effectiveness Check**: Is it still active on the main chain
-   - If already inactive → delete directly, skip to step 5
+   - If already inactive → record that local fact, then continue to step 3
    - If still active → continue to step 3
-3. **Default Operation**: Confirm a safe deletion path, execute deletion
-4. **Exception** (only when verified dependency blockage prevents deletion):
+3. **Boundary Check**: Classify internal code, proven active external
+   dependencies, and proven distribution whose consumers cannot be observed
+4. **Default Operation**: For internal code or a resolved safe boundary, delete
+5. **Exception** (only when verified dependency blockage prevents deletion):
    - Record: retained object, retention reason, observation metrics, retirement timing
    - Re-evaluate during the current slice's Pre-Delivery Review
-5. **Verification**: After deletion, old logic is no longer active and no lingering references remain
+6. **External-Unknown Hold**: Proven distribution with unobservable consumers
+   is neither dependency proof nor safe-deletion proof; inventory read-only and
+   require scoped post-disclosure confirmation before editing
+7. **Verification**: After deletion, old logic is no longer active and no lingering references remain
 
 ---
 
@@ -56,8 +61,9 @@ Execution order:
 
 - It is strictly forbidden to add new code without accounting for the disposition of old logic
 - It is strictly forbidden to add new providers / fallbacks / prompt branches / adapters without a corresponding retirement plan
-- Redundant code, dead code, inactive fallbacks, and obsolete compatibility layers shall be deleted within the same slice by default
+- Redundant code, dead code, inactive fallbacks, and obsolete compatibility layers shall be deleted within the same slice by default unless a stronger external or persistent-state boundary blocks deletion
 - Only under verified dependency blockage is retention+recording permitted, and it must be re-evaluated in the Pre-Delivery Review
+- Pre-disclosure delete requests do not confirm a later external-unknown risk
 - If deletion cannot be performed yet, the following must be recorded: `Retained Object`, `Retention Reason`, `Observation Metrics`, `Retirement Timing`
 - When adding a new canonical owner, prefer migrating old logic first, then downgrading the old logic to a compatibility layer
 
