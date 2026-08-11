@@ -570,7 +570,7 @@ maximum-supported-workers|maximum supported workers drift|maximumSupportedWorker
 missing-run-profile|missing exact run profile|runProfiles must define development-pilot, standard-held-out, and extended-held-out exactly|matrix-only
 tier-duplicate-shape|tier duplicate shape owner|opt-in-live-held-out must contain exactly its canonical evaluation tier fields|matrix-only
 live-required-evidence|live tier semantic shape alias|opt-in-live-held-out must contain exactly its canonical evaluation tier fields|matrix-only
-matrix-top-level-repetitions|matrix top-level legacy repetitions alias|matrix top-level fields must match the exact v5 schema; unexpected: ['repetitions']|matrix-only
+matrix-top-level-repetitions|matrix top-level legacy repetitions alias|matrix top-level fields must match the exact v6 schema; unexpected: ['repetitions']|matrix-only
 legacy-live-tier-alias|retired live tier alias|evaluationTiers must define the four-tier contract exactly|matrix-only
 live-score-source|arm-biased live scorer drift|live held-out scorer must remain arm-neutral and outcome-based|matrix-only
 live-supports-promotion|live promotion overclaim|live held-out tier cannot support promotion evidence by itself|matrix-only
