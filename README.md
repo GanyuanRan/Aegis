@@ -66,14 +66,9 @@ engineers — so you don't have to watch them.
 A frozen held-out A/B benchmark (Aegis 2.5.5, 2026-07-31) used the same Codex
 client, `gpt-5.6-sol` model, `xhigh` effort, prompts, projects, and tool policy
 in both arms; only the Aegis projection differed. Across 120 valid runs on 20
-cases: contract pass rate **60% → 90% (+30 pp)**; unsafe outcomes **11.67% → 5%**.
+cases: contract pass rate **60% → 90% (+30 pp)**; unsafe outcomes **11.67% → 5%**. These are bounded advisory results, not universal-quality or completion-authority evidence. This snapshot covers Aegis 2.5.5; current-release remeasurement is pending, so older numbers are not evidence for newer releases.
 
 ![Aegis agentic benchmark: with and without Aegis](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.svg)
-
-Bounded advisory evidence, not a universal-quality or completion-authority
-claim; full details in the published report and methodology.
-
-Measurement status: this snapshot covers Aegis 2.5.5. A re-measurement of the current release is pending and will be published here only after a validated held-out batch completes; numbers from older snapshots must not be read as evidence for newer releases.
 
 [Sanitized JSON](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.json) · [English table](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.en.md) · [中文表格](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731.zh-CN.md) · [Methodology and evidence boundary](docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md)
 
