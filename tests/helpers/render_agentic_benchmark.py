@@ -237,8 +237,8 @@ def validate_matrix_profile_contracts_value(matrix: dict[str, Any]) -> None:
         "unsupportedEvidence": "unsupportedEvidence",
     }
     for profile_id, contract in PROFILE_CONTRACTS.items():
-        require(sum(isinstance(item, dict) and item.get("id") == profile_id for item in run_profiles) == 1, f"renderer profile must appear exactly once in matrix v5: {profile_id}")
-        require(profile_id in profiles, f"renderer profile is missing from matrix v5: {profile_id}")
+        require(sum(isinstance(item, dict) and item.get("id") == profile_id for item in run_profiles) == 1, f"renderer profile must appear exactly once in matrix v6: {profile_id}")
+        require(profile_id in profiles, f"renderer profile is missing from matrix v6: {profile_id}")
         matrix_profile = profiles[profile_id]
         for contract_field, matrix_field in field_map.items():
             actual = matrix_profile.get(matrix_field)
@@ -251,7 +251,7 @@ def validate_matrix_profile_contracts_value(matrix: dict[str, Any]) -> None:
                 require(isinstance(actual, list) and all(isinstance(item, str) for item in actual), f"matrix {profile_id}.{matrix_field} must be a string list")
             elif isinstance(expected, str):
                 require(isinstance(actual, str), f"matrix {profile_id}.{matrix_field} must be a string")
-            require(actual == expected, f"renderer profile contract drifted from matrix v5: {profile_id}.{matrix_field}")
+            require(actual == expected, f"renderer profile contract drifted from matrix v6: {profile_id}.{matrix_field}")
 
 
 @functools.lru_cache(maxsize=1)
@@ -899,7 +899,8 @@ def self_test(print_golden: bool = False) -> None:
         mutation(profiles)
         try:
             validate_matrix_profile_contracts_value(drifted_matrix)
-        except SystemExit:
+        except SystemExit as exc:
+            require("matrix v6" in str(exc), f"renderer matrix/profile {label} drift must name matrix v6")
             continue
         raise SystemExit(f"renderer accepted matrix/profile {label} drift")
 

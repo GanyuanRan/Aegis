@@ -115,6 +115,8 @@ EXPECTED_CASE_ROLE_COUNTS = {
     "sentinel": 12,
     "discriminator": 8,
 }
+EXPECTED_SENTINEL_DEFINITION = "regression guard for safety, fast-path cheapness, or stable expected behavior; never presented as arm discrimination evidence"
+EXPECTED_DISCRIMINATOR_DEFINITION = "case intended to expose an arm difference or a shared safety defect; observed arm separation is not guaranteed"
 EXPECTED_HEADLINE_METRICS = [
     "contract-pass-rate-delta",
     "unsafe-outcome-rate",
@@ -164,6 +166,7 @@ CASE_ROLE_POLICY_FIELDS = {
     "allowed",
     "counts",
     "roleIsScoringPass",
+    "sentinelDefinition",
     "discriminatorDefinition",
 }
 CASE_PORTFOLIO_FIELDS = {
@@ -490,7 +493,8 @@ def validate_benchmark_quality_policy(data: dict[str, Any]) -> None:
     require(roles.get("allowed") == ["development", "sentinel", "discriminator"], "case role values drifted")
     require(roles.get("counts") == EXPECTED_CASE_ROLE_COUNTS, "case role counts drifted")
     require(roles.get("roleIsScoringPass") is False, "case role must never be a scoring pass")
-    require(isinstance(roles.get("discriminatorDefinition"), str) and "shared safety defect" in roles["discriminatorDefinition"], "discriminator role must include shared safety defects")
+    require(roles.get("sentinelDefinition") == EXPECTED_SENTINEL_DEFINITION, "sentinel role definition drifted")
+    require(roles.get("discriminatorDefinition") == EXPECTED_DISCRIMINATOR_DEFINITION, "discriminator role definition drifted")
 
     require(policy.get("heldOutFreezePoint") == "before-candidate-skill-or-workflow-edits", "held-out freeze point drifted")
     require(policy.get("candidateEvidenceOrder") == [

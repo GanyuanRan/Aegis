@@ -196,6 +196,20 @@ elif mutation == "report-authority-overclaim":
     matrix["reportBoundaries"]["forbiddenClaims"].remove("aegis-grants-completion-authority")
 elif mutation == "automatic-promotion":
     matrix["promotionPolicy"]["authority"] = "automatic"
+elif mutation == "quality-composite-score":
+    matrix["benchmarkQualityPolicy"]["compositeScore"] = "weighted"
+elif mutation == "quality-sentinel-overclaim":
+    matrix["benchmarkQualityPolicy"]["caseRoles"]["sentinelDefinition"] = "arm discrimination evidence"
+elif mutation == "quality-discriminator-overclaim":
+    matrix["benchmarkQualityPolicy"]["caseRoles"]["discriminatorDefinition"] = "guaranteed arm separation"
+elif mutation == "quality-role-scoring-pass":
+    matrix["benchmarkQualityPolicy"]["caseRoles"]["roleIsScoringPass"] = True
+elif mutation == "quality-role-counts":
+    matrix["benchmarkQualityPolicy"]["caseRoles"]["counts"] = {"development": 10, "sentinel": 11, "discriminator": 9}
+elif mutation == "quality-freeze-after-edit":
+    matrix["benchmarkQualityPolicy"]["heldOutFreezePoint"] = "after-candidate-skill-edits"
+elif mutation == "quality-field-validation-off":
+    matrix["benchmarkQualityPolicy"]["fieldValidationRequired"] = False
 elif mutation in {
     "controlled-default-ci",
     "live-default-ci",
@@ -338,6 +352,9 @@ elif mutation == "metric-outside-scenario":
     manifest["cases"][0]["benchmarkMetrics"].append("diff-size")
 elif mutation == "live-ineligible":
     manifest["cases"][0]["liveEligible"] = False
+elif mutation == "case-role-drift":
+    case = next(item for item in manifest["cases"] if item["id"] == "completion-normal")
+    case["caseRole"] = "discriminator"
 else:
     raise SystemExit(f"unknown portfolio mutation: {mutation}")
 
@@ -580,6 +597,13 @@ portfolio-repetitions|case portfolio repetitions alias|casePortfolio must contai
 portfolio-workers|case portfolio workers alias|casePortfolio must contain exactly the canonical portfolio fields|matrix-only
 report-authority-overclaim|report authority overclaim|missing forbidden claims: aegis-grants-completion-authority|matrix-only
 automatic-promotion|automatic candidate promotion claim|promotionPolicy must remain advisory-only
+quality-composite-score|benchmark composite score overclaim|benchmark composite score must remain forbidden|matrix-only
+quality-sentinel-overclaim|sentinel discrimination overclaim|sentinel role definition drifted|matrix-only
+quality-discriminator-overclaim|discriminator guaranteed-separation overclaim|discriminator role definition drifted|matrix-only
+quality-role-scoring-pass|case role scoring overclaim|case role must never be a scoring pass|matrix-only
+quality-role-counts|case role count drift|case role counts drifted|matrix-only
+quality-freeze-after-edit|late held-out freeze drift|held-out freeze point drifted|matrix-only
+quality-field-validation-off|field validation bypass|field validation must precede candidate held-out evidence|matrix-only
 controlled-default-ci|controlled replay default CI drift|controlled-replay must not be the default CI tier
 live-default-ci|live tier default CI drift|live held-out tier must be opt-in outside default CI
 blind-default-ci|blind review default CI drift|blind human review tier must not run in default CI
@@ -614,6 +638,7 @@ path-escape|case prompt path escape|must be repo-relative
 outcome-inside-project|outcome contract copied into agent project|outcome contract must stay outside the seed project
 metric-outside-scenario|case metric outside scenario contract|benchmark metrics must exactly match its scenario required metrics
 live-ineligible|case silently excluded from live portfolio|must be live eligible
+case-role-drift|sentinel case role drift|completion-normal case role drifted
 CASES
 
 route_leak_prompt="$coverage_negative_root/route-leak-prompt.txt"

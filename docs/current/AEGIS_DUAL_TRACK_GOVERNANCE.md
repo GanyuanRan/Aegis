@@ -51,8 +51,9 @@ Execution order:
    - Record: retained object, retention reason, observation metrics, retirement timing
    - Re-evaluate during the current slice's Pre-Delivery Review
 6. **External-Unknown Hold**: Proven distribution with unobservable consumers
-   is neither dependency proof nor safe-deletion proof; inventory read-only and
-   require scoped post-disclosure confirmation before editing
+   is neither dependency proof nor safe-deletion proof. Use the existing
+   `confirmation-first` path, not permanent compatibility or a fourth path;
+   inventory read-only and require scoped post-disclosure confirmation before editing
 7. **Verification**: After deletion, old logic is no longer active and no lingering references remain
 
 ---
@@ -62,7 +63,7 @@ Execution order:
 - It is strictly forbidden to add new code without accounting for the disposition of old logic
 - It is strictly forbidden to add new providers / fallbacks / prompt branches / adapters without a corresponding retirement plan
 - Redundant code, dead code, inactive fallbacks, and obsolete compatibility layers shall be deleted within the same slice by default unless a stronger external or persistent-state boundary blocks deletion
-- Only under verified dependency blockage is retention+recording permitted, and it must be re-evaluated in the Pre-Delivery Review
+- A `compat-exception` retention is permitted only under verified active dependency blockage and must be re-evaluated in the Pre-Delivery Review
 - Pre-disclosure delete requests do not confirm a later external-unknown risk
 - If deletion cannot be performed yet, the following must be recorded: `Retained Object`, `Retention Reason`, `Observation Metrics`, `Retirement Timing`
 - When adding a new canonical owner, prefer migrating old logic first, then downgrading the old logic to a compatibility layer
