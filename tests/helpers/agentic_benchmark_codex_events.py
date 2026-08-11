@@ -73,10 +73,16 @@ def assistant_text(item: dict[str, Any]) -> str:
 def semantic_tags(text: str) -> list[str]:
     normalized = " ".join(text.casefold().split())
     tags: list[str] = []
-    if re.search(
+    explicit_rationale = re.search(
         r"change necessity|implementation rationale|code change (?:is )?(?:needed|necessary)|minimum change|smallest change|source change",
         normalized,
-    ):
+    )
+    code_change_decision = re.search(r"\bdecision\s*:\s*code(?:[-_\s]+)change\b", normalized)
+    rationale_bundle = re.search(
+        r"\broot cause\b|\bcanonical owner\b|\b(?:minimum|minimal) (?:repair|change|edit|patch|boundary)\b",
+        normalized,
+    )
+    if explicit_rationale or (code_change_decision and rationale_bundle):
         tags.append("implementation-rationale")
     if re.search(r"dependenc|callers?|references?|usages?|fallback|retir", normalized):
         tags.append("dependency-check")
