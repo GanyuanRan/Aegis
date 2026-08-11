@@ -78,11 +78,13 @@ def semantic_tags(text: str) -> list[str]:
         normalized,
     )
     code_change_decision = re.search(r"\bdecision\s*:\s*code(?:[-_\s]+)change\b", normalized)
-    rationale_bundle = re.search(
-        r"\broot cause\b|\bcanonical owner\b|\b(?:minimum|minimal) (?:repair|change|edit|patch|boundary)\b",
-        normalized,
-    )
-    if explicit_rationale or (code_change_decision and rationale_bundle):
+    meta_value = r"(?:a |an |the )?(?:required|field|label|template|policy|phrase|token)\b"
+    rationale_claims = sum(bool(re.search(pattern, normalized)) for pattern in (
+        rf"\broot cause\s*(?::|is)\s+(?!{meta_value})\S+",
+        rf"\bcanonical owner\s*(?::|is)\s+(?!{meta_value})\S+|\b(?:[\w`./-]+\s+){{1,5}}is the canonical owner\b",
+        rf"\b(?:minimum|minimal) (?:repair|change|edit|patch|boundary)\s*(?::|is)\s+(?!{meta_value})\S+",
+    ))
+    if explicit_rationale or (code_change_decision and rationale_claims >= 2):
         tags.append("implementation-rationale")
     if re.search(r"dependenc|callers?|references?|usages?|fallback|retir", normalized):
         tags.append("dependency-check")

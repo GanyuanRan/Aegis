@@ -132,6 +132,10 @@ class CodexEventReductionTest(unittest.TestCase):
             "The policy documentation contains Decision: code-change.",
             "A benchmark may look for the phrase code-change.",
             "Canonical owner is a required field in the template.",
+            "Policy template requires Canonical owner and Decision: code-change.",
+            "The benchmark expects Root Cause and Decision: code-change.",
+            "Canonical owner is a required field. Minimum repair is a required field. "
+            "Decision: code-change.",
         )
         for message in messages:
             with self.subTest(message=message):
