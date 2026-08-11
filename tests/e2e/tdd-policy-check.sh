@@ -74,7 +74,7 @@ assert_contains "$discipline_ref" "TDD is the implementation discipline.*atomic 
     "discipline reference keeps TDD after planning for medium/high-complexity work"
 assert_contains "$discipline_ref" "TDD Route" \
     "discipline reference documents TDD Route"
-assert_contains "$discipline_ref" "work/<slug>" \
+assert_contains "$discipline_ref" "work/YYYY-MM-DD-<slug>" \
     "discipline reference details task-scoped workspace records"
 
 assert_contains "$tdd_mode_doc" 'tdd_mode = "auto"' \
