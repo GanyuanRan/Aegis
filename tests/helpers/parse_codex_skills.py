@@ -43,6 +43,8 @@ FOREACH_RE = re.compile(
     re.IGNORECASE | re.VERBOSE,
 )
 
+POWERSHELL_COMMAND_END_RE = re.compile(r'''["']\s+in\s+''', re.IGNORECASE)
+
 
 def extract_skills_from_foreach_read(command_text: str) -> list[str]:
     foreach_match = FOREACH_RE.search(command_text)
@@ -92,20 +94,23 @@ def extract_skills_from_posix_shell_read(command_text: str) -> list[str]:
     return skills
 
 
+def extract_skills_from_powershell_command(command_text: str) -> list[str]:
+    skills: list[str] = []
+    for segment in command_text.split(";"):
+        invocation = segment.lstrip(" \t\"'")
+        if not re.match(r"Get-Content\b", invocation, re.IGNORECASE):
+            continue
+        direct_invocation = invocation.split("|", 1)[0]
+        skills.extend(
+            match.group("skill") for match in SKILL_PATH_RE.finditer(direct_invocation)
+        )
+    return skills or extract_skills_from_foreach_read(command_text)
+
+
 def extract_skills_from_line(line: str) -> list[str]:
     command_prefix = POWERSHELL_COMMAND_PREFIX_RE.search(line)
     if command_prefix:
-        command_text = line[command_prefix.end() :]
-        skills: list[str] = []
-        for segment in command_text.split(";"):
-            invocation = segment.lstrip(" \t\"'")
-            if not re.match(r"Get-Content\b", invocation, re.IGNORECASE):
-                continue
-            direct_invocation = invocation.split("|", 1)[0]
-            skills.extend(
-                match.group("skill") for match in SKILL_PATH_RE.finditer(direct_invocation)
-            )
-        return skills or extract_skills_from_foreach_read(command_text)
+        return extract_skills_from_powershell_command(line[command_prefix.end() :])
 
     posix_prefix = POSIX_SHELL_COMMAND_PREFIX_RE.search(line)
     if posix_prefix:
@@ -123,18 +128,46 @@ def extract_skill_from_line(line: str) -> str | None:
     return skills[0] if skills else None
 
 
+def iter_skill_load_events(lines: Iterable[str]) -> Iterator[tuple[int, str]]:
+    powershell_continuation = False
+    for line_number, line in enumerate(lines, start=1):
+        command_prefix = POWERSHELL_COMMAND_PREFIX_RE.search(line)
+        if command_prefix:
+            command_text = line[command_prefix.end() :]
+            skills = extract_skills_from_powershell_command(command_text)
+            powershell_continuation = not bool(
+                POWERSHELL_COMMAND_END_RE.search(command_text)
+            )
+        elif powershell_continuation:
+            command_ended = bool(POWERSHELL_COMMAND_END_RE.search(line))
+            direct_get_content = bool(
+                re.match(r"^\s*Get-Content\b", line, re.IGNORECASE)
+            )
+            skills = (
+                extract_skills_from_powershell_command(line)
+                if command_ended and direct_get_content
+                else []
+            )
+            if command_ended:
+                powershell_continuation = False
+        else:
+            skills = extract_skills_from_line(line)
+
+        for skill in skills:
+            yield line_number, skill
+
+
 def iter_loaded_skills(lines: Iterable[str]) -> Iterator[str]:
     seen: set[str] = set()
-    for line in lines:
-        for skill in extract_skills_from_line(line):
-            if skill not in seen:
-                seen.add(skill)
-                yield skill
+    for _, skill in iter_skill_load_events(lines):
+        if skill not in seen:
+            seen.add(skill)
+            yield skill
 
 
 def first_skill_load_line(lines: Iterable[str], skill_name: str) -> int | None:
-    for line_number, line in enumerate(lines, start=1):
-        if skill_name in extract_skills_from_line(line):
+    for line_number, skill in iter_skill_load_events(lines):
+        if skill == skill_name:
             return line_number
     return None
 

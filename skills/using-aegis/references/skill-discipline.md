@@ -225,7 +225,7 @@ docs/aegis/
 
 Task Work Record:
 ```
-docs/aegis/work/<slug>/
+docs/aegis/work/YYYY-MM-DD-<slug>/
     ├── 10-intent.md
     ├── 20-checkpoint.md
     ├── 90-evidence.md

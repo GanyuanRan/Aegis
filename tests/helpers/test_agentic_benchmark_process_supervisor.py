@@ -132,8 +132,10 @@ import signal
 import sys
 import time
 
+ready_read, ready_write = os.pipe()
 child = os.fork()
 if child == 0:
+    os.close(ready_read)
     os.setsid()
     sink = os.open(os.devnull, os.O_RDWR)
     for descriptor in (0, 1, 2):
@@ -141,8 +143,14 @@ if child == 0:
     signal.signal(signal.SIGTERM, signal.SIG_IGN)
     with open(sys.argv[1], "w", encoding="utf-8") as stream:
         stream.write(str(os.getpid()))
+    os.write(ready_write, b"1")
+    os.close(ready_write)
     while True:
         time.sleep(60)
+os.close(ready_write)
+if os.read(ready_read, 1) != b"1":
+    os._exit(2)
+os.close(ready_read)
 os._exit(0)
 """
         with tempfile.TemporaryDirectory(prefix="agentic-immediate-exit-", dir=self.root / ".tmp") as value:
@@ -154,11 +162,12 @@ os._exit(0)
                     outcome = supervise_process(
                         [sys.executable, "-c", script, str(pid_path)],
                         "{}",
-                        0.2,
+                        # Leave process-startup headroom for loaded CI/WSL hosts. The
+                        # readiness pipe above proves the leader exits only after its
+                        # descendant is observable; the descendant must still force
+                        # this real timeout path.
+                        0.5,
                     )
-                    deadline = time.monotonic() + 0.2
-                    while (not pid_path.exists() or not pid_path.read_text(encoding="utf-8")) and time.monotonic() < deadline:
-                        time.sleep(0.001)
                     self.assertTrue(pid_path.exists() and pid_path.read_text(encoding="utf-8"), f"trial {trial} did not publish its child pid")
                     pid = int(pid_path.read_text(encoding="utf-8"))
                     self.assertTrue(outcome["timedOut"], f"trial {trial} returned before its adopted child exited")

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import copy
+import functools
 import hashlib
 import json
 import os
@@ -53,6 +54,7 @@ NEUTRAL_CONFIG = (
     "enabled = false\n\n"
     "[features]\n"
     "multi_agent = false\n"
+    "plugins = false\n"
 )
 
 def provider_config_source() -> Path | None:
@@ -181,6 +183,37 @@ def resolve_permission_backend_bwrap() -> Path:
     resolved = Path(value).resolve()
     require(resolved.is_file(), "permission-profile backend bwrap is unavailable")
     return resolved
+
+
+@functools.lru_cache(maxsize=None)
+def codex_sandbox_permissions_flag(codex: Path) -> str:
+    """Return the sandbox permissions-profile flag spelling supported by the resolved Codex runtime.
+
+    Codex 0.142 uses `--permissions-profile`; Codex 0.146 renamed it to
+    `--permission-profile`. The audit command must use the spelling the frozen
+    native runtime accepts so the zero-inference tool probe stays host-true.
+    Remove the legacy spelling when the provider track no longer supports a
+    Codex runtime that advertises it.
+    """
+    resolved = resolve_codex_direct_executable(codex)
+    try:
+        completed = subprocess.run(
+            [str(resolved), "sandbox", "--help"],
+            text=True,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            timeout=30,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        raise SystemExit("Codex sandbox help is unavailable") from None
+    help_text = completed.stdout
+    if "--permissions-profile" in help_text:
+        return "--permissions-profile"
+    if "--permission-profile" in help_text:
+        return "--permission-profile"
+    raise SystemExit("Codex sandbox permissions-profile flag is unavailable")
 
 
 def resolve_codex_direct_executable(codex: Path) -> Path:
@@ -691,7 +724,7 @@ print(json.dumps({
     return [
         str(resolve_codex_direct_executable(codex)),
         "sandbox",
-        "--permission-profile",
+        codex_sandbox_permissions_flag(codex),
         PERMISSION_PROFILE_NAME,
         "--cd",
         str(layout["workspace"]),

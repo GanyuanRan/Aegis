@@ -112,6 +112,49 @@ class CodexEventReductionTest(unittest.TestCase):
         self.assertEqual(parsed["events"][1]["tags"], ["dependency-check"])
         self.assertEqual(parsed["events"][2]["tags"], [])
 
+    def test_equivalent_decision_owner_and_minimal_repair_bundle_is_rationale(self):
+        messages = (
+            "Root Cause: the header normalizer drops the default. Canonical owner: headers.py. "
+            "Minimum repair: add the missing owner branch. Decision: code-change.",
+            "The archive helper is the canonical owner; the minimal repair is local to that owner. "
+            "Decision: code_change.",
+            "Root Cause: the policy template omits the owner section. Canonical owner: parser.py. "
+            "Minimum repair: restore the owner section. Decision: code-change.",
+            "Root Cause: unknown theme values bypass normalization. Canonical owner: theme.py. "
+            "Minimum repair: normalize that value in the owner. Decision: code-change.",
+        )
+        for message in messages:
+            with self.subTest(message=message):
+                parsed = parse_codex_jsonl(json.dumps({
+                    "type": "item.completed",
+                    "item": {"type": "agent_message", "text": message},
+                }))
+                self.assertIn("implementation-rationale", parsed["events"][0]["tags"])
+
+    def test_code_change_policy_quotation_alone_is_not_rationale(self):
+        messages = (
+            "The policy documentation contains Decision: code-change.",
+            "A benchmark may look for the phrase code-change.",
+            "Canonical owner is a required field in the template.",
+            "Policy template requires Canonical owner and Decision: code-change.",
+            "The benchmark expects Root Cause and Decision: code-change.",
+            "Canonical owner is a required field. Minimum repair is a required field. "
+            "Decision: code-change.",
+            "Policy template: Root Cause: parser defect. Canonical owner: parser.py. "
+            "Minimum repair: local edit. Decision: code-change.",
+            "Policy template: Root Cause: <cause>. Canonical owner: <owner>. "
+            "Minimum repair: <repair>. Decision: code-change.",
+            "Quoted review form: Root Cause: TBD. Canonical owner: unknown. "
+            "Minimum repair: N/A. Decision: code-change.",
+        )
+        for message in messages:
+            with self.subTest(message=message):
+                parsed = parse_codex_jsonl(json.dumps({
+                    "type": "item.completed",
+                    "item": {"type": "agent_message", "text": message},
+                }))
+                self.assertNotIn("implementation-rationale", parsed["events"][0]["tags"])
+
     def test_only_owned_assistant_message_shapes_create_semantic_tags(self):
         rationale = "The minimum source change is necessary; inspect fallback dependencies."
         raw = "\n".join(json.dumps({"type": "item.completed", "item": item}) for item in (

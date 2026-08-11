@@ -137,6 +137,7 @@ class ProxyPolicyTest(unittest.TestCase):
 
 class CommandBoundaryTest(unittest.TestCase):
     def setUp(self):
+        agentic_benchmark_isolation.codex_sandbox_permissions_flag.cache_clear()
         self.root = Path(__file__).resolve().parents[2]
         (self.root / ".tmp").mkdir(exist_ok=True)
         self.temporary = tempfile.TemporaryDirectory(prefix="agentic-preflight-test-", dir=self.root / ".tmp")
@@ -151,6 +152,7 @@ class CommandBoundaryTest(unittest.TestCase):
         self.policy = resolve_proxy_policy({"HTTP_PROXY": "http://proxy.invalid:8080"})
 
     def tearDown(self):
+        agentic_benchmark_isolation.codex_sandbox_permissions_flag.cache_clear()
         self.temporary.cleanup()
 
     def test_preflight_command_is_exact_and_neutral(self):
@@ -682,12 +684,17 @@ class CommandBoundaryTest(unittest.TestCase):
             self.scratch / "sandbox-layout", seed, self.auth, None, virtualized_paths=False,
         )
         forbidden = [self.root / "tests/helpers/score_agentic_benchmark_outcome.py"]
-        probe = tool_sandbox_audit_command(
-            codex=self.codex,
-            layout=layout,
-            forbidden_files=forbidden,
-            skill_file=None,
-        )
+        with mock.patch.object(
+            agentic_benchmark_isolation,
+            "codex_sandbox_permissions_flag",
+            return_value="--permission-profile",
+        ):
+            probe = tool_sandbox_audit_command(
+                codex=self.codex,
+                layout=layout,
+                forbidden_files=forbidden,
+                skill_file=None,
+            )
         self.assertEqual(probe[:6], [
             str(self.codex), "sandbox", "--permission-profile",
             PERMISSION_PROFILE_NAME, "--cd", str(layout["workspace"]),
@@ -710,6 +717,55 @@ class CommandBoundaryTest(unittest.TestCase):
         self.assertEqual(environment["CODEX_HOME"], str(layout["home"] / ".codex"))
         self.assertEqual(environment["TMPDIR"], str(layout["tmp"]))
         self.assertEqual(environment["HTTP_PROXY"], "http://proxy.invalid:8080")
+
+    def test_sandbox_permissions_flag_tracks_the_resolved_runtime(self):
+        for advertised in ("--permissions-profile", "--permission-profile"):
+            with self.subTest(advertised=advertised):
+                agentic_benchmark_isolation.codex_sandbox_permissions_flag.cache_clear()
+                completed = subprocess.CompletedProcess(
+                    [str(self.codex), "sandbox", "--help"],
+                    0,
+                    stdout=f"usage: codex sandbox {advertised} <NAME>\n",
+                )
+                with mock.patch.object(
+                    agentic_benchmark_isolation,
+                    "resolve_codex_direct_executable",
+                    return_value=self.codex,
+                ), mock.patch.object(
+                    agentic_benchmark_isolation.subprocess,
+                    "run",
+                    return_value=completed,
+                ) as run:
+                    self.assertEqual(
+                        agentic_benchmark_isolation.codex_sandbox_permissions_flag(self.codex),
+                        advertised,
+                    )
+                run.assert_called_once_with(
+                    [str(self.codex), "sandbox", "--help"],
+                    text=True,
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    timeout=30,
+                    check=False,
+                )
+
+    def test_sandbox_permissions_flag_rejects_an_unknown_runtime_contract(self):
+        completed = subprocess.CompletedProcess(
+            [str(self.codex), "sandbox", "--help"],
+            0,
+            stdout="usage: codex sandbox\n",
+        )
+        with mock.patch.object(
+            agentic_benchmark_isolation,
+            "resolve_codex_direct_executable",
+            return_value=self.codex,
+        ), mock.patch.object(
+            agentic_benchmark_isolation.subprocess,
+            "run",
+            return_value=completed,
+        ), self.assertRaisesRegex(SystemExit, "permissions-profile flag is unavailable"):
+            agentic_benchmark_isolation.codex_sandbox_permissions_flag(self.codex)
 
     def test_live_command_resolves_the_packaged_native_codex_runtime(self):
         package = self.scratch / "codex-package"

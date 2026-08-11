@@ -57,6 +57,39 @@ class ParseCodexSkillsTests(unittest.TestCase):
         )
         self.assertEqual(MODULE.first_skill_load_line(lines, "brainstorming"), 1)
 
+    def test_extracts_newline_separated_skill_loads_from_one_command(self) -> None:
+        lines = [
+            "\"C:\\\\Program Files\\\\PowerShell\\\\7\\\\pwsh.exe\" -Command "
+            "\"Get-Content -LiteralPath 'C:\\\\Users\\\\Example\\\\.agents\\\\skills\\\\aegis\\\\using-aegis\\\\SKILL.md' -Raw",
+            "Get-Content -LiteralPath 'C:\\\\Users\\\\Example\\\\.agents\\\\skills\\\\aegis\\\\brainstorming\\\\SKILL.md' -Raw\" "
+            "in X:\\repo\\Aegis",
+            "Get-Content -LiteralPath 'skills/systematic-debugging/SKILL.md' -Raw",
+        ]
+
+        self.assertEqual(
+            list(MODULE.iter_loaded_skills(lines)),
+            ["using-aegis", "brainstorming"],
+        )
+        self.assertEqual(MODULE.first_skill_load_line(lines, "brainstorming"), 2)
+
+    def test_ignores_get_content_text_inside_multiline_powershell_data(self) -> None:
+        here_string_lines = [
+            "\"C:\\\\Program Files\\\\PowerShell\\\\7\\\\pwsh.exe\" -Command "
+            "\"$script = @'",
+            "Get-Content -LiteralPath 'skills/brainstorming/SKILL.md' -Raw",
+            "'@; Write-Output $script\" in X:\\repo\\Aegis",
+        ]
+        quoted_array_lines = [
+            "\"C:\\\\Program Files\\\\PowerShell\\\\7\\\\pwsh.exe\" -Command "
+            "\"$commands = @(",
+            "'Get-Content -LiteralPath skills/brainstorming/SKILL.md -Raw',",
+            "'Get-Content -LiteralPath skills/systematic-debugging/SKILL.md -Raw')\" "
+            "in X:\\repo\\Aegis",
+        ]
+
+        self.assertEqual(list(MODULE.iter_loaded_skills(here_string_lines)), [])
+        self.assertEqual(list(MODULE.iter_loaded_skills(quoted_array_lines)), [])
+
     def test_extracts_skill_loads_from_foreach_path_array(self) -> None:
         lines = [
             "\"C:\\\\Program Files\\\\PowerShell\\\\7\\\\pwsh.exe\" -Command "

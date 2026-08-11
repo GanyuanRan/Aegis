@@ -80,7 +80,7 @@ def relative_path(root: Path, path: Path) -> str:
 
 def load_benchmark_contract(root: Path, matrix_path: str) -> dict[str, Any]:
     matrix = load_json(resolve_repo_path(root, matrix_path, "benchmarkMatrix"))
-    require(matrix.get("version") == 5, "benchmark matrix version must be 5")
+    require(matrix.get("version") == 6, "benchmark matrix version must be 6")
     require(matrix.get("authorityBoundary") == AUTHORITY_BOUNDARY, "benchmark matrix boundary drifted")
     validate_arms(matrix)
     validate_evaluation_contract(matrix)
