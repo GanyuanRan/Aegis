@@ -8,6 +8,7 @@ hooks/session-start text eol=lf
 # Common text files
 *.md text eol=lf
 *.json text eol=lf
+*.svg text eol=lf
 *.js text eol=lf
 *.mjs text eol=lf
 *.ts text eol=lf
