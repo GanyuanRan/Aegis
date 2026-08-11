@@ -80,13 +80,13 @@ def semantic_tags(text: str) -> list[str]:
     code_change_decision = re.search(r"\bdecision\s*:\s*code(?:[-_\s]+)change\b", normalized)
     meta_value = r"(?:a |an |the )?(?:required|field|label|template|policy|phrase|token)\b"
     template_frame = re.search(
-        r"\b(?:policy template|quoted (?:review )?form|quoted template|template (?:quote|example)|example template)\b",
+        r"^(?:policy template|quoted (?:review )?form|quoted template|template (?:quote|example)|example template)\s*:",
         normalized,
     )
     placeholder_claim = re.search(
         r"\b(?:root cause|canonical owner|(?:minimum|minimal) "
         r"(?:repair|change|edit|patch|boundary))\s*(?::|is)\s+"
-        r"(?:<[^>]+>|(?:tbd|todo|unknown|n/?a)\b)",
+        r"(?:<[^>]+>|(?:tbd|todo|unknown|n/?a))(?=\s*(?:[.,;]|$))",
         normalized,
     )
     rationale_claims = sum(bool(re.search(pattern, normalized)) for pattern in (

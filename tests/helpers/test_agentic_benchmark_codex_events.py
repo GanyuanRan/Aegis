@@ -118,6 +118,10 @@ class CodexEventReductionTest(unittest.TestCase):
             "Minimum repair: add the missing owner branch. Decision: code-change.",
             "The archive helper is the canonical owner; the minimal repair is local to that owner. "
             "Decision: code_change.",
+            "Root Cause: the policy template omits the owner section. Canonical owner: parser.py. "
+            "Minimum repair: restore the owner section. Decision: code-change.",
+            "Root Cause: unknown theme values bypass normalization. Canonical owner: theme.py. "
+            "Minimum repair: normalize that value in the owner. Decision: code-change.",
         )
         for message in messages:
             with self.subTest(message=message):
