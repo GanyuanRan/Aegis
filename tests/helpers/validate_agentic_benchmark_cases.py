@@ -33,11 +33,49 @@ EXPECTED_CASE_FIELDS = {
     "scenarioClass",
     "partition",
     "variant",
+    "caseRole",
     "promptPath",
     "seedProjectPath",
     "outcomeContractPath",
     "benchmarkMetrics",
     "liveEligible",
+}
+EXPECTED_CASE_ROLES = {
+    "ambiguous-feature-dev": "development",
+    "shared-owner-bug-repair": "development",
+    "change-necessity-before-edit": "development",
+    "tiny-source-dev": "development",
+    "completion-evidence-boundary": "development",
+    "fallback-retirement-dev": "development",
+    "tiny-fast-dev": "development",
+    "trace-digest-dev": "development",
+    "no-trace-dev": "development",
+    "destructive-stop-dev": "development",
+    "completion-normal": "sentinel",
+    "completion-boundary": "sentinel",
+    "destructive-stop-normal": "sentinel",
+    "fallback-retirement-normal": "sentinel",
+    "no-trace-normal": "sentinel",
+    "no-trace-boundary": "sentinel",
+    "shared-owner-normal": "sentinel",
+    "shared-owner-boundary": "sentinel",
+    "tiny-fast-normal": "sentinel",
+    "tiny-fast-boundary": "sentinel",
+    "trace-digest-normal": "sentinel",
+    "trace-digest-boundary": "sentinel",
+    "ambiguous-feature-api-option": "discriminator",
+    "ambiguous-feature-cross-module": "discriminator",
+    "destructive-stop-boundary": "discriminator",
+    "fallback-retirement-boundary": "discriminator",
+    "quick-bug-normal": "discriminator",
+    "quick-bug-boundary": "discriminator",
+    "tiny-source-normal": "discriminator",
+    "tiny-source-boundary": "discriminator",
+}
+EXPECTED_CASE_ROLE_COUNTS = {
+    "development": 10,
+    "sentinel": 12,
+    "discriminator": 8,
 }
 EXPECTED_TOP_LEVEL_FIELDS = {
     "version",
@@ -247,7 +285,7 @@ def seed_project_digest(project_path: Path) -> str:
 
 
 def matrix_scenarios(matrix: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    require(matrix.get("version") == 5, "benchmark matrix version must be 5")
+    require(matrix.get("version") == 6, "benchmark matrix version must be 6")
     scenarios = matrix.get("scenarioClasses")
     require(isinstance(scenarios, list), "benchmark matrix scenarioClasses must be a list")
     by_id: dict[str, dict[str, Any]] = {}
@@ -265,7 +303,7 @@ def validate_matrix_contract(matrix: dict[str, Any]) -> None:
     portfolio = matrix.get("casePortfolio")
     require(isinstance(portfolio, dict), "benchmark matrix casePortfolio must be an object")
     require(portfolio.get("manifestPath") == "tests/e2e/fixtures/agentic-benchmark-cases.json", "casePortfolio manifest path drifted")
-    require(portfolio.get("schemaVersion") == 1, "casePortfolio schema version must be 1")
+    require(portfolio.get("schemaVersion") == 2, "casePortfolio schema version must be 2")
     require(portfolio.get("caseCount") == 30, "casePortfolio case count must be 30")
     require(portfolio.get("scenarioClassCount") == 10, "casePortfolio scenario class count must be 10")
     require(portfolio.get("partitions") == EXPECTED_PARTITIONS, "casePortfolio partitions drifted")
@@ -392,6 +430,7 @@ def validate_case(
         f"{case_id} does not match the fixed scenario/partition case id",
     )
     require(case.get("variant") == EXPECTED_VARIANTS[partition], f"{case_id} variant does not match its partition")
+    require(case.get("caseRole") == EXPECTED_CASE_ROLES[case_id], f"{case_id} case role drifted")
     require(case.get("liveEligible") is True, f"{case_id} must be live eligible")
 
     metrics = case.get("benchmarkMetrics")
@@ -444,7 +483,7 @@ def validate_manifest(manifest_path: Path, schema_only: bool) -> None:
         f"case manifest must not define matrix-owned run shape fields: {', '.join(duplicate_shape_fields)}",
     )
     require(set(manifest) == EXPECTED_TOP_LEVEL_FIELDS, "case manifest must contain exactly the portfolio fields")
-    require(manifest.get("version") == 1, "case manifest version must be 1")
+    require(manifest.get("version") == 2, "case manifest version must be 2")
     require(manifest.get("status") == "implemented", "case manifest status must be implemented after fixture completion")
     require(manifest.get("benchmarkMatrix") == BENCHMARK_MATRIX_PATH, "case manifest benchmark matrix path drifted")
     require(manifest.get("authorityBoundary") == AUTHORITY_BOUNDARY, "case manifest authority boundary drifted")
@@ -474,6 +513,8 @@ def validate_manifest(manifest_path: Path, schema_only: bool) -> None:
     require(dict(partition_counts) == EXPECTED_PARTITIONS, "case manifest must contain exactly ten cases per partition")
     scenario_counts = Counter(case["scenarioClass"] for case in cases)
     require(set(scenario_counts) == set(EXPECTED_CASES) and set(scenario_counts.values()) == {3}, "case manifest must contain exactly three cases per scenario class")
+    role_counts = Counter(case["caseRole"] for case in cases)
+    require(dict(role_counts) == EXPECTED_CASE_ROLE_COUNTS, "case manifest role counts must be 10 development, 12 sentinel, and 8 discriminator")
 
     for field in ("promptPath", "seedProjectPath", "outcomeContractPath"):
         values = [case[field] for case in cases]

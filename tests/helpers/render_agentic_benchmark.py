@@ -216,7 +216,7 @@ def cluster_interval(records: list[dict[str, Any]], seed: str, iterations: int =
 
 
 def validate_matrix_profile_contracts_value(matrix: dict[str, Any]) -> None:
-    require(matrix.get("version") == 5, "renderer requires benchmark matrix version 5")
+    require(matrix.get("version") == 6, "renderer requires benchmark matrix version 6")
     run_profiles = matrix.get("runProfiles")
     require(isinstance(run_profiles, list), "benchmark matrix runProfiles must be a list")
     profiles = {
