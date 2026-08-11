@@ -110,6 +110,27 @@ EXPECTED_PORTFOLIO_PARTITIONS = {
     "held-out-normal": 10,
     "held-out-boundary": 10,
 }
+EXPECTED_CASE_ROLE_COUNTS = {
+    "development": 10,
+    "sentinel": 12,
+    "discriminator": 8,
+}
+EXPECTED_SENTINEL_DEFINITION = "regression guard for safety, fast-path cheapness, or stable expected behavior; never presented as arm discrimination evidence"
+EXPECTED_DISCRIMINATOR_DEFINITION = "case intended to expose an arm difference or a shared safety defect; observed arm separation is not guaranteed"
+EXPECTED_HEADLINE_METRICS = [
+    "contract-pass-rate-delta",
+    "unsafe-outcome-rate",
+]
+EXPECTED_DIAGNOSTIC_METRICS = {
+    "non-discriminating-case-rate": "derivable-from-frozen-case-results",
+    "ceiling-case-rate": "derivable-from-frozen-case-results",
+    "floor-case-rate": "derivable-from-frozen-case-results",
+    "within-case-stability": "derivable-from-frozen-case-results",
+    "hard-stop-unsafe-count": "derivable-from-frozen-case-results",
+    "scorer-review-disagreement-rate": "contract-only",
+    "route-evidence-coverage": "contract-only",
+    "prose-only-evidence-rate": "contract-only",
+}
 MAXIMUM_SUPPORTED_WORKERS = 12
 MATRIX_FIELDS = {
     "version",
@@ -119,6 +140,7 @@ MATRIX_FIELDS = {
     "arms",
     "primaryMetrics",
     "supportingMetrics",
+    "benchmarkQualityPolicy",
     "coverageSources",
     "casePortfolio",
     "evaluationTiers",
@@ -128,6 +150,24 @@ MATRIX_FIELDS = {
     "scenarioClasses",
     "isolationControls",
     "reportBoundaries",
+}
+BENCHMARK_QUALITY_POLICY_FIELDS = {
+    "headlineMetrics",
+    "compositeScore",
+    "diagnosticMetrics",
+    "caseRoles",
+    "heldOutFreezePoint",
+    "candidateEvidenceOrder",
+    "candidateComparison",
+    "fieldValidationRequired",
+    "currentPublicProjection",
+}
+CASE_ROLE_POLICY_FIELDS = {
+    "allowed",
+    "counts",
+    "roleIsScoringPass",
+    "sentinelDefinition",
+    "discriminatorDefinition",
 }
 CASE_PORTFOLIO_FIELDS = {
     "manifestPath",
@@ -421,11 +461,51 @@ def validate_case_portfolio_contract(data: dict[str, Any]) -> None:
         portfolio.get("implementationStatus") == "implemented",
         "casePortfolio must be implemented after concrete manifest validation",
     )
-    require(portfolio.get("schemaVersion") == 1, "casePortfolio schema version must be 1")
+    require(portfolio.get("schemaVersion") == 2, "casePortfolio schema version must be 2")
     require(portfolio.get("caseCount") == 30, "casePortfolio case count must be 30")
     require(portfolio.get("scenarioClassCount") == 10, "casePortfolio scenario class count must be 10")
     require(portfolio.get("partitions") == EXPECTED_PORTFOLIO_PARTITIONS, "casePortfolio partitions drifted")
     require(portfolio.get("arms") == EXPECTED_LIVE_ARMS, "casePortfolio arms drifted")
+
+
+def validate_benchmark_quality_policy(data: dict[str, Any]) -> None:
+    policy = data.get("benchmarkQualityPolicy")
+    require(isinstance(policy, dict), "benchmarkQualityPolicy must be an object")
+    require(
+        set(policy) == BENCHMARK_QUALITY_POLICY_FIELDS,
+        "benchmarkQualityPolicy must contain exactly the matrix-v6 quality fields",
+    )
+    require(
+        policy.get("headlineMetrics") == EXPECTED_HEADLINE_METRICS,
+        "benchmark headline metrics must remain pass-rate delta and unsafe-outcome rate",
+    )
+    require(policy.get("compositeScore") == "forbidden", "benchmark composite score must remain forbidden")
+
+    diagnostics = policy.get("diagnosticMetrics")
+    require(isinstance(diagnostics, list), "diagnosticMetrics must be a list")
+    require(all(isinstance(item, dict) and set(item) == {"id", "implementationStatus"} for item in diagnostics), "diagnosticMetrics entries must contain exactly id and implementationStatus")
+    diagnostic_map = {item["id"]: item["implementationStatus"] for item in diagnostics}
+    require(len(diagnostic_map) == len(diagnostics), "diagnosticMetrics ids must be unique")
+    require(diagnostic_map == EXPECTED_DIAGNOSTIC_METRICS, "diagnosticMetrics contract drifted")
+
+    roles = policy.get("caseRoles")
+    require(isinstance(roles, dict) and set(roles) == CASE_ROLE_POLICY_FIELDS, "caseRoles policy fields drifted")
+    require(roles.get("allowed") == ["development", "sentinel", "discriminator"], "case role values drifted")
+    require(roles.get("counts") == EXPECTED_CASE_ROLE_COUNTS, "case role counts drifted")
+    require(roles.get("roleIsScoringPass") is False, "case role must never be a scoring pass")
+    require(roles.get("sentinelDefinition") == EXPECTED_SENTINEL_DEFINITION, "sentinel role definition drifted")
+    require(roles.get("discriminatorDefinition") == EXPECTED_DISCRIMINATOR_DEFINITION, "discriminator role definition drifted")
+
+    require(policy.get("heldOutFreezePoint") == "before-candidate-skill-or-workflow-edits", "held-out freeze point drifted")
+    require(policy.get("candidateEvidenceOrder") == [
+        "non-benchmark-pressure-scenario",
+        "field-validation",
+        "focused-regression",
+        "frozen-held-out-rerun",
+    ], "candidate evidence order drifted")
+    require(policy.get("candidateComparison") == "baseline-no-aegis-plus-previous-aegis-when-eligible", "candidate comparison boundary drifted")
+    require(policy.get("fieldValidationRequired") is True, "field validation must precede candidate held-out evidence")
+    require(policy.get("currentPublicProjection") == "two-headline-metrics-diagnostic-appendix-separate", "public projection boundary drifted")
 
 
 def validate_run_profiles(data: dict[str, Any]) -> None:
@@ -701,14 +781,15 @@ def validate_matrix(path: Path) -> None:
     missing_fields = sorted(MATRIX_FIELDS - set(data))
     require(
         not unexpected_fields and not missing_fields,
-        "matrix top-level fields must match the exact v5 schema; "
+        "matrix top-level fields must match the exact v6 schema; "
         f"unexpected: {unexpected_fields}; missing: {missing_fields}",
     )
-    require(data.get("version") == 5, "version must be 5")
+    require(data.get("version") == 6, "version must be 6")
     require(data.get("status") == "draft", "status must be draft")
     require("runtime authority" in data.get("primaryQuestion", ""), "primary question must name runtime authority boundary")
     validate_arms(data)
     validate_evaluation_contract(data)
+    validate_benchmark_quality_policy(data)
     validate_case_portfolio_contract(data)
     validate_run_profiles(data)
     validate_metrics(data)

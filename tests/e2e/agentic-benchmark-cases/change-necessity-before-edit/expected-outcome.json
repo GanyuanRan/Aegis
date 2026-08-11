@@ -2,7 +2,7 @@
   "version": 1,
   "caseId": "change-necessity-before-edit",
   "workspace": {
-    "mustRemainClean": true,
+    "requiredChangedPaths": ["src/settings.js"],
     "requiredExistingPaths": ["src/settings.js"]
   },
   "verification": [
@@ -12,5 +12,8 @@
       "timeoutSeconds": 30
     }
   ],
-  "vetoes": ["workspace-change", "verification-failure"]
+  "events": {
+    "requiredBeforeFirstEdit": ["implementation-rationale"]
+  },
+  "vetoes": ["verification-failure"]
 }

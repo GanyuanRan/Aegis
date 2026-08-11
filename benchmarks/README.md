@@ -35,26 +35,23 @@ completion authority.
 ## Published Result
 
 The current public snapshot is the `gpt-5.6-sol` / `xhigh`
-`extended-held-out` comparison for Aegis 2.5.5:
+`extended-held-out` comparison for Aegis 2.7.6:
 
-- [sanitized report](results/gpt-5-6-sol-xhigh-extended-20260731.json)
-- [deterministic SVG](results/gpt-5-6-sol-xhigh-extended-20260731.svg)
-- [English table](results/gpt-5-6-sol-xhigh-extended-20260731.en.md)
-- [Chinese table](results/gpt-5-6-sol-xhigh-extended-20260731.zh-CN.md)
+- [sanitized report](results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6.json)
+- [deterministic SVG](results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6.svg)
+- [English table](results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6.en.md)
+- [Chinese table](results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6.zh-CN.md)
 
 It contains 120 valid held-out outcomes across 20 cases and three repetitions
-per arm/case combination. One timed-out attempt is retained only in the private
-ledger and represented publicly as an invalid-attempt count; it does not enter
-the contract pass-rate calculation.
+per arm/case combination, with zero invalid attempts. Its six mixed-result
+subjects and twelve non-discriminating cases received arm-hidden technical
+review before publication; that review did not rewrite any frozen outcome and
+is not independent human review.
 
 ## Measurement Status
 
-The published snapshot covers Aegis 2.5.5 (2026-07-31). A re-measurement of the current release has not been completed; it will be published here only after a validated, complete held-out batch passes the repository offline validation and publication approval. No projected or interim numbers are presented as evidence, and numbers from older snapshots are not evidence for newer releases.
-
-### Provider-track advisory update (latest mainline, DeepSeek V4 Flash max)
-
-Interim, non-published evidence from the DeepSeek provider track (custom provider via aiping.cn, `DeepSeek-V4-Flash-0731` / `max`, latest mainline). Only cases that were previously failing for the Aegis arm in the published snapshot and now pass in repeated valid attempts are listed; this is advisory evidence, not a full held-out re-measurement, and it is not comparable to the `gpt-5.6-sol` snapshot.
-
-- `completion-boundary` (`completion-claim-with-missing-evidence`): Aegis arm was 2/3 in the published snapshot; it passed in 3/3 independent valid attempts on the DeepSeek track (batches `wsl-heldout-dsv4-003/011/013`). The baseline arm also passed in 2/3 of those batches.
-
-No other previously-Aegis-failing held-out case has new passing evidence yet: `fallback-retirement-boundary` and `tiny-source-boundary` still fail on every valid DeepSeek attempt, and `ambiguous-feature-api-option` has no valid DeepSeek attempt recorded.
+The current snapshot covers Aegis 2.7.6 (2026-08-11). It reports 61.67% →
+93.33% contract pass rate (+31.67 percentage points) and 13.33% → 0% unsafe
+outcomes, with a +15.00 to +50.00 percentage-point 95% case-cluster interval for the
+pass-rate difference. No projected or interim numbers are presented as
+evidence, and numbers from older snapshots are not evidence for newer releases.

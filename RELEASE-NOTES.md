@@ -1,5 +1,28 @@
 # Aegis Release Notes
 
+## v2.7.6 (2026-08-11)
+
+### 更安全的 fallback 退役与变更决策
+
+- 外部依赖状态未知时，Aegis 会保留兼容路径并请求确认，不再把“尚未证明存在
+  活跃依赖”误判为可以直接删除。
+- 强化 canonical owner、change necessity、minimum repair 与真实路由证据，
+  让修复理由在首次编辑前更清晰，同时保持简单任务的 fast path。
+
+### 更可靠的 benchmark v6 证据
+
+- 冻结 sentinel / discriminator 角色、non-discriminating 与 mixed-result
+  复核规则，继续把 benchmark 作为测量工具，而不是能力优化的唯一目标。
+- 收紧 implementation-rationale 事件识别：排除模板、占位符和引用文本误报，
+  同时保留真实 root cause / owner / minimum repair / decision 组合。
+
+### 最新实测
+
+- `gpt-5.6-sol` / `xhigh` extended held-out A/B 评测完成 120 次有效运行：
+  合同通过率 **61.67% → 93.33%**，不安全结果率 **13.33% → 0%**。
+- 结果为有界建议性证据；已通过 arm-hidden 技术复核，不构成普遍质量、
+  运行时权威或完成权威声明。
+
 ## v2.7.5 (2026-08-10)
 
 ### 反熵增治理:自动触发,执行仍需确认

@@ -102,11 +102,12 @@ en_quick_line="$(rg -n '^## Quick Install$' README.md | cut -d: -f1 || true)"
 zh_quick_line="$(rg -n '^## 极简安装$' README.zh-CN.md | cut -d: -f1 || true)"
 if [[ -n "$en_quick_line" && -n "$zh_quick_line" \
     && "$en_quick_line" -le 75 && "$zh_quick_line" -le 75 ]] \
-    && rg -q '60%' README.md && rg -q '90%' README.md \
-    && rg -q '11\.67%' README.md && rg -q '5%' README.md \
-    && rg -q '60%' README.zh-CN.md && rg -q '90%' README.zh-CN.md \
-    && rg -q '11\.67%' README.zh-CN.md && rg -q '5%' README.zh-CN.md \
-    && rg -q 'gpt-5-6-sol-xhigh-extended-20260731\.svg' README.md README.zh-CN.md \
+    && rg -Fq 'pass rate **61.67% → 93.33%' README.md \
+    && rg -Fq 'unsafe outcomes **13.33% → 0%**' README.md \
+    && rg -Fq '**61.67% → 93.33%**' README.zh-CN.md \
+    && rg -Fq '不安全结果 **13.33% → 0%**' README.zh-CN.md \
+    && rg -Fq 'requested the same' README.md \
+    && rg -Fq '请求相同的' README.zh-CN.md \
     && ! rg -q 'ambiguous-feature-shaping|Contract pass rate by scenario class|场景类别' README.md README.zh-CN.md; then
     pass "root READMEs keep a compact two-metric benchmark before quick install"
 else
@@ -130,12 +131,45 @@ else
     fail "benchmark evidence boundary is documented"
 fi
 
-published_result="benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731"
-if [[ -f "${published_result}.json" && -f "${published_result}.svg" \
-    && -f "${published_result}.en.md" && -f "${published_result}.zh-CN.md" ]]; then
-    pass "authorized public benchmark bundle remains complete"
+published_result="benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6"
+published_name="gpt-5-6-sol-xhigh-extended-20260811-v2-7-6"
+current_links_ok=true
+for readme in README.md README.zh-CN.md benchmarks/README.md; do
+    for suffix in json svg en.md zh-CN.md; do
+        if ! rg -Fq "${published_name}.${suffix}" "$readme"; then
+            current_links_ok=false
+        fi
+    done
+    if ! rg -Fq 'Aegis 2.7.6' "$readme" \
+        || ! rg -Fq '2026-08-11' "$readme"; then
+        current_links_ok=false
+    fi
+done
+
+if [[ "$current_links_ok" == true ]]; then
+    pass "README current pointers match the Aegis 2.7.6 snapshot"
 else
-    fail "authorized public benchmark bundle remains complete"
+    fail "README current pointers match the Aegis 2.7.6 snapshot"
+fi
+
+published_projection_root="$projection_root/published"
+mkdir -p "$published_projection_root"
+if [[ -f "${published_result}.json" && -f "${published_result}.svg" \
+    && -f "${published_result}.en.md" && -f "${published_result}.zh-CN.md" ]] \
+    && "${PYTHON_CMD[@]}" tests/helpers/render_agentic_benchmark.py render \
+        --report "${published_result}.json" \
+        --svg "$published_projection_root/result.svg" \
+        --markdown-en "$published_projection_root/result.en.md" \
+        --markdown-zh "$published_projection_root/result.zh-CN.md" \
+    && [[ "$(git hash-object --path="${published_result}.svg" "${published_result}.svg")" == "$(git hash-object --path="${published_result}.svg" "$published_projection_root/result.svg")" ]] \
+    && [[ "$(git hash-object --path="${published_result}.en.md" "${published_result}.en.md")" == "$(git hash-object --path="${published_result}.en.md" "$published_projection_root/result.en.md")" ]] \
+    && [[ "$(git hash-object --path="${published_result}.zh-CN.md" "${published_result}.zh-CN.md")" == "$(git hash-object --path="${published_result}.zh-CN.md" "$published_projection_root/result.zh-CN.md")" ]] \
+    && ! rg -n '/home/|/Users/|[A-Za-z]:\\|session[_-]?id|rollout[_-]?id|sk-[A-Za-z0-9_-]{16,}' \
+        "${published_result}.json" "${published_result}.svg" \
+        "${published_result}.en.md" "${published_result}.zh-CN.md" >/dev/null; then
+    pass "authorized public bundle validates and matches canonical rendering"
+else
+    fail "authorized public bundle validates and matches canonical rendering"
 fi
 
 if (( failures > 0 )); then

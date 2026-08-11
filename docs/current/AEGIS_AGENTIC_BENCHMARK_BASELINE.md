@@ -129,7 +129,7 @@ method-pack verification, not a runtime gate.
 
 ### 7.1 Scenario Coverage Contract
 
-The version 5 matrix maps every minimum scenario class to three distinct
+The version 6 matrix maps every minimum scenario class to three distinct
 coverage signals:
 
 - `workflowQualityFixtureRefs` names one or more existing deterministic
@@ -183,7 +183,7 @@ automatically promote a candidate or modify a skill, workflow, or baseline.
 
 ### 7.3 P1 Case Portfolio And Fair-Scoring Contract
 
-Matrix version 5 reserves one concrete portfolio manifest at:
+Matrix version 6 reserves one concrete portfolio manifest at:
 
 `tests/e2e/fixtures/agentic-benchmark-cases.json`
 
@@ -305,6 +305,71 @@ selected profile ceiling, aggregate by case cluster, and leave partial or
 unresolved reports unknown. These runner capabilities do not change the tier
 status or create public benchmark evidence before the separate report
 projection gate passes.
+
+### 7.4 Matrix v6 Reference-Value And Anti-Overfit Contract
+
+Matrix v6 separates benchmark reference value from candidate capability repair.
+The benchmark is a measurement instrument; a higher Aegis score is not by
+itself product evidence and must not become the reason for changing a skill.
+
+The public headline remains intentionally small:
+
+- contract-pass-rate delta between the frozen arms
+- unsafe-outcome rate per arm
+
+There is no composite score. Diagnostic metrics are a separate appendix surface:
+
+- non-discriminating-case rate
+- ceiling-case rate
+- floor-case rate
+- within-case stability
+- hard-stop unsafe count
+- scorer-review disagreement rate
+- route-evidence coverage
+- prose-only evidence rate
+
+Diagnostics that are derivable from frozen case results may be computed without
+changing outcomes. Diagnostics that require structured blind-review or routing
+evidence remain contract-only until the existing report owner can project them
+without reconstructing intent from private logs.
+
+Every concrete case has one diagnostic role:
+
+- `development`: visible sample used to harden contracts and scorers
+- `sentinel`: regression guard for safety, fast-path cheapness, or stable
+  expected behavior; it is not presented as arm discrimination evidence
+- `discriminator`: case intended to expose an arm difference or a shared safety
+  defect; observed arm separation is not guaranteed
+
+Case role never contributes a scoring pass. The initial v6 metadata classifies
+the existing portfolio as 10 development, 12 sentinel, and 8 discriminator
+cases. `fallback-retirement-boundary` remains a discriminator because a shared
+unsafe failure is a useful capability defect even when both arms fail.
+
+The anti-overfit order is mandatory for candidate skill or workflow revisions:
+
+1. freeze held-out prompts, projects, contracts, case roles, scorer semantics,
+   model/tool policy, and matrix version before candidate edits
+2. reproduce the capability gap in a non-benchmark pressure scenario
+3. repair the smallest canonical Aegis owner
+4. validate representative field or controlled tasks outside held-out
+5. run focused regression, including counterexamples and fast-path cost
+6. only then run the frozen held-out portfolio
+
+When the conditional `previous-aegis` arm is eligible, candidate evidence should
+compare baseline-no-Aegis, previous Aegis, and candidate Aegis. Until its
+separate snapshot/installation contract is implemented, the live run shape
+remains the two current arms and must not imply previous-version evidence.
+
+No case may be removed merely because Aegis fails it. A genuine failure is kept
+or strengthened. Scoring alternatives are frozen on development evidence and
+apply to both arms. A skill change is not promotable from benchmark improvement
+alone: non-benchmark capability evidence, no primary regression, repeated
+held-out evidence, and flagged-result review remain required.
+
+The Aegis 2.7.5 snapshot published on 2026-08-11 remains frozen matrix-v5
+evidence. Matrix v6 changes apply only to newly prepared batches and do not
+relabel or re-render that snapshot's outcomes.
 
 ## 8. Controlled Replay Samples
 
