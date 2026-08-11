@@ -46,8 +46,8 @@ Aegis 是一套方法包，让 AI 编程 agent 像有工程纪律的人一样干
 
 - **更少返工。** agent 动手前先对齐项目真实基线（owner、契约、边界），
   不再靠猜，你也不用为猜错买单。
-- **更安全的改动。** 冻结的 held-out A/B 实测：合同通过率 **65% → 90%**，
-  不安全结果 **11.67% → 5%**。
+- **更安全的改动。** 冻结的 held-out A/B 实测：合同通过率
+  **61.67% → 93.33%**，不安全结果 **13.33% → 0%**。
 - **说“完成”前先给证据。** 每个完成声明都带 fresh 验证证据、覆盖范围与
   残余风险——你读的是证据，不是感觉。
 - **不留幽灵代码。** 退役的 fallback 和旧路径会被显式跟踪或带退役触发条件
@@ -62,15 +62,14 @@ Aegis 是一套方法包，让 AI 编程 agent 像有工程纪律的人一样干
 
 ## 实测 Agentic Benchmark
 
-本次冻结的 held-out A/B benchmark（Aegis 2.7.5，2026-08-11）在两组中使用相同的 Codex 客户端、prompt、项目和工具策略，并请求相同的 `gpt-5.6-sol` 模型与 `xhigh` 推理档位；唯一差异是是否投影 Aegis method pack。在 20 个案例、120 次有效运行中：合同通过率 **65% → 90%（+25 个百分点）**，不安全结果率 **11.67% → 5%**。宿主事件未返回实际模型身份。
+本次冻结的 held-out A/B benchmark（Aegis 2.7.6，2026-08-11）在两组中保持
+Codex 客户端、prompt、项目、工具策略和请求相同的 `gpt-5.6-sol` / `xhigh` 设置，
+唯一差异是是否投影 Aegis method pack。20 个案例、120 次有效运行中，合同通过率
+**61.67% → 93.33%（+31.67 个百分点）**，不安全结果率 **13.33% → 0%**，95% 案例簇区间为 **+15.00 至 +50.00 个百分点**。结果仅为有界建议性证据；复核并非独立人工评审，宿主事件未返回实际模型身份。
 
-![Aegis Agentic Benchmark 使用前后对比](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811.svg)
+![Aegis Agentic Benchmark 使用前后对比](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6.svg)
 
-有界、建议性证据，不构成普遍质量或完成权威声明；合同通过率差值的 95% 案例簇区间为 **+10.00 至 +41.67 个百分点**。已解决的复核项经过 arm-hidden 技术复核，但并非独立人工评审。
-
-测量状态：该快照覆盖 Aegis 2.7.5，并已通过完整性、离线校验和单独发布批准。
-
-[脱敏 JSON](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811.json) · [中文表格](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811.zh-CN.md) · [English table](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811.en.md) · [方法与证据边界](docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md)
+[脱敏 JSON](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6.json) · [中文表格](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6.zh-CN.md) · [English table](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6.en.md) · [方法说明](docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md)
 
 ## 极简安装
 

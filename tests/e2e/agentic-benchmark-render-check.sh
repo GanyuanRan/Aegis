@@ -102,10 +102,10 @@ en_quick_line="$(rg -n '^## Quick Install$' README.md | cut -d: -f1 || true)"
 zh_quick_line="$(rg -n '^## 极简安装$' README.zh-CN.md | cut -d: -f1 || true)"
 if [[ -n "$en_quick_line" && -n "$zh_quick_line" \
     && "$en_quick_line" -le 75 && "$zh_quick_line" -le 75 ]] \
-    && rg -Fq 'contract pass rate **65% → 90%' README.md \
-    && rg -Fq 'unsafe outcomes **11.67% → 5%**' README.md \
-    && rg -Fq '合同通过率 **65% → 90%' README.zh-CN.md \
-    && rg -Fq '不安全结果率 **11.67% → 5%**' README.zh-CN.md \
+    && rg -Fq 'pass rate **61.67% → 93.33%' README.md \
+    && rg -Fq 'unsafe outcomes **13.33% → 0%**' README.md \
+    && rg -Fq '**61.67% → 93.33%**' README.zh-CN.md \
+    && rg -Fq '不安全结果 **13.33% → 0%**' README.zh-CN.md \
     && rg -Fq 'requested the same' README.md \
     && rg -Fq '请求相同的' README.zh-CN.md \
     && ! rg -q 'ambiguous-feature-shaping|Contract pass rate by scenario class|场景类别' README.md README.zh-CN.md; then
@@ -131,8 +131,8 @@ else
     fail "benchmark evidence boundary is documented"
 fi
 
-published_result="benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811"
-published_name="gpt-5-6-sol-xhigh-extended-20260811"
+published_result="benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6"
+published_name="gpt-5-6-sol-xhigh-extended-20260811-v2-7-6"
 current_links_ok=true
 for readme in README.md README.zh-CN.md benchmarks/README.md; do
     for suffix in json svg en.md zh-CN.md; do
@@ -140,16 +140,16 @@ for readme in README.md README.zh-CN.md benchmarks/README.md; do
             current_links_ok=false
         fi
     done
-    if ! rg -Fq 'Aegis 2.7.5' "$readme" \
+    if ! rg -Fq 'Aegis 2.7.6' "$readme" \
         || ! rg -Fq '2026-08-11' "$readme"; then
         current_links_ok=false
     fi
 done
 
 if [[ "$current_links_ok" == true ]]; then
-    pass "README current pointers match the Aegis 2.7.5 snapshot"
+    pass "README current pointers match the Aegis 2.7.6 snapshot"
 else
-    fail "README current pointers match the Aegis 2.7.5 snapshot"
+    fail "README current pointers match the Aegis 2.7.6 snapshot"
 fi
 
 published_projection_root="$projection_root/published"

@@ -48,7 +48,7 @@ engineers — so you don't have to watch them.
   owners, contracts, boundaries — before touching code. It stops guessing, and
   so do you.
 - **Safer changes.** Measured on a frozen held-out A/B benchmark: contract
-  pass rate **65% → 90%**, unsafe outcomes **11.67% → 5%**.
+  pass rate **61.67% → 93.33%**, unsafe outcomes **13.33% → 0%**.
 - **Proof before "done".** Completion claims ship with fresh verification
   evidence, covered scope, and residual risk. You read evidence, not vibes.
 - **No ghost code.** Retired fallbacks and old paths are tracked or removed
@@ -63,14 +63,14 @@ engineers — so you don't have to watch them.
 
 ## Measured Agentic Benchmark
 
-A frozen held-out A/B benchmark (Aegis 2.7.5, 2026-08-11) used the same Codex
-client, prompts, projects, and tool policy in both arms and requested the same
-`gpt-5.6-sol` model with `xhigh` effort; only the Aegis projection differed.
-Across 120 valid runs on 20 cases: contract pass rate **65% → 90% (+25 pp)**; unsafe outcomes **11.67% → 5%**. These are bounded advisory results, not universal-quality or completion-authority evidence. The 95% case-cluster interval for the pass-rate difference is **+10.00 pp to +41.67 pp**; resolved flags received arm-hidden technical review, not independent human review, and host events did not return the observed model identity.
+A frozen held-out A/B benchmark for Aegis 2.7.6 (2026-08-11) kept the Codex client,
+prompts, projects, tool policy, and requested the same `gpt-5.6-sol` / `xhigh` setting
+in both arms; only the Aegis projection differed. Across 120 valid runs on 20 cases,
+contract pass rate was **61.67% → 93.33% (+31.67 pp)** and unsafe outcomes were **13.33% → 0%**. The 95% case-cluster interval was **+15.00 pp to +50.00 pp**. This is bounded advisory evidence; review was arm-hidden technical review, not independent human review, and host events did not return the observed model identity.
 
-![Aegis agentic benchmark: with and without Aegis](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811.svg)
+![Aegis agentic benchmark: with and without Aegis](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6.svg)
 
-[Sanitized JSON](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811.json) · [English table](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811.en.md) · [中文表格](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811.zh-CN.md) · [Methodology and evidence boundary](docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md)
+[Sanitized JSON](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6.json) · [English table](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6.en.md) · [中文表格](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6.zh-CN.md) · [Methodology](docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md)
 
 ## Quick Install
 

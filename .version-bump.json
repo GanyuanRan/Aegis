@@ -24,6 +24,10 @@
       "test-subagent-driven-development-integration.sh",
       ".version-bump.json",
       "scripts/bump-version.sh",
+      "README.md",
+      "README.zh-CN.md",
+      "gpt-5-6-sol-xhigh-extended-*.json",
+      "agentic-benchmark-render-check.sh",
       "docs/archive"
     ]
   }
