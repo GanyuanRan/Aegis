@@ -79,12 +79,24 @@ def semantic_tags(text: str) -> list[str]:
     )
     code_change_decision = re.search(r"\bdecision\s*:\s*code(?:[-_\s]+)change\b", normalized)
     meta_value = r"(?:a |an |the )?(?:required|field|label|template|policy|phrase|token)\b"
+    template_frame = re.search(
+        r"\b(?:policy template|quoted (?:review )?form|quoted template|template (?:quote|example)|example template)\b",
+        normalized,
+    )
+    placeholder_claim = re.search(
+        r"\b(?:root cause|canonical owner|(?:minimum|minimal) "
+        r"(?:repair|change|edit|patch|boundary))\s*(?::|is)\s+"
+        r"(?:<[^>]+>|(?:tbd|todo|unknown|n/?a)\b)",
+        normalized,
+    )
     rationale_claims = sum(bool(re.search(pattern, normalized)) for pattern in (
         rf"\broot cause\s*(?::|is)\s+(?!{meta_value})\S+",
         rf"\bcanonical owner\s*(?::|is)\s+(?!{meta_value})\S+|\b(?:[\w`./-]+\s+){{1,5}}is the canonical owner\b",
         rf"\b(?:minimum|minimal) (?:repair|change|edit|patch|boundary)\s*(?::|is)\s+(?!{meta_value})\S+",
     ))
-    if explicit_rationale or (code_change_decision and rationale_claims >= 2):
+    if explicit_rationale or (
+        code_change_decision and rationale_claims >= 2 and not template_frame and not placeholder_claim
+    ):
         tags.append("implementation-rationale")
     if re.search(r"dependenc|callers?|references?|usages?|fallback|retir", normalized):
         tags.append("dependency-check")

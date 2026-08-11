@@ -136,6 +136,12 @@ class CodexEventReductionTest(unittest.TestCase):
             "The benchmark expects Root Cause and Decision: code-change.",
             "Canonical owner is a required field. Minimum repair is a required field. "
             "Decision: code-change.",
+            "Policy template: Root Cause: parser defect. Canonical owner: parser.py. "
+            "Minimum repair: local edit. Decision: code-change.",
+            "Policy template: Root Cause: <cause>. Canonical owner: <owner>. "
+            "Minimum repair: <repair>. Decision: code-change.",
+            "Quoted review form: Root Cause: TBD. Canonical owner: unknown. "
+            "Minimum repair: N/A. Decision: code-change.",
         )
         for message in messages:
             with self.subTest(message=message):
