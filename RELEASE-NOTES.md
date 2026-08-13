@@ -1,5 +1,16 @@
 # Aegis Release Notes
 
+## v2.7.7 (2026-08-13)
+
+### Gemini CLI 支持退役
+
+- 删除 `GEMINI.md`、`gemini-extension.json` 和 Gemini 专用工具映射；Aegis
+  不再分发、验证或承诺 Gemini CLI 宿主支持。
+- 企业、Google Cloud 和付费 API key 用户仍可能继续使用上游 Gemini CLI；
+  本次变更是 Aegis 支持范围收缩，不宣称上游产品已经完全停止。
+- Antigravity CLI 仍是 Google 宿主的 active closeout target，但继续保持
+  “尚无 release-level fresh smoke verdict”，不会因 Gemini 退役而自动升级。
+
 ## v2.7.6 (2026-08-11)
 
 ### 更安全的 fallback 退役与变更决策

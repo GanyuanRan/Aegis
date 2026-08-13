@@ -9,7 +9,7 @@ a host.
 Aegis skills override default system prompt behavior, but **user instructions
 always take precedence**:
 
-1. **User's explicit instructions** (`CLAUDE.md`, `GEMINI.md`, `AGENTS.md`,
+1. **User's explicit instructions** (`CLAUDE.md`, `AGENTS.md`,
    direct requests) - highest priority
 2. **Aegis skills** - override default system behavior where they conflict
 3. **Default system prompt** - lowest priority
@@ -31,11 +31,6 @@ current Antigravity surface's Skills / plugin contract has been verified. When
 Antigravity exposes a native skill or slash-command surface, use that host
 mechanism and map Aegis tool names through `references/antigravity-tools.md`.
 
-**In Gemini CLI:** Gemini CLI is a transitional compatibility surface while
-Antigravity support matures. Skills activate via the `activate_skill` tool.
-Gemini loads skill metadata at session start and activates the full content on
-demand.
-
 **In other environments:** Check the platform's documentation for how skills
 are loaded.
 
@@ -46,7 +41,6 @@ Skills use Claude Code tool names. Non-CC platforms: see:
 - `references/copilot-tools.md`
 - `references/codex-tools.md`
 - `references/antigravity-tools.md`
-- `references/gemini-tools.md`
 
 ## The Rule
 

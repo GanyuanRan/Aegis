@@ -33,14 +33,6 @@
         "verification-before-completion still applies",
         "native \\\\?`skill\\\\?` tool"
       ]
-    },
-    {
-      "path": "GEMINI.md",
-      "requiredRegex": [
-        "@\\./skills/using-aegis/SKILL\\.md",
-        "@\\./skills/using-aegis/references/gemini-tools\\.md"
-      ],
-      "referenceOnly": true
     }
   ],
   "allowedAdapterResponsibilities": [

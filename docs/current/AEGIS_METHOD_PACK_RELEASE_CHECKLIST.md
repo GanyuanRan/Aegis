@@ -169,10 +169,11 @@ Confirm:
   time: updater-managed `$GROK_HOME/skills` direct-child entries, explicit
   `[skills] paths`, or a Claude-compatible plugin. `grok inspect --json`
   enumeration is not misrepresented as clean-install and live-trigger closeout
-- Gemini CLI is described as a transitional compatibility surface with the
-  `2026-05-19` Google transition announcement and `2026-06-18` consumer
-  service-stop boundary, while preserving enterprise and paid API key caveats
-  and not claiming Aegis has retired Gemini CLI
+- Gemini CLI is described as retired and unsupported by Aegis; enterprise,
+  Google Cloud, and paid API-key caveats remain explicit so the repository does
+  not imply that the upstream CLI itself has ceased to exist
+- Gemini retirement does not upgrade Antigravity CLI, IDE, or App beyond their
+  separately verified current status
 
 ---
 

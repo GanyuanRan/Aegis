@@ -64,10 +64,10 @@ assert_contains "$matrix" "plugin discovery.*skills.*agents|skills.*agents.*plug
     "compatibility matrix records Antigravity CLI plugin discovery evidence"
 assert_contains "$matrix" "Active closeout target|active closeout target" \
     "compatibility matrix marks Antigravity CLI as the active closeout target"
-assert_contains "$matrix" "\`Gemini CLI\`.*[Tt]ransitional|[Tt]ransitional.*\`Gemini CLI\`" \
-    "compatibility matrix marks Gemini CLI as transitional"
-assert_not_contains "$matrix" "\`Gemini CLI\`.*retir(ed|ing)?|retir(ed|ing)?.*\`Gemini CLI\`" \
-    "compatibility matrix does not mark Gemini CLI as retired or retiring"
+assert_contains "$matrix" "\`Gemini CLI\`.*[Rr]etired|[Rr]etired.*\`Gemini CLI\`" \
+    "compatibility matrix marks Gemini CLI as retired"
+assert_contains "$matrix" "unsupported by Aegis" \
+    "compatibility matrix removes the Gemini CLI support promise"
 assert_contains "$matrix" "2026-05-19" \
     "compatibility matrix records Google transition announcement date"
 assert_contains "$matrix" "2026-06-18" \
@@ -80,9 +80,9 @@ assert_not_contains "$matrix" "\`Gemini CLI\` \| No current fresh release-level 
     "compatibility matrix no longer treats Gemini CLI as ordinary pending host"
 
 assert_contains "$known_limits" "Gemini CLI" \
-    "known limitations records Gemini CLI transition boundary"
-assert_contains "$known_limits" "Transitional Compatibility|transitional compatibility" \
-    "known limitations labels the Gemini CLI surface as transitional compatibility"
+    "known limitations records Gemini CLI retirement boundary"
+assert_contains "$known_limits" "Support Is Retired|support is retired" \
+    "known limitations labels Gemini CLI support as retired"
 assert_contains "$known_limits" "Antigravity CLI|Antigravity IDE|Antigravity App" \
     "known limitations records Antigravity structural support boundary"
 assert_contains "$known_limits" "active closeout target" \
@@ -136,16 +136,22 @@ assert_contains "$antigravity_guide" "discovery for skills and agents" \
     "Antigravity guide records CLI plugin discovery evidence"
 assert_contains "$antigravity_guide" "release-level live smoke evidence|release-level live smoke|fresh host smoke" \
     "Antigravity guide avoids claiming unverified live smoke"
-assert_not_contains "$antigravity_guide" "legacy Gemini CLI|retire Gemini CLI|retiring compatibility|legacy / retiring" \
-    "Antigravity guide keeps Gemini CLI transitional rather than legacy or retired"
-assert_contains "$antigravity_tools" "transitional compatibility" \
-    "Antigravity tool mapping records transitional Gemini boundary"
+assert_contains "$antigravity_guide" "retired its Gemini CLI support surface" \
+    "Antigravity guide records the Aegis Gemini CLI retirement"
+assert_contains "$antigravity_tools" "no longer ships or verifies a Gemini CLI adapter" \
+    "Antigravity tool mapping records the retired Gemini boundary"
 assert_contains "$antigravity_tools" "plugin discovery.*skills.*agents|skills.*agents.*plugin discovery" \
     "Antigravity tool mapping records CLI plugin discovery evidence"
-assert_not_contains "$antigravity_tools" "legacy Gemini CLI|retire Gemini CLI|retiring compatibility|legacy / retiring" \
-    "Antigravity tool mapping does not retire Gemini CLI"
-assert_not_contains "$prompt_hygiene" "legacy Gemini CLI|retire Gemini CLI|retiring compatibility|legacy / retiring" \
-    "prompt hygiene keeps Gemini CLI transitional rather than legacy or retired"
+assert_not_contains "$prompt_hygiene" "Gemini CLI" \
+    "prompt hygiene no longer lists retired Gemini CLI as a supported host"
+
+for retired_path in GEMINI.md gemini-extension.json skills/using-aegis/references/gemini-tools.md; do
+    if [[ -e "$retired_path" ]]; then
+        fail "retired Gemini surface is absent: $retired_path"
+    else
+        pass "retired Gemini surface is absent: $retired_path"
+    fi
+done
 
 if (( failures > 0 )); then
     echo ""

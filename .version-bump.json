@@ -7,8 +7,7 @@
     { "path": ".codex-plugin/plugin.json", "field": "version" },
     { "path": ".codebuddy-plugin/plugin.json", "field": "version" },
     { "path": ".claude-plugin/marketplace.json", "field": "plugins.0.version" },
-    { "path": ".codebuddy-plugin/marketplace.json", "field": "plugins.0.version" },
-    { "path": "gemini-extension.json", "field": "version" }
+    { "path": ".codebuddy-plugin/marketplace.json", "field": "plugins.0.version" }
   ],
   "audit": {
     "exclude": [

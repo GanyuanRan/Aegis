@@ -358,34 +358,34 @@ request.
 
 ---
 
-### 2.16 Gemini CLI Is a Transitional Compatibility Surface
+### 2.16 Gemini CLI Support Is Retired
 
-**Retained Item**
-- `GEMINI.md`, `gemini-extension.json`, and the Gemini CLI tool mapping remain
-  as transitional compatibility surfaces
+**Retired Item**
+- The root `GEMINI.md`, `gemini-extension.json`, and Gemini-specific tool
+  mapping have been removed from the supported distribution surface
 
-**Retention Reason**
+**Retirement Reason**
 - Google announced on `2026-05-19` that consumer Gemini CLI and Gemini Code
   Assist IDE extension usage is transitioning to Antigravity CLI and
   Antigravity 2.0. On `2026-06-18`, requests stop being served for free usage,
   Google AI Pro / Ultra, and Gemini Code Assist for individuals. Enterprise
   Standard / Enterprise, Google Cloud-backed Gemini Code Assist for GitHub, and
   paid Gemini / Gemini Enterprise Agent Platform API key paths remain outside
-  that consumer stop boundary. Aegis keeps Gemini CLI support as a transition
-  path while Antigravity CLI, Antigravity IDE, and Antigravity App support
-  matures.
+  that consumer stop boundary.
+- Aegis has nevertheless chosen to stop carrying a separate Gemini CLI host
+  adapter and to focus new Google-host work on Antigravity surfaces.
 
-**Observation Metric**
+**Compatibility Impact**
+- Existing enterprise, Google Cloud, or paid API-key Gemini CLI users may still
+  be able to run Gemini CLI itself, but Aegis no longer publishes or verifies a
+  Gemini CLI install path for them.
+- This retirement does not establish a fresh Antigravity host closeout verdict.
+
+**Verification**
 - `docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md`
 - `docs/README.antigravity.md`
-- Future evidence about whether relevant users have moved to Antigravity and
-  whether the transitional Gemini surfaces still provide compatibility value
-
-**Reclassification Trigger**
-- When Antigravity install surfaces have their own stable, verified package
-  artifacts and maintainers explicitly decide whether Gemini CLI remains
-  transitional, becomes legacy-only, or needs a separate retirement proposal in
-  a future cleanup
+- `bash tests/e2e/antigravity-host-boundary-check.sh`
+- Repository scans show no current Gemini adapter, manifest, or tool-map owner
 
 ---
 

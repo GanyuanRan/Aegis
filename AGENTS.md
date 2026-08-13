@@ -128,7 +128,6 @@ Changes must not silently break supported host distribution surfaces, including:
 - `.cursor-plugin/`
 - `.cursor/`
 - `.windsurf/`
-- `gemini-extension.json`
 - host install docs
 - host compatibility tests
 

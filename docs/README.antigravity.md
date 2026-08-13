@@ -54,17 +54,21 @@ repository has a verified Antigravity install/discovery path for the current
 method pack, and they do **not** yet count as release-level live smoke
 evidence for Aegis.
 
-## Gemini CLI Transition Boundary
+## Retired Gemini CLI Boundary
 
 Google announced on `2026-05-19` that consumer Gemini CLI and Gemini Code Assist
 IDE extension usage is transitioning to Antigravity CLI and Antigravity 2.0.
 The announced consumer service stop date is `2026-06-18` for free usage,
 Google AI Pro / Ultra, and Gemini Code Assist for individuals.
 
-Aegis keeps `GEMINI.md`, `gemini-extension.json`, and the Gemini tool mapping as
-transitional compatibility surfaces for historical lineage, current Gemini CLI
-users, and enterprise / paid API key paths. New Google-host work should target
-Antigravity, while Gemini CLI remains available as a transition path.
+Aegis has retired its Gemini CLI support surface. The repository no longer
+ships `GEMINI.md`, `gemini-extension.json`, or a Gemini-specific tool mapping.
+This is an Aegis product-support decision, not a claim that Gemini CLI is
+unavailable to every enterprise, Google Cloud, or paid API-key user.
+
+The documented `agy plugin import gemini` command remains relevant as upstream
+migration history. New Google-host work should target Antigravity, whose Aegis
+install and discovery path still requires its own fresh closeout evidence.
 
 ## Recommended Complete Installation
 
@@ -126,8 +130,9 @@ commands, subagents, `/agents`, `/config`, `/keybindings`, and the `agy`
 executable.
 
 Aegis should remain a method pack inside this surface. Antigravity's subagent
-support may make subagent-heavy Aegis skills more natural than the transitional
-Gemini CLI path, but Aegis still does not grant final completion authority.
+support may make subagent-heavy Aegis skills more natural than they were through
+the retired Gemini CLI adapter, but Aegis still does not grant final completion
+authority.
 
 ### Antigravity IDE
 

@@ -59,11 +59,11 @@ The current snapshot is based on fresh evidence and current docs landed as of
 | `Hermes Agent` | Skills Hub / `~/.hermes/skills/` skill host surface supports method-pack exposure; no current release-level fresh smoke verdict | `docs/README.hermes-agent.md` established; evidence from Hermes Skills Hub, documented local skills path, GitHub path installs, and built-in coding delegation skills; live host regression still deferred |
 | `ZCode` | Depth-1 `~/.agents/skills/<skill-name>/SKILL.md` skill discovery (like CC GUI and Windsurf) plus Claude-Code-compatible plugin marketplace reading `.claude-plugin/marketplace.json`; direct-child exposure is now updater-maintained at register/update time; reads `AGENTS.md`; no current release-level fresh smoke verdict | `docs/README.zcode.md` established; evidence from ZCode plugin and skill official docs; Aegis's existing `.claude-plugin/` skeleton works with zero code changes, but live host regression still deferred |
 
-### 3.2a Transitional Compatibility Host Surfaces
+### 3.2a Retired Host Surfaces
 
-| Host | Current Status | Why Retained |
+| Host | Current Status | Retirement Boundary |
 | --- | --- | --- |
-| `Gemini CLI` | Transitional compatibility surface; kept outside ordinary pending-host status | Google announced on `2026-05-19` that consumer Gemini CLI and Gemini Code Assist IDE extension usage transitions to Antigravity CLI / Antigravity 2.0. On `2026-06-18`, requests stop being served for free usage, Google AI Pro / Ultra, and Gemini Code Assist for individuals. Enterprise Standard / Enterprise, Google Cloud-backed Gemini Code Assist for GitHub, and paid Gemini / Gemini Enterprise Agent Platform API key paths remain outside that consumer stop boundary. Aegis keeps Gemini CLI support while Antigravity CLI / IDE / App support matures. |
+| `Gemini CLI` | Retired; unsupported by Aegis | Google announced the consumer transition on `2026-05-19`; service stopped on `2026-06-18` for free usage, Google AI Pro / Ultra, and Gemini Code Assist for individuals, while Enterprise Standard / Enterprise, Google Cloud, and paid API-key paths remained outside that boundary. Aegis no longer ships `GEMINI.md`, `gemini-extension.json`, or a Gemini-specific tool mapping. This is an explicit Aegis product-support retirement rather than a claim that Gemini CLI no longer exists. Historical migration guidance remains in `docs/README.antigravity.md`. |
 
 ### 3.3 Hosts Requiring No Independent Adapter
 
@@ -108,7 +108,8 @@ The current snapshot only states:
 9. `Cursor` and `Windsurf` have structured install guides but have not yet entered release-level fresh smoke
 10. `Antigravity CLI` is now the active Google-host closeout target, but still lacks release-level fresh smoke evidence
 11. `Antigravity IDE` and `Antigravity App` remain structural target surfaces rather than the active closeout slice
-12. `Gemini CLI` is retained as a transitional compatibility surface after Google's `2026-05-19` transition announcement while Antigravity support matures
+12. `Gemini CLI` support is retired; this does not upgrade Antigravity CLI, IDE,
+    or App beyond their separately evidenced current status
 13. `Pi CLI` can expose Aegis through `pi install git:github.com/GanyuanRan/Aegis`, Pi package `skills/` / `pi.skills` discovery, `~/.pi/agent/skills/`, `~/.agents/skills/`, or `.pi/skills/`, but support remains structural until a fresh Pi install smoke proves it for the current release
 14. `OpenClaw` can expose Aegis through individual local skill-directory installs, but `git:owner/repo` should not be written as the canonical whole-repo Aegis installer because OpenClaw expects `SKILL.md` at the source root
 15. `Hermes Agent` can expose Aegis through `~/.hermes/skills/` or documented GitHub path installs, but support remains structural until a fresh Hermes install smoke proves it for the current release

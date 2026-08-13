@@ -8,8 +8,7 @@
     "GLOBAL_USER_RULES_TEMPLATE.md",
     "GLOBAL_USER_RULES_LITE.zh-CN.md",
     "GLOBAL_USER_RULES_TEMPLATE.zh-CN.md",
-    ".github/copilot-instructions.md",
-    "GEMINI.md"
+    ".github/copilot-instructions.md"
   ],
   "surfaces": [
     {
@@ -150,14 +149,6 @@
         "fresh verification evidence"
       ],
       "maxChars": 2000
-    },
-    {
-      "path": "GEMINI.md",
-      "requiredRegex": [
-        "@\\./skills/using-aegis/SKILL\\.md",
-        "@\\./skills/using-aegis/references/gemini-tools\\.md"
-      ],
-      "maxLines": 8
     }
   ],
   "forbiddenPositiveClaims": [

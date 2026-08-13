@@ -80,13 +80,6 @@ def validate_cursor_manifest(root: Path) -> None:
     require((root / "hooks" / "hooks-cursor.json").exists(), "Cursor hook file must exist")
 
 
-def validate_gemini_manifest(root: Path) -> None:
-    manifest = load_json(root / "gemini-extension.json")
-    require(manifest.get("contextFileName") == "GEMINI.md", "Gemini must use GEMINI.md context file")
-    require("hooks" not in manifest, "Gemini manifest must not advertise unsupported hooks")
-    require((root / "GEMINI.md").exists(), "GEMINI.md must exist")
-
-
 def validate_hook_files(root: Path) -> None:
     claude_hooks = load_json(root / "hooks" / "hooks.json")
     cursor_hooks = load_json(root / "hooks" / "hooks-cursor.json")
@@ -115,7 +108,6 @@ def validate(root: Path) -> None:
     validate_codex_manifest(root)
     validate_kimi_manifest(root)
     validate_cursor_manifest(root)
-    validate_gemini_manifest(root)
     validate_hook_files(root)
     validate_marketplace(root)
     require(not (root / "docs" / "aegis").exists(), "method-pack repo must not ship docs/aegis workspace")
