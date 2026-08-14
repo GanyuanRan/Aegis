@@ -1,5 +1,22 @@
 # Aegis Release Notes
 
+## v2.7.8 (2026-08-14)
+
+### DeepSeek Harness 结构性适配
+
+- 新增官方 DeepSeek Harness（`deepseek-ai/deepseek-harness`）宿主指南，
+  明确它与 DeepSeek-TUI 是两个独立宿主，并以原生 filesystem skill provider
+  的 direct-child 目录形态接入 Aegis。
+- `aegis-update.py` 新增 `deepseek-harness` / `dsh` 宿主识别，
+  默认使用 `$DSH_HOME/skills`（未设置时为 `~/.dsh/skills`）并在注册时生成
+  updater 管理的 skill 链接；Windows 使用 junction，macOS/Linux 使用 symlink。
+- 新增 DeepSeek Harness 边界检查和更新器回归覆盖；README、中文 README、
+  兼容矩阵、已知限制、测试说明、发布检查清单及中英文速通秘籍已同步。
+- 更新器现在按本地控制台编码容错读取子进程输出，避免 Windows 非 UTF-8
+  输出导致更新流程异常中断。
+- 当前结论仍是“结构性安装适配完成”；DeepSeek Harness 处于 developer preview，
+  尚无本版本 release-level live routing verdict。
+
 ## v2.7.7 (2026-08-13)
 
 ### Gemini CLI 支持退役

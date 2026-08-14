@@ -173,6 +173,23 @@ release-level host closeout. Check that every Aegis skill name has one
 canonical source; native Grok skills, `[skills] paths`, shared Agent Skills,
 and Claude-compatible plugins can otherwise expose duplicate Aegis copies.
 
+### DeepSeek Harness Structural Host Tests
+
+The DeepSeek Harness boundary check validates the official host identity,
+native `$DSH_HOME/skills` direct-child defaults, updater registration,
+duplicate-exposure guard, developer-preview boundary, and public release links
+without changing the current user's DSH profile:
+
+```bash
+bash tests/e2e/deepseek-harness-host-boundary-check.sh
+python tests/helpers/test_aegis_update.py -k deepseek_harness
+```
+
+These deterministic checks prove method-pack distribution structure only. A
+fresh Standard-mode session must still prove catalog discovery, native `skill`
+loading, representative routing, session refresh, and update behavior before
+DeepSeek Harness receives a release-level host verdict.
+
 ### Workspace Helper ADR Lifecycle Tests
 
 The workspace helper ADR lifecycle is covered by the existing target-project

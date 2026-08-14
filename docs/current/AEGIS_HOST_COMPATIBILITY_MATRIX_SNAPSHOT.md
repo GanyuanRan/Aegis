@@ -43,6 +43,7 @@ The current snapshot is based on fresh evidence and current docs landed as of
 | `CC GUI (JetBrains IDEA)` | Structural IDE plugin layer target for Claude Code / OpenAI-GPT provider paths; no current release-level fresh smoke verdict | `docs/README.cc-gui.md` established; CC GUI's OpenAI/Codex provider scanner expects direct `.agents/skills/<skill-name>/SKILL.md` skill directories regardless of the selected GPT model profile, so Aegis must expose individual skills rather than only an umbrella `~/.agents/skills/aegis` directory; live IDE plugin smoke and host adapter event rendering remain deferred |
 | `CodeBuddy` | Has `.codebuddy-plugin/` skeleton and native `SKILL.md` manual install instructions; no current release-level fresh smoke verdict | `docs/README.codebuddy.md` established; evidence from CodeBuddy skills/plugin docs and this repo's `.codebuddy-plugin/`; real host regression still deferred |
 | `DeepSeek-TUI` | Native `SKILL.md` discovery supports manual installation; no current release-level fresh smoke verdict | `docs/README.deepseek-tui.md` established; evidence from DeepSeek-TUI README/source discovery contract; real host regression still deferred |
+| `DeepSeek Harness` | Native filesystem skill discovery and updater-managed direct-child exposure support structural install; no current release-level fresh smoke verdict | `docs/README.deepseek-harness.md` established; official discovery roots include project `.dsh/skills`, project `.agents/skills`, `$DSH_HOME/skills` (`~/.dsh/skills` by default), and `$DSH_AGENTS_HOME/skills`; the official host remains a developer preview with compatibility-breaking changes expected, and it is separate from DeepSeek-TUI |
 | `Trae` | Native `SKILL.md` discovery supports manual installation; no current release-level fresh smoke verdict | `docs/README.trae.md` established; evidence from Trae skills docs; real host regression still deferred |
 | `GitHub Copilot` | Supports repository skills, instructions, and hooks; no current release-level fresh smoke verdict | `docs/README.copilot.md` established; evidence from GitHub Copilot agent skills, repository instructions, and hooks docs; Aegis exposes repository skills as `.github/skills/aegis-<skill-name>/SKILL.md`, verified as a prefixed direct-child compatibility view, but real host regression is still deferred |
 | `Qoder` | Native `SKILL.md` discovery and rules surfaces support structural install; no current release-level fresh smoke verdict | `docs/README.qoder.md` established; evidence from Qoder skills and rules docs, but real host regression is still deferred |
@@ -132,6 +133,11 @@ The current snapshot only states:
     these are alternative exposure routes, not three simultaneous owners, and
     support remains structural until clean-install and live-trigger smoke is
     fresh for the current release
+23. `DeepSeek Harness` can expose Aegis through updater-managed direct-child
+    skills under `$DSH_HOME/skills` (`~/.dsh/skills` by default), while project
+    `.dsh/skills`, shared `.agents/skills`, and custom skill directories remain
+    alternative discovery routes; exactly one Aegis exposure should be active,
+    and structural catalog discovery is not a current live-routing verdict
 
 ---
 
@@ -159,6 +165,7 @@ When reading the current host verdict, follow this order:
 18. `.cursor/INSTALL.md`
 19. `docs/README.zcode.md`
 20. `docs/README.grok-build.md`
+21. `docs/README.deepseek-harness.md`
 
 ---
 

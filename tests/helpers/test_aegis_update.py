@@ -2,6 +2,7 @@ import importlib.util
 import json
 import os
 import tempfile
+import sys
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -30,6 +31,17 @@ class AegisUpdateRegistryTests(unittest.TestCase):
             skill_dir.mkdir()
             (skill_dir / "SKILL.md").write_text(f"# {skill}\n", encoding="utf-8")
         return source_skills
+
+    def test_run_command_tolerates_non_utf8_console_output(self):
+        result = update.run_command(
+            [
+                sys.executable,
+                "-c",
+                "import sys; sys.stdout.buffer.write(bytes([0xB4]))",
+            ]
+        )
+
+        self.assertTrue(result.stdout)
 
     def test_register_installation_keeps_hosts_separate(self):
         with tempfile.TemporaryDirectory(prefix="aegis-update-") as tmp:
@@ -369,6 +381,28 @@ class AegisUpdateRegistryTests(unittest.TestCase):
                 (grok_home / "skills").resolve().as_posix(),
             )
 
+    def test_register_installation_defaults_deepseek_harness_to_native_direct_child(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-dsh-shape-") as tmp:
+            registry = Path(tmp) / "installations.json"
+            root = Path(tmp) / "aegis"
+            dsh_home = Path(tmp) / "dsh-home"
+
+            with patch.dict(os.environ, {"DSH_HOME": dsh_home.as_posix()}):
+                entry = update.register_installation(
+                    registry,
+                    host="DSH",
+                    method_pack_root=root,
+                    sync_mode="junction",
+                )
+
+            self.assertEqual(entry["host"], "dsh")
+            self.assertEqual(entry["syncMode"], "junction")
+            self.assertEqual(entry["discoveryShape"], "direct-child")
+            self.assertEqual(
+                entry["discoveryRoot"],
+                (dsh_home / "skills").resolve().as_posix(),
+            )
+
     def test_sync_skills_creates_direct_child_links_for_zcode_junction(self):
         with tempfile.TemporaryDirectory(prefix="aegis-update-zcode-links-") as tmp:
             method_pack_root = Path(tmp) / "method-pack"
@@ -439,6 +473,33 @@ class AegisUpdateRegistryTests(unittest.TestCase):
 
             self.assertTrue(
                 (grok_home / "skills" / "using-aegis" / "SKILL.md").is_file()
+            )
+
+    def test_legacy_deepseek_harness_entry_uses_native_default_discovery_root(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-dsh-legacy-") as tmp:
+            method_pack_root = Path(tmp) / "method-pack"
+            dsh_home = Path(tmp) / "dsh-home"
+            self.make_method_pack_with_skills(
+                method_pack_root,
+                list(update.COPY_DISCOVERY_KEY_SKILLS),
+            )
+            sync_mode = "copy-skills"
+            entry = {
+                "id": "deepseek-harness:default",
+                "host": "deepseek-harness",
+                "methodPackRoot": method_pack_root.as_posix(),
+                "syncMode": sync_mode,
+            }
+
+            with patch.dict(os.environ, {"DSH_HOME": dsh_home.as_posix()}):
+                self.assertEqual(
+                    update.doctor_discovery_root(entry),
+                    (dsh_home / "skills").resolve().as_posix(),
+                )
+                update.sync_skills(entry)
+
+            self.assertTrue(
+                (dsh_home / "skills" / "using-aegis" / "SKILL.md").is_file()
             )
 
     def test_sync_skills_creates_prefixed_direct_child_links(self):

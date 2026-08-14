@@ -42,6 +42,7 @@ When public docs conflict, use this order:
    `docs/README.opencode.md`, `docs/README.claude-code.md`,
    `docs/README.cc-gui.md`, `docs/README.codebuddy.md`,
    `docs/README.deepseek-tui.md`,
+   `docs/README.deepseek-harness.md`,
    `docs/README.trae.md`, `docs/README.copilot.md`,
    `docs/README.qoder.md`, `docs/README.kimi-code.md`,
    `docs/README.pi.md`,

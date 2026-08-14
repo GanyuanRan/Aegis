@@ -702,6 +702,47 @@ request.
   restart, no duplicate Aegis exposure, and project workspace support
   without turning Aegis into an authoritative runtime core
 
+---
+
+### 2.26 DeepSeek Harness Structural Support Is Not Yet Fresh Host Closeout
+
+**Retained Item**
+- The official DeepSeek Harness (`deepseek-ai/deepseek-harness`) is a structural
+  host target, not a release-level fresh smoke verdict
+- DeepSeek Harness and the community DeepSeek-TUI remain separate host surfaces
+
+**Retention Reason**
+- DeepSeek Harness's native filesystem provider discovers direct child skill
+  bundles from project `.dsh/skills`, project `.agents/skills`, configured
+  custom directories, `$DSH_HOME/skills` (`~/.dsh/skills` by default), and
+  `$DSH_AGENTS_HOME/skills`.
+- Aegis now recommends updater-managed direct-child links under the native DSH
+  user root. The method-pack `skills/` tree remains canonical; DSH-visible
+  entries are generated links rather than a second editable owner.
+- Enabling project, native user, shared Agent Skills, or custom Aegis exposure
+  at the same time can produce duplicate skill names with different freshness.
+- The official host is a developer preview and explicitly warns that
+  compatibility-breaking changes are expected. Native catalog discovery,
+  automatic routing, session refresh, and update behavior still need fresh live
+  verification.
+
+**Observation Metric**
+- `docs/README.deepseek-harness.md`
+- `bash tests/e2e/deepseek-harness-host-boundary-check.sh`
+- `python tests/helpers/test_aegis_update.py -k deepseek_harness`
+- `cd <aegis-method-pack-root> && python scripts/aegis-update.py register --host deepseek-harness --sync-mode junction --json`
+  uses `$DSH_HOME/skills` or `~/.dsh/skills` as the default discovery root,
+  performs register-time direct-child link creation, writes the host registry
+  entry, and runs method-pack-side doctor verification
+- A fresh DeepSeek Harness Standard-mode session lists and loads `using-aegis`
+  from exactly one canonical exposure
+
+**Retirement Trigger**
+- When a stable DeepSeek Harness release has a verified install/update path
+  proving current Aegis discovery, representative live triggering, session
+  refresh, no duplicate exposure, and project workspace support without
+  turning Aegis into an authoritative runtime core
+
 ## 3. Default Reading Rule
 
 If a limitation appears simultaneously in README, host docs, or test descriptions, use this document as the current reading entry point.

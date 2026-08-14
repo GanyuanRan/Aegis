@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import locale
 import os
 import shutil
 import subprocess
@@ -25,6 +26,7 @@ VALID_DISCOVERY_SHAPES = {"umbrella-root", "direct-child", "host-managed", "none
 COPY_DISCOVERY_KEY_SKILLS = ("using-aegis", "update-aegis", "verification-before-completion")
 KIMI_HOST_ALIASES = {"kimi", "kimi-code", "kimi-code-cli"}
 GROK_HOST_ALIASES = {"grok", "grok-build"}
+DEEPSEEK_HARNESS_HOST_ALIASES = {"deepseek-harness", "dsh"}
 REGISTER_TIME_SYNC_MODES = {"junction", "symlink", "copy-skills"}
 
 
@@ -142,6 +144,10 @@ def is_grok_host(host: str | None) -> bool:
     return (host or "").strip().lower() in GROK_HOST_ALIASES
 
 
+def is_deepseek_harness_host(host: str | None) -> bool:
+    return (host or "").strip().lower() in DEEPSEEK_HARNESS_HOST_ALIASES
+
+
 def default_kimi_discovery_root() -> Path:
     kimi_home = os.environ.get("KIMI_CODE_HOME")
     if kimi_home:
@@ -156,11 +162,20 @@ def default_grok_discovery_root() -> Path:
     return Path.home() / ".grok" / "skills"
 
 
+def default_deepseek_harness_discovery_root() -> Path:
+    dsh_home = os.environ.get("DSH_HOME")
+    if dsh_home:
+        return Path(dsh_home).expanduser() / "skills"
+    return Path.home() / ".dsh" / "skills"
+
+
 def default_discovery_root_for_host(host: str | None) -> Path | None:
     if is_kimi_host(host):
         return default_kimi_discovery_root()
     if is_grok_host(host):
         return default_grok_discovery_root()
+    if is_deepseek_harness_host(host):
+        return default_deepseek_harness_discovery_root()
     return None
 
 
@@ -170,6 +185,7 @@ def default_discovery_shape_for_host(host: str | None, sync_mode: str) -> str:
         normalized_host == "zcode"
         or is_kimi_host(normalized_host)
         or is_grok_host(normalized_host)
+        or is_deepseek_harness_host(normalized_host)
     ):
         return "direct-child"
     return default_discovery_shape(sync_mode)
@@ -341,7 +357,14 @@ def select_installations(
 
 
 def run_command(command: list[str], *, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    result = subprocess.run(command, cwd=cwd, capture_output=True, text=True)
+    result = subprocess.run(
+        command,
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        encoding=locale.getencoding(),
+        errors="replace",
+    )
     if result.returncode != 0:
         detail = result.stderr.strip() or result.stdout.strip() or "command failed"
         raise UpdateError(f"{' '.join(command)} failed: {detail}")

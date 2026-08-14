@@ -69,6 +69,7 @@ host_docs=(
     "docs/README.cc-gui.md"
     "docs/README.codebuddy.md"
     "docs/README.deepseek-tui.md"
+    "docs/README.deepseek-harness.md"
     "docs/README.trae.md"
     "docs/README.copilot.md"
     "docs/README.qoder.md"

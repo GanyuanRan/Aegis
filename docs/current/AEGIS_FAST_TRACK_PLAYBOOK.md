@@ -35,8 +35,9 @@ This distinction matters: a copy-only or skills-only install may expose Aegis
 methods while leaving project workspace support unavailable.
 
 For manual installation, start with [Codex](../README.codex.md),
-[OpenCode](../README.opencode.md), [Claude Code](../README.claude-code.md), or
-the full [Host Compatibility Matrix](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md).
+[OpenCode](../README.opencode.md), [Claude Code](../README.claude-code.md),
+[DeepSeek Harness](../README.deepseek-harness.md), or the full
+[Host Compatibility Matrix](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md).
 
 After a complete install, future updates can usually be requested with
 `update Aegis` or `aegis:update`.

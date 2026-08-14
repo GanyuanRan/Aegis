@@ -28,7 +28,8 @@
 支持完整可用。
 
 如果希望手动安装，从 [Codex](../README.codex.md)、
-[OpenCode](../README.opencode.md)、[Claude Code](../README.claude-code.md) 或完整
+[OpenCode](../README.opencode.md)、[Claude Code](../README.claude-code.md)、
+[DeepSeek Harness](../README.deepseek-harness.md) 或完整
 [宿主兼容性矩阵](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md) 开始。
 
 完成安装后，后续通常可以直接说 `更新 Aegis` 或 `aegis:update`。

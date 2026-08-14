@@ -199,6 +199,10 @@ assert_contains "docs/README.deepseek-tui.md" "AEGIS_ACTIVATION_MODE=explicit" \
     "DeepSeek-TUI guide documents explicit activation caveat"
 assert_contains "docs/README.deepseek-tui.md" "does not override DeepSeek-TUI" \
     "DeepSeek-TUI guide clarifies activation mode does not control native matcher"
+assert_contains "docs/README.deepseek-harness.md" "AEGIS_ACTIVATION_MODE=explicit" \
+    "DeepSeek Harness guide documents explicit activation caveat"
+assert_contains "docs/README.deepseek-harness.md" "does not override DeepSeek" \
+    "DeepSeek Harness guide clarifies activation mode does not control native catalog"
 assert_contains "docs/README.trae.md" "AEGIS_ACTIVATION_MODE=explicit" \
     "Trae guide documents explicit activation caveat"
 assert_contains "docs/README.trae.md" "does not override Trae" \

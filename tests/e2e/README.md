@@ -134,6 +134,10 @@ Workspace helper coverage:
 - `grok-build-host-boundary-check.sh` verifies Grok Build's native
   direct-child discovery defaults, explicit config alternative, duplicate
   exposure guard, updater registration, and structural support wording.
+- `deepseek-harness-host-boundary-check.sh` verifies the official DeepSeek
+  Harness identity, native DSH direct-child discovery defaults, updater
+  registration, duplicate-exposure guard, and developer-preview support
+  boundary without conflating it with DeepSeek-TUI.
 - The Aegis method-pack repository must not ship a live `docs/aegis/`
   workspace. The helper initializes and checks that workspace only in the
   target project root passed by the caller.

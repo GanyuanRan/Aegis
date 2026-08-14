@@ -119,6 +119,7 @@ run_check "popular agent host boundary" bash "$SCRIPT_DIR/popular-agent-host-bou
 run_check "Kimi Code CLI deterministic" bash tests/kimi-code/run-tests.sh
 run_check "ZCode host boundary" bash "$SCRIPT_DIR/zcode-host-boundary-check.sh"
 run_check "Grok Build host boundary" bash "$SCRIPT_DIR/grok-build-host-boundary-check.sh"
+run_check "DeepSeek Harness host boundary" bash "$SCRIPT_DIR/deepseek-harness-host-boundary-check.sh"
 run_check "Copilot + Qoder host boundary" bash "$SCRIPT_DIR/copilot-qoder-host-boundary-check.sh"
 run_check "workflow quality policy" bash "$SCRIPT_DIR/workflow-quality-check.sh"
 run_check "agentic benchmark policy" bash "$SCRIPT_DIR/agentic-benchmark-check.sh"
