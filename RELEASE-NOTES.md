@@ -1,5 +1,21 @@
 # Aegis Release Notes
 
+## v2.8.0 (2026-08-15)
+
+### DeepSeek Harness 原生 bundle 安装
+
+- 根 `package.json` 新增 `dsh.bundle.patch`，通过薄 Cordis adapter 将包内
+  canonical `skills/` 树交给 Harness 原生 filesystem provider；不复制 skill
+  正文，也不增加 runtime / completion authority。
+- 默认安装切换为
+  `dsh plugin --profile web add github:GanyuanRan/Aegis`；原
+  `$DSH_HOME/skills` updater-managed direct-child 路径降为显式兼容模式，
+  两条路径不得同时启用。
+- 新增 DeepSeek Harness 确定性检查和隔离 integration lane，覆盖 profile
+  dependency/bundle 调和、`--dump-config`、模块装载与卸载清理。
+- 当前仍不宣称 release-level live routing closeout；developer-preview API、
+  新会话 catalog、原生 `skill` 加载和代表性模型路由仍需逐版本验证。
+
 ## v2.7.8 (2026-08-14)
 
 ### DeepSeek Harness 结构性适配

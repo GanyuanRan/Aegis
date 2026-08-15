@@ -86,6 +86,19 @@ bash tests/e2e/grok-build-host-boundary-check.sh
 python tests/helpers/test_aegis_update.py -k grok
 ```
 
+If this release explicitly includes DeepSeek Harness bundle changes, supplement
+with:
+
+```bash
+bash tests/deepseek-harness/run-tests.sh
+bash tests/deepseek-harness/run-tests.sh --integration
+python tests/helpers/test_aegis_update.py -k deepseek_harness
+```
+
+The integration lane is environment-bound when local `dsh` or `pnpm` is absent.
+It proves profile installation and module loading, not representative model
+routing or release-level host closeout.
+
 When Grok Build is installed locally, also capture `grok inspect --json` as an
 environment-bound discovery readback. Do not treat enumeration alone as a
 clean-install or live-trigger closeout.
@@ -127,10 +140,14 @@ Confirm:
 - CodeBuddy still distinguishes between `.codebuddy-plugin/` skeleton, manual `SKILL.md` install, and incomplete live smoke
 - DeepSeek-TUI is still described as manual `SKILL.md` copy install, not a one-click GitHub installer for multi-skill repos
 - DeepSeek Harness is distinct from DeepSeek-TUI and remains a developer-preview
-  structural target; its canonical install uses updater-managed direct-child
-  links under `$DSH_HOME/skills` (`~/.dsh/skills` by default), with project
-  `.dsh/skills`, shared `.agents/skills`, and custom directories treated as
-  alternative exposure routes rather than simultaneous owners
+  structural target; its default install uses the thin Aegis `dsh.bundle` and
+  package-owned `skills/` tree, while updater-managed direct-child links under
+  `$DSH_HOME/skills` (`~/.dsh/skills` by default), project `.dsh/skills`, shared
+  `.agents/skills`, and custom directories are explicit compatibility routes
+  that must not be active beside the bundle
+- The GitHub `dsh-plugin` topic is added only after the public default revision
+  contains the bundle and a fresh package/profile install has passed; the topic
+  means ecosystem discoverability, not an official DeepSeek marketplace listing
 - Trae is still described as manual `.trae/skills` / `~/.trae/skills` install, and the `.agents/skills/` optional capability is not written as the canonical chain
 - GitHub Copilot is still described through prefixed
   `.github/skills/aegis-<skill-name>/SKILL.md`,

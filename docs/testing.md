@@ -173,20 +173,30 @@ release-level host closeout. Check that every Aegis skill name has one
 canonical source; native Grok skills, `[skills] paths`, shared Agent Skills,
 and Claude-compatible plugins can otherwise expose duplicate Aegis copies.
 
-### DeepSeek Harness Structural Host Tests
+### DeepSeek Harness Bundle Host Tests
 
-The DeepSeek Harness boundary check validates the official host identity,
-native `$DSH_HOME/skills` direct-child defaults, updater registration,
-duplicate-exposure guard, developer-preview boundary, and public release links
-without changing the current user's DSH profile:
+The deterministic DeepSeek Harness suite validates the official host identity,
+root `dsh.bundle.patch` declaration, thin Cordis adapter, package-owned skill
+root, explicit direct-child compatibility path, duplicate-exposure guard,
+developer-preview boundary, and public release links without changing the
+current user's DSH profile:
 
 ```bash
-bash tests/e2e/deepseek-harness-host-boundary-check.sh
+bash tests/deepseek-harness/run-tests.sh
 python tests/helpers/test_aegis_update.py -k deepseek_harness
 ```
 
-These deterministic checks prove method-pack distribution structure only. A
-fresh Standard-mode session must still prove catalog discovery, native `skill`
+The opt-in integration lane requires local `dsh` and `pnpm`. It creates an
+isolated temporary `DSH_HOME`, installs the current checkout into a Web profile,
+checks dependency/bundle reconciliation, dump-config composition and module
+loading, then removes the bundle:
+
+```bash
+bash tests/deepseek-harness/run-tests.sh --integration
+```
+
+These checks prove method-pack bundle installation and loading only. A fresh
+Standard-mode session must still prove catalog discovery, native `skill`
 loading, representative routing, session refresh, and update behavior before
 DeepSeek Harness receives a release-level host verdict.
 

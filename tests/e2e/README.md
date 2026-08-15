@@ -135,9 +135,11 @@ Workspace helper coverage:
   direct-child discovery defaults, explicit config alternative, duplicate
   exposure guard, updater registration, and structural support wording.
 - `deepseek-harness-host-boundary-check.sh` verifies the official DeepSeek
-  Harness identity, native DSH direct-child discovery defaults, updater
-  registration, duplicate-exposure guard, and developer-preview support
-  boundary without conflating it with DeepSeek-TUI.
+  Harness identity, native DSH bundle manifest/adapter, package-owned skill
+  exposure, explicit direct-child compatibility path, duplicate-exposure guard,
+  and developer-preview support boundary without conflating it with
+  DeepSeek-TUI. `tests/deepseek-harness/run-tests.sh --integration` adds an
+  isolated profile install/load/remove smoke when local `dsh` and `pnpm` exist.
 - The Aegis method-pack repository must not ship a live `docs/aegis/`
   workspace. The helper initializes and checks that workspace only in the
   target project root passed by the caller.

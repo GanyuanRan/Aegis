@@ -704,23 +704,32 @@ request.
 
 ---
 
-### 2.26 DeepSeek Harness Structural Support Is Not Yet Fresh Host Closeout
+### 2.26 DeepSeek Harness Bundle Support Is Not Yet Fresh Host Closeout
 
 **Retained Item**
 - The official DeepSeek Harness (`deepseek-ai/deepseek-harness`) is a structural
   host target, not a release-level fresh smoke verdict
 - DeepSeek Harness and the community DeepSeek-TUI remain separate host surfaces
+- The updater-managed direct-child install remains an explicit compatibility
+  path rather than the default DSH installation
 
 **Retention Reason**
+- The default DSH path is a thin package bundle declared through
+  `dsh.bundle.patch`. It registers the canonical package-owned `skills/` tree
+  through Harness's native filesystem provider and does not duplicate skill
+  bodies or add runtime authority.
 - DeepSeek Harness's native filesystem provider discovers direct child skill
   bundles from project `.dsh/skills`, project `.agents/skills`, configured
   custom directories, `$DSH_HOME/skills` (`~/.dsh/skills` by default), and
   `$DSH_AGENTS_HOME/skills`.
-- Aegis now recommends updater-managed direct-child links under the native DSH
-  user root. The method-pack `skills/` tree remains canonical; DSH-visible
-  entries are generated links rather than a second editable owner.
+- Direct-child exposure remains necessary when the developer-preview bundle API
+  is unavailable, local policy forbids third-party profile plugins, or `pnpm`
+  cannot be provided to the DSH plugin manager. The method-pack `skills/` tree
+  remains canonical; DSH-visible entries are generated links rather than a
+  second editable owner.
 - Enabling project, native user, shared Agent Skills, or custom Aegis exposure
-  at the same time can produce duplicate skill names with different freshness.
+  at the same time as the bundle can produce duplicate skill names with
+  different freshness.
 - The official host is a developer preview and explicitly warns that
   compatibility-breaking changes are expected. Native catalog discovery,
   automatic routing, session refresh, and update behavior still need fresh live
@@ -728,7 +737,11 @@ request.
 
 **Observation Metric**
 - `docs/README.deepseek-harness.md`
-- `bash tests/e2e/deepseek-harness-host-boundary-check.sh`
+- `bash tests/deepseek-harness/run-tests.sh`
+- `bash tests/deepseek-harness/run-tests.sh --integration`
+- a clean `dsh plugin --profile web add github:GanyuanRan/Aegis` readback lists
+  `aegis` in `dsh.profile.bundles` and `dsh --profile web --dump-config` contains
+  exactly one enabled `aegis-method-pack` row
 - `python tests/helpers/test_aegis_update.py -k deepseek_harness`
 - `cd <aegis-method-pack-root> && python scripts/aegis-update.py register --host deepseek-harness --sync-mode junction --json`
   uses `$DSH_HOME/skills` or `~/.dsh/skills` as the default discovery root,
@@ -738,10 +751,11 @@ request.
   from exactly one canonical exposure
 
 **Retirement Trigger**
-- When a stable DeepSeek Harness release has a verified install/update path
-  proving current Aegis discovery, representative live triggering, session
-  refresh, no duplicate exposure, and project workspace support without
-  turning Aegis into an authoritative runtime core
+- Re-evaluate the direct-child compatibility path after a stable DeepSeek
+  Harness release and two consecutive Aegis releases have verified bundle
+  install/update, representative live triggering, session refresh, no duplicate
+  exposure, and project workspace support. Until then it remains an explicit
+  compatibility path, not a co-active fallback.
 
 ## 3. Default Reading Rule
 

@@ -1,0 +1,6 @@
+# Thin DSH bundle layer for Aegis Method Pack. The mounted plugin delegates
+# discovery to Harness's native filesystem provider and reads only this
+# package's canonical skills/ tree.
+- insert:
+    - id: aegis-method-pack
+      name: 'aegis/extensions/dsh/index.js'

@@ -71,6 +71,26 @@ def validate_kimi_manifest(root: Path) -> None:
     require(not unsupported, f"Kimi manifest contains unneeded runtime fields: {sorted(unsupported)}")
 
 
+def validate_dsh_bundle(root: Path) -> None:
+    package = load_json(root / "package.json")
+    patch = package.get("dsh", {}).get("bundle", {}).get("patch")
+    require(
+        patch == "./extensions/dsh/cordis.patch.yml",
+        "package.json dsh.bundle.patch must point at the Aegis DSH bundle layer",
+    )
+    require("dsh-plugin" in package.get("keywords", []), "package.json must publish the dsh-plugin keyword")
+    require(
+        package.get("peerDependencies", {}).get("@deepseek-ai/dsh-skill-filesystem") == "^0.1.0-rc.6",
+        "DSH adapter must declare its host filesystem-provider peer contract",
+    )
+    require(
+        package.get("peerDependenciesMeta", {}).get("@deepseek-ai/dsh-skill-filesystem", {}).get("optional") is True,
+        "DSH filesystem-provider peer must stay optional for non-DSH package consumers",
+    )
+    require((root / "extensions" / "dsh" / "index.js").is_file(), "DSH adapter entry must exist")
+    require((root / "extensions" / "dsh" / "cordis.patch.yml").is_file(), "DSH bundle patch must exist")
+
+
 def validate_cursor_manifest(root: Path) -> None:
     manifest = load_json(root / ".cursor-plugin" / "plugin.json")
     require(manifest.get("skills") == "./skills/", "Cursor manifest must expose skills")
@@ -107,6 +127,7 @@ def validate(root: Path) -> None:
     validate_versions(root)
     validate_codex_manifest(root)
     validate_kimi_manifest(root)
+    validate_dsh_bundle(root)
     validate_cursor_manifest(root)
     validate_hook_files(root)
     validate_marketplace(root)
