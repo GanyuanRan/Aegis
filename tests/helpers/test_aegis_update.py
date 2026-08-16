@@ -381,7 +381,7 @@ class AegisUpdateRegistryTests(unittest.TestCase):
                 (grok_home / "skills").resolve().as_posix(),
             )
 
-    def test_register_installation_defaults_deepseek_harness_to_native_direct_child(self):
+    def test_register_installation_preserves_legacy_deepseek_harness_direct_child_metadata(self):
         with tempfile.TemporaryDirectory(prefix="aegis-update-dsh-shape-") as tmp:
             registry = Path(tmp) / "installations.json"
             root = Path(tmp) / "aegis"
@@ -401,6 +401,69 @@ class AegisUpdateRegistryTests(unittest.TestCase):
             self.assertEqual(
                 entry["discoveryRoot"],
                 (dsh_home / "skills").resolve().as_posix(),
+            )
+
+    def test_command_register_redirects_deepseek_harness_to_native_plugin(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-dsh-plugin-default-") as tmp:
+            args = update.build_parser().parse_args(
+                [
+                    "register",
+                    "--host",
+                    "dsh",
+                    "--registry",
+                    (Path(tmp) / "installations.json").as_posix(),
+                ]
+            )
+
+            with self.assertRaisesRegex(
+                update.UpdateError,
+                r"dsh plugin --profile <profile> add github:GanyuanRan/Aegis",
+            ):
+                update.command_register(args)
+
+    def test_command_register_allows_explicit_deepseek_harness_compatibility(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-dsh-compat-") as tmp:
+            registry = Path(tmp) / "installations.json"
+            method_pack_root = Path(tmp) / "method-pack"
+            dsh_home = Path(tmp) / "dsh-home"
+            self.make_method_pack_with_skills(
+                method_pack_root,
+                list(update.COPY_DISCOVERY_KEY_SKILLS),
+            )
+            sync_mode = "junction" if os.name == "nt" else "symlink"
+            args = update.build_parser().parse_args(
+                [
+                    "register",
+                    "--host",
+                    "deepseek-harness",
+                    "--registry",
+                    registry.as_posix(),
+                    "--method-pack-root",
+                    method_pack_root.as_posix(),
+                    "--sync-mode",
+                    sync_mode,
+                    "--compatibility-mode",
+                ]
+            )
+
+            with patch.dict(os.environ, {"DSH_HOME": dsh_home.as_posix()}):
+                with patch.object(
+                    update,
+                    "run_doctor",
+                    return_value={
+                        "ok": True,
+                        "workspaceSupport": "available",
+                        "configStatus": "configured",
+                        "expectedDiscoveryShape": "direct-child",
+                        "discoveryShapeStatus": "valid",
+                        "compatibilityExposureStatus": "current",
+                    },
+                ):
+                    result = update.command_register(args)
+
+            self.assertEqual(result["status"], "registered")
+            self.assertTrue(
+                (dsh_home / "skills" / "using-aegis" / "SKILL.md").is_file()
             )
 
     def test_sync_skills_creates_direct_child_links_for_zcode_junction(self):

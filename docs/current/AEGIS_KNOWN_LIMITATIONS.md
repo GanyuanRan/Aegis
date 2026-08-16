@@ -710,14 +710,22 @@ request.
 - The official DeepSeek Harness (`deepseek-ai/deepseek-harness`) is a structural
   host target, not a release-level fresh smoke verdict
 - DeepSeek Harness and the community DeepSeek-TUI remain separate host surfaces
+- Deterministic tests cover native lifecycle bootstrap wiring, but not live
+  model routing quality in a fresh installed DSH profile
 - The updater-managed direct-child install remains an explicit compatibility
   path rather than the default DSH installation
 
 **Retention Reason**
 - The default DSH path is a thin package bundle declared through
   `dsh.bundle.patch`. It registers the canonical package-owned `skills/` tree
-  through Harness's native filesystem provider and does not duplicate skill
-  bodies or add runtime authority.
+  through Harness's native filesystem provider. In `auto` mode it preloads the
+  compact router text while applying the plugin and synchronously injects it
+  through native `agent/session-start` / `agent.inject` at `startup`, `resume`,
+  `clear`, and `compact`, avoiding a first-step asynchronous read race.
+- The bootstrap skips subagents and does not install a hard pre-tool guard:
+  legitimate `Route: fast-path` decisions are model-facing and are not reliable
+  enough to support hard denial without false positives. The adapter does not
+  duplicate skill bodies or add runtime authority.
 - DeepSeek Harness's native filesystem provider discovers direct child skill
   bundles from project `.dsh/skills`, project `.agents/skills`, configured
   custom directories, `$DSH_HOME/skills` (`~/.dsh/skills` by default), and
@@ -731,9 +739,10 @@ request.
   at the same time as the bundle can produce duplicate skill names with
   different freshness.
 - The official host is a developer preview and explicitly warns that
-  compatibility-breaking changes are expected. Native catalog discovery,
-  automatic routing, session refresh, and update behavior still need fresh live
-  verification.
+  compatibility-breaking changes are expected. Native catalog discovery and
+  lifecycle entry are structurally covered; automatic task-specific routing,
+  false-positive behavior, session refresh, and update behavior still need
+  fresh live verification.
 
 **Observation Metric**
 - `docs/README.deepseek-harness.md`
@@ -743,12 +752,13 @@ request.
   `aegis` in `dsh.profile.bundles` and `dsh --profile web --dump-config` contains
   exactly one enabled `aegis-method-pack` row
 - `python tests/helpers/test_aegis_update.py -k deepseek_harness`
-- `cd <aegis-method-pack-root> && python scripts/aegis-update.py register --host deepseek-harness --sync-mode junction --json`
+- `cd <aegis-method-pack-root> && python scripts/aegis-update.py register --host deepseek-harness --compatibility-mode --sync-mode junction --json`
   uses `$DSH_HOME/skills` or `~/.dsh/skills` as the default discovery root,
   performs register-time direct-child link creation, writes the host registry
   entry, and runs method-pack-side doctor verification
-- A fresh DeepSeek Harness Standard-mode session lists and loads `using-aegis`
-  from exactly one canonical exposure
+- A fresh DeepSeek Harness Standard-mode session receives the native bootstrap
+  and either loads the appropriate task-specific skill or declares
+  `Route: fast-path`, from exactly one canonical exposure
 
 **Retirement Trigger**
 - Re-evaluate the direct-child compatibility path after a stable DeepSeek

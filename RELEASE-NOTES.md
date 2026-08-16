@@ -1,5 +1,23 @@
 # Aegis Release Notes
 
+## v2.8.1 (2026-08-16)
+
+### DeepSeek Harness 路由稳定性与安装分流
+
+- DSH profile plugin 在 `startup`、`resume`、`clear`、`compact` 原生
+  `agent/session-start` 生命周期同步注入紧凑 `using-aegis` bootstrap，避免首轮
+  异步读取竞态；subagent 不重复注入，`explicit` activation mode 关闭自动入口。
+- bootstrap 要求首个非只读操作前通过 Harness 原生 `skill` 工具加载相关 Aegis
+  方法，或显式声明 `Route: fast-path`；不增加可能误拦截正常 fast path 的硬工具
+  guard，也不提升为 runtime / completion authority。
+- 通用/极简安装提示识别到官方 `dsh` 后默认分流到原生 profile plugin；
+  `aegis-update.py register --host dsh` 不再静默创建 direct-child 暴露，只有显式
+  `--compatibility-mode` 才允许兼容安装。
+- 新增 DSH lifecycle bootstrap、安装分流、显式回退及打包边界回归测试。真实模型
+  自动路由质量仍保持 environment-bound，不宣称 release-level live closeout。
+- 本次未改变四份 `GLOBAL_USER_RULES*` 手工投影语义，现有用户无需重新复制全局
+  规则；更新 DSH profile plugin 并重启对应 profile 即可获得新入口。
+
 ## v2.8.0 (2026-08-15)
 
 ### DeepSeek Harness 原生 bundle 安装

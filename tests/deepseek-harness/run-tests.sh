@@ -15,6 +15,7 @@ fi
 
 echo "=== DeepSeek Harness Deterministic Checks ==="
 bash tests/e2e/deepseek-harness-host-boundary-check.sh
+node tests/deepseek-harness/test-bootstrap.mjs
 
 if command -v python3 >/dev/null 2>&1 && python3 -V >/dev/null 2>&1; then
     python3 tests/helpers/validate_host_adapter_smoke.py .

@@ -141,10 +141,13 @@ Confirm:
 - DeepSeek-TUI is still described as manual `SKILL.md` copy install, not a one-click GitHub installer for multi-skill repos
 - DeepSeek Harness is distinct from DeepSeek-TUI and remains a developer-preview
   structural target; its default install uses the thin Aegis `dsh.bundle` and
-  package-owned `skills/` tree, while updater-managed direct-child links under
-  `$DSH_HOME/skills` (`~/.dsh/skills` by default), project `.dsh/skills`, shared
-  `.agents/skills`, and custom directories are explicit compatibility routes
-  that must not be active beside the bundle
+  package-owned `skills/` tree plus native `agent/session-start` router
+  bootstrap; the bootstrap is synchronous, skips subagents, honors explicit
+  activation mode, and does not add a hard tool guard. Updater-managed
+  direct-child links require `--compatibility-mode`; `$DSH_HOME/skills`
+  (`~/.dsh/skills` by default), project `.dsh/skills`, shared `.agents/skills`,
+  and custom directories are explicit compatibility routes without bundle
+  bootstrap and must not be active beside the bundle
 - The GitHub `dsh-plugin` topic is added only after the public default revision
   contains the bundle and a fresh package/profile install has passed; the topic
   means ecosystem discoverability, not an official DeepSeek marketplace listing

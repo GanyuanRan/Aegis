@@ -104,6 +104,22 @@ assert_contains "docs/current/AEGIS_FAST_TRACK_PLAYBOOK.md" "native activation a
     "English universal prompt requires native activation verification"
 assert_contains "docs/current/AEGIS_FAST_TRACK_PLAYBOOK_ZH.md" "原生活化与自动入口验证" \
     "Chinese universal prompt requires native activation verification"
+for file in \
+    "README.md" \
+    "docs/current/AEGIS_FAST_TRACK_PLAYBOOK.md"; do
+    assert_contains "$file" 'dsh plugin --profile <profile> add github:GanyuanRan/Aegis' \
+        "$file routes official DSH installs to the native profile plugin"
+    assert_contains "$file" 'do not silently substitute the direct-child compatibility path' \
+        "$file forbids silent DSH direct-child fallback"
+done
+for file in \
+    "README.zh-CN.md" \
+    "docs/current/AEGIS_FAST_TRACK_PLAYBOOK_ZH.md"; do
+    assert_contains "$file" 'dsh plugin --profile <profile> add github:GanyuanRan/Aegis' \
+        "$file routes official DSH installs to the native profile plugin"
+    assert_contains "$file" '不要静默改用 direct-child 兼容路径' \
+        "$file forbids silent DSH direct-child fallback"
+done
 
 if (( failures > 0 )); then
     echo ""

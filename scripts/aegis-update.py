@@ -28,6 +28,9 @@ KIMI_HOST_ALIASES = {"kimi", "kimi-code", "kimi-code-cli"}
 GROK_HOST_ALIASES = {"grok", "grok-build"}
 DEEPSEEK_HARNESS_HOST_ALIASES = {"deepseek-harness", "dsh"}
 REGISTER_TIME_SYNC_MODES = {"junction", "symlink", "copy-skills"}
+DEEPSEEK_HARNESS_PLUGIN_INSTALL = (
+    "dsh plugin --profile <profile> add github:GanyuanRan/Aegis"
+)
 
 
 class UpdateError(Exception):
@@ -889,6 +892,11 @@ def build_parser() -> argparse.ArgumentParser:
     register.add_argument("--update-mode", choices=sorted(VALID_UPDATE_MODES), default="manual")
     register.add_argument("--reload-hint")
     register.add_argument("--config", help="config path passed through to aegis-doctor.py")
+    register.add_argument(
+        "--compatibility-mode",
+        action="store_true",
+        help="explicitly allow a compatibility-only host exposure when the native plugin path is unavailable",
+    )
 
     status = subparsers.add_parser("status", parents=[common], help="show registered installations")
     status.add_argument("--host")
@@ -907,11 +915,30 @@ def build_parser() -> argparse.ArgumentParser:
 
 def command_register(args: argparse.Namespace) -> Any:
     normalized_host = args.host.strip().lower()
+    compatibility_mode = getattr(args, "compatibility_mode", False)
     requested_shape = normalized_discovery_shape(
         args.discovery_shape,
         args.sync_mode,
         normalized_host,
     )
+    if is_deepseek_harness_host(normalized_host):
+        if not compatibility_mode:
+            raise UpdateError(
+                "DeepSeek Harness defaults to the native profile plugin. Run "
+                f"`{DEEPSEEK_HARNESS_PLUGIN_INSTALL}`; use --compatibility-mode "
+                "only when the DSH bundle API or pnpm-backed plugin manager is unavailable."
+            )
+        if (
+            requested_shape != "direct-child"
+            or args.sync_mode not in REGISTER_TIME_SYNC_MODES
+        ):
+            raise UpdateError(
+                "DeepSeek Harness compatibility mode requires direct-child discovery "
+                "with --sync-mode junction, symlink, or copy-skills."
+            )
+    elif compatibility_mode:
+        raise UpdateError("--compatibility-mode is currently reserved for DeepSeek Harness")
+
     effective_discovery_root = args.discovery_root
     if not effective_discovery_root:
         default_discovery_root = default_discovery_root_for_host(normalized_host)

@@ -163,6 +163,23 @@ Writing `activation_mode = "explicit"` does not disable Kimi's plugin or
 override its native session-start contract. The user must switch the Kimi
 installation profile and then `/reload` or open `/new`.
 
+DeepSeek Harness uses its native plugin lifecycle for the same boundary:
+
+- A bundle-managed install in `auto` mode mounts the package-owned skills and
+  synchronously injects the compact `using-aegis` bootstrap on native
+  `agent/session-start` sources `startup`, `resume`, `clear`, and `compact`.
+- A bundle-managed install in `explicit` mode keeps the native skill catalog
+  available but does not register that automatic lifecycle injection. Restart
+  the selected DSH profile after changing the local config or environment.
+- The updater-managed direct-child compatibility profile has no bundle and no
+  Aegis lifecycle injection; it relies on explicit invocation or Harness's
+  native semantic matching.
+
+Unlike the Kimi manifest-level profile switch, the DSH bundle reads
+`AEGIS_ACTIVATION_MODE` or `~/.config/aegis/config.toml` when the plugin is
+applied. This mode switch does not override DeepSeek Harness's native catalog,
+matcher, `skill` tool, or execution policy.
+
 ---
 
 ## 5a. Skill Execution-Layer Gate (native-discovery hosts)

@@ -21,11 +21,17 @@ The default DeepSeek Harness installation is the thin Aegis bundle declared by
 the root `package.json` through `dsh.bundle.patch`. The bundle contributes one
 Cordis row named `aegis-method-pack`; that row delegates discovery to Harness's
 native filesystem skill provider and points it at the installed package's
-canonical `skills/` tree.
+canonical `skills/` tree. In `auto` activation mode it also listens to Harness's
+native `agent/session-start` lifecycle and synchronously injects a compact
+`using-aegis` routing bootstrap on `startup`, `resume`, `clear`, and `compact`.
+The bootstrap is prepared while the plugin is applied, so the first model step
+does not race an asynchronous skill-file read.
 
 The bundle does not copy skill bodies, replace Harness's model-facing `skill`
-tool, add a daemon, or claim runtime authority. DeepSeek Harness remains the
-owner of profiles, plugin installation, the skill catalog, and skill loading.
+tool, add a daemon, install a hard pre-tool guard, or claim runtime authority.
+It tells the model to use Harness's native `skill` tool for task-specific Aegis
+methods or declare `Route: fast-path`; DeepSeek Harness remains the owner of
+profiles, plugin installation, the skill catalog, skill loading, and execution.
 
 The previous updater-managed direct-child installation remains supported as an
 **explicit compatibility mode**. The bundle and direct-child views must not be
@@ -89,11 +95,16 @@ DeepSeek marketplace listing.
 A user may give the following instruction directly to a DeepSeek Harness agent:
 
 ```text
-Install Aegis Method Pack into my current DeepSeek Harness profile through
-`dsh plugin --profile <profile> add github:GanyuanRan/Aegis`. Confirm pnpm is
-available, verify the profile manifest and dump-config readback, then ask me to
-restart that profile. Do not also install Aegis under .dsh/skills,
-.agents/skills, or another custom skill root. Do not modify my project.
+Install Aegis Method Pack into my current official DeepSeek Harness (`dsh`)
+profile through `dsh plugin --profile <profile> add github:GanyuanRan/Aegis`.
+Treat this native profile plugin as the default even when I asked for a minimal
+or global install. Do not silently substitute a direct-child installation; use
+that only if the plugin manager is unavailable and I explicitly approve
+compatibility mode. Confirm pnpm is available, verify the profile manifest and
+dump-config readback, then ask me to restart that profile. In the fresh session,
+verify the native Aegis lifecycle bootstrap and a representative task-specific
+`skill` load. Do not also install Aegis under .dsh/skills, .agents/skills, or
+another custom skill root. Do not modify my project.
 ```
 
 The agent still needs normal command approval from DeepSeek Harness. Installation
@@ -145,17 +156,23 @@ passes and the doctor reports:
 
 Restart the selected profile. In a fresh Standard-mode Web session, confirm the
 skill catalog includes `using-aegis`, `systematic-debugging`, and
-`verification-before-completion`, then ask the agent to load `using-aegis`
-through Harness's native `skill` tool.
+`verification-before-completion`. Then give a representative natural-language
+task and confirm the injected Aegis bootstrap enters the decision path: the
+agent should either load an appropriate task-specific method through Harness's
+native `skill` tool or explicitly declare `Route: fast-path`. Also make one
+explicit request to load `using-aegis` through the native `skill` tool.
 
-A catalog entry proves discovery, not automatic routing quality, complete
-workflow execution, or release-level host closeout.
+A catalog entry and structural bootstrap test prove discovery and deterministic
+entry wiring, not live automatic-routing quality, complete workflow execution,
+or release-level host closeout.
 
 ## Activation Mode
 
-DeepSeek Harness owns its catalog and model-facing `skill` loader. The Aegis
-bundle registers the method-pack skills but does not add a second automatic
-router or replace Harness's invocation policy.
+DeepSeek Harness owns its catalog and model-facing `skill` loader. In `auto`
+mode, the Aegis bundle synchronously injects a compact `using-aegis` bootstrap
+at native session start, resume, clear, and compact boundaries. It skips
+subagent sessions. This stabilizes router entry without replacing Harness's
+matcher, native `skill` tool, or execution policy.
 
 Setting `AEGIS_ACTIVATION_MODE=explicit` or running:
 
@@ -163,9 +180,11 @@ Setting `AEGIS_ACTIVATION_MODE=explicit` or running:
 python scripts/aegis-doctor.py activation-mode explicit
 ```
 
-changes how a loaded Aegis skill proceeds. It does not override DeepSeek
-Harness's native catalog, matcher, preset, or invocation policy. For an explicit
-flow, ask the agent to load `using-aegis` through the native `skill` tool.
+disables that bundle-owned lifecycle injection after the profile is restarted.
+It does not override DeepSeek Harness's native catalog, matcher, preset, or
+invocation policy, and installed skills remain explicitly invocable. For an
+explicit flow, ask the agent to load `using-aegis` through the native `skill`
+tool.
 
 Portable goal entry remains:
 
@@ -184,8 +203,8 @@ dsh --profile web --dump-config
 ```
 
 Repeat the command with `--profile headless` only when that profile also owns an
-Aegis installation. Restart the updated profile and repeat the native catalog
-and skill-load verification.
+Aegis installation. Restart the updated profile and repeat the native catalog,
+automatic-entry, and task-specific skill-load verification.
 
 Do not use `scripts/aegis-update.py update --host deepseek-harness` for a
 bundle-managed installation. That updater command owns only the explicit
@@ -221,6 +240,7 @@ git clone https://github.com/GanyuanRan/Aegis.git "${DSH_HOME:-$HOME/.dsh}/aegis
 cd "${DSH_HOME:-$HOME/.dsh}/aegis"
 python scripts/aegis-update.py register \
   --host deepseek-harness \
+  --compatibility-mode \
   --sync-mode symlink \
   --reload-hint "start a new DeepSeek Harness session"
 ```
@@ -238,6 +258,7 @@ git clone https://github.com/GanyuanRan/Aegis.git (Join-Path $dshHome "aegis")
 Set-Location (Join-Path $dshHome "aegis")
 python scripts\aegis-update.py register `
   --host deepseek-harness `
+  --compatibility-mode `
   --sync-mode junction `
   --reload-hint "start a new DeepSeek Harness session"
 ```
@@ -247,6 +268,8 @@ The host aliases `deepseek-harness` and `dsh` both resolve to
 generated link per Aegis skill and refuses to overwrite an existing non-link
 skill directory. Do not also enable the Aegis profile bundle, project
 `.dsh/skills`, shared `.agents/skills`, or a custom Aegis skill directory.
+This compatibility exposure has no bundle-owned lifecycle bootstrap; router
+entry depends on Harness's native matcher or explicit skill invocation.
 
 Verify this compatibility mode from the canonical checkout:
 
@@ -278,9 +301,10 @@ shape while the Aegis bundle is active for the same profile.
 
 ## Runtime Boundary
 
-The DSH bundle is a thin distribution adapter over Harness's native profile and
-skill-provider contracts. It does not normalize Harness events, replace the
-agent loop, grant an authoritative `GateDecision`, provide an authoritative
+The DSH bundle is a thin distribution and advisory-bootstrap adapter over
+Harness's native profile, lifecycle, injection, and skill-provider contracts.
+It does not normalize Harness events, replace the agent loop, hard-block tool
+execution, grant an authoritative `GateDecision`, provide an authoritative
 `PolicySnapshot`, or provide final completion authority.
 
 DeepSeek Harness profile activation and skill loading are host execution

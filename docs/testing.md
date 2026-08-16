@@ -177,9 +177,10 @@ and Claude-compatible plugins can otherwise expose duplicate Aegis copies.
 
 The deterministic DeepSeek Harness suite validates the official host identity,
 root `dsh.bundle.patch` declaration, thin Cordis adapter, package-owned skill
-root, explicit direct-child compatibility path, duplicate-exposure guard,
-developer-preview boundary, and public release links without changing the
-current user's DSH profile:
+root, synchronous native lifecycle bootstrap across startup/resume/clear/compact,
+subagent and explicit-mode exclusions, explicit direct-child compatibility
+path, duplicate-exposure guard, developer-preview boundary, and public release
+links without changing the current user's DSH profile:
 
 ```bash
 bash tests/deepseek-harness/run-tests.sh
@@ -195,10 +196,12 @@ loading, then removes the bundle:
 bash tests/deepseek-harness/run-tests.sh --integration
 ```
 
-These checks prove method-pack bundle installation and loading only. A fresh
-Standard-mode session must still prove catalog discovery, native `skill`
-loading, representative routing, session refresh, and update behavior before
-DeepSeek Harness receives a release-level host verdict.
+These checks prove method-pack bundle installation, module loading, and
+deterministic lifecycle-entry wiring only. A fresh Standard-mode session must
+still prove catalog discovery, native task-specific `skill` loading,
+representative routing versus `Route: fast-path`, false-positive behavior,
+session refresh, and update behavior before DeepSeek Harness receives a
+release-level host verdict.
 
 ### Workspace Helper ADR Lifecycle Tests
 
