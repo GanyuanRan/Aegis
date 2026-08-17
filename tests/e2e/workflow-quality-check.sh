@@ -576,6 +576,14 @@ assert_contains "skills/brainstorming/SKILL.md" "Baseline Role Alignment" \
     "brainstorming includes baseline role alignment"
 assert_contains "skills/brainstorming/SKILL.md" "Requirement Ready Check" \
     "brainstorming includes requirement ready check"
+assert_contains "skills/brainstorming/SKILL.md" "## Route Fixtures" \
+    "brainstorming keeps route fixture calibration"
+assert_contains "skills/brainstorming/SKILL.md" "## Role And Authority Contract" \
+    "brainstorming keeps the agent-owned and user-owned contract"
+assert_contains "skills/brainstorming/SKILL.md" "Challenge Result" \
+    "brainstorming keeps structured challenge results"
+assert_contains "skills/brainstorming/SKILL.md" "Design Complete is method readiness" \
+    "brainstorming keeps the completion authority boundary in handoff"
 assert_contains "skills/brainstorming/SKILL.md" "needs-acceptance-criteria" \
     "brainstorming surfaces missing acceptance criteria"
 assert_contains "skills/brainstorming/SKILL.md" "Product / Requirement Baseline" \

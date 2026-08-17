@@ -160,6 +160,22 @@ assert_contains "skills/brainstorming/SKILL.md" "PR, diff, or current-code revie
     "grilling mode keeps implementation review out of the interview"
 assert_contains "skills/brainstorming/SKILL.md" 'compose `anti-entropy-governance`' \
     "brainstorming keeps the anti-entropy composition hook for retirement decisions"
+assert_contains "skills/brainstorming/SKILL.md" "## Route Fixtures" \
+    "brainstorming exposes route fixture calibration rows"
+assert_contains "skills/brainstorming/SKILL.md" "goal-framing" \
+    "brainstorming routes explicit goal intent to goal framing"
+assert_contains "skills/brainstorming/SKILL.md" "## Role And Authority Contract" \
+    "brainstorming separates agent-owned and user-owned decisions"
+assert_contains "skills/brainstorming/SKILL.md" "If the user chooses another answer, which design" \
+    "brainstorming gates user questions on decision impact"
+assert_contains "skills/brainstorming/SKILL.md" "Challenge Result" \
+    "brainstorming returns a structured challenge result"
+assert_contains "skills/brainstorming/SKILL.md" "## Software Scenario Profiles" \
+    "brainstorming loads scenario profiles instead of every lens"
+assert_contains "skills/brainstorming/SKILL.md" "## Design Probe" \
+    "brainstorming allows bounded disposable design probes"
+assert_contains "skills/brainstorming/SKILL.md" "## Design Ready And Design Complete" \
+    "brainstorming defines readiness and handoff conditions"
 assert_contains "skills/systematic-debugging/SKILL.md" '`anti-entropy-governance`' \
     "debugging keeps the anti-entropy composition hook for delete-vs-retain decisions"
 assert_contains "skills/anti-entropy-governance/SKILL.md" "## Gap Taxonomy" \
