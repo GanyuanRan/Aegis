@@ -1,5 +1,30 @@
 # Aegis Release Notes
 
+## v2.8.2 (2026-08-17)
+
+### brainstorming 设计决策校准实践回填
+
+从 Aegis-code 将设计决策校准实践回填到 `brainstorming` 技能，纯方法文案追加，
+不改变 runtime / completion authority 边界：
+
+- 新增 Route Fixtures 校准表与严格路由优先级：盘问/拷问/审问路由到
+  `Grilling Mode`，显式目标意图路由到 `goal-framing`，review 路由到
+  `requesting-code-review`；文件数不再作为设计信号。
+- 新增 Role And Authority Contract：Agent-owned 决策（仓库调查、文件组织、
+  验证机制、可逆实现结构）由 Agent 直接解决；User-owned 仅保留产品行为、
+  不可逆/生产/公共/敏感影响与不可发现事实；每条用户提问先通过"换一个答案
+  会改变哪个设计边界"测试。
+- Grilling Mode 结尾新增结构化 `Challenge Result`（存留/否决假设、所需新证据、
+  设计变更、残余风险、返回状态），收敛质量可验证。
+- 新增 8 个 Software Scenario Profiles（greenfield / existing-system /
+  refactor / public-contract / persistence / ui-workflow / security /
+  operational-release），按场景加载相关 lens，不再无差别堆叠。
+- 新增 Design Probe 一次性探针纪律与 Design Ready / Design Complete 收敛条件；
+  Design Complete 保持 method readiness，不构成完成 authority。
+- 原 HARD GATE、spec 审批点、workspace 初始化、compact output contract 与
+  grilling 模式语义保持不变；trigger-health 与 workflow-quality 新增 12 条
+  内容断言 pin 本次新增章节。
+
 ## v2.8.1 (2026-08-16)
 
 ### DeepSeek Harness 路由稳定性与安装分流
