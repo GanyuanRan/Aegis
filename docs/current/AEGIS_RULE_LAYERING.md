@@ -71,32 +71,36 @@ workflow behavior remains owned by the task-specific skills and approved
 current docs. Activation and TDD mode semantics are owned by
 `AEGIS_ACTIVATION_MODE.md` and `AEGIS_TDD_MODE.md` respectively.
 
-The root `GLOBAL_USER_RULES_LITE*` and `GLOBAL_USER_RULES_TEMPLATE*` files are
-manual host/profile projections. They are not method owners, host adapters, or
-proof that Aegis is installed and discoverable. They are not updated by `aegis:update`;
-users must re-copy or merge them when a release changes the projected profile
-semantics.
+The root `GLOBAL_USER_RULES_TEMPLATE.md` and
+`GLOBAL_USER_RULES_TEMPLATE.zh-CN.md` files are English and Chinese mirrors of
+one manual host/profile routing prefix. They are not method owners, host
+adapters, or proof that Aegis is installed and discoverable. They are not
+updated by `aegis:update`; users must re-copy or merge them when a release
+changes the projected routing semantics.
 
-These projections may retain stable user-selected preferences such as
-authority priority, fast-path behavior, evidence discipline, workspace
-laziness, and method-pack authority boundaries. They must not duplicate
-volatile workflow protocols, exact skill output shapes, or host-specific tool
-routing.
+The routing prefix may retain only the stable host/profile integration needed
+before a task-specific skill owns the workflow: activation-mode entry, minimal
+skill loading, fast-path behavior, context re-entry, and the distinction
+between Activation Mode and TDD Mode. It must not duplicate planning,
+debugging, TDD execution, verification, governance, output contracts, exact
+skill output shapes, or host-specific tool routing.
 
 Projection maintenance follows these rules:
 
-- Keep the Lite projection as the default compact option.
-- Keep the Advanced projection as an optional stable governance overlay that
-  is appended to Lite rather than used as a standalone profile.
-- Keep activation, authority priority, fast-path behavior, baseline completion
-  evidence, and the method-layer authority boundary owned by Lite. Advanced
-  must reference those base rules instead of copying a second version.
-- Preserve public filenames and links unless a documented compatibility
-  decision authorizes retirement.
+- Keep one functional routing-prefix profile with aligned English and Chinese
+  mirrors; do not reintroduce Lite / Advanced capability tiers.
+- Keep detailed workflow governance owned by `skills/using-aegis/SKILL.md`,
+  task-specific skills, and approved current docs instead of projecting it into
+  global user rules.
+- The former `GLOBAL_USER_RULES_LITE*` files are retired duplicate profiles.
+  Existing manual copies should replace only their old Aegis Lite / Advanced
+  blocks with the unified prefix; unrelated pre-existing global rules remain
+  unchanged.
 - Keep shared semantics aligned across English and Chinese without requiring
   byte-for-byte translation.
 - When activation, TDD, routing, priority, verification, or authority semantics
-  change, review all four projections and publish a manual-copy migration note.
+  change, review both language mirrors and publish a manual-copy migration
+  note.
 
 ---
 

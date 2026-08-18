@@ -99,18 +99,15 @@ Aegis 当前发布形态是：
 不提供 authoritative `GateDecision`，不提供 authoritative `PolicySnapshot`，
 也不授予 final completion authority。用户当前指令和目标项目规则优先于 Aegis。
 
-下面的文件是可选、手工复制的宿主/profile 投影，不负责安装 Aegis，也不能证明
-skill 已经可发现。如果宿主已有可靠的 Aegis bootstrap 与路由，通常无需为了路由
-再复制全局规则；否则先复制 Lite 作为完整基础 profile。Advanced 不是独立模板，
-只在确实需要持久治理偏好时按需追加：
+[全局路由前缀](GLOBAL_USER_RULES_TEMPLATE.zh-CN.md)是一个可选、手工复制的
+宿主/profile 投影，不负责安装 Aegis，也不能证明 skill 已经可发现。如果宿主已有
+可靠的 Aegis bootstrap 与路由，通常无需再复制全局规则；否则把该前缀添加到现有
+全局用户规则的最开头即可，无需改动无关内容。
 
-- [轻量全局规则](GLOBAL_USER_RULES_LITE.zh-CN.md)
-- [高级治理 overlay](GLOBAL_USER_RULES_TEMPLATE.zh-CN.md)
-
-这些手工副本不由 `aegis:update` 管理。Lite 负责默认 `auto` activation profile
-及其 explicit 模式替换条款；Advanced 继承该选择，不再重复一份。切换到
-`explicit` 时也要同步修改已复制的 Lite profile。宿主原生 skill 匹配是否仍会
-触发，继续由宿主能力决定。
+这份手工前缀不由 `aegis:update` 管理。已经复制过旧 Lite / Advanced profile 的
+用户，应只把原 Aegis 区块替换为统一前缀，保留其他原有全局规则。前缀遵循宿主
+或会话提供的 activation mode，未声明时默认 `auto`；具体治理继续由加载后的
+Aegis skills 按需负责。宿主原生 skill 匹配是否仍会触发，继续由宿主能力决定。
 
 Aegis 默认自动模式。要切换到显式模式，在已安装的 method-pack 根目录运行：
 

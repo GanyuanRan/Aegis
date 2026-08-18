@@ -28,7 +28,8 @@ Before executing any formal release, the following must be confirmed item by ite
 3. Current host installation instructions and testing instructions can point back to the real owner
 4. Current known limitations have been written back, rather than hidden in session conclusions
 5. If activation, TDD, routing, priority, verification, or authority semantics
-   changed, all four global user-rule projections were reviewed and any manual-copy migration was documented
+   changed, both language mirrors of the unified global routing prefix were
+   reviewed and any manual-copy migration was documented
 
 ---
 
@@ -211,11 +212,11 @@ The following must be confirmed before release:
 2. No new authoritative `GateDecision` has been added
 3. No new authoritative `completion authority` has been added
 4. No single-host implementation logic has been elevated to baseline
-5. Global user rules remain manual host/profile projections rather than a second method owner
-6. Lite remains the sole base projection for activation, priority, fast-path,
-   baseline completion evidence, and method-layer authority; Advanced remains
-   an additive governance overlay without duplicate base rules, across English
-   and Chinese
+5. The unified global routing prefix remains a manual host/profile projection
+   rather than a second method owner
+6. The English and Chinese routing-prefix mirrors keep one functional profile;
+   detailed planning, debugging, TDD, verification, governance, and output
+   contracts remain owned by the loaded Aegis skills and approved current docs
 7. Changes to manually copied profile semantics include a release-note migration notice
 
 The following checks may be directly relied upon:

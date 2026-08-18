@@ -92,14 +92,22 @@ It only records limitations supported by current fresh evidence and does not spe
 - It has been confirmed that the working-dir / cmd bridge issues under Git Bash can be converged, but representative Codex smoke may still exhibit:
   - explicit skill requests may pass but take longer than expected
   - naive prompt smoke is unstable within the current timeout window
+  - on some Windows Codex installations, the default workspace sandbox may
+    fail before routing when it cannot spawn the configured PowerShell process
+    (`CreateProcessAsUserW` access denied); an environment-controlled rerun can
+    distinguish that host failure from an Aegis trigger regression
 
 **Observation Metric**
 - `env AEGIS_TEST_CLI=codex bash tests/explicit-skill-requests/run-test.sh brainstorming ...`
 - `env AEGIS_TEST_CLI=codex bash tests/skill-triggering/run-test.sh brainstorming ...`
 - Bridge and parser behavior of `tests/helpers/codex-cli.sh`
+- Whether the same smoke reaches skill discovery with and without the failing
+  Windows sandbox boundary
 
 **Retirement Trigger**
-- When representative Codex smoke under Git Bash passes stably within the current runner timeout window
+- When representative Codex smoke under Git Bash passes stably within the
+  current runner timeout window and the Windows sandbox can reliably spawn its
+  configured shell
 
 ---
 

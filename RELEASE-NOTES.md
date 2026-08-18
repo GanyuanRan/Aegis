@@ -1,5 +1,21 @@
 # Aegis Release Notes
 
+## v2.8.3 (2026-08-18)
+
+### 全局用户规则收敛为单一路由前缀
+
+- 退役 Lite / Advanced 双层手工 profile，统一为一份功能语义、两份语言镜像的
+  `GLOBAL_USER_RULES_TEMPLATE` 路由前缀。
+- 新前缀只负责 activation、最小 skill 加载、fast path 与上下文重入；规划、调试、
+  TDD、验证、治理和输出要求继续由已加载的 Aegis skill 按需负责。
+- 新用户只需把前缀添加到现有全局用户规则开头，无需改动原有内容。已复制旧
+  Lite / Advanced 区块的用户应只替换旧 Aegis 区块，保留其他原有全局规则。
+- Activation Mode 继续保持默认 `auto`、可选 `explicit`；TDD Mode 继续保持默认
+  `off`、可选 `auto`。这些手工副本仍不由 `aegis:update` 自动更新。
+- 发布验证确认 Codex 显式与自然语义触发均可加载 `using-aegis` 和
+  `brainstorming`；Windows sandbox 无法启动配置 shell 的环境边界已写入 Known
+  Limitations，不误记为 Aegis 路由回归。
+
 ## v2.8.2 (2026-08-17)
 
 ### brainstorming 设计决策校准实践回填
