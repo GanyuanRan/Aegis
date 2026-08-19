@@ -10,6 +10,7 @@ import {
   installBootstrap,
   readAegisConfig,
   readUsingAegisBody,
+  stripFrontmatter,
 } from "../../extensions/dsh/bootstrap.js";
 
 const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
@@ -59,11 +60,33 @@ try {
   assert.match(body, /<EXTREMELY-IMPORTANT>/);
   assert.doesNotMatch(body, /^---/);
 
+  // The frontmatter-strip contract is pinned directly, not only indirectly
+  // through the real skill body.
+  assert.equal(
+    stripFrontmatter("---\nname: synthetic\n---\nBODY-CONTENT\n"),
+    "BODY-CONTENT\n",
+  );
+  assert.equal(stripFrontmatter("NO-FRONTMATTER\n"), "NO-FRONTMATTER\n");
+
+  // A missing using-aegis skill body fails loudly at plugin apply time
+  // rather than silently arming an empty bootstrap.
+  assert.throws(
+    () => readUsingAegisBody(path.join(tempRoot, "missing-skills")),
+    /Aegis DSH bootstrap skill is missing/,
+  );
+
   const rendered = buildBootstrap(body, { tddMode: "off" });
   assert.match(rendered, new RegExp(`<${BOOTSTRAP_MARKER}>`));
   assert.match(rendered, /native `skill` tool/);
   assert.match(rendered, /Route: fast-path/);
   assert.doesNotMatch(rendered, /routing-guard marker/i);
+
+  // The auto branch of the TDD mode line is a distinct render path of the
+  // repaired owner; pin it so both tddMode branches stay covered.
+  const renderedAuto = buildBootstrap(body, { tddMode: "auto" });
+  assert.match(renderedAuto, new RegExp(`<${BOOTSTRAP_MARKER}>`));
+  assert.match(renderedAuto, /Aegis TDD mode: auto\./);
+  assert.doesNotMatch(renderedAuto, /Aegis TDD mode: off\./);
 
   const autoCtx = fakeContext();
   const disposer = installBootstrap(autoCtx, {
