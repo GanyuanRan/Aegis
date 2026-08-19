@@ -177,10 +177,11 @@ and Claude-compatible plugins can otherwise expose duplicate Aegis copies.
 
 The deterministic DeepSeek Harness suite validates the official host identity,
 root `dsh.bundle.patch` declaration, thin Cordis adapter, package-owned skill
-root, synchronous native lifecycle bootstrap across startup/resume/clear/compact,
-subagent and explicit-mode exclusions, explicit direct-child compatibility
-path, duplicate-exposure guard, developer-preview boundary, and public release
-links without changing the current user's DSH profile:
+root, deferred native lifecycle bootstrap across startup/resume/clear/compact
+(armed at each boundary, injected once after the session's first durable
+promotion signal), subagent and explicit-mode exclusions, explicit direct-child
+compatibility path, duplicate-exposure guard, developer-preview boundary, and
+public release links without changing the current user's DSH profile:
 
 ```bash
 bash tests/deepseek-harness/run-tests.sh

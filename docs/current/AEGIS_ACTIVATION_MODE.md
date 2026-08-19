@@ -166,8 +166,9 @@ installation profile and then `/reload` or open `/new`.
 DeepSeek Harness uses its native plugin lifecycle for the same boundary:
 
 - A bundle-managed install in `auto` mode mounts the package-owned skills and
-  synchronously injects the compact `using-aegis` bootstrap on native
-  `agent/session-start` sources `startup`, `resume`, `clear`, and `compact`.
+  defers the compact `using-aegis` bootstrap until the session's first durable
+  promotion signal (`tool/call` or `assistant/message`) after each native
+  `agent/session-start` source `startup`, `resume`, `clear`, and `compact`.
 - A bundle-managed install in `explicit` mode keeps the native skill catalog
   available but does not register that automatic lifecycle injection. Restart
   the selected DSH profile after changing the local config or environment.

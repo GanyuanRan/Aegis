@@ -143,9 +143,10 @@ Confirm:
 - DeepSeek Harness is distinct from DeepSeek-TUI and remains a developer-preview
   structural target; its default install uses the thin Aegis `dsh.bundle` and
   package-owned `skills/` tree plus native `agent/session-start` router
-  bootstrap; the bootstrap is synchronous, skips subagents, honors explicit
-  activation mode, and does not add a hard tool guard. Updater-managed
-  direct-child links require `--compatibility-mode`; `$DSH_HOME/skills`
+  bootstrap; the bootstrap is deferred to the session's first durable
+  promotion signal, skips subagents, honors explicit activation mode, and does
+  not add a hard tool guard. Updater-managed direct-child links require
+  `--compatibility-mode`; `$DSH_HOME/skills`
   (`~/.dsh/skills` by default), project `.dsh/skills`, shared `.agents/skills`,
   and custom directories are explicit compatibility routes without bundle
   bootstrap and must not be active beside the bundle

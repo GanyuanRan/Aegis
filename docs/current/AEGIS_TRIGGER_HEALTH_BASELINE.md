@@ -103,7 +103,7 @@ Host-profile examples:
 | --- | --- | --- |
 | Kimi `kimi-code-auto` | `hook-bootstrap` | Plugin `sessionStart.skill = using-aegis` |
 | Kimi `kimi-code-explicit` | `native-direct-skill` | Explicit or host-native direct-child matching; no session-start bootstrap |
-| DeepSeek Harness bundle, `auto` | `hook-bootstrap` | Native `agent/session-start` injection on `startup`, `resume`, `clear`, and `compact` |
+| DeepSeek Harness bundle, `auto` | `hook-bootstrap` | Native `agent/session-start` deferral: armed on `startup`, `resume`, `clear`, and `compact`, injected after the session's first durable promotion signal |
 | DeepSeek Harness bundle, `explicit` | `native-direct-skill` | Installed catalog remains explicitly invocable; no Aegis lifecycle injection |
 | DeepSeek Harness direct-child compatibility | `native-direct-skill` | Explicit or host-native matching; no bundle lifecycle injection |
 

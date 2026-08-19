@@ -38,11 +38,13 @@ function fakeContext() {
   };
 }
 
-function fakeAgent(origin) {
+function fakeAgent(id, origin) {
   const injected = [];
+  const session = { header: origin ? { origin } : {} };
+  if (id !== undefined) session.id = id;
   return {
     injected,
-    session: { header: origin ? { origin } : {} },
+    session,
     inject(message) {
       injected.push(message);
     },
@@ -73,25 +75,63 @@ try {
   const lifecycleHandler = autoCtx.handlers.get("agent/session-start");
   assert.equal(typeof lifecycleHandler, "function");
 
-  const coordinator = fakeAgent();
+  const eventHandler = autoCtx.handlers.get("session/event");
+  assert.equal(typeof eventHandler, "function");
+
+  // Every session-start boundary arms the deferral; nothing is injected
+  // before the session's first durable promotion signal, so the first model
+  // request stays free of Aegis content.
+  const coordinator = fakeAgent("session-1");
   for (const source of ["startup", "resume", "clear", "compact"]) {
     const returned = lifecycleHandler({ agent: coordinator, source });
-    assert.equal(returned, undefined, `${source} injection must stay synchronous`);
-  }
-  assert.equal(coordinator.injected.length, 4);
-  for (const message of coordinator.injected) {
-    assert.equal(message.role, "user");
-    assert.deepEqual(message.source, {
-      kind: "plugin",
-      plugin: "aegis",
-      form: "instructions",
-    });
-    assert.match(message.content[0].text, new RegExp(BOOTSTRAP_MARKER));
+    assert.equal(returned, undefined, `${source} must arm, not inject`);
+    eventHandler(coordinator.session, { type: "user/message" });
+    assert.equal(coordinator.injected.length, 0, `${source} must not inject on non-promotion events`);
   }
 
-  const subagent = fakeAgent("subagent");
+  // The first durable promotion signal releases exactly one injection.
+  eventHandler(coordinator.session, { type: "assistant/message" });
+  assert.equal(coordinator.injected.length, 1);
+  const message = coordinator.injected[0];
+  assert.equal(message.role, "user");
+  assert.deepEqual(message.source, {
+    kind: "plugin",
+    plugin: "aegis",
+    form: "instructions",
+  });
+  assert.match(message.content[0].text, new RegExp(BOOTSTRAP_MARKER));
+
+  // Later promotion signals never double-inject.
+  eventHandler(coordinator.session, { type: "tool/call" });
+  assert.equal(coordinator.injected.length, 1);
+
+  // A compaction boundary re-arms the deferral: the first post-compaction
+  // request is a gated "second first request", so only a NEW promotion
+  // signal may inject again.
+  eventHandler(coordinator.session, { type: "compaction/end" });
+  eventHandler(coordinator.session, { type: "user/message" });
+  assert.equal(coordinator.injected.length, 1, "compaction re-arm must not inject on non-promotion events");
+  eventHandler(coordinator.session, { type: "tool/call" });
+  assert.equal(coordinator.injected.length, 2);
+  assert.match(coordinator.injected[1].content[0].text, new RegExp(BOOTSTRAP_MARKER));
+
+  // Other sessions' events never inject into this session, and sessions
+  // never seen at session-start are ignored entirely.
+  const stranger = fakeAgent("session-2");
+  eventHandler(stranger.session, { type: "tool/call" });
+  assert.equal(stranger.injected.length, 0);
+
+  // Subagents are excluded from lifecycle arming.
+  const subagent = fakeAgent("session-3", "subagent");
   lifecycleHandler({ agent: subagent, source: "startup" });
+  eventHandler(subagent.session, { type: "tool/call" });
   assert.equal(subagent.injected.length, 0);
+
+  // Disposal tears down both listeners; the host no longer dispatches to
+  // them, so no new session can arm or receive an injection.
+  disposer();
+  assert.equal(autoCtx.handlers.has("agent/session-start"), false);
+  assert.equal(autoCtx.handlers.has("session/event"), false);
 
   const explicitHome = path.join(tempRoot, "explicit-home");
   fs.mkdirSync(path.join(explicitHome, ".config", "aegis"), { recursive: true });

@@ -727,13 +727,13 @@ request.
 - The default DSH path is a thin package bundle declared through
   `dsh.bundle.patch`. It registers the canonical package-owned `skills/` tree
   through Harness's native filesystem provider. In `auto` mode it preloads the
-  compact router text while applying the plugin and synchronously injects it
-  through native `agent/session-start` / `agent.inject` at `startup`, `resume`,
-  `clear`, and `compact`, avoiding a first-step asynchronous read race.
+  compact router text while applying the plugin and defers its injection to
+  the session's first durable promotion signal (`tool/call` or
+  `assistant/message`) after each native `agent/session-start` boundary
+  (`startup`, `resume`, `clear`, `compact`), keeping the first model request
+  of every gated epoch free of injected context while avoiding a first-step
+  asynchronous read race.
 - The bootstrap skips subagents and does not install a hard pre-tool guard:
-  legitimate `Route: fast-path` decisions are model-facing and are not reliable
-  enough to support hard denial without false positives. The adapter does not
-  duplicate skill bodies or add runtime authority.
 - DeepSeek Harness's native filesystem provider discovers direct child skill
   bundles from project `.dsh/skills`, project `.agents/skills`, configured
   custom directories, `$DSH_HOME/skills` (`~/.dsh/skills` by default), and

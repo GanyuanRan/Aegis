@@ -94,8 +94,48 @@ export function installBootstrap(
   const body = readUsingAegisBody(skillsRoot);
   const bootstrap = buildBootstrap(body, config);
 
-  return ctx.on("agent/session-start", ({ agent }) => {
+  // Injecting at session start used to land the bootstrap in the session
+  // inbox BEFORE the first model request, which polluted the sterile
+  // first-request baseline that trajectory presets such as
+  // dsh-anchored-standard (context gate) depend on. Deferral keeps that
+  // request clean: every session-start boundary only ARMS an injection, and
+  // the bootstrap lands once the session emits its first durable promotion
+  // signal (`tool/call` or `assistant/message`) — after the anchored first
+  // request has already been assembled. `compaction/end` re-arms the
+  // deferral because the first post-compaction request is itself a gated
+  // "second first request". Sessions without a stable `session.id` cannot
+  // be correlated with their events, so they are skipped rather than
+  // injected blind.
+  const agents = new Map();
+  const pending = new Set();
+
+  const disposeLifecycle = ctx.on("agent/session-start", ({ agent }) => {
     if (agent.session?.header?.origin === "subagent") return;
+    const sessionId = agent.session?.id;
+    if (sessionId === undefined) return;
+    agents.set(sessionId, agent);
+    pending.add(sessionId);
+  });
+
+  const disposeEvents = ctx.on("session/event", (session, event) => {
+    const sessionId = session?.id;
+    if (sessionId === undefined || !agents.has(sessionId)) return;
+    if (event?.type === "compaction/end") {
+      pending.add(sessionId);
+      return;
+    }
+    if (event?.type !== "tool/call" && event?.type !== "assistant/message") {
+      return;
+    }
+    if (!pending.delete(sessionId)) return;
+    const agent = agents.get(sessionId);
     agent.inject(createBootstrapMessage(createUserMessage, bootstrap));
   });
+
+  return () => {
+    disposeLifecycle();
+    disposeEvents();
+    agents.clear();
+    pending.clear();
+  };
 }
