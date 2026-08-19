@@ -1,5 +1,20 @@
 # Aegis Release Notes
 
+## v2.8.4 (2026-08-19)
+
+### DeepSeek Harness 注入延迟到首个 promotion 信号，兼容锚定预设
+
+- DSH bundle 不再在 `agent/session-start` 同步注入 `using-aegis` bootstrap，
+  避免污染首轮请求的零注入基线（修复 issue #19 的锚定复现失败）。
+- 每个 `startup`/`resume`/`clear`/`compact` 边界只 arm 一次待注入；在会话首个
+  durable promotion 信号（`tool/call` 或 `assistant/message`）之后才通过
+  `agent.inject` 交付一次，保证每个 gated epoch 的首个模型请求保持零注入。
+- `compaction/end` 会重新 arm；subagent 与无稳定 `session.id` 的会话跳过；
+  `explicit` activation mode 行为不变。
+- 更新 `docs/README.deepseek-harness.md` 及 host compatibility / known
+  limitations / release checklist / trigger-health 文档；确定性测试与 62 项
+  e2e boundary check 通过。
+
 ## v2.8.3 (2026-08-18)
 
 ### 全局用户规则收敛为单一路由前缀
