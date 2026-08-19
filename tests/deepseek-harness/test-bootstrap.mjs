@@ -115,6 +115,20 @@ try {
   assert.equal(coordinator.injected.length, 2);
   assert.match(coordinator.injected[1].content[0].text, new RegExp(BOOTSTRAP_MARKER));
 
+  // A mid-session session-start with source "clear" re-arms the deferral
+  // exactly like compaction: the cleared session's next first request is
+  // again a gated first request, so only a promotion signal may inject.
+  lifecycleHandler({ agent: coordinator, source: "clear" });
+  eventHandler(coordinator.session, { type: "user/message" });
+  assert.equal(
+    coordinator.injected.length,
+    2,
+    "clear re-arm must not inject on non-promotion events",
+  );
+  eventHandler(coordinator.session, { type: "assistant/message" });
+  assert.equal(coordinator.injected.length, 3);
+  assert.match(coordinator.injected[2].content[0].text, new RegExp(BOOTSTRAP_MARKER));
+
   // Other sessions' events never inject into this session, and sessions
   // never seen at session-start are ignored entirely.
   const stranger = fakeAgent("session-2");
