@@ -127,6 +127,13 @@ try {
   eventHandler(subagent.session, { type: "tool/call" });
   assert.equal(subagent.injected.length, 0);
 
+  // Sessions without a stable session.id cannot be correlated with their
+  // events, so they are skipped rather than injected blind.
+  const idless = fakeAgent(undefined);
+  lifecycleHandler({ agent: idless, source: "startup" });
+  eventHandler(idless.session, { type: "tool/call" });
+  assert.equal(idless.injected.length, 0);
+
   // Disposal tears down both listeners; the host no longer dispatches to
   // them, so no new session can arm or receive an injection.
   disposer();
