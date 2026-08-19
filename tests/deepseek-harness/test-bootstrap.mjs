@@ -148,6 +148,16 @@ try {
   eventHandler(idless.session, { type: "tool/call" });
   assert.equal(idless.injected.length, 0);
 
+  // Event-handler correlation guards: an event session without a stable id
+  // is ignored entirely, and compaction/end for a session never seen at
+  // session-start never arms an injection for it.
+  eventHandler({ id: undefined }, { type: "tool/call" });
+  eventHandler({ id: undefined }, { type: "compaction/end" });
+  const strangerCompact = fakeAgent("session-4");
+  eventHandler(strangerCompact.session, { type: "compaction/end" });
+  eventHandler(strangerCompact.session, { type: "tool/call" });
+  assert.equal(strangerCompact.injected.length, 0);
+
   // Disposal tears down both listeners; the host no longer dispatches to
   // them, so no new session can arm or receive an injection.
   disposer();
