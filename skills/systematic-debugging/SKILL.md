@@ -9,7 +9,9 @@ Bug, failure, or unexpected behavior:
 
 1. **Isolate** — read error, reproduce, inspect the diff, and drill upward through diagnostic layers:
    L1 symptom → L2 logic → L3 system → L4 architecture → L5 cross-system
-   contract → L6 platform → L7 spec gap. Stop only when causal proof accounts
+   contract → L6 platform → L7 spec gap. Layers are observation altitudes,
+   not one causal chain; the causal shape at the stop altitude is classified
+   explicitly before any root claim. Stop only when causal proof accounts
    for the recurrence generator or reaches a T-class boundary.
 2. **Identify owner** — compare working behavior, trace the bad value, locate the
    canonical owner, and treat duplicate owners as a finding.
@@ -92,7 +94,9 @@ invariant, owner, patch shape, and topology; a renamed carrier is not a new dire
 
 If the diagnosis crosses L3, a patch-shape signal fires, a user disputes the
 root claim, a prior fix leaves a symptom, compound/root topology is plausible,
-or an upstream producer/config/default/contract/spec remains unexcluded, read
+two or more anchored manifestations of one incident exist, reproduction
+conditions diverge across occurrences, or an
+upstream producer/config/default/contract/spec remains unexcluded, read
 `root-cause-claim-contract.md` **before claiming a root cause**. It is the sole
 owner of the Pre-Claim Gate, causal-closure/falsifier proof, layer-ceiling
 proof, and Causal Topology Gate.

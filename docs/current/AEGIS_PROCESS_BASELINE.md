@@ -715,7 +715,7 @@ Where:
   counterfactual eliminates the bug class.
 - If `Evidence` cannot support the current judgment, do not package inferences as conclusions
 - If there remain issues not yet drilled upward to indivisible root causes, do not treat the diagnostic task as complete
-- Diagnosis must drill upward layer by layer from symptoms (L1 Symptom → L2 Logic → L3 System → L4 Architecture → L5 Cross-system Contract → L6 Platform/Framework Constraint → L7 Spec Gap); the chain's endpoint is "the root cause that cannot be further decomposed", not a fixed layer
+- Diagnosis must drill upward layer by layer from symptoms (L1 Symptom → L2 Logic → L3 System → L4 Architecture → L5 Cross-system Contract → L6 Platform/Framework Constraint → L7 Spec Gap). L1-L7 are observation altitudes for upward drilling, not one causal chain: the causal shape at the stop altitude can be single-root, chain, compound, or cluster and is classified explicitly before any root claim. The stop point is "the root cause that cannot be further decomposed", not a fixed layer
 - Candidate fixes that add keyword, phrase, regex, negation-word lists, local
   guards, one-off branches, fallbacks, adapters, compatibility branches,
   prompt branches, legacy path expansion, consumer-side patches, or downstream

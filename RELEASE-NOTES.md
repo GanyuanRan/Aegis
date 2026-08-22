@@ -1,5 +1,32 @@
 # Aegis Release Notes
 
+## v2.8.5 (2026-08-22)
+
+### 诊断措辞正交化：七层是观测海拔，因果形状由拓扑分类描述
+
+- 退役"层阶梯 = 单条因果链"的表述：process baseline 诊断不变量与
+  `systematic-debugging` 主循环明确 L1-L7 为向上钻取的观测海拔，停止海拔处
+  的因果形状（单根 / 链 / 复合 / 簇）须在根因声明前显式分类，消除单链归因
+  倾向的措辞根源。
+- Causal Topology Gate 触发条件客观化：除主观 "compound/root topology is
+  plausible" 外，新增两个可数证据信号——同一事件存在 ≥2 个锚定表现、复现
+  条件跨出现分歧——命中即强制读 `root-cause-claim-contract.md`，防止 agent
+  因未意识到复合可能而跳过六拓扑分类。
+- 合同 Topology Gate 节补无环假设声明与环路路由注记：逐成员修复后症状仍再生
+  时按 Architecture Escalation 证据处理，而非继续追加簇成员。
+- 快路径手册（EN/ZH）用户入口短语去链化："说明因果链停在哪一层"改为"说明
+  诊断停在哪一层、为什么"。
+- `AEGIS_KNOWN_LIMITATIONS.md` 新增 2.27：六拓扑假设无环收敛于离散机制，
+  环/反馈因果与涌现型根因暂非一等分类，现有兜底为三连败架构升级，并记录第
+  七拓扑的升级条件（真实 replay 案例 + 矩阵样本 + 校验器证据标准）。
+
+验证：`tests/e2e/debugging-patch-shape-gate-check.sh` 88/88 通过；
+`tests/e2e/workflow-quality-check.sh` 全量通过；
+`tests/e2e/run-all.sh --full --host-profile fast` 44 项中 41 项通过，3 项失败
+经 stash 对照在干净 HEAD 上同样复现，属本机环境绑定预存问题（离线 Codex
+fixture 平台仅支持 linux musl 目标、Codex CLI 活体技能触发标记漂移），与本
+次 diff 无关。纯方法措辞与触发纪律变更，不改变 runtime authority 边界。
+
 ## v2.8.4 (2026-08-19)
 
 ### DeepSeek Harness 注入延迟到首个 promotion 信号，兼容锚定预设

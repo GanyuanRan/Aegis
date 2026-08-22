@@ -145,7 +145,7 @@ while a deeper owner or contract fix removes the bug class.
 Try:
 
 ```text
-Diagnose this through the Aegis seven-layer model. Show where the causal chain stops.
+Diagnose this through the Aegis seven-layer model. Show which altitude the diagnosis stops at and why.
 ```
 
 ### 4.2 First-Principles Decision Review

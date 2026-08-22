@@ -775,6 +775,31 @@ request.
   exposure, and project workspace support. Until then it remains an explicit
   compatibility path, not a co-active fallback.
 
+### 2.27 Six-Topology Diagnosis Assumes Acyclic Convergence On Discrete Mechanisms
+
+**Retained Item**
+- The `systematic-debugging` Causal Topology Gate classifies root claims into
+  six acyclic shapes over discrete causes (`single-root`,
+  `single-root-multi-symptom`, `chain`, `independent-compound`,
+  `conjunctive-cluster`, `disjunctive-or`)
+- Cyclic / feedback causation such as race conditions, retry storms, or cache
+  invalidation loops, and emergent causes where the root is a relation between
+  components rather than a mechanism node, are not yet first-class topology
+  categories; current guidance force-fits such cases into `chain` or
+  `conjunctive-cluster`
+- Diagnostic layers L1-L7 are observation altitudes and remain valid entry
+  points for these cases; only the topology vocabulary is incomplete
+
+**Mitigation Today**
+- When member-by-member repair keeps regenerating the symptom, the
+  three-failed-fixes architecture escalation (`advanced-debugging-governance.md`)
+  is the intended exit rather than adding another cluster member
+
+**Promotion Trigger**
+- A seventh topology becomes eligible only with a real worked replay case
+  showing that force-fit classification caused a misrepair, plus the same
+  matrix-sample and validator evidence standard the existing six topologies met
+
 ## 3. Default Reading Rule
 
 If a limitation appears simultaneously in README, host docs, or test descriptions, use this document as the current reading entry point.
