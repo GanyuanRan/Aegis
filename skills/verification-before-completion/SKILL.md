@@ -120,6 +120,10 @@ Natural wording is valid when every semantic slot stays auditable. `Semantic Slo
 `Natural Surface`, and `Governance Receipt` are compatibility names, not other
 reports.
 
+Report what was done, verified, risked, and blocked.
+Do not explain obvious trade-offs and do not list actions not taken;
+silence on unexecuted options is the compact default, not an omission.
+
 ## L2 Expanded Triggers
 
 On any match, read `expanded-closeout.md`. It owns detail; this file owns routing

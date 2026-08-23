@@ -53,6 +53,14 @@ Smallest Sufficient Path: What is the least complex path that satisfies the firs
 Escalation Signal: What finding would require spec/design/architecture review?
 ```
 
+When the direction depends on a new mechanism or an unfamiliar domain, insert
+one optional line between path and escalation:
+
+```text
+Known Prior Art: proven external pattern worth adopting or adapting to project
+constraints (cite source), or `unknown` when precedent cannot be verified here
+```
+
 For repair choices, "smallest" means smallest sufficient stable repair, not the
 smallest textual diff:
 

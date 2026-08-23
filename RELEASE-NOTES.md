@@ -1,5 +1,28 @@
 # Aegis Release Notes
 
+## v2.8.7 (2026-08-22)
+
+### 先例调研透镜与报告纪律
+
+- `brainstorming` 新增 **Prior-Art & Reuse Lens**：方案引入新机制、协议、工件
+  形状或非常规交互模式时，按行为触发协议检索已验证的外部实践——限量来源、
+  索引优先、逐断言引用锚点；`Adopt verbatim / Adapt with reason / Reject with
+  reason / Degraded` 四态矩阵把每处裁剪与拒绝绑定到具名项目约束而非个人口味，
+  host 无 web/search 工具时标记外部依据未知并继续内部证据。
+- `first-principles-review` 五行速审新增可选 **Known Prior Art** 行：方向依赖
+  新机制或陌生领域时插入，先例不可验证时标 unknown。
+- `verification-before-completion` 收据新增负空间纪律：只报已做、已验、真实
+  风险与阻塞；不解释显而易见的取舍，不罗列未执行的事项。
+- `brainstorming` Role And Authority Contract 新增提问必附推荐选项及理由。
+- `subagent-driven-development` implementer 上抛格式新增三元组：具体问题或
+  阻塞 + 已收集证据 + 已考虑的候选方案及取舍。
+- workflow-quality-check 新增 5 条内容锚点断言，first-principles-review-check
+  新增 1 条。
+
+验证：`tests/e2e/workflow-quality-check.sh` 全量通过；
+`tests/e2e/first-principles-review-check.sh` 通过；`git diff --check` 干净。
+纯方法措辞与触发纪律变更，不改变 runtime authority 边界。
+
 ## v2.8.5 (2026-08-22)
 
 ### 诊断措辞正交化：七层是观测海拔，因果形状由拓扑分类描述

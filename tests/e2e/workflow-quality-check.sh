@@ -572,6 +572,10 @@ assert_contains "skills/brainstorming/SKILL.md" "Complexity Budget" \
     "brainstorming includes complexity budget"
 assert_contains "skills/brainstorming/SKILL.md" "Architecture Integrity Lens" \
     "brainstorming includes architecture integrity lens"
+assert_contains "skills/brainstorming/SKILL.md" "Prior-Art & Reuse Lens" \
+    "brainstorming includes prior-art reuse lens"
+assert_contains "skills/brainstorming/SKILL.md" "Adapt with reason|Reject with reason" \
+    "prior-art lens binds adapt and reject decisions to project constraints"
 assert_contains "skills/brainstorming/SKILL.md" "Baseline Role Alignment" \
     "brainstorming includes baseline role alignment"
 assert_contains "skills/brainstorming/SKILL.md" "Requirement Ready Check" \
@@ -580,6 +584,8 @@ assert_contains "skills/brainstorming/SKILL.md" "## Route Fixtures" \
     "brainstorming keeps route fixture calibration"
 assert_contains "skills/brainstorming/SKILL.md" "## Role And Authority Contract" \
     "brainstorming keeps the agent-owned and user-owned contract"
+assert_contains "skills/brainstorming/SKILL.md" "attach a recommended option" \
+    "brainstorming attaches recommendations to user questions"
 assert_contains "skills/brainstorming/SKILL.md" "Challenge Result" \
     "brainstorming keeps structured challenge results"
 assert_contains "skills/brainstorming/SKILL.md" "Design Complete is method readiness" \
@@ -848,6 +854,10 @@ assert_contains "$verification_skill" "held one narrow boundary steady|Boundary 
     "verification skill frames Aegis visibility as boundary discipline"
 assert_contains "$verification_skill" "Aegis Contribution Note" \
     "verification skill avoids self-credit heading by default"
+assert_contains "$verification_skill" "do not list actions not taken" \
+    "verification receipt keeps unexecuted options silent"
+assert_contains "$verification_skill" "Do not explain obvious trade-offs" \
+    "verification receipt skips obvious trade-off explanations"
 assert_contains "$verification_expanded" "explicit audit/debug/release/long-task review or user request" \
     "expanded closeout reserves structured trace for requested cases"
 assert_contains "$verification_skill" "Trace Digest" \
@@ -1173,6 +1183,8 @@ assert_not_contains "skills/subagent-driven-development/SKILL.md" "Start impleme
     "subagent workflow retires inherited main and worktree bans"
 assert_contains "skills/subagent-driven-development/implementer-prompt.md" "Do not stage, commit" \
     "implementer leaves Git mutation to coordinator"
+assert_contains "skills/subagent-driven-development/implementer-prompt.md" "the specific.*question or blocker|candidate options you considered" \
+    "implementer escalation hands back question evidence and options"
 assert_not_contains "skills/subagent-driven-development/implementer-prompt.md" "Commit your work" \
     "implementer no longer commits before independent review"
 assert_contains "skills/subagent-driven-development/code-quality-reviewer-prompt.md" "REVIEW_SCOPE: working-tree" \
