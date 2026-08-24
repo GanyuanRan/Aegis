@@ -1,5 +1,19 @@
 # Aegis Release Notes
 
+## v2.8.8 (2026-08-24)
+
+### Fix DeepSeek Harness GitHub installation over SSH
+
+- Replace active DeepSeek Harness installation instructions and updater output
+  that used `github:GanyuanRan/Aegis` with the explicit
+  `git+https://github.com/GanyuanRan/Aegis.git` source form.
+- Prevent public-repository installs from entering an SSH transport path that
+  requires users to configure GitHub SSH credentials.
+- Add regression assertions covering the English and Chinese install entry
+  points, the DeepSeek Harness guide, and updater-generated commands.
+- Preserve historical release-note examples while making current user-facing
+  installation guidance use HTTPS.
+
 ## v2.8.7 (2026-08-22)
 
 ### 先例调研透镜与报告纪律

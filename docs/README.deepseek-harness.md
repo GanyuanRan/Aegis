@@ -70,13 +70,13 @@ npx @deepseek-ai/dsh --version
 Install Aegis into every DSH profile that should expose it. For the Web profile:
 
 ```bash
-dsh plugin --profile web add github:GanyuanRan/Aegis
+dsh plugin --profile web add "git+https://github.com/GanyuanRan/Aegis.git"
 ```
 
 For the Headless profile, install it separately:
 
 ```bash
-dsh plugin --profile headless add github:GanyuanRan/Aegis
+dsh plugin --profile headless add "git+https://github.com/GanyuanRan/Aegis.git"
 ```
 
 An `aegis` dependency that is installed in one profile is not automatically
@@ -87,8 +87,13 @@ directory.
 After a bundle-bearing Aegis release exists, a release tag may be pinned:
 
 ```bash
-dsh plugin --profile web add github:GanyuanRan/Aegis#vX.Y.Z
+dsh plugin --profile web add "git+https://github.com/GanyuanRan/Aegis.git#vX.Y.Z"
 ```
+
+The explicit `git+https://` form is intentional. Do not shorten it to
+`github:GanyuanRan/Aegis`: some DSH/pnpm combinations resolve that shorthand
+through SSH, which would require users to configure GitHub SSH credentials for
+this public repository.
 
 This is repository/profile installation, not a claim that Aegis has an official
 DeepSeek marketplace listing.
@@ -99,7 +104,7 @@ A user may give the following instruction directly to a DeepSeek Harness agent:
 
 ```text
 Install Aegis Method Pack into my current official DeepSeek Harness (`dsh`)
-profile through `dsh plugin --profile <profile> add github:GanyuanRan/Aegis`.
+profile through `dsh plugin --profile <profile> add "git+https://github.com/GanyuanRan/Aegis.git"`.
 Treat this native profile plugin as the default even when I asked for a minimal
 or global install. Do not silently substitute a direct-child installation; use
 that only if the plugin manager is unavailable and I explicitly approve

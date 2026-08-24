@@ -756,7 +756,7 @@ request.
 - `docs/README.deepseek-harness.md`
 - `bash tests/deepseek-harness/run-tests.sh`
 - `bash tests/deepseek-harness/run-tests.sh --integration`
-- a clean `dsh plugin --profile web add github:GanyuanRan/Aegis` readback lists
+- a clean `dsh plugin --profile web add "git+https://github.com/GanyuanRan/Aegis.git"` readback lists
   `aegis` in `dsh.profile.bundles` and `dsh --profile web --dump-config` contains
   exactly one enabled `aegis-method-pack` row
 - `python tests/helpers/test_aegis_update.py -k deepseek_harness`

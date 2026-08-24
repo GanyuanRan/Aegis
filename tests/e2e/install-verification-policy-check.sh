@@ -28,6 +28,18 @@ assert_contains() {
     fi
 }
 
+assert_not_contains() {
+    local file="$1"
+    local pattern="$2"
+    local label="$3"
+
+    if grep -qE -- "$pattern" "$file"; then
+        fail "$label"
+    else
+        pass "$label"
+    fi
+}
+
 echo "=== Install Verification Policy Check ==="
 
 root_docs=(
@@ -107,16 +119,20 @@ assert_contains "docs/current/AEGIS_FAST_TRACK_PLAYBOOK_ZH.md" "原生活化与�
 for file in \
     "README.md" \
     "docs/current/AEGIS_FAST_TRACK_PLAYBOOK.md"; do
-    assert_contains "$file" 'dsh plugin --profile <profile> add github:GanyuanRan/Aegis' \
+    assert_contains "$file" 'dsh plugin --profile <profile> add "git\+https://github\.com/GanyuanRan/Aegis\.git"' \
         "$file routes official DSH installs to the native profile plugin"
+    assert_not_contains "$file" 'dsh plugin --profile <profile> add github:GanyuanRan/Aegis' \
+        "$file does not route public GitHub installs through SSH shorthand"
     assert_contains "$file" 'do not silently substitute the direct-child compatibility path' \
         "$file forbids silent DSH direct-child fallback"
 done
 for file in \
     "README.zh-CN.md" \
     "docs/current/AEGIS_FAST_TRACK_PLAYBOOK_ZH.md"; do
-    assert_contains "$file" 'dsh plugin --profile <profile> add github:GanyuanRan/Aegis' \
+    assert_contains "$file" 'dsh plugin --profile <profile> add "git\+https://github\.com/GanyuanRan/Aegis\.git"' \
         "$file routes official DSH installs to the native profile plugin"
+    assert_not_contains "$file" 'dsh plugin --profile <profile> add github:GanyuanRan/Aegis' \
+        "$file does not route public GitHub installs through SSH shorthand"
     assert_contains "$file" '不要静默改用 direct-child 兼容路径' \
         "$file forbids silent DSH direct-child fallback"
 done

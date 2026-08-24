@@ -141,8 +141,12 @@ assert_contains "$guide" '<project>/.dsh/skills|\.dsh/skills' \
     "Harness guide documents the project skill root"
 assert_contains "$guide" 'direct-child' \
     "Harness guide records the direct-child discovery shape"
-assert_contains "$guide" 'dsh plugin --profile web add github:GanyuanRan/Aegis' \
+assert_contains "$guide" 'dsh plugin --profile web add "git\+https://github\.com/GanyuanRan/Aegis\.git"' \
     "Harness guide documents native profile-plugin installation"
+assert_not_contains "$guide" 'dsh plugin --profile web add github:GanyuanRan/Aegis' \
+    "Harness guide does not route public GitHub installs through SSH shorthand"
+assert_contains "$guide" 'explicit `git\+https://` form is intentional' \
+    "Harness guide explains the HTTPS transport boundary"
 assert_contains "$guide" 'dsh\.bundle\.patch|dsh.bundle.patch' \
     "Harness guide documents the bundle identity"
 assert_contains "$guide" 'explicit compatibility mode|Explicit Direct-Child Compatibility' \

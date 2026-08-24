@@ -29,7 +29,7 @@ GROK_HOST_ALIASES = {"grok", "grok-build"}
 DEEPSEEK_HARNESS_HOST_ALIASES = {"deepseek-harness", "dsh"}
 REGISTER_TIME_SYNC_MODES = {"junction", "symlink", "copy-skills"}
 DEEPSEEK_HARNESS_PLUGIN_INSTALL = (
-    "dsh plugin --profile <profile> add github:GanyuanRan/Aegis"
+    'dsh plugin --profile <profile> add "git+https://github.com/GanyuanRan/Aegis.git"'
 )
 
 

@@ -417,7 +417,7 @@ class AegisUpdateRegistryTests(unittest.TestCase):
 
             with self.assertRaisesRegex(
                 update.UpdateError,
-                r"dsh plugin --profile <profile> add github:GanyuanRan/Aegis",
+                r'dsh plugin --profile <profile> add "git\+https://github\.com/GanyuanRan/Aegis\.git"',
             ):
                 update.command_register(args)
 
