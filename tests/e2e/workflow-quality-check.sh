@@ -1157,6 +1157,42 @@ assert_contains "skills/using-git-worktrees/SKILL.md" 'Do not infer `npm install
 assert_contains_all "skills/using-git-worktrees/SKILL.md" \
     "worktree placement reads project authority and convention" \
     'AGENTS\.md' 'CLAUDE\.md' "current authority" "worktree convention"
+assert_contains_all "skills/using-git-worktrees/SKILL.md" \
+    "managed worktree requires trusted host binding evidence" \
+    "managed.*non-managed.*unknown" "trusted host/session context" \
+    "default command.*cwd" "intended Git worktree root" "intended.*HEAD"
+assert_contains_all "skills/using-git-worktrees/SKILL.md" \
+    "unknown host capability cannot enable shell fallback" \
+    "non-managed.*requires positive evidence" "unknown.*classification fails" "^closed;" \
+    "missing tool" "absent metadata" "generic-fallback evidence"
+assert_contains_all "skills/using-git-worktrees/SKILL.md" \
+    "managed detached HEAD is accepted only with trusted host evidence" \
+    "unexplained detached HEAD" "trusted host binding evidence" \
+    "managed worktree" "start detached" "not create a branch merely"
+assert_contains_all "skills/using-git-worktrees/SKILL.md" \
+    "managed binding uses resolved path identity" \
+    "host-appropriate semantics" "not raw path" \
+    "cwd.*equal.*root or be inside" "resolve to the intended worktree root"
+assert_contains_all "skills/using-git-worktrees/SKILL.md" \
+    "managed worktree path fails closed without shell fallback" \
+    "native Worktree/Handoff" "fail closed|stop before shell worktree creation" \
+    "Do not silently fall" "back on.*git worktree add"
+assert_contains_all "skills/using-git-worktrees/SKILL.md" \
+    "generic Git fallback remains bounded to non-managed host surfaces" \
+    "Generic Git fallback" "positively" "non-managed" \
+    "command-level.*workdir" "never proves managed task binding"
+assert_contains_all "skills/using-aegis/references/codex-tools.md" \
+    "Codex mapping distinguishes managed chats from shell worktrees" \
+    "Codex Desktop Managed Worktrees" "external Git worktree does not rebind" \
+    "Worktree.*Handoff" "follow the live tool schema" "fail closed"
+assert_contains_all "$process_doc" \
+    "process baseline owns the managed-host binding postcondition" \
+    "task/chat-bound" "managed workspace semantics" "trusted task workspace" \
+    "default command.*cwd" "command-level.*workdir" "not task-binding evidence"
+assert_contains_all "docs/adr/ADR-0003-current-branch-first-git-lifecycle.md" \
+    "ADR amendment records host-bound worktree policy" \
+    "2026-08-27 修订" "联合后置条件" "fail closed" \
+    "non-managed.*宿主兼容例外"
 assert_before "skills/using-git-worktrees/SKILL.md" 'AGENTS\.md' \
     '^## Step 2: Safe Placement' \
     "worktree authority read happens before placement"

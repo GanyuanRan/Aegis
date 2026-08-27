@@ -1,6 +1,6 @@
 # ADR-0003 当前分支优先的任务级 Git 生命周期
 
-状态：`Approved`
+状态：`Approved`（`2026-08-27` 修订）
 
 ## 设计证据
 
@@ -338,11 +338,86 @@ finishing、subagent/review、verification 和 Codex mapping 的现有 owner，�
 本 ADR 不授予 authoritative `GateDecision`、`PolicySnapshot`、evidence
 sufficiency 或 final completion authority。
 
+## 2026-08-27 修订：宿主绑定的 managed worktree
+
+### 修订证据
+
+- `GanyuanRan/Aegis#30` 证明：在 Codex Desktop 中，普通
+  `git worktree add` 可以创建有效 checkout，但当前 chat 仍绑定原来的
+  Local checkout；命令级 `workdir` 可以把写入导向新目录，却不会同步宿主 UI、
+  diff/review 状态或 task context。
+- OpenAI 当前公开文档把 Worktree 定义为由 ChatGPT desktop app 创建并与 chat
+  关联的 managed workspace，并通过 Worktree composer 或 Handoff 管理 Local 与
+  Worktree 之间的 chat/code 转移。命令行自行创建的 Git worktree 不等于该绑定。
+- 本 ADR 的原重审触发条件已经包含“主要 coding-agent host 提供可靠的原生临时
+  workspace 生命周期 owner”，因此本次修订扩展现有 owner，而不创建新的 ADR 或
+  第二套 Git lifecycle。
+
+### 修订决策
+
+当宿主明确提供 task/chat-bound managed workspace 语义时，worktree 创建不再只是
+Git 操作。原生 lifecycle operation 完成后、在结果 workspace 中首次写入任务内容或
+Git history 之前，必须验证一个联合后置条件：
+
+- 宿主可信上下文或原生生命周期操作返回的 task workspace；
+- 未使用命令级目录覆盖时的默认 command `cwd`；
+- intended Git worktree root；
+- intended `HEAD` 与 branch/detached state；
+
+以上状态必须指向同一执行环境。命令级 `workdir`、路径命名约定、
+`$CODEX_HOME/worktrees` 前缀或单独的 Git readback 都不能替代宿主绑定证据。
+Codex-managed worktree 默认使用 detached `HEAD`；当可信宿主证据明确证明这是当前
+managed workspace 的预期状态时，它满足上述 Git-state 条件，不触发通用的未知
+detached-HEAD 停止规则，也不应仅为“看起来正常”而自动创建 branch。来源不明的
+detached `HEAD` 仍然 fail closed。
+
+行为顺序如下：
+
+1. 已经绑定到合适 managed worktree 的 task 直接复用，并完成联合 readback；
+2. 需要新 checkout 且宿主提供原生生命周期时，优先使用当前实际暴露的原生
+   Worktree/Handoff 能力；具体工具名属于 host mapping，不进入 portable ADR；
+3. 原生能力只能由 UI 完成时，在任务内容或 Git history 首次写入前停止并给出宿主
+   操作入口；
+4. 宿主要求 managed binding、但能力不可用或联合状态不可验证时，fail closed；
+5. 宿主能力分类采用 `managed` / `non-managed` / `unknown` 三态；工具缺席或 metadata
+   缺失不能证明 `non-managed`，`unknown` 必须 fail closed；
+6. 只有可信宿主/session contract 明确把当前宿主或 CLI surface 分类为
+   `non-managed` 时才保留普通 `git worktree add` 路径，并继续执行原有 Git
+   ownership/readback；
+7. 已经存在但未绑定当前 task 的 manual worktree 一律保留；dirty、untracked 或
+   归属不明状态不得自动迁移、删除、stash、reset 或覆盖。
+
+这项修订不改变 current-branch-first 和“仅在并发 checkout 时创建 worktree”的
+必要性判断，只补齐 host workspace binding 的创建与首次任务写入后置条件。
+
+### 修订的兼容与退役边界
+
+- 退役 Codex Desktop managed-chat 场景中把
+  `git worktree add + command-level workdir` 当作完整 task isolation 的路径；
+- 将普通 Git fallback 作为被可信证据明确分类为 `non-managed` 的宿主兼容例外保留；
+- observation metric 是 host contract assertions 加实际 managed-worktree task
+  readback；逐宿主退休触发条件是该宿主提供可验证的原生 workspace binding；
+- 不新增 registry、daemon、host adapter、workspace truth owner 或后台清理逻辑；
+- 不把 host binding readback 提升为 authoritative completion authority。
+
+### 修订的 Baseline Sync
+
+本修订同步到：
+
+- `docs/current/AEGIS_PROCESS_BASELINE.md` 的 task-level Git lifecycle；
+- `skills/using-git-worktrees/SKILL.md` 的 portable 创建与 fail-closed 行为；
+- `skills/using-aegis/references/codex-tools.md` 和 `docs/README.codex.md` 的
+  Codex host projection；
+- `docs/current/AEGIS_KNOWN_LIMITATIONS.md` 与 host compatibility snapshot 的
+  environment-bound evidence 边界；
+- `tests/e2e/workflow-quality-check.sh` 的确定性契约检查。
+
 ## 重审触发条件
 
 出现以下任一情况时重审本决策：
 
 - 真实使用证据表明 current-branch-first 导致无法接受的误提交或历史污染；
-- Git 或主要 coding-agent host 提供可靠的原生临时 workspace 生命周期 owner；
+- 其他主要 coding-agent host 提供可靠的原生临时 workspace 生命周期 owner，且需要
+  把本次 Codex-specific 证据推广为新的 portable capability contract；
 - Aegis 演进出独立 runtime core，能够安全持有跨会话资源归属与回收状态；
 - 支持仓库普遍采用强制 branch/PR 策略，使当前分支优先不再是有效默认。

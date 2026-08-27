@@ -22,7 +22,7 @@ It does not answer:
 ## 2. Snapshot Date
 
 The current snapshot is based on fresh evidence and current docs landed as of
-`2026-07-23`.
+`2026-08-27`.
 
 ---
 
@@ -32,7 +32,7 @@ The current snapshot is based on fresh evidence and current docs landed as of
 
 | Host | Current Verdict | Evidence Owner |
 | --- | --- | --- |
-| `Codex` | Representative smoke mainline available; naive smoke under Git Bash still requires observation | `docs/testing.md`, `tests/skill-triggering/*`, `tests/explicit-skill-requests/*`, `docs/current/AEGIS_KNOWN_LIMITATIONS.md` |
+| `Codex` | Representative smoke mainline available; managed-worktree binding is structurally guarded, while live Desktop task-binding closeout and naive smoke under Git Bash still require observation | `docs/testing.md`, `tests/skill-triggering/*`, `tests/explicit-skill-requests/*`, `tests/e2e/workflow-quality-check.sh`, `docs/README.codex.md`, `docs/current/AEGIS_KNOWN_LIMITATIONS.md` |
 | `OpenCode` | Base suite and integration closeout passed | `docs/testing.md`, `tests/opencode/*`, `docs/README.opencode.md`; current mainline prefers the configured `method_pack_root` as the canonical Aegis body and treats the OpenCode-visible skills tree as a generated host view |
 
 ### 3.2 Hosts Without a Current Fresh Release Verdict
@@ -148,6 +148,12 @@ The current snapshot only states:
     compatibility alternatives without bundle bootstrap; exactly one Aegis
     exposure should be active, and structural catalog/bootstrap discovery is
     not a current live-routing verdict
+24. ChatGPT desktop app managed-worktree guidance now requires the task
+    workspace, default command `cwd`, Git worktree root, and intended `HEAD` to
+    agree before writes. External `git worktree add` plus command-level
+    `workdir` is not accepted as task binding. This is structural method-pack
+    coverage; the UI/task-binding matrix remains environment-bound evidence and
+    is tracked in `AEGIS_KNOWN_LIMITATIONS.md`.
 
 ---
 

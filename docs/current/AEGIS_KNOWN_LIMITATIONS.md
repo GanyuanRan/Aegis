@@ -800,6 +800,45 @@ request.
   showing that force-fit classification caused a misrepair, plus the same
   matrix-sample and validator evidence standard the existing six topologies met
 
+### 2.28 Codex Desktop Managed-Worktree Binding Still Needs Live Closeout
+
+**Retained Item**
+- Aegis now structurally requires native Worktree/Handoff behavior and a joint
+  task-workspace/default-`cwd`/Git-root/`HEAD` readback on ChatGPT desktop app
+  surfaces with managed workspaces
+- Deterministic contract checks can prove the guidance and fail-closed wording,
+  but they cannot observe the desktop UI's actual chat binding
+
+**Retention Reason**
+- `GanyuanRan/Aegis#30` demonstrated that `git worktree add` plus a
+  command-level `workdir` can leave a Codex Desktop chat bound to Local while
+  writes target another checkout
+- The native lifecycle may be exposed through the UI or a deferred host tool;
+  exact internal tool names are not treated as stable public contracts
+
+**Mitigation Today**
+- On a managed Desktop surface, use the native Worktree composer or Handoff,
+  then verify trusted task workspace, default command `cwd`, Git worktree root,
+  and intended `HEAD` before writes
+- If native binding is unavailable or unverifiable, fail closed and preserve
+  any manual worktree; missing tools/metadata leave the capability `unknown`
+  rather than enabling fallback. Codex CLI and other surfaces retain the
+  generic Git fallback only when trusted evidence positively classifies them as
+  `non-managed`
+
+**Observation Metric**
+- `tests/e2e/workflow-quality-check.sh` verifies the portable owner, Codex
+  projection, baseline sync, fail-closed rule, and generic-host compatibility
+- A real ChatGPT desktop app run must cover Local-to-Worktree creation or
+  Handoff, an already-bound Worktree chat, the default managed detached
+  `HEAD`, unavailable native operation, unknown capability classification, an
+  unbound manual worktree, and a workspace/`cwd`/Git/`HEAD` mismatch
+
+**Retirement Trigger**
+- Retire this limitation only after a fresh supported-version Desktop run
+  proves the full matrix and confirms that UI, default `cwd`, Git state, and
+  diff/review context stay bound to the same worktree
+
 ## 3. Default Reading Rule
 
 If a limitation appears simultaneously in README, host docs, or test descriptions, use this document as the current reading entry point.

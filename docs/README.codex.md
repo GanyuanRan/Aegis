@@ -77,6 +77,41 @@ Across hosts, this method-pack root is the canonical Aegis body. Discovery
 paths such as `~/.agents/skills/aegis` are generated host views into that same
 body rather than second editable copies.
 
+## Managed Worktrees in ChatGPT Desktop
+
+ChatGPT desktop app Codex chats can run in **Local** or **Worktree**
+environments. Start a new Worktree chat from the composer, or use the app's
+**Handoff** control to move an existing chat between Local and Worktree. Codex
+then owns the managed worktree/chat association and the Git transfer. See the
+official [OpenAI Worktrees documentation](https://learn.chatgpt.com/docs/environments/git-worktrees).
+
+Do not treat an external `git worktree add` plus a command-level `workdir` as
+equivalent. Git may create a valid checkout while the current chat, UI,
+diff/review state, and default command directory remain bound to Local.
+
+After the native Worktree/Handoff operation, or immediately on entry/reuse of
+an already-bound managed workspace, and before the first task content or
+Git-history write, Aegis expects all of these to agree:
+
+- the task workspace reported by trusted host/session context or a native
+  Worktree/Handoff result;
+- the command's default `cwd` without a per-command override;
+- the intended Git worktree root;
+- the intended `HEAD` and branch/detached state.
+
+Codex-managed worktrees start with a detached `HEAD` by default. That is valid
+when the native binding evidence and Git readback agree; an unexplained
+detached `HEAD` still stops work, and Aegis does not create a branch merely to
+normalize the managed state.
+
+If the native operation is available only in the UI, select Worktree or
+Handoff there and continue in the bound chat. If the binding cannot be
+verified, stop before writes instead of using a shell-created worktree as a
+fallback. Missing native tools or binding metadata are an unknown state, not
+proof that the surface is non-managed. Codex CLI and other surfaces may use
+Aegis's generic Git worktree path only when trusted session/host evidence
+positively identifies them as lacking chat-bound managed workspace semantics.
+
 ## Usage
 
 Skills are discovered automatically. Codex activates them when:
@@ -268,6 +303,21 @@ Optionally delete the clone: `rm -rf ~/.codex/aegis` (Windows: `Remove-Item -Rec
 2. Do not run the doctor command from the target project directory. From the method-pack root, run: `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
 3. Treat the install as complete only if the JSON reports `"workspaceSupport":
    "available"` and `"configStatus": "configured"`.
+
+### Worktree chat still shows Local
+
+If commands target another directory but the ChatGPT desktop app still shows
+Local or the original branch, stop before editing:
+
+1. Run a read-only Git inventory in both locations and preserve dirty,
+   untracked, or ownership-unknown state.
+2. Do not delete, stash, reset, or overwrite the manual worktree.
+3. Use the app's Worktree composer option or Handoff control.
+4. Continue only after the new chat's trusted workspace, default `cwd`, Git
+   root, and intended `HEAD` agree.
+
+A dirty manual worktree needs a separately authorized commit/patch transfer;
+verify the result inside the bound chat before considering cleanup.
 
 ### Windows junction issues
 

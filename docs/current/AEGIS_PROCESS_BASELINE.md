@@ -229,9 +229,11 @@ decision for task-level Git behavior:
 Before the first write, a modification workflow records a read-only
 `TaskStartSnapshot`: root, `HEAD`, branch/detached state, upstream divergence,
 staged/unstaged/untracked paths, active Git operations, existing worktrees, and
-the initial task-owned path boundary. The snapshot stays in current task state
-or an existing handoff/checkpoint; it does not create a new registry or repo
-artifact.
+the initial task-owned path boundary. When a host declares task/chat-bound
+managed workspace semantics, the snapshot also records trusted host workspace
+evidence and the command's default `cwd` without a per-command directory
+override. The snapshot stays in current task state or an existing
+handoff/checkpoint; it does not create a new registry or repo artifact.
 
 Current behavior rules:
 
@@ -254,6 +256,26 @@ Current behavior rules:
 - Aegis-created worktrees use an existing ignored project convention or an
   external user-level temporary location; worktree creation does not itself
   justify a `.gitignore` commit.
+- On a host surface with task-bound managed workspaces, native workspace
+  lifecycle wins over shell creation. After that lifecycle operation, or
+  immediately on entry/reuse of an already-bound managed workspace, and before
+  the first task content or Git-history write, the trusted task workspace,
+  default command `cwd`, intended Git worktree root, and intended `HEAD`/branch
+  state must agree. A command-level `workdir`, path convention, or Git readback
+  alone is not task-binding evidence.
+- Workspace/path comparison uses host-appropriate resolved identity rather than
+  raw string equality. The default `cwd` may be the worktree root or a
+  descendant, but Git invoked there must resolve to the intended worktree root.
+- An unexplained detached `HEAD` still stops work. A detached `HEAD` explicitly
+  identified by trusted host evidence as the intended managed-worktree state
+  satisfies the Git-state check; the workflow does not create a branch solely
+  to normalize that host-owned state.
+- If a managed binding is required but native creation/handoff is unavailable
+  or the joint postcondition cannot be verified, the workflow fails closed and
+  preserves any manual worktree. Classify the surface as `managed`,
+  `non-managed`, or `unknown`; missing tools or metadata do not prove
+  `non-managed`. Generic `git worktree add` remains available only when trusted
+  evidence positively identifies a host/CLI surface as `non-managed`.
 - Cleanup requires fresh ownership and integration evidence, supports
   merge/fast-forward and squash/rebase proof shapes, removes a worktree before
   its branch, and never force-cleans dirty, locked, unknown, or user-owned
