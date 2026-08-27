@@ -1,5 +1,34 @@
 # Aegis Release Notes
 
+## v2.8.9 (2026-08-27)
+
+### Bind managed worktrees to host tasks
+
+- Require native Worktree/Handoff lifecycle handling on host surfaces that
+  declare task- or chat-bound managed workspaces, with a joint readback proving
+  the trusted task workspace, default command `cwd`, Git worktree root, and
+  intended `HEAD`/branch state refer to the same environment.
+- Fail closed when managed-workspace capability is unavailable or unverifiable;
+  generic `git worktree add` remains available only when trusted host/session
+  evidence positively identifies a non-managed surface.
+- Preserve existing manual, dirty, untracked, or ownership-unknown worktrees;
+  do not silently migrate, stash, reset, overwrite, or delete them.
+- Handle Codex-managed worktrees' documented detached `HEAD` default safely,
+  while still stopping on an unexplained detached `HEAD`.
+- Add Codex host guidance, compatibility/known-limitation updates, and
+  deterministic contract checks covering managed binding, unknown capability,
+  CLI fallback compatibility, path identity, and fail-closed behavior.
+
+### Verification boundary
+
+- Fresh workflow-quality, skill-parser, boundary, governance, context-budget,
+  and Codex plugin-sync checks passed; the representative Codex skill-trigger
+  smoke also passed when rerun independently.
+- The required full E2E command was attempted. Layer 2, Layer 3, and governance
+  checks passed; Layer 1 retains the known environment-bound failure that the
+  offline Codex benchmark fixture is unsupported on this Windows/Git Bash
+  platform. This does not change the method-pack or host-authority claims.
+
 ## v2.8.8 (2026-08-24)
 
 ### Fix DeepSeek Harness GitHub installation over SSH
