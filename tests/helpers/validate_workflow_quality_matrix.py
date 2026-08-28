@@ -397,13 +397,25 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
         "signals": ["tdd-route-auto-light-or-skipped"],
     },
     "tdd-auto-risky-code-strict": {
-        "primary": "test-driven-development",
+        "primary": "writing-plans",
+        "allowed": [
+            "test-driven-development",
+            "systematic-debugging",
+            "verification-before-completion",
+        ],
         "must_not": [
             "skip-strict-tdd-route",
             "write-production-code-before-failing-test",
             "skip-producer-consumer-regression",
+            "treat-missing-explicit-tdd-request-as-light-evidence",
+            "start-tdd-before-planning-gate",
         ],
-        "signals": ["tdd-route-auto-strict"],
+        "signals": [
+            "planning-primary",
+            "tdd-route-auto-strict",
+            "recorded-auto-decision",
+        ],
+        "shapes": ["planning-route-auto-strict", "then-tdd-preflight"],
     },
     "tdd-off-no-automatic-tdd": {
         "primary": None,

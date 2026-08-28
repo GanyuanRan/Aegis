@@ -180,5 +180,50 @@ class KimiDoctorTests(unittest.TestCase):
                     doctor.validate_kimi_explicit_mode(root, kimi_home, selected)
 
 
+class CodexAgentsProjectionTests(unittest.TestCase):
+    def test_profile_content_encodes_auto_risk_and_invalid_light_boundary(self) -> None:
+        content = doctor.agents_md_profile_content(
+            "auto",
+            "auto",
+            doctor.AGENTS_MD_AUTO_CONTENT,
+        )
+        self.assertIn("Aegis TDD mode: auto", content)
+        self.assertIn("producer/consumer", content)
+        self.assertIn("Missing explicit TDD wording is never auto-light evidence", content)
+
+    def test_apply_agents_md_preserves_user_content_and_is_idempotent(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="aegis-codex-agents-") as tmp:
+            base = Path(tmp)
+            agents_path = base / "codex" / "AGENTS.md"
+            state_path = base / "config" / "agents-md-state.json"
+            agents_path.parent.mkdir(parents=True)
+            agents_path.write_text("# User guidance\n\nKeep this line.\n", encoding="utf-8")
+
+            first = doctor.apply_agents_md("auto", "auto", agents_path, state_path)
+            first_text = agents_path.read_text(encoding="utf-8")
+            second = doctor.apply_agents_md("auto", "auto", agents_path, state_path)
+            second_text = agents_path.read_text(encoding="utf-8")
+
+        self.assertTrue(first["migrated"])
+        self.assertFalse(second["migrated"])
+        self.assertEqual(first_text, second_text)
+        self.assertIn("# User guidance", second_text)
+        self.assertEqual(second_text.count(doctor.AGENTS_MD_BEGIN), 1)
+        self.assertEqual(second_text.count("Aegis TDD mode:"), 1)
+
+    def test_apply_agents_md_can_create_an_explicit_target(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="aegis-codex-agents-") as tmp:
+            base = Path(tmp)
+            agents_path = base / "codex" / "AGENTS.md"
+            state_path = base / "config" / "agents-md-state.json"
+            result = doctor.apply_agents_md("explicit", "off", agents_path, state_path)
+            content = agents_path.read_text(encoding="utf-8")
+
+        self.assertTrue(result["migrated"])
+        self.assertIsNone(result["backup"])
+        self.assertIn("仅在用户显式调用 Aegis", content)
+        self.assertIn("Aegis TDD mode: off", content)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -386,13 +386,13 @@
     {
       "id": "tdd-auto-risky-code-strict",
       "prompt": "TDD mode is auto. Implement a risky shared-module behavior fix that changes a contract between producer and consumer.",
-      "expectedPrimarySkill": "test-driven-development",
-      "allowedSecondarySkills": ["writing-plans", "systematic-debugging", "verification-before-completion"],
-      "mustNotDo": ["skip-strict-tdd-route", "write-production-code-before-failing-test", "skip-producer-consumer-regression", "treat-auto-as-off"],
-      "expectedOutputShape": "tdd-route-strict-plus-preflight-pre-edit-complexity-red-green-refactor",
+      "expectedPrimarySkill": "writing-plans",
+      "allowedSecondarySkills": ["test-driven-development", "systematic-debugging", "verification-before-completion"],
+      "mustNotDo": ["skip-strict-tdd-route", "write-production-code-before-failing-test", "skip-producer-consumer-regression", "treat-auto-as-off", "treat-missing-explicit-tdd-request-as-light-evidence", "start-tdd-before-planning-gate"],
+      "expectedOutputShape": "planning-route-auto-strict-recorded-auto-decision-then-tdd-preflight-pre-edit-complexity-red-green-refactor",
       "workspacePolicy": "workspace-if-medium-risk-or-plan-update-needed",
       "expectedArtifacts": ["EvidenceBundleDraft"],
-      "verificationSignal": "tdd-route-auto-strict-failing-test-first-producer-consumer-regression"
+      "verificationSignal": "planning-primary-tdd-route-auto-strict-recorded-auto-decision-failing-test-first-producer-consumer-regression"
     },
     {
       "id": "tdd-off-no-automatic-tdd",

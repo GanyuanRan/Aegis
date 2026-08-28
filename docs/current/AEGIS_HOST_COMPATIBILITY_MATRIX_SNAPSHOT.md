@@ -32,7 +32,7 @@ The current snapshot is based on fresh evidence and current docs landed as of
 
 | Host | Current Verdict | Evidence Owner |
 | --- | --- | --- |
-| `Codex` | Representative smoke mainline available; managed-worktree binding is structurally guarded, while live Desktop task-binding closeout and naive smoke under Git Bash still require observation | `docs/testing.md`, `tests/skill-triggering/*`, `tests/explicit-skill-requests/*`, `tests/e2e/workflow-quality-check.sh`, `docs/README.codex.md`, `docs/current/AEGIS_KNOWN_LIMITATIONS.md` |
+| `Codex` | Representative smoke mainline available; activation/TDD mode can be projected through the managed global `AGENTS.md` block while native matcher behavior remains host-owned; managed-worktree binding is structurally guarded, while live Desktop task-binding closeout and naive routing smoke under Git Bash still require observation | `docs/testing.md`, `tests/skill-triggering/*`, `tests/explicit-skill-requests/*`, `tests/e2e/aegis-doctor-check.sh`, `tests/e2e/workflow-quality-check.sh`, `docs/README.codex.md`, `docs/current/AEGIS_KNOWN_LIMITATIONS.md` |
 | `OpenCode` | Base suite and integration closeout passed | `docs/testing.md`, `tests/opencode/*`, `docs/README.opencode.md`; current mainline prefers the configured `method_pack_root` as the canonical Aegis body and treats the OpenCode-visible skills tree as a generated host view |
 
 ### 3.2 Hosts Without a Current Fresh Release Verdict

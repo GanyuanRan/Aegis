@@ -220,6 +220,7 @@ Minimum samples:
 | Explicit Aegis goal | `goal-framing` | `using-aegis`, `systematic-debugging` | Force full workflow or create workspace records by default |
 | Approved implementation plan | `writing-plans` or `executing-plans` | `test-driven-development` | Re-design without cause |
 | `TDD Mode = off` on a native-direct-skill host | `writing-plans`, `systematic-debugging`, or none | `verification-before-completion` | Infer strict TDD from risky wording alone |
+| `TDD Mode = auto` with behavior/shared/contract/persistence/permission/producer-consumer risk | `writing-plans` or `systematic-debugging` | `test-driven-development`, then `verification-before-completion` | Treat missing explicit TDD wording as light evidence; enter TDD before the owning planning/debugging gate |
 | Release or completion claim | `verification-before-completion` | `requesting-code-review` | Claim completion without evidence |
 | Repeated fixes / fallback growth | `systematic-debugging` | `first-principles-review` | Add another local patch |
 | Post-compaction bug continuation | `using-aegis` | `systematic-debugging`, `verification-before-completion` | Continue without re-entry |
@@ -231,6 +232,12 @@ Minimum samples:
 | Simple task under `activation_mode = "explicit"` on a native-direct-skill host (Codex) | none (fast path) | `using-aegis` only when explicitly invoked | Load doc/checklist skills by host semantic match; force full workflow |
 
 The matrix checks both false negatives and false positives.
+
+For TDD routing, trigger evidence and route evidence are separate. A host may
+correctly load `writing-plans` or `systematic-debugging` while the workflow
+still records an invalid route. Representative checks must inspect `Mode`,
+`Decision`, `Strict authority`, strict signals, and light eligibility instead
+of treating a `test-driven-development` skill-load marker as the whole result.
 
 The `explicit`-mode row above is a reverse sample verified on a real
 native-direct-skill host (Codex v0.146.0, 2026-08-06): with activation mode

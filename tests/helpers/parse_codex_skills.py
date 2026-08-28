@@ -23,6 +23,11 @@ POSIX_SHELL_COMMAND_PREFIX_RE = re.compile(
     re.IGNORECASE,
 )
 
+CMD_COMMAND_PREFIX_RE = re.compile(
+    r'''^\s*"[^"\r\n]*?cmd\.exe"\s+/(?:d\s+/)?c\s+["']''',
+    re.IGNORECASE,
+)
+
 SKILL_PATH_RE = re.compile(
     r"""(?<![A-Za-z0-9._-])skills
     (?:[\\/]+[A-Za-z0-9._-]+)*
@@ -107,6 +112,17 @@ def extract_skills_from_powershell_command(command_text: str) -> list[str]:
     return skills or extract_skills_from_foreach_read(command_text)
 
 
+def extract_skills_from_cmd_type(command_text: str) -> list[str]:
+    command_text = re.sub(r'''["']\s+in\s+.*$''', "", command_text)
+    skills: list[str] = []
+    for segment in re.split(r"\s*(?:&&|&)\s*", command_text):
+        invocation = segment.lstrip(" \t\"'")
+        if not re.match(r"type\b", invocation, re.IGNORECASE):
+            continue
+        skills.extend(match.group("skill") for match in SKILL_PATH_RE.finditer(invocation))
+    return skills
+
+
 def extract_skills_from_line(line: str) -> list[str]:
     command_prefix = POWERSHELL_COMMAND_PREFIX_RE.search(line)
     if command_prefix:
@@ -115,6 +131,10 @@ def extract_skills_from_line(line: str) -> list[str]:
     posix_prefix = POSIX_SHELL_COMMAND_PREFIX_RE.search(line)
     if posix_prefix:
         return extract_skills_from_posix_shell_read(line[posix_prefix.end() :])
+
+    cmd_prefix = CMD_COMMAND_PREFIX_RE.search(line)
+    if cmd_prefix:
+        return extract_skills_from_cmd_type(line[cmd_prefix.end() :])
 
     path_match = SKILL_PATH_LINE_RE.search(line)
     if path_match:

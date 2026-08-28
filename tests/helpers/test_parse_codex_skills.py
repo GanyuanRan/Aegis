@@ -194,6 +194,29 @@ class ParseCodexSkillsTests(unittest.TestCase):
         )
         self.assertEqual(MODULE.first_skill_load_line(lines, "brainstorming"), 2)
 
+    def test_extracts_windows_cmd_type_skill_loads(self) -> None:
+        lines = [
+            '"C:\\Windows\\system32\\cmd.exe" /c "type '
+            '.agents\\skills\\using-aegis\\SKILL.md && type '
+            '.agents\\skills\\brainstorming\\SKILL.md" in X:\\repo',
+        ]
+
+        self.assertEqual(
+            list(MODULE.iter_loaded_skills(lines)),
+            ["using-aegis", "brainstorming"],
+        )
+        self.assertEqual(MODULE.first_skill_load_line(lines, "brainstorming"), 1)
+
+    def test_ignores_windows_cmd_transcript_search_noise(self) -> None:
+        lines = [
+            '42:"C:\\Windows\\system32\\cmd.exe" /c "type '
+            '.agents\\skills\\brainstorming\\SKILL.md" in X:\\repo',
+            '"C:\\Windows\\system32\\cmd.exe" /c "findstr /n '
+            'brainstorming transcript.log" in X:\\repo',
+        ]
+
+        self.assertEqual(list(MODULE.iter_loaded_skills(lines)), [])
+
     def test_ignores_posix_transcript_search_noise(self) -> None:
         lines = [
             "42:/bin/bash -lc \"sed -n '1,40p' "

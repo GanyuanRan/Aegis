@@ -192,14 +192,35 @@ after load:
 - Manual rollback: restore the backup file, e.g.
   `Copy-Item "$env:USERPROFILE\.codex\AGENTS.md.bak-aegis-<ts>" "$env:USERPROFILE\.codex\AGENTS.md"`.
 
-TDD mode defaults to `off`. `AEGIS_TDD_MODE=auto` or
-`aegis-doctor.py tdd-mode auto` enables Aegis-side automatic TDD route
-semantics, but this does not directly control Codex's native matcher. Keep the
+TDD mode defaults to `off`. For Codex, configure the mode and make it visible
+in the next Codex instruction chain with:
+
+```bash
+python scripts/aegis-doctor.py tdd-mode auto --agents-md ~/.codex/AGENTS.md
+```
+
+PowerShell:
+
+```powershell
+python scripts/aegis-doctor.py tdd-mode auto --agents-md "$env:USERPROFILE\.codex\AGENTS.md"
+```
+
+The command writes the shared Aegis config and creates or updates the managed
+Aegis routing block in Codex's global `AGENTS.md`. If that file already exists,
+plain `aegis-doctor.py tdd-mode auto` also updates the managed block. Use
+`--no-agents-md` for config-only or hook-host setup.
+
+This projection gives Aegis workflows a stable, model-visible mode at Codex
+session start, but it does not directly control Codex's native matcher. Keep the
 `test-driven-development` trigger narrow, anchored to literal conversation
 markers such as `TDD Route: strict`, `strict TDD`, `test-first`, or
 `RED / GREEN / REFACTOR`, and rely on explicit invocation or
-`using-aegis`-selected strict-route work instead of expecting the environment
-variable alone to suppress or force every automatic TDD load. If Codex loads
+the source-edit-owning Aegis workflow to record `TDD Route: strict` instead of
+expecting an environment variable alone to suppress or force every automatic
+TDD load. In `auto`, any behavior, bugfix, shared/core, contract, persistence,
+permission, migration, producer/consumer, or meaningful regression signal
+requires `strict`; missing explicit user TDD wording is never evidence for
+`light`. If Codex loads
 the skill without those markers while TDD mode is `off`, the skill should exit
 back to non-TDD routing rather than starting RED by inference.
 

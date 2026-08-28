@@ -49,6 +49,17 @@ echo ""
 # Copy prompt for reference
 cp "$PROMPT_FILE" "$OUTPUT_DIR/prompt.txt"
 
+if [ "$TEST_CLI" = "codex" ]; then
+    PROJECT_DIR="$OUTPUT_DIR/project"
+    mkdir -p "$PROJECT_DIR/.agents/skills"
+    cp -R "$PLUGIN_DIR/skills/using-aegis" "$PROJECT_DIR/.agents/skills/using-aegis"
+    if [ "$SKILL_NAME" != "using-aegis" ] && [ -d "$PLUGIN_DIR/skills/$SKILL_NAME" ]; then
+        cp -R "$PLUGIN_DIR/skills/$SKILL_NAME" "$PROJECT_DIR/.agents/skills/$SKILL_NAME"
+    fi
+else
+    PROJECT_DIR="$PLUGIN_DIR"
+fi
+
 # Run Claude
 if [ "$TEST_CLI" = "codex" ]; then
     LOG_FILE="$OUTPUT_DIR/codex-output.log"
@@ -60,7 +71,7 @@ cd "$OUTPUT_DIR"
 echo "Plugin dir: $PLUGIN_DIR"
 if [ "$TEST_CLI" = "codex" ]; then
     echo "Running Codex CLI with naive prompt..."
-    run_codex_exec_capture "$PROMPT" "$PLUGIN_DIR" "$LOG_FILE"
+    run_codex_exec_capture "$PROMPT" "$PROJECT_DIR" "$LOG_FILE"
 else
     echo "Running Claude CLI with naive prompt..."
     run_claude_stream_json_with_plugin_dir "$PROMPT" "$PLUGIN_DIR" "$MAX_TURNS" "$LOG_FILE"

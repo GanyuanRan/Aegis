@@ -53,14 +53,30 @@ semantic matcher by itself. For an explicit-only Codex setup, keep Aegis skills
 available for direct calls and avoid installing an automatic entry profile that
 asks Codex to start every conversation with Aegis.
 
-TDD mode defaults to `off`. `AEGIS_TDD_MODE=auto` or
-`aegis-doctor.py tdd-mode auto` enables Aegis-side automatic TDD route
-semantics, but this does not directly control Codex's native matcher. Keep the
+TDD mode defaults to `off`. For Codex, enable automatic route selection and
+project the mode into the next Codex instruction chain with:
+
+```bash
+python scripts/aegis-doctor.py tdd-mode auto --agents-md ~/.codex/AGENTS.md
+```
+
+PowerShell:
+
+```powershell
+python scripts/aegis-doctor.py tdd-mode auto --agents-md "$env:USERPROFILE\.codex\AGENTS.md"
+```
+
+This creates or updates only the managed Aegis routing block while preserving
+existing user guidance. Use `--no-agents-md` for config-only or hook-host
+setup. The projection makes the current mode visible to Aegis workflows, but
+it does not directly control Codex's native matcher. Keep the
 `test-driven-development` trigger narrow, anchored to literal conversation
 markers such as `TDD Route: strict`, `strict TDD`, `test-first`, or
 `RED / GREEN / REFACTOR`, and rely on explicit invocation or
-`using-aegis`-selected strict-route work instead of expecting the environment
-variable alone to suppress or force every automatic TDD load. If Codex loads
+the source-edit-owning workflow to record strict-route work instead of
+expecting the environment variable alone to suppress or force every automatic
+TDD load. Missing explicit user TDD wording is never evidence for `light` in
+`auto`. If Codex loads
 the skill without those markers while TDD mode is `off`, the skill should exit
 back to non-TDD routing rather than starting RED by inference.
 

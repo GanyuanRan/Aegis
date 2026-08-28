@@ -108,6 +108,27 @@ AGENTS_MD_AUTO_CONTENT = (
 )
 
 
+def agents_md_profile_content(
+    activation_mode: str,
+    tdd_mode: str,
+    original_routing_block: str,
+) -> str:
+    routing = (
+        AGENTS_MD_EXPLICIT_CONTENT
+        if activation_mode == "explicit"
+        else original_routing_block.rstrip()
+    )
+    tdd_projection = (
+        f"Aegis TDD mode: {tdd_mode}. "
+        "off selects skipped unless strict is explicitly requested while preserving "
+        "proportional verification; auto requires strict for any behavior, bugfix, shared/core, "
+        "contract, persistence, permission, migration, producer/consumer, or "
+        "meaningful regression signal. Missing explicit TDD wording is never "
+        "auto-light evidence."
+    )
+    return f"{routing}\n\n{tdd_projection}"
+
+
 def default_agents_md_path() -> Path:
     return Path.home() / ".codex" / "AGENTS.md"
 
@@ -133,7 +154,12 @@ def agents_md_block_bounds(text: str) -> tuple[int, int]:
     end = text.find(AGENTS_MD_END, start)
     if end < 0:
         raise DoctorError("AGENTS.md has AEGIS-ROUTING-BEGIN without AEGIS-ROUTING-END")
-    return start, end + len(AGENTS_MD_END)
+    end += len(AGENTS_MD_END)
+    if text.startswith("\r\n", end):
+        end += 2
+    elif text.startswith("\n", end):
+        end += 1
+    return start, end
 
 
 def agents_md_wrap(content: str) -> str:
@@ -160,21 +186,28 @@ def agents_md_routing_bounds(text: str, feature_idx: int) -> tuple[int, int]:
     return start, end
 
 
-def apply_agents_md(mode: str, path: Path, state_path: Path) -> dict[str, object]:
+def apply_agents_md(
+    activation_mode: str,
+    tdd_mode: str,
+    path: Path,
+    state_path: Path,
+) -> dict[str, object]:
     """Manage the Aegis routing block in the Codex user AGENTS.md.
 
     Migration on first use, then block replacement only. Raises DoctorError
     before any write on failure so the caller keeps config write atomic.
     """
-    if not path.is_file():
-        return {"agentsMd": "skipped", "reason": "no-agents-md-file"}
-    original = path.read_text(encoding="utf-8")
+    original = path.read_text(encoding="utf-8") if path.is_file() else ""
     state = read_agents_md_state(state_path)
     start, end = agents_md_block_bounds(original)
 
     if start < 0:
         feature_idx = original.find(AGENTS_MD_ROUTING_FEATURE)
-        if feature_idx < 0:
+        if not original:
+            auto_content = AGENTS_MD_AUTO_CONTENT
+            new_text = agents_md_wrap(auto_content)
+            state["original_routing_block"] = auto_content
+        elif feature_idx < 0:
             auto_content = AGENTS_MD_AUTO_CONTENT
             block_text = agents_md_wrap(auto_content)
             new_text = original.rstrip() + "\n\n" + block_text + "\n"
@@ -185,10 +218,12 @@ def apply_agents_md(mode: str, path: Path, state_path: Path) -> dict[str, object
             block_text = agents_md_wrap(auto_content)
             new_text = original[:block_start] + block_text + original[block_end:]
             state["original_routing_block"] = auto_content
-        backup_path = path.with_name(f"{path.name}.bak-aegis-{int(time.time())}")
-        backup_path.write_text(original, encoding="utf-8")
+        backup_path = None
+        if original:
+            backup_path = path.with_name(f"{path.name}.bak-aegis-{int(time.time())}")
+            backup_path.write_text(original, encoding="utf-8")
         state["agents_md_path"] = path.as_posix()
-        state["backup"] = backup_path.as_posix()
+        state["backup"] = backup_path.as_posix() if backup_path else None
         write_agents_md_state(state_path, state)
         original = new_text
         start, end = agents_md_block_bounds(original)
@@ -196,22 +231,25 @@ def apply_agents_md(mode: str, path: Path, state_path: Path) -> dict[str, object
     else:
         migrated = False
 
-    if mode == "explicit":
-        inner = AGENTS_MD_EXPLICIT_CONTENT
-    else:
-        inner = state.get("original_routing_block")
-        if not isinstance(inner, str) or not inner.strip():
-            raise DoctorError(
-                "AGENTS.md routing block exists but agents-md state has no original text; "
-                "restore from backup or manage manually"
-            )
+    original_routing_block = state.get("original_routing_block")
+    if not isinstance(original_routing_block, str) or not original_routing_block.strip():
+        raise DoctorError(
+            "AGENTS.md routing block exists but agents-md state has no original text; "
+            "restore from backup or manage manually"
+        )
+    inner = agents_md_profile_content(
+        activation_mode,
+        tdd_mode,
+        original_routing_block,
+    )
     new_text = original[:start] + agents_md_wrap(inner) + original[end:]
     if "\r\n" in original:
         new_text = new_text.replace("\n", "\r\n")
     write_text_lf(path, new_text)
     return {
         "agentsMd": "updated",
-        "mode": mode,
+        "activationMode": activation_mode,
+        "tddMode": tdd_mode,
         "migrated": migrated,
         "backup": state.get("backup"),
         "reason": None,
@@ -520,7 +558,21 @@ def activation_mode_result(args: argparse.Namespace) -> dict[str, object]:
         raise DoctorError(f"Aegis workspace helper unavailable: {helper}")
     agents_md: dict[str, object] = {"agentsMd": "skipped", "reason": "disabled"}
     if not getattr(args, "no_agents_md", False):
-        agents_md = apply_agents_md(mode, default_agents_md_path(), agents_md_state_path())
+        agents_path = Path(args.agents_md).expanduser() if args.agents_md else default_agents_md_path()
+        if args.agents_md or agents_path.is_file():
+            state_path = (
+                Path(args.agents_md_state).expanduser()
+                if args.agents_md_state
+                else agents_md_state_path()
+            )
+            agents_md = apply_agents_md(
+                mode,
+                existing_tdd_mode(config_path),
+                agents_path,
+                state_path,
+            )
+        else:
+            agents_md = {"agentsMd": "skipped", "reason": "no-agents-md-file"}
     write_config(config_path, root, helper, mode)
     return {
         "ok": True,
@@ -549,6 +601,23 @@ def tdd_mode_result(args: argparse.Namespace) -> dict[str, object]:
         raise DoctorError("tdd-mode requires one of: auto, off")
     if not helper.is_file():
         raise DoctorError(f"Aegis workspace helper unavailable: {helper}")
+    agents_md: dict[str, object] = {"agentsMd": "skipped", "reason": "disabled"}
+    if not getattr(args, "no_agents_md", False):
+        agents_path = Path(args.agents_md).expanduser() if args.agents_md else default_agents_md_path()
+        if args.agents_md or agents_path.is_file():
+            state_path = (
+                Path(args.agents_md_state).expanduser()
+                if args.agents_md_state
+                else agents_md_state_path()
+            )
+            agents_md = apply_agents_md(
+                existing_activation_mode(config_path),
+                mode,
+                agents_path,
+                state_path,
+            )
+        else:
+            agents_md = {"agentsMd": "skipped", "reason": "no-agents-md-file"}
     write_config(config_path, root, helper, tdd_mode=mode)
     return {
         "ok": True,
@@ -557,6 +626,9 @@ def tdd_mode_result(args: argparse.Namespace) -> dict[str, object]:
         "configPath": config_path.as_posix(),
         "methodPackRoot": root.as_posix(),
         "workspaceHelper": helper.as_posix(),
+        "agentsMd": agents_md.get("agentsMd"),
+        "agentsMdReason": agents_md.get("reason"),
+        "agentsMdBackup": agents_md.get("backup"),
         "restartRequired": True,
         "note": (
             "TDD mode controls automatic test-first discipline only; "
@@ -861,6 +933,14 @@ def print_text(result: dict[str, object]) -> None:
     if result.get("command") == "tdd-mode":
         print(f"Aegis TDD mode set to {result['tddMode']}.")
         print(f"Config path: {result['configPath']}")
+        agents_md = result.get("agentsMd")
+        if agents_md == "updated":
+            print("Codex AGENTS.md TDD mode projection updated.")
+            backup = result.get("agentsMdBackup")
+            if backup:
+                print(f"Backup: {backup}")
+        elif agents_md == "skipped" and result.get("agentsMdReason") != "disabled":
+            print(f"AGENTS.md management skipped ({result['agentsMdReason']}).")
         print("Restart or start a new host session for the change to take effect.")
         print("TDD mode controls automatic test-first discipline; verification-before-completion still applies.")
         return
@@ -923,7 +1003,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--no-agents-md",
         action="store_true",
-        help="skip Codex AGENTS.md routing-block management in activation-mode (config only)",
+        help="skip Codex AGENTS.md routing-block management in activation-mode or tdd-mode",
+    )
+    parser.add_argument(
+        "--agents-md",
+        help="Codex AGENTS.md path for activation-mode or tdd-mode; defaults to ~/.codex/AGENTS.md",
+    )
+    parser.add_argument(
+        "--agents-md-state",
+        help="Aegis AGENTS.md state path; defaults to ~/.config/aegis/agents-md-state.json",
     )
     parser.add_argument(
         "--kimi-home",
@@ -936,6 +1024,14 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     try:
+        if args.no_agents_md and (args.agents_md or args.agents_md_state):
+            raise DoctorError("--no-agents-md cannot be combined with --agents-md or --agents-md-state")
+        if args.command not in {"activation-mode", "tdd-mode"} and (
+            args.no_agents_md or args.agents_md or args.agents_md_state
+        ):
+            raise DoctorError(
+                "AGENTS.md management options are only valid with activation-mode or tdd-mode"
+            )
         if args.command == "helper-path":
             if args.mode:
                 raise DoctorError("mode is only valid with activation-mode or tdd-mode commands")

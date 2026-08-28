@@ -839,6 +839,41 @@ request.
   proves the full matrix and confirms that UI, default `cwd`, Git state, and
   diff/review context stay bound to the same worktree
 
+### 2.29 Native-Skill TDD Routing Remains Model-Mediated
+
+**Retained Item**
+- Codex can receive the selected Aegis TDD mode through the managed global
+  `AGENTS.md` projection, and Aegis workflows now reject unsupported
+  `auto/light` records before source edits
+- Codex's native skill matcher and the model's method-layer route selection
+  remain host/model behavior rather than an authoritative Aegis runtime gate
+
+**Retention Reason**
+- Static contracts and deterministic projection tests can prove that the mode,
+  owner rules, invalid-state guards, and downstream consumers agree
+- They cannot prove that every model run under every context-pressure shape
+  will obey the method guidance; absolute prevention would require a future
+  runtime-core or host-adapter gate outside this repository's current boundary
+
+**Mitigation Today**
+- Project `tdd_mode` into Codex `AGENTS.md`, keep the TDD skill's native trigger
+  narrow, select the route in the workflow that first authorizes source edits,
+  and reject missing or unsupported `auto` decisions during plan execution
+- Score live smoke on the structured TDD route record, not only on whether the
+  TDD skill appeared
+
+**Observation Metric**
+- `bash tests/e2e/tdd-policy-check.sh`
+- `bash tests/e2e/aegis-doctor-check.sh`
+- `bash tests/e2e/workflow-quality-check.sh`
+- repeated Codex route smoke covering auto/high-risk, auto/tiny, off/high-risk,
+  and off/explicit-strict cases
+
+**Retirement Trigger**
+- Retire only when a supported runtime/host boundary can enforce route validity
+  before source-edit tools, or repeated live evidence establishes an approved
+  replacement boundary without claiming method-pack runtime authority
+
 ## 3. Default Reading Rule
 
 If a limitation appears simultaneously in README, host docs, or test descriptions, use this document as the current reading entry point.

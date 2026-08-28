@@ -70,6 +70,25 @@ Notes:
 - The Codex smoke runner verifies skill loading by looking for `<skill>/SKILL.md` reads in the CLI transcript.
 - This is a minimal host-native smoke matrix for the currently approved Wave 1 + Wave 2 skills. It does not replace the deeper Claude transcript checks used elsewhere in this document.
 
+### Codex TDD Route Smoke
+
+The TDD route smoke checks the structured route decision rather than treating a
+skill-load marker as proof that `auto` selected the correct discipline. Run it
+from the release-candidate checkout:
+
+```bash
+AEGIS_TDD_ROUTE_REPETITIONS=3 bash tests/skill-triggering/run-tdd-route-tests.sh
+```
+
+It covers auto/high-risk, auto/tiny, off/high-risk, and off/explicit-strict
+cases. Each case uses a temporary project `AGENTS.md` projection plus a
+project-local copy of the current checkout's minimum relevant skills, and
+prohibits implementation writes. This prevents a stale global install from
+standing in for the release candidate. It is an environment-bound model smoke:
+authentication, the Codex version, and the selected model must be reported with
+the result. Static CI remains responsible for the portable policy and
+projection contracts.
+
 ### OpenCode Compatibility Review Tests
 
 For the current `Aegis` compatibility review, the OpenCode suite runs in two layers:

@@ -176,7 +176,7 @@ or release-level host closeout.
 
 ## Activation Mode
 
-mode, the Aegis bundle defers a compact `using-aegis` bootstrap to the first
+In `auto` mode, the Aegis bundle defers a compact `using-aegis` bootstrap to the first
 durable promotion signal (`tool/call` or `assistant/message`) after each native
 session start, resume, clear, and compact boundary, keeping the first model
 request of every gated epoch free of injected context. It skips subagent

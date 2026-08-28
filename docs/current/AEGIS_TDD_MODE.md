@@ -91,6 +91,57 @@ unless an explicit user/project strict request overrides it. Do not infer
 In `auto`, when implementation risk is clear and behavior needs regression
 protection, choose `strict`.
 
+Route precedence is explicit:
+
+1. A current user/project instruction that explicitly requires strict or
+   test-first TDD selects `strict`.
+2. A higher-priority current instruction that explicitly forbids TDD blocks
+   strict TDD, but does not weaken proportional regression or completion
+   verification.
+3. In `off`, select `skipped` unless rule 1 applies.
+4. In `auto`, any strict-risk signal selects `strict`. Strict signals use OR
+   semantics: one supported signal is enough.
+5. `light` is valid only when the task is tiny, low-risk, single-owner, has no
+   behavior change or strict-risk signal, and has an obvious focused check.
+   Light eligibility uses AND semantics: every condition must hold.
+6. If the task or risk boundary is still unknown, return to clarification,
+   debugging, or planning. Unknown is not evidence for `light`.
+
+In `auto`, absence of an explicit user TDD request is never evidence for
+`light`. A high-risk implementation where strict TDD is currently infeasible
+must use a supported `skipped` exception with the blocker and compensating
+verification recorded; it must not be relabeled `light`.
+
+### 3.1 Route Ownership And Consumption
+
+The workflow that first authorizes production-source edits owns route
+selection for that slice:
+
+- `using-aegis` may select the route for a direct low-complexity slice;
+- `writing-plans` selects it before decomposing planned implementation work;
+- `systematic-debugging` selects it after Change Necessity and before the
+  first repair edit;
+- `executing-plans`, `test-driven-development`, and subagent workflows consume
+  and validate the recorded route; they do not silently reclassify it.
+
+An invalid or missing `auto` decision returns to the selecting workflow. It
+must not be repaired as `light` merely to keep execution moving.
+
+Every implementation route record uses this shape:
+
+```text
+TDD Route:
+- Mode: auto | off
+- Decision: strict | light | skipped
+- Strict authority: explicit user/project request | recorded auto decision | not applicable
+- Strict signals:
+- Light eligibility:
+- TDD-fit exception:
+- Test posture: diagnostic reproduction | post-change regression | strict RED test
+- Reason:
+- Verification:
+```
+
 When business behavior, acceptance, success evidence, or user-visible
 completion is unclear, route to `brainstorming` or `writing-plans` before TDD.
 
@@ -141,6 +192,13 @@ Read priority:
 
 Restart, reload, or open a new host session after changing the mode. Existing
 host sessions usually do not inherit changed environment variables or config.
+
+On Codex's native-direct-skill path, the Aegis config file is not itself a
+model-facing instruction source. Use the Codex host guide's `--agents-md`
+command shape to project the selected mode into the managed Aegis block in
+Codex's global `AGENTS.md`. That projection makes the mode visible to the
+method workflow; it does not control the host's semantic skill matcher or grant
+runtime authority. Generic hook-host configuration may use `--no-agents-md`.
 
 ## 5. Boundary
 

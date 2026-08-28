@@ -1,5 +1,43 @@
 # Aegis Release Notes
 
+## v2.9.0 (2026-08-28)
+
+### Make Codex automatic TDD routing fail closed
+
+- Fix issue #32 by defining `auto` routing as strict-risk OR semantics and
+  light-eligibility AND semantics. Any behavior, bugfix, shared/core, contract,
+  persistence, permission, migration, producer/consumer, or meaningful
+  regression signal now requires `strict`; missing explicit TDD wording is
+  never evidence for `light`.
+- Assign route selection to the workflow that first authorizes production
+  source edits. Planning and debugging owners record the decision, while plan
+  execution and TDD workflows validate and consume it instead of silently
+  reclassifying unsupported `auto` records.
+- Project the selected TDD mode into the managed Aegis block in Codex's global
+  `AGENTS.md`, preserving existing user guidance and keeping native semantic
+  matching host-owned. Add idempotency and explicit-target creation coverage.
+- Correct the high-risk workflow fixture so planning owns the initial route,
+  then hands a recorded automatic strict decision to TDD. Add deterministic
+  invalid-light guards and an environment-bound four-case Codex route smoke.
+- Update Codex installation guidance, compatibility evidence, trigger-health
+  expectations, testing instructions, and the retained model-mediated routing
+  limitation without claiming runtime-core authority.
+- The manually copied English and Chinese global routing prefixes remain valid
+  because they delegate detailed TDD policy to the loaded skill. Codex users
+  enabling `auto` should rerun the documented `aegis-doctor.py tdd-mode auto
+  --agents-md ...` command and start a fresh session to refresh the managed
+  projection.
+
+### Verification boundary
+
+- Fresh doctor, TDD-policy, workflow-quality, activation, boundary, Codex
+  plugin-sync, skill-parser, focused unit checks, candidate-local skill
+  triggering, and the four-case live Codex route smoke passed.
+- The full E2E release command was attempted. The remaining failure is the
+  existing agentic benchmark harness on Windows because its active-run
+  supervisor requires POSIX facilities such as `fcntl`; other failures found
+  during that run were repaired and rerun directly.
+
 ## v2.8.9 (2026-08-27)
 
 ### Bind managed worktrees to host tasks

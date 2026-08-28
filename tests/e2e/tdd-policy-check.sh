@@ -60,7 +60,7 @@ assert_contains "$using_aegis" "contract|cross-module|shared module|core logic" 
     "using-aegis routes contract and cross-module changes into TDD"
 assert_contains "$using_aegis" "Classify before implementation" \
     "using-aegis classifies task complexity before implementation"
-assert_contains "$using_aegis" "TDD: off=no auto route/load; auto=strict/light/skipped; explicit request applies" \
+assert_contains "$using_aegis" "TDD: off=no auto route/load \\(skipped unless explicit strict\\); auto any" \
     "using-aegis makes TDD routing mode-specific instead of unconditional"
 assert_contains "$using_aegis" "Medium/high: baseline read-set[[:space:]]*\\+ plan" \
     "using-aegis prevents medium/high-complexity work from entering TDD first"
@@ -95,6 +95,14 @@ assert_contains "$tdd_mode_doc" "strict RED test" \
     "TDD mode doc names strict RED as the only production-edit gate"
 assert_contains "$tdd_mode_doc" "approved implementation plan does not itself authorize" \
     "TDD mode doc rejects plan approval as strict authority"
+assert_contains "$tdd_mode_doc" "Strict signals use OR" \
+    "TDD mode doc makes strict risk signals disjunctive"
+assert_contains "$tdd_mode_doc" "Light eligibility uses AND" \
+    "TDD mode doc requires every light eligibility condition"
+assert_contains "$tdd_mode_doc" "absence of an explicit user TDD request is never evidence" \
+    "TDD mode doc rejects the issue 32 invalid auto-light rationale"
+assert_contains "$tdd_mode_doc" "first authorizes production-source edits owns route" \
+    "TDD mode doc defines the route-selection owner boundary"
 assert_contains "$tdd_mode_doc" "native skill discovery|semantic matcher" \
     "TDD mode doc records native skill discovery boundary"
 assert_contains "$codex_guide" "TDD mode defaults to.*off|default.*off" \
@@ -184,10 +192,18 @@ assert_contains "$writing_plans_skill" "INDEX.md" \
     "writing-plans records workspace initialization steps"
 assert_contains "$writing_plans_skill" "TDD Route Guard" \
     "writing plans require a TDD route review before decomposition"
-assert_contains "$writing_plans_skill" "An approved plan, bug label, architecture risk" \
+assert_contains "$writing_plans_skill" "An approved plan or a risk label alone is not" \
     "writing plans reject plan approval and risk labels as strict authority"
+assert_contains "$writing_plans_skill" "Absence of an explicit user TDD request is never evidence" \
+    "writing plans reject missing explicit TDD wording as auto-light evidence"
+assert_contains "$systematic_debugging_skill" "own the TDD Route for" \
+    "systematic debugging owns repair route selection before edits"
 assert_contains "$executing_plans_skill" "Run the TDD Route Guard before implementation" \
     "plan execution checks route authority before following task steps"
+assert_contains "$executing_plans_skill" "recorded auto" \
+    "plan execution accepts recorded auto strict authority"
+assert_not_contains "$executing_plans_skill" "Strict steps require recorded explicit" \
+    "plan execution retires explicit-only strict authority wording"
 assert_contains "$executing_plans_skill" "Do not infer.*strict.*during execution" \
     "plan execution returns missing strict authority to review"
 assert_contains "$executing_plans_skill" "missing record may be repaired only as" \
@@ -198,6 +214,10 @@ assert_contains "$process_baseline" "TDD Mode" \
     "process baseline documents TDD Mode"
 assert_contains "$process_baseline" "TDD Mode controls test-first discipline, not completion evidence" \
     "process baseline separates TDD mode from completion evidence"
+assert_contains "scripts/aegis-doctor.py" "Aegis TDD mode:" \
+    "doctor projects TDD mode into Codex AGENTS.md"
+assert_contains "scripts/aegis-doctor.py" "Missing explicit TDD wording is never" \
+    "Codex projection rejects missing explicit wording as auto-light evidence"
 
 if (( failures > 0 )); then
     echo ""

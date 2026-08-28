@@ -46,6 +46,8 @@ ACTIVATION_TEXT_OUT="$TMP_ROOT/activation-mode.txt"
 ACTIVATION_JSON_OUT="$TMP_ROOT/activation-mode.json"
 TDD_TEXT_OUT="$TMP_ROOT/tdd-mode.txt"
 TDD_JSON_OUT="$TMP_ROOT/tdd-mode.json"
+CODEX_AGENTS_MD="$TMP_ROOT/codex-home/AGENTS.md"
+CODEX_AGENTS_STATE="$TMP_ROOT/aegis-home/agents-md-state.json"
 PRESERVE_CONFIG_PATH="$TMP_ROOT/preserve-config.toml"
 KIMI_AUTO_HOME="$TMP_ROOT/kimi-auto-home"
 KIMI_AUTO_OS_HOME="$TMP_ROOT/kimi-auto-os-home"
@@ -53,6 +55,9 @@ KIMI_EXPLICIT_HOME="$TMP_ROOT/kimi-explicit-home"
 KIMI_EXPLICIT_OS_HOME="$TMP_ROOT/kimi-explicit-os-home"
 
 DOCTOR="$REPO_ROOT/scripts/aegis-doctor.py"
+
+mkdir -p "$(dirname "$CODEX_AGENTS_MD")"
+printf '%s\n' '# Existing user guidance' '' '- Preserve this line.' >"$CODEX_AGENTS_MD"
 
 echo "=== Aegis Doctor Check ==="
 
@@ -149,15 +154,25 @@ fi
 assert_contains "$TMP_ROOT/discovery-stale.txt" "stale compatibility exposure" \
     "doctor stale compatibility failure reports exposure drift"
 
-"${PYTHON_CMD[@]}" "$DOCTOR" activation-mode explicit --config "$CONFIG_PATH" >"$ACTIVATION_TEXT_OUT"
+"${PYTHON_CMD[@]}" "$DOCTOR" activation-mode explicit --config "$CONFIG_PATH" \
+    --agents-md "$CODEX_AGENTS_MD" --agents-md-state "$CODEX_AGENTS_STATE" \
+    >"$ACTIVATION_TEXT_OUT"
 assert_contains "$ACTIVATION_TEXT_OUT" "Aegis activation mode set to explicit" \
     "activation-mode text command sets explicit mode"
 assert_contains "$ACTIVATION_TEXT_OUT" "Restart or start a new host session" \
     "activation-mode text command states restart boundary"
 assert_contains "$CONFIG_PATH" "activation_mode = \"explicit\"" \
     "activation-mode command writes explicit mode"
+assert_contains "$CODEX_AGENTS_MD" "# Existing user guidance" \
+    "activation-mode preserves existing Codex AGENTS.md content"
+assert_contains "$CODEX_AGENTS_MD" "仅在用户显式调用 Aegis" \
+    "activation-mode projects explicit Aegis routing"
+assert_contains "$CODEX_AGENTS_MD" "Aegis TDD mode: off" \
+    "activation-mode projects the current TDD mode"
 
-"${PYTHON_CMD[@]}" "$DOCTOR" activation-mode auto --config "$CONFIG_PATH" --json >"$ACTIVATION_JSON_OUT"
+"${PYTHON_CMD[@]}" "$DOCTOR" activation-mode auto --config "$CONFIG_PATH" --json \
+    --agents-md "$CODEX_AGENTS_MD" --agents-md-state "$CODEX_AGENTS_STATE" \
+    >"$ACTIVATION_JSON_OUT"
 assert_contains "$ACTIVATION_JSON_OUT" '"ok": true' "activation-mode JSON reports ok"
 assert_contains "$ACTIVATION_JSON_OUT" '"activationMode": "auto"' "activation-mode JSON reports auto mode"
 assert_contains "$ACTIVATION_JSON_OUT" '"restartRequired": true' "activation-mode JSON reports restart boundary"
@@ -165,8 +180,14 @@ assert_contains "$CONFIG_PATH" "activation_mode = \"auto\"" \
     "activation-mode command writes auto mode"
 assert_contains "$CONFIG_PATH" "tdd_mode = \"off\"" \
     "activation-mode command preserves default off TDD mode"
+assert_contains "$CODEX_AGENTS_MD" "每轮开始先判断是否有相关 Aegis skill" \
+    "activation-mode restores automatic Aegis routing"
+assert_contains "$CODEX_AGENTS_MD" "Aegis TDD mode: off" \
+    "activation-mode auto preserves the projected TDD mode"
 
-"${PYTHON_CMD[@]}" "$DOCTOR" tdd-mode off --config "$CONFIG_PATH" >"$TDD_TEXT_OUT"
+"${PYTHON_CMD[@]}" "$DOCTOR" tdd-mode off --config "$CONFIG_PATH" \
+    --agents-md "$CODEX_AGENTS_MD" --agents-md-state "$CODEX_AGENTS_STATE" \
+    >"$TDD_TEXT_OUT"
 assert_contains "$TDD_TEXT_OUT" "Aegis TDD mode set to off" \
     "tdd-mode text command sets off mode"
 assert_contains "$TDD_TEXT_OUT" "verification-before-completion still applies" \
@@ -175,13 +196,39 @@ assert_contains "$CONFIG_PATH" "tdd_mode = \"off\"" \
     "tdd-mode command writes off mode"
 assert_contains "$CONFIG_PATH" "activation_mode = \"auto\"" \
     "tdd-mode command preserves activation mode"
+assert_contains "$CODEX_AGENTS_MD" "Aegis TDD mode: off" \
+    "tdd-mode off projects the mode into Codex AGENTS.md"
+assert_contains "$CODEX_AGENTS_MD" "off selects skipped unless strict is explicitly requested" \
+    "tdd-mode off projects the normalized skipped decision"
 
-"${PYTHON_CMD[@]}" "$DOCTOR" tdd-mode auto --config "$CONFIG_PATH" --json >"$TDD_JSON_OUT"
+"${PYTHON_CMD[@]}" "$DOCTOR" tdd-mode auto --config "$CONFIG_PATH" --json \
+    --agents-md "$CODEX_AGENTS_MD" --agents-md-state "$CODEX_AGENTS_STATE" \
+    >"$TDD_JSON_OUT"
 assert_contains "$TDD_JSON_OUT" '"ok": true' "tdd-mode JSON reports ok"
 assert_contains "$TDD_JSON_OUT" '"tddMode": "auto"' "tdd-mode JSON reports auto mode"
 assert_contains "$TDD_JSON_OUT" '"restartRequired": true' "tdd-mode JSON reports restart boundary"
+assert_contains "$TDD_JSON_OUT" '"agentsMd": "updated"' "tdd-mode JSON reports Codex projection update"
 assert_contains "$CONFIG_PATH" "tdd_mode = \"auto\"" \
     "tdd-mode command writes auto mode"
+assert_contains "$CODEX_AGENTS_MD" "Aegis TDD mode: auto" \
+    "tdd-mode auto projects the mode into Codex AGENTS.md"
+assert_contains "$CODEX_AGENTS_MD" "Missing explicit TDD wording is never auto-light evidence" \
+    "Codex projection rejects the issue 32 invalid auto-light rationale"
+
+if [[ "$(grep -cF '<!-- AEGIS-ROUTING-BEGIN -->' "$CODEX_AGENTS_MD")" == "1" ]] \
+    && [[ "$(grep -cF 'Aegis TDD mode:' "$CODEX_AGENTS_MD")" == "1" ]]; then
+    pass "Codex AGENTS.md projection remains idempotent"
+else
+    fail "Codex AGENTS.md projection remains idempotent"
+fi
+
+CREATED_AGENTS_MD="$TMP_ROOT/new-codex-home/AGENTS.md"
+CREATED_AGENTS_STATE="$TMP_ROOT/new-aegis-home/agents-md-state.json"
+"${PYTHON_CMD[@]}" "$DOCTOR" tdd-mode off --config "$TMP_ROOT/new-config.toml" \
+    --agents-md "$CREATED_AGENTS_MD" --agents-md-state "$CREATED_AGENTS_STATE" \
+    >/dev/null
+assert_contains "$CREATED_AGENTS_MD" "Aegis TDD mode: off" \
+    "tdd-mode creates a managed Codex AGENTS.md projection when missing"
 
 mkdir -p "$KIMI_AUTO_HOME/plugins" "$KIMI_AUTO_OS_HOME"
 "${PYTHON_CMD[@]}" - "$KIMI_AUTO_HOME/plugins/installed.json" "$REPO_ROOT" <<'PY'

@@ -20,9 +20,15 @@ Bug, failure, or unexpected behavior:
    boundaries are involved. Surface Change Necessity for any new source-code
    path or non-trivial source edit. Run Minimality Check for a new branch,
    fallback, adapter, owner, or compatibility path, and Pre-Edit Complexity
-   Check for an overloaded owner or complexity growth.
+   Check for an overloaded owner or complexity growth. After Change Necessity
+   selects `code-change` and before the first repair edit, own the TDD Route for
+   the repair slice: `off` skips automatic TDD; `auto` selects `strict` on any
+   behavior, bugfix, shared/core, contract, persistence, permission, migration,
+   producer/consumer, or meaningful regression signal. `light` requires every
+   tiny/low-risk/single-owner/no-behavior-change condition; missing explicit
+   user TDD wording is never auto-light evidence.
 4. **Prove** — test one hypothesis with the smallest reproduction or
-   verification. A failing test first is required only by an explicit
+   verification. A failing test first is required only by a recorded
    `TDD Route: strict`; with `TDD Mode: off`, do not require a failing test or
    RED/GREEN cycle. Three failed fixes means stop and question architecture.
 5. **Repair and close** — fix minimally at the canonical owner, verify in
