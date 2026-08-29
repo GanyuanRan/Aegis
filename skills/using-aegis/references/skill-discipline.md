@@ -160,8 +160,8 @@ of reclassifying it.
 
 In `auto`, strict-risk signals use OR semantics. Behavior, bugfix, shared/core,
 contract, persistence, permission, migration, producer/consumer, or meaningful
-regression risk each independently require `strict`. `light` uses AND
-semantics: tiny, low-risk, single-owner, no behavior change or strict signal,
+regression risk each independently require `strict`. `light` uses AND semantics:
+tiny, low-risk, single-owner, no behavior change or strict signal,
 and an obvious focused check must all hold. Absence of an explicit user TDD
 request is never evidence for `light`. Unknown risk returns to the owning
 workflow; a TDD-fit exception records `skipped` plus compensating verification,

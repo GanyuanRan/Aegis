@@ -60,8 +60,8 @@ assert_contains "$using_aegis" "contract|cross-module|shared module|core logic" 
     "using-aegis routes contract and cross-module changes into TDD"
 assert_contains "$using_aegis" "Classify before implementation" \
     "using-aegis classifies task complexity before implementation"
-assert_contains "$using_aegis" "TDD: off=no auto route/load \\(skipped unless explicit strict\\); auto any" \
-    "using-aegis makes TDD routing mode-specific instead of unconditional"
+assert_contains "$using_aegis" "TDD: off=no auto[[:space:]]+route/load; auto=risk-based strict/light/skipped; explicit strict applies" \
+    "using-aegis keeps only the compact mode-specific TDD route"
 assert_contains "$using_aegis" "Medium/high: baseline read-set[[:space:]]*\\+ plan" \
     "using-aegis prevents medium/high-complexity work from entering TDD first"
 assert_contains "$using_aegis" "Spec Brief or Design Spec only" \
@@ -74,6 +74,10 @@ assert_contains "$discipline_ref" "TDD is the implementation discipline.*atomic 
     "discipline reference keeps TDD after planning for medium/high-complexity work"
 assert_contains "$discipline_ref" "TDD Route" \
     "discipline reference documents TDD Route"
+assert_contains "$discipline_ref" "strict-risk signals use OR semantics" \
+    "discipline reference owns strict auto-route detail"
+assert_contains "$discipline_ref" "light.*AND semantics" \
+    "discipline reference owns light auto-route detail"
 assert_contains "$discipline_ref" "work/YYYY-MM-DD-<slug>" \
     "discipline reference details task-scoped workspace records"
 
