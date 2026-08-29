@@ -1,5 +1,41 @@
 # Aegis Release Notes
 
+## v2.9.1 (2026-08-29)
+
+### Faster startup routing with unchanged governance coverage
+
+- Reduce the `using-aegis` startup router from 3,434 to 2,712 bytes, bringing
+  the hot path back below the approved 2,800-byte target.
+- Keep startup routing focused on selecting the primary workflow owner and
+  defer detailed strict/light TDD semantics to the existing on-demand
+  `skill-discipline.md` reference.
+- Explicitly keep explanation-only and read-only diagnosis tasks outside
+  implementation, TDD, and write gates, reducing unnecessary routing work for
+  high-reasoning Codex sessions.
+- Preserve goal framing, brainstorming, debugging, change-necessity,
+  task-snapshot, architecture-review, workspace, evidence-hygiene, and
+  traceability contracts through deterministic regression coverage.
+- Restore the context-budget thresholds to the approved 2,800-byte warning and
+  3,200-byte hard-fail limits, removing test-to-baseline drift.
+- After updating or reinstalling Aegis, start a fresh host session so cached or
+  copied skill views do not retain the previous router. No manual global
+  routing-prefix migration is required.
+
+### Verification boundary
+
+- Context-budget, TDD-policy, manifest JSON, diff, and Codex plugin-sync checks
+  passed. The startup router is 2,712 bytes against the approved 2,800-byte
+  target.
+- The required full E2E command was attempted. Governance completion, Layer 2,
+  and Layer 3 passed; Layer 1 retained the known environment-bound limitation
+  that the offline Codex benchmark fixture is unsupported on this Windows/Git
+  Bash platform.
+- The two representative Codex routing smokes initially stopped before routing
+  because the restricted Windows sandbox could not resolve the Codex home.
+  Both the natural and explicit `brainstorming` cases passed when rerun through
+  the host boundary, loading `using-aegis` and `brainstorming` from the release
+  candidate.
+
 ## v2.9.0 (2026-08-28)
 
 ### Make Codex automatic TDD routing fail closed
