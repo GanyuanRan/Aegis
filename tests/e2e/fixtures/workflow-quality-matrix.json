@@ -787,6 +787,17 @@
       "verificationSignal": "architecture-integrity-lens-invariant-canonical-owner-contract-responsibility-overlap-higher-level-path-retirement-falsifier-verdict"
     },
     {
+      "id": "bounded-preservation-multi-role-repair",
+      "prompt": "A parent result ID overwrites a child object ID. Fix child selection quickly, but the same parent ID may also be a legitimate target in another demand. Decide what responsibility retires without assuming all preserved behavior can be discovered.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": ["first-principles-review"],
+      "mustNotDo": ["patch-precedence-without-role-check", "delete-parent-selector-capability", "claim-exhaustive-preserved-behavior", "turn-preservation-reminder-into-runtime-gate"],
+      "expectedOutputShape": "symptom-reproduction-root-cause-bounded-preservation-fix-boundary-repair-retirement",
+      "workspacePolicy": "workspace-only-if-medium-risk-or-process-trail-needed",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "bounded-preservation-evidence-backed-behavior-highest-risk-counterexample-material-unknown-role-before-value-invalid-responsibility-retired-legitimate-capability-retained-advisory-not-authority"
+    },
+    {
       "id": "baseline-role-alignment-review",
       "prompt": "A recurring small i18n task keeps using many skills and tools for tiny edits. Review whether this is a requirements-baseline gap, architecture-baseline gap, design defect, or implementation drift before proposing changes.",
       "expectedPrimarySkill": "brainstorming",

@@ -98,6 +98,16 @@ Decision: fix owner | continue investigation | escalate
 A locally green test does not erase triage. Before unplanned repair, compare
 invariant, owner, patch shape, and topology; a renamed carrier is not a new direction.
 
+When a repair changes identity, selector, precedence, scope, or role binding
+and one value may serve multiple roles, name the evidence-backed behavior to
+preserve, highest-risk counterexample, and material unknown before patching.
+Bind role before value; retire invalid responsibility, not separately
+evidenced carrier capability. This bounded, risk-triggered reminder is not a
+universal behavior matrix or exhaustive discovery claim. It does not create
+an artifact, add a TDD risk signal, or expand regression scope. Resolve the
+configured/default TDD mode through the existing route owner: `off` skips
+automatic TDD, while `auto` still selects from the existing signals above.
+
 If the diagnosis crosses L3, a patch-shape signal fires, a user disputes the
 root claim, a prior fix leaves a symptom, compound/root topology is plausible,
 two or more anchored manifestations of one incident exist, reproduction
@@ -133,7 +143,8 @@ Minimality Check:
 - Existing owner / reuse path:
 - Correct owner and bug class:
 - New path and existence proof:
-- Old path retired or scheduled:
+- Invalid responsibility retired or scheduled:
+- Legitimate capability on the same carrier retained, if any:
 - Verdict: sufficient repair | local patch | needs first-principles review
 ```
 
@@ -211,7 +222,8 @@ affected downstream path. Records are advisory, not completion authority.
 Always report:
 
 - **Repair** — cause, owner, smallest change, compatibility, verification.
-- **Retirement** — old path status, retention reason/trigger, removal check.
+- **Retirement** — invalid responsibility status, carrier/capability
+  disposition, retention reason/trigger, removal check.
 
 Confirm the reproduction, same-pattern handling, authority, complexity, and
 retirement. Confidence: A = direct regression evidence; B = strong evidence

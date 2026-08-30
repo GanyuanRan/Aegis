@@ -658,6 +658,32 @@ assert_contains "skills/first-principles-review/SKILL.md" "Architecture Integrit
     "first-principles review owns architecture integrity lens"
 assert_contains "skills/first-principles-review/SKILL.md" "Higher-level simplification" \
     "first-principles review checks higher-level simplification"
+assert_contains "skills/first-principles-review/SKILL.md" "Bounded preservation reminder" \
+    "first-principles review uses bounded preservation only when direction risk warrants it"
+assert_contains "skills/first-principles-review/SKILL.md" "Role-before-value" \
+    "first-principles review checks role ambiguity before interpreting a repeated value"
+assert_contains "skills/first-principles-review/SKILL.md" "Which invalid authority retires" \
+    "first-principles review retires responsibility without deleting a legitimate capability"
+assert_contains "skills/first-principles-review/SKILL.md" "universal artifact or an exhaustive behavior inventory" \
+    "first-principles review keeps bounded preservation lightweight and advisory"
+assert_contains "skills/systematic-debugging/SKILL.md" "identity.*selector.*precedence.*scope.*role binding" \
+    "systematic debugging triggers bounded preservation for multi-role behavior risk"
+assert_contains "skills/systematic-debugging/SKILL.md" "highest-risk.*counterexample.*unknown|counterexample.*unknown.*uninspected" \
+    "systematic debugging exposes the strongest preservation falsifier and unknown boundary"
+assert_contains "skills/systematic-debugging/SKILL.md" "retire invalid responsibility" \
+    "systematic debugging retires invalid responsibility without deleting a valid carrier"
+assert_contains "skills/systematic-debugging/SKILL.md" "universal behavior matrix or exhaustive discovery claim" \
+    "systematic debugging keeps preservation checking lightweight and bounded"
+assert_contains "skills/systematic-debugging/SKILL.md" "artifact, add a TDD risk signal, or expand regression scope" \
+    "bounded preservation does not escalate method-pack execution ceremony"
+assert_contains "skills/systematic-debugging/SKILL.md" "automatic TDD, while.*auto.*existing signals" \
+    "bounded preservation preserves the existing TDD route owner and configured mode"
+assert_contains "skills/anti-entropy-governance/SKILL.md" "Retirement is responsibility-scoped before it is carrier-scoped" \
+    "anti-entropy classifies invalid responsibility before deleting its carrier"
+assert_contains "skills/anti-entropy-governance/SKILL.md" "delete-first.*carrier once no legitimate responsibility remains" \
+    "anti-entropy preserves delete-first after legitimate carrier roles are excluded"
+assert_contains "skills/anti-entropy-governance/SKILL.md" "this is not a compatibility exception" \
+    "a separately evidenced valid role is not mislabeled as compatibility debt"
 assert_contains "skills/test-driven-development/SKILL.md" "Pre-Edit Complexity Check" \
     "test-driven-development includes pre-edit complexity check"
 assert_contains "skills/test-driven-development/SKILL.md" "Pre-Edit Owner-Fit Decision" \

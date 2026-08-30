@@ -36,7 +36,11 @@ Must answer:
 
 ### 3.2 Retirement Track
 
-The default behavior of the Retirement Track is to delete old logic; retention requires explicit justification.
+The default behavior of the Retirement Track is to remove obsolete or
+duplicated responsibility. Delete its carrier when no legitimate capability
+remains; retention still requires explicit justification, but a carrier that
+serves a separately evidenced valid role is not obsolete merely because one
+of its authorities is retired.
 
 Execution order:
 
@@ -44,17 +48,23 @@ Execution order:
 2. **Effectiveness Check**: Is it still active on the main chain
    - If already inactive → record that local fact, then continue to step 3
    - If still active → continue to step 3
-3. **Boundary Check**: Classify internal code, proven active external
+3. **Responsibility Check**: Name the invalid authority / responsibility being
+   retired and any separately evidenced legitimate role that the same carrier
+   still serves
+4. **Boundary Check**: Classify internal code, proven active external
    dependencies, and proven distribution whose consumers cannot be observed
-4. **Default Operation**: For internal code or a resolved safe boundary, delete
-5. **Exception** (only when verified dependency blockage prevents deletion):
+5. **Default Operation**: For internal code or a resolved safe boundary,
+   remove the obsolete responsibility and delete the carrier only when no
+   legitimate capability remains
+6. **Exception** (only when verified dependency blockage prevents deletion):
    - Record: retained object, retention reason, observation metrics, retirement timing
    - Re-evaluate during the current slice's Pre-Delivery Review
-6. **External-Unknown Hold**: Proven distribution with unobservable consumers
+7. **External-Unknown Hold**: Proven distribution with unobservable consumers
    is neither dependency proof nor safe-deletion proof. Use the existing
    `confirmation-first` path, not permanent compatibility or a fourth path;
    inventory read-only and require scoped post-disclosure confirmation before editing
-7. **Verification**: After deletion, old logic is no longer active and no lingering references remain
+8. **Verification**: The retired responsibility is no longer active; when its
+   carrier was deleted, no lingering references remain
 
 ---
 
@@ -91,7 +101,11 @@ It can:
 
 - Organize analysis and delivery structure
 - Require explicit retirement plans
+- Distinguish retiring an invalid responsibility from deleting a carrier that
+  may still serve a legitimate role
 
 It cannot:
 
 - Overstep to replace the authoritative decision of a future runtime core
+- Claim exhaustive discovery of implicit consumers or complete behavioral
+  lineage

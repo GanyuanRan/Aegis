@@ -89,6 +89,9 @@ Escalate from the five-line review when any of these risk signals appear:
   principles", or "Occam"
 - a plan could encode the wrong owner, abstraction, compatibility boundary, or
   retirement schedule
+- one explicit value, identifier, path, or event may have different roles
+  across objectives or scopes, and a proposed repair could remove a legitimate
+  role while retiring an invalid global authority
 
 Use this compact shape:
 
@@ -97,6 +100,12 @@ First-principles invariants:
 - Non-negotiable goal:
 - Non-negotiable constraints:
 - Historical assumptions to delete:
+
+Bounded preservation reminder:
+- Evidence-backed behavior that must remain correct:
+- Highest-risk counterexample:
+- Material unknown / uninspected surface:
+- Role-before-value ambiguity, if any:
 
 Owner / retirement matrix:
 - New canonical owner:
@@ -143,8 +152,17 @@ Architecture Integrity Lens:
 - Responsibility overlap: What duplicate owner, caller-side patch, fallback, or stale path might still carry real logic?
 - Higher-level simplification: Can the problem be solved at the owner / contract / source-of-truth layer instead of by another local branch?
 - Retirement / falsifier: What old path retires, or what evidence would disprove this architecture judgment?
+- Responsibility / capability boundary: Which invalid authority retires, and
+  does the same carrier still serve a separately evidenced legitimate role?
 - Verdict: proceed | revise design | split owner | return to baseline | needs ADR/baseline sync
 ```
+
+`Bounded preservation reminder` is a risk-triggered reasoning aid, not a
+universal artifact or an exhaustive behavior inventory. Inspect the smallest
+relevant contract, consumer, test, or history evidence; state material unknowns
+instead of claiming semantic completeness. The Method Pack does not build
+authoritative input lineage, calculate complete behavior coverage, or issue a
+runtime gate.
 
 Do not run this lens for every low-risk task. If it does not change the
 decision surface, return to the active workflow immediately.

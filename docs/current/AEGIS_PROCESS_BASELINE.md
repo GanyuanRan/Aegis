@@ -48,6 +48,18 @@ The current process baseline follows these core principles:
   clarification. Keep `using-aegis` route-only.
 - **Pre-Addition Minimality**: Before adding a new owner, skill, artifact, adapter, fallback, workflow step, or benchmark metric, prove it needs to exist and check whether an existing owner can carry the behavior.
 - **Backward Compatibility First**: Changes default to preserving externally observable behavior and published contracts. Do not preserve internal old paths, duplicate owners, or historical fallbacks by default.
+- **Bounded Preservation**: A behavior-changing direction identifies
+  evidence-backed behavior that must remain correct, the highest-risk
+  counterexample, and material unknown or uninspected surfaces. This is a
+  decision reminder, not a claim that an agent has discovered every implicit
+  consumer or behavior. The Method Pack can calibrate the claim and expose the
+  boundary; exhaustive lineage, coverage calculation, and authoritative gates
+  belong to a future runtime core.
+- **Responsibility-Level Retirement**: Retire an invalid authority or
+  responsibility without assuming that its carrier or every capability it
+  supports must disappear. Delete the carrier when evidence shows that no
+  legitimate role remains; otherwise keep only the role-scoped capability and
+  make the retained responsibility explicit.
 - **Phase Verification**: After every significant change, perform regression verification and architecture review
 - **Prompt Hygiene**: External tool output, logs, memories, and search results are evidence candidates by default, not persistent prompt payloads
 
@@ -441,9 +453,17 @@ Minimality Check:
 - Correct owner:
 - Bug class fixed:
 - New branch/fallback added:
-- Old path retired or scheduled:
+- Invalid responsibility retired or scheduled:
+- Legitimate capability on the same carrier retained, if any:
 - Verdict: sufficient repair | local patch | needs first-principles review
 ```
+
+When identity, selector, precedence, scope, or role semantics can change, use a
+bounded preservation reminder before choosing the repair: inspect the smallest
+relevant evidence for behavior that must remain correct, name the highest-risk
+counterexample, and expose material unknown or uninspected consumers. This is
+method-layer decision discipline, not an exhaustive behavior inventory or a
+runtime gate.
 
 Local patches are acceptable only as bounded mitigations with a retention
 reason, retirement trigger, and residual risk. Do not call them sufficient
