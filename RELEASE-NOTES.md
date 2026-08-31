@@ -1,5 +1,42 @@
 # Aegis Release Notes
 
+## v2.9.2 (2026-08-31)
+
+### Preserve valid roles while retiring invalid responsibility
+
+- Add a bounded preservation reminder for changes involving identity,
+  selectors, precedence, scope, or role binding: name evidence-backed behavior
+  that must remain correct, the highest-risk counterexample, and material
+  unknown or uninspected surfaces before choosing the repair.
+- Make role-before-value reasoning explicit when the same identifier, path, or
+  event can serve different objectives or demands.
+- Refine dual-track governance so retirement first removes obsolete authority
+  or responsibility, while a carrier with a separately evidenced legitimate
+  role keeps only that role-scoped capability.
+- Avoid assuming that an agent can discover every implicit consumer or preserved
+  behavior. The reminder calibrates the claim and exposes uncertainty instead
+  of creating an exhaustive behavior inventory.
+- Keep the method lightweight: bounded preservation creates no universal
+  artifact, new TDD risk signal, automatic regression-scope expansion, or
+  authoritative runtime gate.
+- Add deterministic workflow-quality coverage for multi-role repairs, invalid
+  responsibility retirement, legitimate capability preservation, and the
+  method-pack/runtime-core boundary.
+
+### Verification boundary
+
+- Fresh workflow-quality, boundary-compliance, governance-completion,
+  Codex-skill-parser, Codex plugin-sync, and version-audit checks passed.
+- The required full E2E command was attempted through Git Bash. Governance
+  completion, Layer 2, and Layer 3 passed; Layer 1 passed 39 checks and retained
+  two environment-bound failures: the offline Codex benchmark fixture is
+  unsupported on this Windows platform, and the nested Codex smoke sandbox
+  could not start PowerShell (`Windows error 5`).
+- The same natural `brainstorming` smoke succeeded when rerun through the host
+  boundary without the nested sandbox restriction: Codex loaded
+  `brainstorming/SKILL.md` from the release candidate and returned the
+  workflow's expected first step.
+
 ## v2.9.1 (2026-08-29)
 
 ### Faster startup routing with unchanged governance coverage
