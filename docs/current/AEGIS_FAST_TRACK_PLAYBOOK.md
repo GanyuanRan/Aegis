@@ -290,8 +290,8 @@ Bundle the current work evidence and check the workspace before closeout.
 ```
 
 The helper-backed lifecycle uses commands such as `init`, `new-work`,
-`add-checkpoint`, `add-baseline-usage`, `add-evidence`, `add-drift-check`,
-`bundle`, and `check`. A complete host install must retain access to the
+`add-checkpoint`, `add-baseline-usage`, `add-attempt`, `add-evidence`,
+`add-drift-check`, `bundle`, and `check`. A complete host install must retain access to the
 installed method-pack helper; skill discovery alone does not prove workspace
 support.
 

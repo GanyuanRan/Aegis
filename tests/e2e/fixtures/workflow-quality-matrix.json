@@ -1126,6 +1126,17 @@
       "workspacePolicy": "no-workspace",
       "expectedArtifacts": [],
       "verificationSignal": "git-diff-check-or-targeted-readback"
+    },
+    {
+      "id": "failed-verification-retry-convergence",
+      "prompt": "The same long-task slice keeps failing verification. Keep a bounded resumable workspace without treating every failed run as a new slice or formal evidence.",
+      "expectedPrimarySkill": "long-task-continuation",
+      "allowedSecondarySkills": ["systematic-debugging", "verification-before-completion"],
+      "mustNotDo": ["create-new-slice-per-failed-attempt", "append-formal-evidence-per-retry", "commit-attempt-telemetry-as-normal-work"],
+      "expectedOutputShape": "bounded-slice-attempt-record-then-terminal-evidence",
+      "workspacePolicy": "work-records-when-resumable",
+      "expectedArtifacts": ["docs/aegis/work/<date-slug>/evidence-bundle-draft-<slice-id>.json", "docs/aegis/work/<date-slug>/20-checkpoint.md", "docs/aegis/work/<date-slug>/90-evidence.md"],
+      "verificationSignal": "one-slice-one-terminal-evidence-bundle-after-bounded-failed-attempts"
     }
   ],
   "compactOutputContracts": {

@@ -4,5 +4,16 @@
   "type": "document-and-test-bootstrap",
   "source": "repo workspace",
   "summary": "Bootstrap slice aligns authority docs and adds runnable Layer 1 plus planned Layer 2/3 owners.",
-  "verifier": "manual repo readback"
+  "verifier": "manual repo readback",
+  "sliceId": "phase5-bootstrap",
+  "evidenceStatus": "evidence-finalized",
+  "attemptSummary": {
+    "total": 1,
+    "attempted": 1,
+    "failed": 0,
+    "blocked": 0,
+    "lastAttemptId": "attempt-1"
+  },
+  "attempts": [],
+  "updatedAt": "2026-05-03"
 }

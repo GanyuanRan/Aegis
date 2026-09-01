@@ -56,6 +56,7 @@ target project's `docs/aegis/work/YYYY-MM-DD-<slug>/` directory:
 ```bash
 python <aegis-workspace-helper> new-work --root <target-project-root> ...
 python <aegis-workspace-helper> add-checkpoint --root <target-project-root> --work YYYY-MM-DD-<slug> ...
+python <aegis-workspace-helper> add-attempt --root <target-project-root> --work YYYY-MM-DD-<slug> ...
 python <aegis-workspace-helper> add-evidence --root <target-project-root> --work YYYY-MM-DD-<slug> ...
 python <aegis-workspace-helper> add-drift-check --root <target-project-root> --work YYYY-MM-DD-<slug> ...
 python <aegis-workspace-helper> bundle --root <target-project-root> --work YYYY-MM-DD-<slug>
@@ -181,6 +182,27 @@ Required fields:
 - `source`
 - `summary`
 - `verifier`
+
+Optional retry-convergence fields:
+
+- `sliceId`
+- `evidenceStatus`
+- `attemptSummary`
+- `attempts`
+- `updatedAt`
+
+Allowed `evidenceStatus` values:
+
+- `attempted`
+- `evidence-finalized`
+- `blocked`
+- `abandoned`
+- `superseded`
+
+`attempted` is a non-terminal diagnostic state. `bundle` includes only
+`evidence-finalized`, `blocked`, and `abandoned`; `superseded` is excluded.
+Failed verification retries must reuse the same `sliceId` and `add-attempt`
+instead of creating a new evidence sidecar.
 
 Current owner:
 

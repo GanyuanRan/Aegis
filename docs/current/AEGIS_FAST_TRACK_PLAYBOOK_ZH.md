@@ -266,7 +266,7 @@ docs/aegis/
 ```
 
 helper-backed 生命周期提供 `init`、`new-work`、`add-checkpoint`、
-`add-baseline-usage`、`add-evidence`、`add-drift-check`、`bundle` 与 `check`。
+`add-baseline-usage`、`add-attempt`、`add-evidence`、`add-drift-check`、`bundle` 与 `check`。
 完整宿主安装必须保留对已安装 method-pack helper 的访问；仅发现 skills 不能证明
 工作区支持完整可用。
 

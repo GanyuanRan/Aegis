@@ -710,6 +710,10 @@ Pass criteria:
 - successful modification tasks create one local commit per coherent task or
   verifiable/revertible slice; micro-steps, read-only tasks, no-change tasks,
   failed verification, and `no commit` do not create normal commits
+- failed verification retries converge to one slice and one bounded attempt
+  record; terminal evidence is not appended per retry
+- a diff limited to `docs/aegis/` process records does not invalidate or
+  restart completed business-code verification
 - a single coordinating agent owns staging, commit, branch, and worktree
   mutation; same-task subagents share the workspace and do not race Git state
 - branch creation requires real history divergence; automatic worktree creation
@@ -1198,6 +1202,7 @@ BaselineUsageDraft: required refs, acknowledged refs, cited refs, missing refs, 
 Slice Card: goal, parent plan/spec, files, boundary, verification, stop
 Execution Readiness View: re-read or refresh when resuming a medium/high parent plan or handoff-prone workstream
 Evidence: command/file/log refs
+Process Artifact Pressure: active slice, retry count, terminal evidence state, convergence-stop
 DriftCheckDraft: scope, compatibility, retirement, decision
 Risk / Unknown: blockers or missing evidence
 Next: next smallest safe action

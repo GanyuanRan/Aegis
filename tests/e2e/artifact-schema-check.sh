@@ -151,6 +151,15 @@ for filename, fields in expected.items():
             failures.append(
                 f"{filename}: decision must not be an authoritative completion value"
             )
+    if filename == "evidence-bundle-draft.sample.json":
+        if data.get("evidenceStatus") not in {"evidence-finalized", "blocked", "abandoned", "superseded"}:
+            failures.append(
+                f"{filename}: evidenceStatus must be a terminal advisory value"
+            )
+        if not isinstance(data.get("sliceId"), str) or not data.get("sliceId"):
+            failures.append(
+                f"{filename}: evidence sample should include a stable sliceId"
+            )
     if filename == "task-intent-draft.sample.json":
         for optional_goal_field in ("goal", "successEvidence", "stopCondition", "nonGoals"):
             if optional_goal_field not in data:

@@ -34,8 +34,11 @@ for pattern in \
     "<aegis-workspace-helper> new-work" \
     "<aegis-workspace-helper> add-checkpoint" \
     "<aegis-workspace-helper> add-baseline-usage" \
+    "<aegis-workspace-helper> add-attempt" \
     "<aegis-workspace-helper> add-evidence" \
     "<aegis-workspace-helper> add-drift-check" \
+    "Retry Convergence Protocol" \
+    "process-artifact-pressure" \
     "<aegis-workspace-helper> bundle" \
     "<aegis-workspace-helper> check" \
     "todo-checkpoint-draft.json" \

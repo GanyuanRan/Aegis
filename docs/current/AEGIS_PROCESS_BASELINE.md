@@ -262,6 +262,12 @@ Current behavior rules:
 - Successful modification tasks default to one local commit per coherent task
   or independently verifiable/revertible slice. Read-only, no-change,
   `no commit`, and failed-verification tasks create no normal commit.
+- Failed verification retries remain attempts in the active slice. They use
+  bounded attempt telemetry, not a new slice or formal evidence sidecar.
+- Classify a commit diff as `business`, `process-only`, `mixed`, or
+  `no-commit`. A diff limited to `docs/aegis/` process records does not
+  restart already completed business-code verification; a business or test
+  diff does.
 - The coordinating agent is the single Git mutation owner. Same-task
   subagents share the workspace and return edits plus evidence; they do not
   independently commit or create Git resources.

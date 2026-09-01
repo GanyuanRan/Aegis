@@ -31,11 +31,13 @@ require_pattern "skills/writing-plans/SKILL.md" "<aegis-workspace-helper> check"
 require_pattern "skills/test-driven-development/SKILL.md" "<aegis-workspace-helper> new-work"
 
 require_pattern "skills/systematic-debugging/SKILL.md" "<aegis-workspace-helper> new-work"
+require_pattern "skills/systematic-debugging/SKILL.md" "<aegis-workspace-helper> add-attempt"
 require_pattern "skills/systematic-debugging/SKILL.md" "<aegis-workspace-helper> add-evidence"
 require_pattern "skills/systematic-debugging/SKILL.md" "<aegis-workspace-helper> check"
 
 require_pattern "skills/long-task-continuation/SKILL.md" "<aegis-workspace-helper> new-work"
 require_pattern "skills/long-task-continuation/SKILL.md" "<aegis-workspace-helper> add-checkpoint"
+require_pattern "skills/long-task-continuation/SKILL.md" "<aegis-workspace-helper> add-attempt"
 require_pattern "skills/long-task-continuation/SKILL.md" "<aegis-workspace-helper> add-evidence"
 require_pattern "skills/long-task-continuation/SKILL.md" "<aegis-workspace-helper> add-drift-check"
 require_pattern "skills/long-task-continuation/SKILL.md" "<aegis-workspace-helper> bundle"

@@ -117,7 +117,7 @@ It only records limitations supported by current fresh evidence and does not spe
 - The completeness of `docs/aegis/INDEX.md` still depends on workflows using the shared workspace helper or explicitly performing the append operation
 
 **Retention Reason**
-- `scripts/aegis-workspace.py` now provides lifecycle commands (`new-work`, `add-checkpoint`, `add-evidence`, `add-drift-check`, `bundle`) and `append-index`, and `check` detects unindexed markdown. A workflow that writes to `docs/aegis/` must still call the helper or manually append the entry
+- `scripts/aegis-workspace.py` now provides lifecycle commands (`new-work`, `add-checkpoint`, `add-attempt`, `add-evidence`, `add-drift-check`, `bundle`) and `append-index`, and `check` detects unindexed markdown. A workflow that writes to `docs/aegis/` must still call the helper or manually append the entry
 
 **Observation Metric**
 - `bash tests/e2e/aegis-workspace-check.sh`
@@ -794,6 +794,10 @@ request.
 - When member-by-member repair keeps regenerating the symptom, the
   three-failed-fixes architecture escalation (`advanced-debugging-governance.md`)
   is the intended exit rather than adding another cluster member
+- Workspace retries use `add-attempt` with a soft `process-artifact-pressure`
+  signal after repeated failed attempts; `add-evidence` is reserved for
+  terminal evidence, so failed verification does not produce another formal
+  evidence bundle
 
 **Promotion Trigger**
 - A seventh topology becomes eligible only with a real worked replay case

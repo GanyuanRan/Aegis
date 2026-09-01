@@ -18,6 +18,26 @@ from pathlib import Path
 
 WORKSPACE_REL = Path("docs") / "aegis"
 SCHEMA_VERSION = "aegis.schema.v0"
+EVIDENCE_STATUSES = {
+    "attempted",
+    "evidence-finalized",
+    "blocked",
+    "abandoned",
+    "superseded",
+}
+TERMINAL_EVIDENCE_STATUSES = {
+    "evidence-finalized",
+    "blocked",
+    "abandoned",
+}
+ATTEMPT_STATUSES = {
+    "attempted",
+    "failed",
+    "blocked",
+}
+ATTEMPT_CONVERGENCE_WARNING = 3
+MAX_RECENT_ATTEMPTS = 5
+MAX_CHECKPOINT_HISTORY = 5
 INDEX_HEADER = """# Aegis Workspace Index
 
 This index tracks files created under this project's `docs/aegis/` workspace.
@@ -462,6 +482,36 @@ def validate_artifact_data(artifact_type: str, data: object, source: Path) -> li
             failures.append(
                 f"{source}: BaselineUsageDraft decision must be advisory, got {decision}"
             )
+    if artifact_type == "EvidenceBundleDraft":
+        evidence_status = data.get("evidenceStatus")
+        if evidence_status is not None and evidence_status not in EVIDENCE_STATUSES:
+            failures.append(
+                f"{source}: EvidenceBundleDraft evidenceStatus must be advisory, got {evidence_status}"
+            )
+        slice_id = data.get("sliceId")
+        if slice_id is not None and (not isinstance(slice_id, str) or not slice_id.strip()):
+            failures.append(f"{source}: EvidenceBundleDraft sliceId must be a non-empty string")
+        attempts = data.get("attempts")
+        if attempts is not None:
+            if not isinstance(attempts, list):
+                failures.append(f"{source}: EvidenceBundleDraft attempts must be a list")
+            else:
+                for index, attempt in enumerate(attempts):
+                    if not isinstance(attempt, dict):
+                        failures.append(
+                            f"{source}: EvidenceBundleDraft attempt {index} must be an object"
+                        )
+                        continue
+                    attempt_id = attempt.get("attemptId")
+                    if not isinstance(attempt_id, str) or not attempt_id.strip():
+                        failures.append(
+                            f"{source}: EvidenceBundleDraft attempt {index} missing attemptId"
+                        )
+                    attempt_status = attempt.get("attemptStatus")
+                    if attempt_status not in ATTEMPT_STATUSES:
+                        failures.append(
+                            f"{source}: EvidenceBundleDraft attempt {index} attemptStatus must be advisory, got {attempt_status}"
+                        )
 
     return failures
 
@@ -712,6 +762,136 @@ def markdown_list(items: list[str]) -> str:
     if not items:
         return "- none\n"
     return "".join(f"- {item}\n" for item in items)
+
+
+def safe_key(value: str) -> str:
+    key = "".join(ch if ch.isalnum() or ch in ("-", "_") else "-" for ch in value).strip("-")
+    if not key:
+        raise WorkspaceError("value must contain at least one safe character")
+    return key
+
+
+def upsert_markdown_section(path: Path, heading: str, body: str) -> None:
+    text = path.read_text(encoding="utf-8") if path.exists() else ""
+    marker = f"{heading}\n\n"
+    pattern = re.compile(
+        r"(?m)^" + re.escape(heading) + r"\n\n.*?(?=\n## |\Z)",
+        re.DOTALL,
+    )
+    replacement = marker + body.rstrip("\n") + "\n"
+    if pattern.search(text):
+        text = pattern.sub(replacement, text, count=1)
+    else:
+        if text and not text.endswith("\n"):
+            text += "\n"
+        text += "\n" + replacement
+    write_text_lf(path, text)
+
+
+def evidence_bundle_path(target: Path, slice_id: str) -> Path:
+    return target / f"evidence-bundle-draft-{safe_key(slice_id)}.json"
+
+
+def load_or_create_evidence_bundle(
+    target: Path,
+    slice_id: str,
+    artifact_key: str,
+    evidence_type: str,
+    source: str,
+    summary: str,
+    verifier: str,
+) -> tuple[Path, dict]:
+    path = evidence_bundle_path(target, slice_id)
+    if path.exists():
+        data = read_json_dict(path)
+        if not isinstance(data, dict):
+            raise WorkspaceError(f"evidence bundle must be a JSON object: {path}")
+    else:
+        data = {
+            "schemaVersion": SCHEMA_VERSION,
+            "artifactKey": artifact_key,
+            "type": evidence_type,
+            "source": source,
+            "summary": summary,
+            "verifier": verifier,
+        }
+    data.setdefault("sliceId", slice_id)
+    data.setdefault("evidenceStatus", "attempted")
+    return path, data
+
+
+def merge_attempt(data: dict, attempt: dict) -> None:
+    attempts = data.get("attempts", [])
+    if not isinstance(attempts, list):
+        attempts = []
+    summary = data.get("attemptSummary", {})
+    if not isinstance(summary, dict):
+        summary = {}
+
+    previous = next(
+        (item for item in attempts if isinstance(item, dict) and item.get("attemptId") == attempt["attemptId"]),
+        None,
+    )
+    previous_status = previous.get("attemptStatus") if previous else None
+    attempts = [
+        item
+        for item in attempts
+        if not isinstance(item, dict) or item.get("attemptId") != attempt["attemptId"]
+    ]
+    attempts.append(attempt)
+    data["attempts"] = attempts[-MAX_RECENT_ATTEMPTS:]
+
+    total = int(summary.get("total", 0) or 0)
+    if previous is None:
+        total += 1
+    for status in ATTEMPT_STATUSES:
+        count = int(summary.get(status, 0) or 0)
+        if previous_status == status:
+            count -= 1
+        if attempt["attemptStatus"] == status:
+            count += 1
+        summary[status] = max(count, 0)
+    summary["total"] = total
+    summary["lastAttemptId"] = attempt["attemptId"]
+    data["attemptSummary"] = summary
+
+
+def bounded_checkpoint_markdown(path: Path, current_block: str) -> None:
+    existing = path.read_text(encoding="utf-8") if path.exists() else ""
+    title = "# Checkpoint"
+    for line in existing.splitlines():
+        if line.startswith("# "):
+            title = line.strip()
+            break
+
+    history: list[str] = []
+    current_match = re.search(r"(?ms)^## Current Checkpoint\n\n(.*?)(?=\n## |\Z)", existing)
+    if current_match and current_match.group(1).strip():
+        history.append(current_match.group(1).strip())
+    for block in re.findall(r"(?ms)^## Checkpoint Update\n\n(.*?)(?=\n## Checkpoint Update|\Z)", existing):
+        cleaned = block.strip()
+        if cleaned:
+            history.append(cleaned)
+    recent = history[-MAX_CHECKPOINT_HISTORY:]
+
+    drift_match = re.search(r"(?ms)^## DriftCheckDraft\n\n(.*?)(?=\n## |\Z)", existing)
+
+    content = f"{title}\n\n## Current Checkpoint\n\n{current_block.rstrip()}\n"
+    if recent:
+        content += "\n## Recent Checkpoint History\n\n"
+        for entry in recent:
+            content += "## Checkpoint Update\n\n" + entry + "\n"
+    if drift_match and drift_match.group(1).strip():
+        content += "\n## DriftCheckDraft\n\n" + drift_match.group(1).strip() + "\n"
+    write_text_lf(path, content)
+
+
+def evidence_bundle_status(path: Path) -> str:
+    data = load_json_file(path)
+    if not isinstance(data, dict):
+        return "invalid"
+    status = data.get("evidenceStatus", "legacy-unclassified")
+    return status if status in EVIDENCE_STATUSES else "invalid"
 
 
 def command_new_adr(args: argparse.Namespace) -> int:
@@ -1036,16 +1216,15 @@ def command_add_checkpoint(args: argparse.Namespace) -> int:
     }
     write_json(target / "resume-state-hint.json", resume)
 
-    with (target / "20-checkpoint.md").open("a", encoding="utf-8", newline="\n") as handle:
-        handle.write(
-            "\n## Checkpoint Update\n\n"
-            f"- Current todo: {args.current_todo}\n"
-            f"- Active slice: {args.active_slice}\n"
-            f"- Completed todos:\n{markdown_list(completed)}"
-            f"- Evidence refs:\n{markdown_list(evidence_refs)}"
-            f"- Blocked on: {optional_none(args.blocked_on) or 'none'}\n"
-            f"- Next step: {args.next_step}\n"
-        )
+    current_block = (
+        f"- Current todo: {args.current_todo}\n"
+        f"- Active slice: {args.active_slice}\n"
+        f"- Completed todos:\n{markdown_list(completed)}"
+        f"- Evidence refs:\n{markdown_list(evidence_refs)}"
+        f"- Blocked on: {optional_none(args.blocked_on) or 'none'}\n"
+        f"- Next step: {args.next_step}\n"
+    )
+    bounded_checkpoint_markdown(target / "20-checkpoint.md", current_block)
 
     append_work_file(root, target / "resume-state-hint.json", "artifact", f"{args.work} resume state hint")
     print(f"Updated checkpoint: {checkpoint_path}")
@@ -1072,16 +1251,15 @@ def command_add_baseline_usage(args: argparse.Namespace) -> int:
     if failures:
         raise WorkspaceError("; ".join(failures))
     write_json(target / "baseline-usage-draft.json", baseline_usage)
-    with (target / "10-intent.md").open("a", encoding="utf-8", newline="\n") as handle:
-        handle.write(
-            "\n## BaselineUsageDraft\n\n"
-            f"- Required baseline refs:\n{markdown_list(list_arg(args.required_baseline_ref))}"
-            f"- Delivered context refs:\n{markdown_list(list_arg(args.delivered_context_ref))}"
-            f"- Acknowledged before plan:\n{markdown_list(list_arg(args.acknowledged_baseline_ref))}"
-            f"- Cited in plan:\n{markdown_list(list_arg(args.cited_baseline_ref))}"
-            f"- Missing refs:\n{markdown_list(list_arg(args.missing_ref))}"
-            f"- Advisory decision: {args.decision}\n"
-        )
+    body = (
+        f"- Required baseline refs:\n{markdown_list(list_arg(args.required_baseline_ref))}"
+        f"- Delivered context refs:\n{markdown_list(list_arg(args.delivered_context_ref))}"
+        f"- Acknowledged before plan:\n{markdown_list(list_arg(args.acknowledged_baseline_ref))}"
+        f"- Cited in plan:\n{markdown_list(list_arg(args.cited_baseline_ref))}"
+        f"- Missing refs:\n{markdown_list(list_arg(args.missing_ref))}"
+        f"- Advisory decision: {args.decision}\n"
+    )
+    upsert_markdown_section(target / "10-intent.md", "## BaselineUsageDraft", body)
     append_work_file(root, target / "baseline-usage-draft.json", "artifact", f"{args.work} baseline usage draft")
     print(f"Updated baseline usage: {target / 'baseline-usage-draft.json'}")
     return 0
@@ -1090,30 +1268,114 @@ def command_add_baseline_usage(args: argparse.Namespace) -> int:
 def command_add_evidence(args: argparse.Namespace) -> int:
     root = resolve_root(args.root)
     target = ensure_work_exists(root, args.work)
-    safe_key = "".join(ch if ch.isalnum() or ch in ("-", "_") else "-" for ch in args.artifact_key).strip("-")
-    if not safe_key:
-        raise WorkspaceError("artifact-key must contain at least one safe character")
-    path = target / f"evidence-bundle-draft-{safe_key}.json"
-    evidence = {
-        "schemaVersion": SCHEMA_VERSION,
-        "artifactKey": args.artifact_key,
-        "type": args.type,
-        "source": args.source,
-        "summary": args.summary,
-        "verifier": args.verifier,
-    }
-    write_json(path, evidence)
-    with (target / "90-evidence.md").open("a", encoding="utf-8", newline="\n") as handle:
-        handle.write(
-            "\n## EvidenceBundleDraft\n\n"
-            f"- Artifact key: {args.artifact_key}\n"
-            f"- Type: {args.type}\n"
-            f"- Source: {args.source}\n"
-            f"- Summary: {args.summary}\n"
-            f"- Verifier: {args.verifier}\n"
+    artifact_key = require_text(args.artifact_key, "artifact key")
+    slice_id = args.slice_id
+    if slice_id is None:
+        slice_id = artifact_key
+        print(
+            "legacy add-evidence invocation: prefer --slice-id to keep retry evidence slice-scoped",
+            file=sys.stderr,
         )
-    append_work_file(root, path, "artifact", f"{args.work} evidence {args.artifact_key}")
+    evidence_status = args.evidence_status or "evidence-finalized"
+    path, evidence = load_or_create_evidence_bundle(
+        target,
+        slice_id,
+        artifact_key,
+        args.type,
+        args.source,
+        args.summary,
+        args.verifier,
+    )
+    evidence.update(
+        {
+            "schemaVersion": SCHEMA_VERSION,
+            "artifactKey": artifact_key,
+            "type": args.type,
+            "source": args.source,
+            "summary": args.summary,
+            "verifier": args.verifier,
+            "sliceId": slice_id,
+            "evidenceStatus": evidence_status,
+            "updatedAt": getattr(args, "date", None) or date.today().isoformat(),
+        }
+    )
+    failures = validate_artifact_data("EvidenceBundleDraft", evidence, path)
+    if failures:
+        raise WorkspaceError("; ".join(failures))
+    write_json(path, evidence)
+
+    body = (
+        f"- Artifact key: {artifact_key}\n"
+        f"- Slice ID: {slice_id}\n"
+        f"- Type: {args.type}\n"
+        f"- Source: {args.source}\n"
+        f"- Summary: {args.summary}\n"
+        f"- Verifier: {args.verifier}\n"
+        f"- Evidence status: {evidence_status}\n"
+    )
+    evidence_markdown = target / "90-evidence.md"
+    if evidence_markdown.exists():
+        evidence_text = evidence_markdown.read_text(encoding="utf-8")
+        evidence_text = evidence_text.replace("No evidence has been recorded yet.\n", "")
+        write_text_lf(evidence_markdown, evidence_text)
+    upsert_markdown_section(evidence_markdown, f"## EvidenceBundleDraft: {slice_id}", body)
+    append_work_file(root, path, "artifact", f"{args.work} evidence {slice_id}")
     print(f"Added evidence bundle: {path}")
+    return 0
+
+
+def command_add_attempt(args: argparse.Namespace) -> int:
+    root = resolve_root(args.root)
+    target = ensure_work_exists(root, args.work)
+    slice_id = require_text(args.slice_id, "slice id")
+    attempt_id = require_text(args.attempt_id, "attempt id")
+    summary_text = require_text(args.summary, "attempt summary")
+    path, evidence = load_or_create_evidence_bundle(
+        target,
+        slice_id,
+        slice_id,
+        args.type or "attempt",
+        args.source or "attempt telemetry",
+        summary_text,
+        args.verifier or "not-yet-verified",
+    )
+    if evidence.get("evidenceStatus") in TERMINAL_EVIDENCE_STATUSES or evidence.get("evidenceStatus") == "superseded":
+        raise WorkspaceError("slice evidence is already terminal; do not add attempts to a closed slice")
+
+    attempt = {
+        "attemptId": attempt_id,
+        "attemptStatus": args.attempt_status,
+        "summary": summary_text,
+        "evidenceRefs": list_arg(args.evidence_ref),
+        "updatedAt": args.date or date.today().isoformat(),
+    }
+    merge_attempt(evidence, attempt)
+    evidence.update(
+        {
+            "evidenceStatus": "attempted",
+            "sliceId": slice_id,
+            "summary": f"Latest attempt {attempt_id}: {summary_text}",
+            "updatedAt": attempt["updatedAt"],
+        }
+    )
+    failures = validate_artifact_data("EvidenceBundleDraft", evidence, path)
+    if failures:
+        raise WorkspaceError("; ".join(failures))
+    write_json(path, evidence)
+    append_work_file(root, path, "artifact", f"{args.work} evidence {slice_id}")
+    print(f"Recorded attempt: {path} (attempt {attempt_id})")
+
+    attempt_summary = evidence.get("attemptSummary", {})
+    total = int(attempt_summary.get("total", 0) or 0)
+    failed = int(attempt_summary.get("failed", 0) or 0)
+    blocked = int(attempt_summary.get("blocked", 0) or 0)
+    if total >= ATTEMPT_CONVERGENCE_WARNING:
+        print(
+            f"process-artifact-pressure: {slice_id} has {total} attempt(s), "
+            f"{failed} failed, {blocked} blocked, and no terminal evidence. "
+            "Stop auto-retry and route to systematic-debugging or "
+            "verification-before-completion before another attempt."
+        )
     return 0
 
 
@@ -1136,15 +1398,14 @@ def command_add_drift_check(args: argparse.Namespace) -> int:
     if failures:
         raise WorkspaceError("; ".join(failures))
     write_json(target / "drift-check-draft.json", drift)
-    with (target / "20-checkpoint.md").open("a", encoding="utf-8", newline="\n") as handle:
-        handle.write(
-            "\n## DriftCheckDraft\n\n"
-            f"- Scope status: {args.scope_status}\n"
-            f"- Compatibility status: {args.compat_status}\n"
-            f"- Retirement status: {args.retirement_status}\n"
-            f"- New risk signals:\n{markdown_list(list_arg(args.new_risk_signal))}"
-            f"- Advisory decision: {args.decision}\n"
-        )
+    body = (
+        f"- Scope status: {args.scope_status}\n"
+        f"- Compatibility status: {args.compat_status}\n"
+        f"- Retirement status: {args.retirement_status}\n"
+        f"- New risk signals:\n{markdown_list(list_arg(args.new_risk_signal))}"
+        f"- Advisory decision: {args.decision}\n"
+    )
+    upsert_markdown_section(target / "20-checkpoint.md", "## DriftCheckDraft", body)
     print(f"Updated drift check: {target / 'drift-check-draft.json'}")
     return 0
 
@@ -1156,14 +1417,31 @@ def command_bundle(args: argparse.Namespace) -> int:
     impact = read_json_dict(target / "impact-statement-draft.json")
     drift = read_json_dict(target / "drift-check-draft.json")
     evidence_paths = sorted(target.glob("evidence-bundle-draft*.json"))
-    evidence_refs = [f"{work_rel(target)}/{path.name}" for path in evidence_paths]
+
+    formal_refs: list[str] = []
+    non_passed_refs: list[str] = []
+    legacy_refs: list[str] = []
+    superseded_count = 0
+    for path in evidence_paths:
+        rel = f"{work_rel(target)}/{path.name}"
+        status = evidence_bundle_status(path)
+        if status == "evidence-finalized":
+            formal_refs.append(rel)
+        elif status in {"blocked", "abandoned"}:
+            non_passed_refs.append(rel)
+        elif status == "superseded":
+            superseded_count += 1
+        elif status == "legacy-unclassified":
+            legacy_refs.append(rel)
+
+    terminal_refs = formal_refs + non_passed_refs
     gate_input = {
         "schemaVersion": SCHEMA_VERSION,
         "baselineRefs": drift.get("baselineRefs", []),
         "impactStatement": f"{work_rel(target)}/impact-statement-draft.json",
         "compatPlan": impact.get("compatBoundary", ""),
         "retirementPlan": drift.get("retirementStatus", ""),
-        "evidenceBundle": evidence_refs,
+        "evidenceBundle": terminal_refs,
     }
     write_json(target / "gate-input-pack.json", gate_input)
     append_work_file(root, target / "gate-input-pack.json", "artifact", f"{args.work} gate input pack")
@@ -1180,8 +1458,15 @@ def command_bundle(args: argparse.Namespace) -> int:
         "\n## Impact\n\n"
         f"- Compatibility boundary: {impact.get('compatBoundary', '')}\n"
         f"- Non-goals:\n{markdown_list(list(impact.get('nonGoals', [])))}"
-        "\n## Evidence Bundle Refs\n\n"
-        f"{markdown_list(evidence_refs)}"
+        "\n## Terminal Evidence Refs\n\n"
+        f"{markdown_list(terminal_refs)}"
+        "\n## Formal Evidence\n\n"
+        f"{markdown_list(formal_refs)}"
+        "\n## Terminal Non-Passed Evidence\n\n"
+        f"{markdown_list(non_passed_refs)}"
+        "\n## Legacy Unclassified Evidence\n\n"
+        f"{markdown_list(legacy_refs)}"
+        f"\n## Superseded Evidence Count\n\n- {superseded_count}\n"
         "\n## Drift Check\n\n"
         f"- Scope status: {drift.get('scopeStatus', '')}\n"
         f"- Compatibility status: {drift.get('compatStatus', '')}\n"
@@ -1210,6 +1495,58 @@ def recognizable_artifact_json_files(ws: Path) -> list[tuple[str, Path]]:
         if artifact_type:
             files.append((artifact_type, path))
     return files
+
+
+def process_artifact_pressure(ws: Path) -> list[str]:
+    output: list[str] = []
+    work_root = ws / "work"
+    if not work_root.is_dir():
+        return output
+    for work_path in sorted(path for path in work_root.iterdir() if path.is_dir()):
+        evidence_paths = sorted(work_path.glob("evidence-bundle-draft*.json"))
+        terminal = 0
+        attempted = 0
+        legacy = 0
+        superseded = 0
+        max_attempts = 0
+        for evidence_path in evidence_paths:
+            status = evidence_bundle_status(evidence_path)
+            if status == "evidence-finalized":
+                terminal += 1
+            elif status in {"blocked", "abandoned"}:
+                terminal += 1
+            elif status == "attempted":
+                attempted += 1
+            elif status == "superseded":
+                superseded += 1
+            else:
+                legacy += 1
+            data = load_json_file(evidence_path)
+            if isinstance(data, dict):
+                attempt_summary = data.get("attemptSummary", {})
+                if isinstance(attempt_summary, dict):
+                    max_attempts = max(max_attempts, int(attempt_summary.get("total", 0) or 0))
+
+        def line_count(name: str) -> int:
+            path = work_path / name
+            return len(path.read_text(encoding="utf-8").splitlines()) if path.exists() else 0
+
+        rel = (WORKSPACE_REL / "work" / work_path.name).as_posix()
+        output.append(f"process_artifact_pressure: {rel}")
+        output.append(f"  evidence_sidecars: {len(evidence_paths)}")
+        output.append(f"  checkpoint_lines: {line_count('20-checkpoint.md')}")
+        output.append(f"  evidence_lines: {line_count('90-evidence.md')}")
+        output.append(f"  terminal_evidence: {terminal}")
+        output.append(f"  attempted_evidence: {attempted}")
+        output.append(f"  legacy_unclassified: {legacy}")
+        output.append(f"  superseded: {superseded}")
+        output.append(f"  max_attempts_per_slice: {max_attempts}")
+        if attempted and max_attempts >= ATTEMPT_CONVERGENCE_WARNING:
+            output.append(
+                "  convergence-stop: stop auto-retry and route to systematic-debugging "
+                "or verification-before-completion before another attempt."
+            )
+    return output
 
 
 def command_check(args: argparse.Namespace) -> int:
@@ -1263,6 +1600,10 @@ def command_check(args: argparse.Namespace) -> int:
             print(failure, file=sys.stderr)
         return 1
 
+    if getattr(args, "process_pressure", False) and ws.exists():
+        for line in process_artifact_pressure(ws):
+            print(line)
+
     print(f"Aegis workspace check passed: {ws}")
     return 0
 
@@ -1279,6 +1620,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     check_parser = subparsers.add_parser("check", help="validate a target project workspace")
     check_parser.add_argument("--root", required=True, help="target project root")
+    check_parser.add_argument(
+        "--process-pressure",
+        action="store_true",
+        help="print advisory process-artifact pressure metrics after structural checks",
+    )
     check_parser.set_defaults(func=command_check)
 
     append_parser = subparsers.add_parser("append-index", help="append an INDEX.md entry")
@@ -1519,16 +1865,42 @@ def build_parser() -> argparse.ArgumentParser:
     )
     baseline_usage_parser.set_defaults(func=command_add_baseline_usage)
 
+    attempt_parser = subparsers.add_parser(
+        "add-attempt", help="record a bounded retry attempt for an active evidence slice"
+    )
+    attempt_parser.add_argument("--root", required=True, help="target project root")
+    attempt_parser.add_argument("--work", required=True, help="work directory name under docs/aegis/work")
+    attempt_parser.add_argument("--slice-id", required=True, help="stable active slice identifier")
+    attempt_parser.add_argument("--attempt-id", required=True, help="attempt identifier")
+    attempt_parser.add_argument(
+        "--attempt-status", required=True, choices=sorted(ATTEMPT_STATUSES), help="attempt status"
+    )
+    attempt_parser.add_argument("--summary", required=True, help="attempt summary")
+    attempt_parser.add_argument("--type", help="evidence type for a first-attempt sidecar")
+    attempt_parser.add_argument("--source", help="attempt source")
+    attempt_parser.add_argument("--verifier", help="attempt verifier")
+    attempt_parser.add_argument("--evidence-ref", action="append", default=[], help="attempt evidence ref")
+    attempt_parser.add_argument("--date", help="attempt date, defaults to today")
+    attempt_parser.set_defaults(func=command_add_attempt)
+
     evidence_parser = subparsers.add_parser(
-        "add-evidence", help="add an EvidenceBundleDraft sidecar"
+        "add-evidence", help="add or finalize an EvidenceBundleDraft sidecar"
     )
     evidence_parser.add_argument("--root", required=True, help="target project root")
     evidence_parser.add_argument("--work", required=True, help="work directory name under docs/aegis/work")
     evidence_parser.add_argument("--artifact-key", required=True, help="evidence key")
+    evidence_parser.add_argument("--slice-id", help="stable slice identifier; defaults to artifact-key for legacy calls")
+    evidence_parser.add_argument(
+        "--evidence-status",
+        choices=sorted(TERMINAL_EVIDENCE_STATUSES | {"superseded"}),
+        default="evidence-finalized",
+        help="terminal evidence status",
+    )
     evidence_parser.add_argument("--type", required=True, help="evidence type")
     evidence_parser.add_argument("--source", required=True, help="evidence source")
     evidence_parser.add_argument("--summary", required=True, help="evidence summary")
     evidence_parser.add_argument("--verifier", required=True, help="evidence verifier")
+    evidence_parser.add_argument("--date", help="evidence date, defaults to today")
     evidence_parser.set_defaults(func=command_add_evidence)
 
     drift_parser = subparsers.add_parser(

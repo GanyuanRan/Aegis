@@ -1,5 +1,30 @@
 # Aegis Release Notes
 
+## Unreleased
+
+### Bounded failed-verification evidence convergence
+
+- Add `add-attempt` for failed verification retries inside the active slice.
+- Reserve `add-evidence` for terminal evidence and make same-slice evidence
+  updates idempotent instead of append-only.
+- Keep `bundle` scoped to terminal evidence; exclude `attempted` and
+  `superseded` records from the proof bundle.
+- Add advisory `process-artifact-pressure` metrics and a convergence-stop
+  signal after repeated failed attempts.
+- Keep checkpoint, drift, baseline-usage, and evidence markdown sections
+  bounded through in-place updates instead of unbounded append growth.
+- Add deterministic retry-convergence and workflow-quality coverage while
+  preserving Aegis advisory boundaries.
+
+### Verification boundary
+
+- Targeted workspace-helper, artifact-schema, long-task, workflow-quality,
+  context-budget, boundary, governance, host-wiring, plugin-sync, and unit
+  checks passed.
+- Layer 1 passed 36 checks and retained the known environment-bound offline
+  Codex fixture platform check on this Windows environment. That check is not
+  treated as a fresh Codex live-closeout claim.
+
 ## v2.9.2 (2026-08-31)
 
 ### Preserve valid roles while retiring invalid responsibility

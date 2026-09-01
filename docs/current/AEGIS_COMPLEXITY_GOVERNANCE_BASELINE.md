@@ -65,6 +65,9 @@ Typical pressure signals:
 - fallback / adapter / guard / compatibility branch growth
 - owner mismatch or duplicate-owner risk
 - plan / process artifact fan-out that harms execution clarity
+- repeated failed verification attempts in one slice without terminal evidence
+- evidence sidecar fan-out where each retry creates a new bundle
+- checkpoint or evidence markdown growing through append-only retry records
 - multi-owner sprawl, duplicated decision text, unreadable work-log structure,
   or handoff-hostile artifact layout
 

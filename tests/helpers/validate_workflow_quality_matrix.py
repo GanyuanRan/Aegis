@@ -73,6 +73,7 @@ EXPECTED_IDS = {
     "strong-opinion-retro-memory-filter",
     "strong-opinion-fast-path-no-persona",
     "interrupted-long-task-resume",
+    "failed-verification-retry-convergence",
     "behavior-smoke-old-path-cleanup-anti-entropy",
     "governance-compat-cleanup",
     "internal-trigger-retirement",
@@ -609,6 +610,21 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
             "falsifier",
             "verdict",
         ],
+    },
+    "failed-verification-retry-convergence": {
+        "primary": "long-task-continuation",
+        "allowed": ["systematic-debugging", "verification-before-completion"],
+        "must_not": [
+            "create-new-slice-per-failed-attempt",
+            "append-formal-evidence-per-retry",
+            "commit-attempt-telemetry-as-normal-work",
+        ],
+        "signals": [
+            "one-slice",
+            "terminal-evidence",
+            "bounded-failed-attempts",
+        ],
+        "shapes": ["bounded-slice-attempt-record", "terminal-evidence"],
     },
     "bounded-preservation-multi-role-repair": {
         "primary": "systematic-debugging",

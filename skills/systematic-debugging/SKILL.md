@@ -216,6 +216,8 @@ python <aegis-workspace-helper> add-evidence --root <target-project-root> --work
 python <aegis-workspace-helper> check --root <target-project-root>
 ```
 
+Failed attempts use `<aegis-workspace-helper> add-attempt`; `add-evidence` is terminal-only.
+
 Fast bug fix or quick bug fix pressure does not skip this: if Ripple Signal
 Triage fires, record it before editing and verify the canonical owner plus
 affected downstream path. Records are advisory, not completion authority.

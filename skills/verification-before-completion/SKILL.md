@@ -79,6 +79,11 @@ The Git receipt reports branch; commit SHA/message or non-commit reason;
 created, removed, or retained with reason. Task-clean never implies repo-clean.
 This receipt is evidence, not external integration or completion authority.
 
+Classify commit scope before claiming verification stability: `business`,
+`process-only`, `mixed`, or `no-commit`. Failed attempt telemetry is not a
+commit reason. A diff limited to `docs/aegis/` process records does not restart
+already completed business-code verification; a business or test diff does.
+
 ## Aegis Visibility / Single Closeout
 
 Use one completion surface; no parallel final reports.

@@ -321,6 +321,99 @@ fi
 "${PYTHON_CMD[@]}" "$HELPER" check --root "$TARGET_ROOT" >/dev/null
 pass "lifecycle commands assemble a structural proof bundle"
 
+"${PYTHON_CMD[@]}" "$HELPER" add-attempt \
+    --root "$TARGET_ROOT" \
+    --work 2026-05-07-helper-lifecycle \
+    --slice-id slice-retry \
+    --attempt-id attempt-1 \
+    --attempt-status failed \
+    --summary "first failed verification" >/dev/null
+"${PYTHON_CMD[@]}" "$HELPER" add-attempt \
+    --root "$TARGET_ROOT" \
+    --work 2026-05-07-helper-lifecycle \
+    --slice-id slice-retry \
+    --attempt-id attempt-2 \
+    --attempt-status failed \
+    --summary "second failed verification" >/dev/null
+"${PYTHON_CMD[@]}" "$HELPER" add-attempt \
+    --root "$TARGET_ROOT" \
+    --work 2026-05-07-helper-lifecycle \
+    --slice-id slice-retry \
+    --attempt-id attempt-3 \
+    --attempt-status failed \
+    --summary "third failed verification" >/dev/null
+
+RETRY_EVIDENCE="$WORK_DIR/evidence-bundle-draft-slice-retry.json"
+if [[ ! -f "$RETRY_EVIDENCE" ]]; then
+    fail "add-attempt must create one slice-scoped evidence draft"
+fi
+RETRY_COUNT="$(find "$WORK_DIR" -maxdepth 1 -name 'evidence-bundle-draft-slice-retry*.json' | wc -l | tr -d ' ')"
+if [[ "$RETRY_COUNT" != "1" ]]; then
+    fail "failed retries must converge to one evidence draft, got $RETRY_COUNT"
+fi
+if grep -q "EvidenceBundleDraft: slice-retry" "$WORK_DIR/90-evidence.md"; then
+    fail "add-attempt must not append failed attempts to 90-evidence.md"
+fi
+pass "add-attempt keeps failed retries in one draft outside terminal evidence"
+
+"${PYTHON_CMD[@]}" "$HELPER" bundle \
+    --root "$TARGET_ROOT" \
+    --work 2026-05-07-helper-lifecycle >/dev/null
+if grep -q "evidence-bundle-draft-slice-retry.json" "$WORK_DIR/gate-input-pack.json"; then
+    fail "bundle must exclude attempted evidence before terminal state"
+fi
+"${PYTHON_CMD[@]}" "$HELPER" check \
+    --root "$TARGET_ROOT" \
+    --process-pressure >/tmp/aegis-workspace-pressure.out 2>&1
+if ! grep -q "max_attempts_per_slice: 3" /tmp/aegis-workspace-pressure.out; then
+    fail "check --process-pressure must report attempt count"
+fi
+if ! grep -q "convergence-stop" /tmp/aegis-workspace-pressure.out; then
+    fail "check --process-pressure must report convergence-stop"
+fi
+pass "attempted retry evidence is excluded from bundle and reported as pressure"
+
+"${PYTHON_CMD[@]}" "$HELPER" add-evidence \
+    --root "$TARGET_ROOT" \
+    --work 2026-05-07-helper-lifecycle \
+    --artifact-key slice-retry \
+    --slice-id slice-retry \
+    --evidence-status evidence-finalized \
+    --type test \
+    --source "bash tests/e2e/aegis-workspace-check.sh" \
+    --summary "Retry slice reached a terminal evidence state." \
+    --verifier "aegis-workspace-check" >/dev/null
+"${PYTHON_CMD[@]}" "$HELPER" add-evidence \
+    --root "$TARGET_ROOT" \
+    --work 2026-05-07-helper-lifecycle \
+    --artifact-key slice-retry \
+    --slice-id slice-retry \
+    --evidence-status evidence-finalized \
+    --type test \
+    --source "bash tests/e2e/aegis-workspace-check.sh" \
+    --summary "Retry slice reached a terminal evidence state." \
+    --verifier "aegis-workspace-check" >/dev/null
+RETRY_HEADING_COUNT="$(grep -c '## EvidenceBundleDraft: slice-retry' "$WORK_DIR/90-evidence.md")"
+if [[ "$RETRY_HEADING_COUNT" != "1" ]]; then
+    fail "terminal evidence must replace its markdown section instead of appending"
+fi
+"${PYTHON_CMD[@]}" "$HELPER" bundle \
+    --root "$TARGET_ROOT" \
+    --work 2026-05-07-helper-lifecycle >/dev/null
+if ! grep -q "evidence-bundle-draft-slice-retry.json" "$WORK_DIR/gate-input-pack.json"; then
+    fail "bundle must include terminal retry evidence"
+fi
+if "${PYTHON_CMD[@]}" "$HELPER" add-attempt \
+    --root "$TARGET_ROOT" \
+    --work 2026-05-07-helper-lifecycle \
+    --slice-id slice-retry \
+    --attempt-id attempt-4 \
+    --attempt-status failed \
+    --summary "attempt after terminal evidence" >/tmp/aegis-workspace-closed-slice.out 2>&1; then
+    fail "add-attempt must reject attempts after terminal evidence"
+fi
+pass "terminal evidence converges one markdown section and closes the slice"
+
 ADR_ONE_PATH="$TARGET_ROOT/docs/aegis/adr/ADR-0001-helper-owner-boundary.md"
 "${PYTHON_CMD[@]}" "$HELPER" new-adr \
     --root "$TARGET_ROOT" \
