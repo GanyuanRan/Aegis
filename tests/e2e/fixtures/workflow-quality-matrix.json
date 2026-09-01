@@ -798,6 +798,17 @@
       "verificationSignal": "bounded-preservation-evidence-backed-behavior-highest-risk-counterexample-material-unknown-role-before-value-invalid-responsibility-retired-legitimate-capability-retained-advisory-not-authority"
     },
     {
+      "id": "bounded-preservation-shared-config-role",
+      "prompt": "A shared configuration key supplies the system default policy and is also selected explicitly by one profile. Fix default inheritance without deleting the profile's legitimate explicit-selection role. Preserve known upstream and downstream references, expose uninspected consumers as unknown, and do not add a semantic-graph artifact or runtime gate.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": ["first-principles-review"],
+      "mustNotDo": ["treat-config-key-as-single-role", "drop-explicit-profile-reference", "guess-uninspected-consumers", "add-semantic-graph-artifact"],
+      "expectedOutputShape": "symptom-reproduction-root-cause-bounded-preservation-explicit-reference-disposition-fix-boundary-repair-retirement",
+      "workspacePolicy": "workspace-only-if-medium-risk-or-process-trail-needed",
+      "expectedArtifacts": ["EvidenceBundleDraft"],
+      "verificationSignal": "bounded-preservation-existing-semantics-responsibility-relationship-explicit-anchor-disposition-upstream-downstream-reference-preserve-rebind-retire-reject-unresolved-remains-unknown-advisory-not-authority"
+    },
+    {
       "id": "baseline-role-alignment-review",
       "prompt": "A recurring small i18n task keeps using many skills and tools for tiny edits. Review whether this is a requirements-baseline gap, architecture-baseline gap, design defect, or implementation drift before proposing changes.",
       "expectedPrimarySkill": "brainstorming",

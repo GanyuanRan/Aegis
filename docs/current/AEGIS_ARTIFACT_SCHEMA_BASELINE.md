@@ -17,6 +17,28 @@ This document defines the minimum schema baseline for the current runtime-ready 
   - host-provided
   - future-runtime-authoritative
 
+### 2.1 Reference Semantics
+
+Existing `*Ref` / `*Refs` fields and other explicitly reference-shaped values
+reuse one bounded semantic contract; this section adds no artifact type or
+required field:
+
+- a known reference identifies its source precisely enough for the owning
+  workflow to read back the smallest relevant evidence;
+- its role in the current artifact is explicit from the field and surrounding
+  contract rather than being guessed from the referenced value alone;
+- when a change affects it, the reference is preserved, rebound to the
+  canonical owner, retired with reason, or rejected because of a conflict;
+- an unresolved, ambiguous, or unavailable reference is surfaced through an
+  existing `missingRefs`, `unknowns`, uncovered-scope, or equivalent owner
+  slot; downstream workflows must not silently re-infer it.
+
+The Method Pack may record, carry, and request readback of these references. Its
+structural validation does not prove that every reference resolves, that all
+incoming or outgoing relationships were discovered, or that lineage is
+complete. Referential-integrity and relationship-graph authority belong to a
+future runtime core.
+
 The current schema version is uniformly:
 
 - `aegis.schema.v0`

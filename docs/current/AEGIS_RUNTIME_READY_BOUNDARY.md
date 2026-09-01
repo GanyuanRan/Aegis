@@ -100,6 +100,11 @@ Purpose:
 - Keep baseline/context attention drift visible without asserting authoritative
   host injection observability or internal model-attention proof
 
+All reference-bearing drafts follow the bounded reference semantics owned by
+`AEGIS_ARTIFACT_SCHEMA_BASELINE.md`: the Method Pack may carry known refs,
+request bounded readback, and expose missing or unknown relationships, but it
+does not prove complete referential integrity or authoritative lineage.
+
 ### 3.4 `ImpactStatementDraft`
 
 Minimum fields:

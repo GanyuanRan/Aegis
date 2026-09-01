@@ -48,13 +48,18 @@ The current process baseline follows these core principles:
   clarification. Keep `using-aegis` route-only.
 - **Pre-Addition Minimality**: Before adding a new owner, skill, artifact, adapter, fallback, workflow step, or benchmark metric, prove it needs to exist and check whether an existing owner can carry the behavior.
 - **Backward Compatibility First**: Changes default to preserving externally observable behavior and published contracts. Do not preserve internal old paths, duplicate owners, or historical fallbacks by default.
-- **Bounded Preservation**: A behavior-changing direction identifies
-  evidence-backed behavior that must remain correct, the highest-risk
-  counterexample, and material unknown or uninspected surfaces. This is a
-  decision reminder, not a claim that an agent has discovered every implicit
-  consumer or behavior. The Method Pack can calibrate the claim and expose the
-  boundary; exhaustive lineage, coverage calculation, and authoritative gates
-  belong to a future runtime core.
+- **Bounded Preservation**: A direction that may change an existing object's,
+  behavior's, responsibility's, contract's, or relationship's semantics
+  identifies evidence-backed behavior that must remain correct, the
+  highest-risk counterexample, and material unknown or uninspected surfaces.
+  Each known explicit anchor or reference gets an explainable disposition:
+  preserve it, rebind it to the canonical owner, retire it with reason, or
+  reject it because of a conflict. Unresolved relationships remain unknown
+  rather than being re-inferred downstream. This is a decision reminder, not a
+  claim that an agent has discovered every implicit consumer or behavior. The
+  Method Pack can calibrate the claim and expose the boundary; exhaustive
+  lineage, coverage calculation, referential-integrity proof, and authoritative
+  gates belong to a future runtime core.
 - **Responsibility-Level Retirement**: Retire an invalid authority or
   responsibility without assuming that its carrier or every capability it
   supports must disappear. Delete the carrier when evidence shows that no
@@ -458,12 +463,16 @@ Minimality Check:
 - Verdict: sufficient repair | local patch | needs first-principles review
 ```
 
-When identity, selector, precedence, scope, or role semantics can change, use a
-bounded preservation reminder before choosing the repair: inspect the smallest
-relevant evidence for behavior that must remain correct, name the highest-risk
-counterexample, and expose material unknown or uninspected consumers. This is
-method-layer decision discipline, not an exhaustive behavior inventory or a
-runtime gate.
+When a repair may change existing semantics, responsibilities, contracts, or
+relationships on a behavior-bearing object or carrier, use a bounded
+preservation reminder before choosing the repair. Inspect the smallest relevant
+evidence for behavior that must remain correct, name the highest-risk
+counterexample, expose material unknown or uninspected consumers, and give each
+known explicit anchor or upstream/downstream reference an explainable
+disposition: preserve, rebind, retire, or reject. Identity, selector,
+precedence, scope, and role-binding changes are examples of this risk, not its
+definition. This is method-layer decision discipline, not an exhaustive
+behavior inventory, referential-integrity proof, or runtime gate.
 
 Local patches are acceptable only as bounded mitigations with a retention
 reason, retirement trigger, and residual risk. Do not call them sufficient

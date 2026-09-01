@@ -660,24 +660,52 @@ assert_contains "skills/first-principles-review/SKILL.md" "Higher-level simplifi
     "first-principles review checks higher-level simplification"
 assert_contains "skills/first-principles-review/SKILL.md" "Bounded preservation reminder" \
     "first-principles review uses bounded preservation only when direction risk warrants it"
-assert_contains "skills/first-principles-review/SKILL.md" "Role-before-value" \
-    "first-principles review checks role ambiguity before interpreting a repeated value"
+assert_contains "skills/first-principles-review/SKILL.md" "existing object, behavior, responsibility, contract, or relationship" \
+    "first-principles review triggers on general semantic and relationship-loss risk"
+assert_contains "skills/first-principles-review/SKILL.md" "explicit anchors / upstream-downstream refs and disposition" \
+    "first-principles review gives known anchors and references an explicit disposition"
 assert_contains "skills/first-principles-review/SKILL.md" "Which invalid authority retires" \
     "first-principles review retires responsibility without deleting a legitimate capability"
 assert_contains "skills/first-principles-review/SKILL.md" "universal artifact or an exhaustive behavior inventory" \
     "first-principles review keeps bounded preservation lightweight and advisory"
-assert_contains "skills/systematic-debugging/SKILL.md" "identity.*selector.*precedence.*scope.*role binding" \
-    "systematic debugging triggers bounded preservation for multi-role behavior risk"
-assert_contains "skills/systematic-debugging/SKILL.md" "highest-risk.*counterexample.*unknown|counterexample.*unknown.*uninspected" \
+assert_contains "skills/systematic-debugging/SKILL.md" "existing semantics, responsibility" \
+    "systematic debugging triggers bounded preservation from general semantic and relationship-loss risk"
+assert_contains "skills/systematic-debugging/SKILL.md" "contract, or relationship" \
+    "systematic debugging covers contract and relationship risk"
+assert_not_contains "skills/systematic-debugging/SKILL.md" "When a repair changes identity, selector" \
+    "systematic debugging retires the selector-specific trigger definition"
+assert_contains "skills/systematic-debugging/SKILL.md" "behavior to preserve, highest-risk" \
     "systematic debugging exposes the strongest preservation falsifier and unknown boundary"
+assert_contains "skills/systematic-debugging/SKILL.md" "known explicit anchor or" \
+    "systematic debugging conserves known explicit anchors through an explainable disposition"
+assert_contains "skills/systematic-debugging/SKILL.md" "disposition: preserve, rebind" \
+    "systematic debugging names preserve and canonical rebind dispositions"
+assert_contains "skills/systematic-debugging/SKILL.md" "retire with reason, or reject because of conflict" \
+    "systematic debugging names retirement and conflict dispositions"
+assert_contains "skills/systematic-debugging/SKILL.md" "Leave unresolved relationships unknown" \
+    "systematic debugging keeps unresolved relationships unknown"
 assert_contains "skills/systematic-debugging/SKILL.md" "retire invalid responsibility" \
     "systematic debugging retires invalid responsibility without deleting a valid carrier"
-assert_contains "skills/systematic-debugging/SKILL.md" "universal behavior matrix or exhaustive discovery claim" \
+assert_contains "skills/systematic-debugging/SKILL.md" "bounded reminder is not a behavior matrix" \
     "systematic debugging keeps preservation checking lightweight and bounded"
-assert_contains "skills/systematic-debugging/SKILL.md" "artifact, add a TDD risk signal, or expand regression scope" \
+assert_contains "skills/systematic-debugging/SKILL.md" "It adds no artifact" \
     "bounded preservation does not escalate method-pack execution ceremony"
-assert_contains "skills/systematic-debugging/SKILL.md" "automatic TDD, while.*auto.*existing signals" \
+assert_contains "skills/systematic-debugging/SKILL.md" "existing TDD route owner and" \
     "bounded preservation preserves the existing TDD route owner and configured mode"
+assert_contains "docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md" "Reference Semantics" \
+    "artifact schema owns bounded reference semantics without a new artifact"
+assert_contains "docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md" "this section adds no artifact type or" \
+    "bounded reference semantics adds no artifact or required field"
+assert_contains "docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md" "reference is preserved, rebound to the" \
+    "artifact references have an explainable disposition"
+assert_contains "docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md" "canonical owner, retired with reason, or rejected" \
+    "artifact references name canonical rebind, retirement, and rejection dispositions"
+assert_contains "docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md" "missingRefs.*unknowns.*uncovered-scope" \
+    "artifact schema reuses existing missing and unknown slots"
+assert_contains "skills/verification-before-completion/SKILL.md" "unresolved references in uncovered scope" \
+    "completion verification lowers claims when explicit references remain unresolved"
+assert_contains "skills/verification-before-completion/SKILL.md" "lower confidence, and do not re-infer" \
+    "completion verification prevents inferred references from closing a claim"
 assert_contains "skills/anti-entropy-governance/SKILL.md" "Retirement is responsibility-scoped before it is carrier-scoped" \
     "anti-entropy classifies invalid responsibility before deleting its carrier"
 assert_contains "skills/anti-entropy-governance/SKILL.md" "delete-first.*carrier once no legitimate responsibility remains" \
