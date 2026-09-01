@@ -1,6 +1,24 @@
 # Aegis Release Notes
 
-## Unreleased
+## v2.9.4 (2026-09-01)
+
+### Generalize bounded preservation references
+
+- Broaden Bounded Preservation beyond identity, selector, precedence, scope,
+  and role-binding examples to any existing semantics, responsibility,
+  contract, or relationship change.
+- Require every known explicit anchor and upstream/downstream reference to
+  receive an explainable disposition: preserve, rebind to the canonical owner,
+  retire with reason, or reject because of conflict.
+- Keep unresolved relationships unknown and reuse existing `*Ref`,
+  `missingRefs`, `unknowns`, and uncovered-scope slots instead of adding a new
+  artifact, required field, or semantic graph.
+- Keep relationship-graph, referential-integrity, and authoritative-lineage
+  authority with the future Runtime Core.
+- Update systematic debugging, first-principles review, completion
+  verification, artifact schema, and runtime-ready boundary guidance.
+- Add a non-selector shared-config regression case while preserving the
+  original selector role regression coverage.
 
 ### Bounded failed-verification evidence convergence
 
@@ -24,6 +42,9 @@
 - Layer 1 passed 36 checks and retained the known environment-bound offline
   Codex fixture platform check on this Windows environment. That check is not
   treated as a fresh Codex live-closeout claim.
+- Claude dynamic trigger testing remains environment-bound because this
+  environment does not provide a usable Claude CLI; it is not claimed as
+  passed.
 
 ## v2.9.2 (2026-08-31)
 
