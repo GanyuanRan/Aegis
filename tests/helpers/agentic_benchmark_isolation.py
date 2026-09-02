@@ -972,7 +972,14 @@ def prompt_input_summary(data: Any, prompt: str, expected_skill_ids: list[str]) 
         "roleCounts": dict(sorted(roles.items())),
         "textBytes": len(text.encode()),
         "promptOccurrences": text.count(prompt),
-        "methodPackMarkerCount": text.count(f"{VIRTUAL_SNAPSHOT}/skills"),
+        # Codex <= 0.146 resolves the skill-projection symlink and prints the
+        # snapshot path; Codex >= 0.147 prints the discovery path itself. Both
+        # spellings are frozen layout constants, so either one is proof that
+        # the distribution snapshot reached the prompt input.
+        "methodPackMarkerCount": (
+            text.count(f"{VIRTUAL_SNAPSHOT}/skills")
+            + text.count(f"{VIRTUAL_HOME}/.agents/skills/aegis")
+        ),
         "evaluatedSkillMatchCount": len(matched_skills),
         "evaluatedSkillMatches": matched_skills,
     }
