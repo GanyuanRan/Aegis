@@ -882,6 +882,32 @@ class CommandBoundaryTest(unittest.TestCase):
                     prompt_input_summary(drifted, "absent", [])["nonSkillInputHash"],
                 )
 
+    def test_method_pack_marker_accepts_both_frozen_path_spellings(self):
+        def summary_for(text):
+            data = [
+                {
+                    "type": "message",
+                    "role": "developer",
+                    "content": [{"type": "input_text", "text": text}],
+                }
+            ]
+            return prompt_input_summary(data, "absent", [])
+
+        snapshot_form = summary_for("skill at /opt/aegis/skills/goal-framing/SKILL.md")
+        discovery_form = summary_for(
+            "skill at /home/benchmark/.agents/skills/aegis/goal-framing/SKILL.md"
+        )
+        both_forms = summary_for(
+            "/opt/aegis/skills/a/SKILL.md and /home/benchmark/.agents/skills/aegis/b/SKILL.md"
+        )
+        baseline_form = summary_for(
+            "no skills here; /home/benchmark/.agents/skills exists but is empty"
+        )
+        self.assertEqual(snapshot_form["methodPackMarkerCount"], 1)
+        self.assertEqual(discovery_form["methodPackMarkerCount"], 1)
+        self.assertEqual(both_forms["methodPackMarkerCount"], 2)
+        self.assertEqual(baseline_form["methodPackMarkerCount"], 0)
+
     def test_command_validation_rejects_no_proxy_and_unexpected_proxy_keys(self):
         layout = prepare_provider_preflight_layout(self.scratch / "validate-layout", self.auth)
         base = build_provider_preflight_command(
