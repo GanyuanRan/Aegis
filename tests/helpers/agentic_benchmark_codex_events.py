@@ -74,7 +74,8 @@ def semantic_tags(text: str) -> list[str]:
     normalized = " ".join(text.casefold().split())
     tags: list[str] = []
     explicit_rationale = re.search(
-        r"change necessity|implementation rationale|code change (?:is )?(?:needed|necessary)|minimum change|smallest change|source change",
+        r"change necessity|implementation rationale|code change (?:is )?(?:needed|necessary)"
+        r"|(?:minimum|minimal|smallest) (?:[\w-]+ ){0,2}(?:change|fix|edit|patch)\b|source change",
         normalized,
     )
     code_change_decision = re.search(r"\bdecision\s*:\s*code(?:[-_\s]+)change\b", normalized)

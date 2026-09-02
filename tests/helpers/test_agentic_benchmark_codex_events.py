@@ -131,6 +131,42 @@ class CodexEventReductionTest(unittest.TestCase):
                 }))
                 self.assertIn("implementation-rationale", parsed["events"][0]["tags"])
 
+    def test_minimum_change_synonyms_with_short_modifiers_are_rationale(self):
+        messages = (
+            # Verbatim first pre-edit messages from live held-out batches
+            # (gpt-5.6-sol, quick-bug-normal, both arms):
+            "I'll locate the delivery-summary copy, make the smallest grammar fix, "
+            "and run the relevant check.",
+            "I'm using the Aegis routing skill to confirm the project workflow, then "
+            "I'll locate the delivery-summary copy and make the smallest targeted fix.",
+            "I'm using the Aegis routing skill to quickly locate the delivery-summary "
+            "text, then I'll make the smallest grammar-only change and verify it.",
+            "A minimal edit to the label helper is enough here.",
+            "The minimum change is required here.",
+            "I'll apply the smallest patch that makes the test pass.",
+        )
+        for message in messages:
+            with self.subTest(message=message):
+                parsed = parse_codex_jsonl(json.dumps({
+                    "type": "item.completed",
+                    "item": {"type": "agent_message", "text": message},
+                }))
+                self.assertIn("implementation-rationale", parsed["events"][0]["tags"])
+
+    def test_smallest_without_a_change_word_is_not_rationale(self):
+        messages = (
+            "The smallest file in the repository is empty.",
+            "This helper is the smallest of the three modules.",
+            "A minimal reproduction is attached to the report.",
+        )
+        for message in messages:
+            with self.subTest(message=message):
+                parsed = parse_codex_jsonl(json.dumps({
+                    "type": "item.completed",
+                    "item": {"type": "agent_message", "text": message},
+                }))
+                self.assertNotIn("implementation-rationale", parsed["events"][0]["tags"])
+
     def test_code_change_policy_quotation_alone_is_not_rationale(self):
         messages = (
             "The policy documentation contains Decision: code-change.",
