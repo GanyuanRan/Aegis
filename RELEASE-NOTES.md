@@ -1,5 +1,26 @@
 # Aegis Release Notes
 
+## v2.9.6 (2026-09-03)
+
+### Harden benchmark prompt-input and rationale recognition
+
+- Accept both frozen skill-path spellings in the prompt-input marker: `VIRTUAL_SNAPSHOT/skills` (Codex <=0.146, symlink-resolved) and `VIRTUAL_HOME/.agents/skills/aegis` (Codex >=0.147, discovery path). `methodPackMarkerCount` now sums both (`tests/helpers/agentic_benchmark_isolation.py:972`).
+- Widen minimum-change rationale from `minimum/smallest change` to bounded family `minimum|minimal|smallest + change|fix|edit|patch` with up to two short modifiers (`smallest targeted fix`, `minimal edit`, `smallest patch`). Harden negation, quotation/reference, commitment ordering, negative-predicate (`is insufficient`), performance and modifier-bound handling; out-of-family phrases (e.g. `smallest file`) and negated/quoted mentions remain rejected (`tests/helpers/agentic_benchmark_codex_events.py:70`, `tests/helpers/test_agentic_benchmark_codex_events.py:127`).
+- Add regression coverage for marker spelling, synonym handling, negation/reference/attribution, and bounded-modifier limits.
+
+### Advisory subagent delegation lifecycle and event signals
+
+- `subagent-driven-development`: add **Slice Lifecycle and Result Trust** (`skills/subagent-driven-development/SKILL.md:67`) — choose route only after minimum baseline is understood, keep route fixed per slice, bind `SubagentContextPacket` to baseline/checkpoint, mark stale on workspace change, treat child output as evidence/proposal (compact summary + evidence locations + unknowns + side-effects), keep partial/cancelled/blocked/stale visibly non-conclusive. Additional advisory signals: independent discovery after baseline lock, conflict triangulation, pre-change read-only risk review, and changed context after a blocked attempt — no recursive children, shared writers, or runtime scheduler.
+- `dispatching-parallel-agents`: add **Event-Based Opportunities** (`skills/dispatching-parallel-agents/SKILL.md:47`) — after baseline lock, parallel read-only investigation may be considered for conflicting evidence, high-risk compatibility/impact review, retry with materially different context/model, or separate host/install surfaces. Safety gates unchanged: unknown dependencies, shared transactions/resources, stale state, untrusted inputs, uncertain host capability, or unsynthesizable results stay inline; child is investigator, not Git owner or completion authority.
+- `writing-plans`: add advisory reconsideration after minimum baseline (`skills/writing-plans/SKILL.md:460`) and `dispatching-parallel-agents` trigger prompt reinforcement (`tests/skill-triggering/prompts/dispatching-parallel-agents.txt:8`). No new artifact, role, or runtime authority; pure method discipline.
+- `.gitignore`: add `.autoloom/` local-only directory.
+
+### Verification boundary
+
+- Version-bump audit passed: 8 declared manifests in sync at `2.9.6` (`package.json`, `kimi.plugin.json`, `.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`, `.codex-plugin/plugin.json`, `.codebuddy-plugin/plugin.json`, `.claude-plugin/marketplace.json`, `.codebuddy-plugin/marketplace.json`); no undeclared `2.9.6` references.
+- Targeted unit checks for the two benchmark fixes passed (`test_agentic_benchmark_codex_events`, `test_agentic_benchmark_preflight`).
+- Full `bash tests/e2e/run-all.sh --full` remains environment-bound on this Windows host (WSL/bash bridge, offline Codex fixture) and is not claimed as passed here; method-pack/runtime-core boundary unchanged.
+
 ## v2.9.4 (2026-09-01)
 
 ### Generalize bounded preservation references

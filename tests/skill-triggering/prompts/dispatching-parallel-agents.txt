@@ -6,3 +6,9 @@ I have 4 independent test failures happening in different modules:
 4. tests/utils/date.test.ts - timezone handling broken
 
 These are unrelated issues in different parts of the codebase. Can you investigate all of them?
+
+The investigation should also consider whether parallel read-only checks are
+appropriate after the baseline is known: one check for conflicting evidence,
+one pre-change compatibility review, and one host-install surface review.
+Do not parallelize shared writes, unknown dependencies, or anything that cannot
+be summarized with evidence locations and unresolved unknowns.

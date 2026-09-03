@@ -457,6 +457,15 @@ Lack or denial of subagent support falls back to inline execution instead of blo
 A dirty workspace alone does not select either route; apply the Git ownership,
 overlap, and isolation rules separately.
 
+Reconsider delegation after the minimum baseline is understood, not from a
+keyword alone. Useful event signals are: a clearly isolated discovery slice,
+conflicting evidence that can be checked independently, a high-risk change
+that benefits from a read-only review, or a blocked/recovered slice where the
+next attempt will use materially different context. These signals are
+advisory; unknown dependencies, shared transactions/resources, stale state,
+untrusted inputs, unclear host capability, or borderline economics remain
+inline routes.
+
 Ask the user only when route selection crosses an unresolved authorization,
 privacy, paid-resource, external-action, or irreversible boundary; changes the
 approved scope or acceptance contract; or no safe route can preserve existing

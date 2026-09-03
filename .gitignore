@@ -21,3 +21,4 @@ tests/local/*
 /.opencode/package.json
 /.opencode/bun.lock
 /.opencode/package-lock.json
+.autoloom/
