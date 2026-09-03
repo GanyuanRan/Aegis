@@ -71,52 +71,96 @@ def assistant_text(item: dict[str, Any]) -> str:
 
 
 # A "minimum/minimal/smallest change|fix|edit|patch" phrase is genuine change
-# rationale only when the model is *committing* to the minimal change. The same
-# words appear when the phrase is negated ("do not make the smallest fix; a
-# broader repair is needed") or quoted from the task/policy ("the policy says:
-# make the smallest fix"). Negated and quoted mentions are references, not the
-# model's own rationale, and are intentionally rejected so they cannot satisfy
-# the change-necessity-before-edit contract. Word boundaries keep unrelated
-# words (e.g. "resource change") from matching "source change".
+# rationale only when the model is *committing* to the minimal change. Reject
+# quoted references and negation that governs the phrase, while allowing a
+# later explicit commitment after unrelated negation ("not risky, so I'll make
+# the minimum edit"). Word boundaries keep unrelated words (e.g. "resource
+# change") from matching "source change".
 _MINIMUM_CHANGE_PHRASE = re.compile(
     r"\b(?:minimum|minimal|smallest) (?:[\w-]+ ){0,2}(?:change|fix|edit|patch)\b"
 )
-_CLAUSE_BOUNDARY = re.compile(r"[.;!?]")
-_MINIMUM_CHANGE_NEGATIONS = frozenset({
-    "not", "no", "never", "without", "avoid", "avoids", "avoided", "avoiding",
-    "don't", "doesn't", "didn't", "isn't", "aren't", "wasn't", "weren't",
-    "shouldn't", "mustn't", "won't", "wouldn't", "can't", "cannot", "couldn't",
-})
-_MINIMUM_CHANGE_NEGATION_PHRASE = re.compile(r"\b(?:rather than|instead of)\b(?:\s+\S+){0,3}\s*$")
-_MINIMUM_CHANGE_QUOTATIONS = frozenset({
-    "says", "say", "said", "states", "state", "stated", "stating",
-    "reads", "read", "quote", "quotes", "quoted", "quoting", "cites", "cite",
-    "citing", "instruction", "instructions", "policy", "rubric", "guideline",
-    "guidelines", "prompt",
-})
-
-
-def _clause_before(normalized: str, index: int) -> str:
-    """Return the clause preceding ``index`` (text since the last . ; ! ?)."""
-    start = 0
-    for boundary in _CLAUSE_BOUNDARY.finditer(normalized, 0, index):
-        start = boundary.end()
-    return normalized[start:index]
+_CLAUSE_BOUNDARY = re.compile(r"[.;!?]|,\s+(?:but|so|yet|however)\b")
+_MINIMUM_CHANGE_NEGATION_TOKEN = (
+    r"(?:not(?!\s+only\b)|never|cannot|"
+    r"(?:don|doesn|didn|isn|aren|wasn|weren|shouldn|mustn|won|wouldn|can|couldn)['’]t)"
+)
+_MINIMUM_CHANGE_NEGATION = re.compile(
+    rf"\b(?:no|without|avoid(?:s|ed|ing)?|reject(?:s|ed|ing)?|refus(?:e|es|ed|ing))\b"
+    rf"|\b{_MINIMUM_CHANGE_NEGATION_TOKEN}\b"
+    r"|\b(?:rather than|instead of)\b"
+)
+_MINIMUM_CHANGE_POST_NEGATION = re.compile(
+    rf"^\s+(?:(?:is|are|was|were|will|would|should|can|could|does|do|did|has|have|had)\s+)?"
+    rf"(?:[\w-]+ly\s+){{0,2}}(?:{_MINIMUM_CHANGE_NEGATION_TOKEN}|no longer|in no way)\b"
+)
+_MINIMUM_CHANGE_NEGATIVE_PREDICATE = re.compile(
+    r"^\s+(?:(?:is|are|was|were|seems?|appears?|would be)\s+)?"
+    r"(?:insufficient|inadequate|inappropriate|unnecessary|unsafe|wrong|impossible)\b"
+)
+_MINIMUM_CHANGE_COMMITMENT = re.compile(
+    r"\b(?:i|we)\s+(?:will|shall|plan to|intend to|choose to|decide to)\b"
+    r"|\b(?:i am|we are|i['’]m|we['’]re) going to\b"
+    r"|\b(?:i|we)['’]ll\b|\blet['’]s\b"
+    r"|\b(?:but|and)\s+(?:(?:i|we)\s+)?(?:will|shall)\b"
+)
+_MINIMUM_CHANGE_REFERENCE = re.compile(
+    r"\b(?:quot(?:e|es|ed|ing)|cit(?:e|es|ed|ing))\b"
+    r"|\b(?:policy|rubric|guidelines?|prompt|instructions?|task|requirements?|rule|example)\b"
+    r"(?:(?![.;!?]).){0,80}\b(?:says?|said|states?|stated|reads?|asks?|asked|requests?|requested|"
+    r"requires?|required|expects?|expected)\b"
+    r"|\b(?:policy|rubric|prompt|task|requirements?|rule)(?:['’]s)?\s+"
+    r"(?:instruction|requirement|guideline|rule)\b"
+)
+_MINIMUM_CHANGE_ATTRIBUTION = re.compile(
+    r"\baccording to\s+(?:the\s+)?"
+    r"(?:policy|rubric|guidelines?|prompt|instructions?|task|requirements?|rule|example)\b"
+)
+_QUOTED_SPAN = re.compile(
+    r'"[^"]*"'
+    r"|“[^”]*”"
+    r"|‘[^’]*’"
+    r"|(?<!\w)'[^']*'(?!\w)"
+    r"|`[^`]*`"
+)
 
 
 def _committed_minimum_change(normalized: str) -> bool:
     """True when a minimum-change phrase is the model committing to the minimal
-    change, not a negated ("do not make the smallest fix") or quoted ("the policy
-    says: make the smallest fix") mention. Negation is checked in the four words
-    before the phrase; quotation in the five words before it."""
+    change, not a negated or quoted/reference mention."""
+    boundaries = iter(_CLAUSE_BOUNDARY.finditer(normalized))
+    boundary = next(boundaries, None)
+    quotations = iter(_QUOTED_SPAN.finditer(normalized))
+    quotation = next(quotations, None)
+    clause_start = 0
+
     for match in _MINIMUM_CHANGE_PHRASE.finditer(normalized):
-        clause = _clause_before(normalized, match.start())
-        words = [word.strip("\"'`,:;()[]") for word in clause.split()]
-        if any(word in _MINIMUM_CHANGE_NEGATIONS for word in words[-4:]):
+        while boundary is not None and boundary.end() <= match.start():
+            clause_start = boundary.end()
+            boundary = next(boundaries, None)
+        while quotation is not None and quotation.end() <= match.start():
+            quotation = next(quotations, None)
+        if (
+            quotation is not None
+            and quotation.start() <= match.start()
+            and match.end() <= quotation.end()
+        ):
             continue
-        if _MINIMUM_CHANGE_NEGATION_PHRASE.search(clause):
+
+        clause_end = boundary.start() if boundary is not None else len(normalized)
+        before = normalized[clause_start:match.start()]
+        after = normalized[match.end():clause_end]
+        negations = list(_MINIMUM_CHANGE_NEGATION.finditer(before))
+        commitments = list(_MINIMUM_CHANGE_COMMITMENT.finditer(before))
+        if negations and (not commitments or negations[-1].start() > commitments[-1].start()):
             continue
-        if any(word in _MINIMUM_CHANGE_QUOTATIONS for word in words[-5:]):
+        if (
+            _MINIMUM_CHANGE_POST_NEGATION.match(after)
+            or _MINIMUM_CHANGE_NEGATIVE_PREDICATE.match(after)
+        ):
+            continue
+        if _MINIMUM_CHANGE_REFERENCE.search(before):
+            continue
+        if _MINIMUM_CHANGE_ATTRIBUTION.search(before) and not commitments:
             continue
         return True
     return False
