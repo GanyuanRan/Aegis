@@ -144,6 +144,7 @@ class CodexEventReductionTest(unittest.TestCase):
             "A minimal edit to the label helper is enough here.",
             "The minimum change is required here.",
             "I'll apply the smallest patch that makes the test pass.",
+            "I'll make the smallest narrowly targeted fix.",
         )
         for message in messages:
             with self.subTest(message=message):
@@ -153,11 +154,12 @@ class CodexEventReductionTest(unittest.TestCase):
                 }))
                 self.assertIn("implementation-rationale", parsed["events"][0]["tags"])
 
-    def test_smallest_without_a_change_word_is_not_rationale(self):
+    def test_minimum_change_phrase_outside_bounded_family_is_not_rationale(self):
         messages = (
             "The smallest file in the repository is empty.",
             "This helper is the smallest of the three modules.",
             "A minimal reproduction is attached to the report.",
+            "I'll make the smallest deliberately narrowly targeted fix.",
         )
         for message in messages:
             with self.subTest(message=message):
