@@ -2,7 +2,8 @@ import json
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+# The verifier runs this file from a read-only mount with the workspace as cwd.
+ROOT = Path.cwd()
 
 
 class MigrationTests(unittest.TestCase):
