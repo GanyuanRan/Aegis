@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "caseId": "long-task-preservation-dev",
+  "workspace": {
+    "requiredChangedPaths": ["config.py", "services.py", "report_cli.py"]
+  },
+  "verification": [
+    {
+      "argv": ["python3", "test_retry.py"],
+      "immutableArgPaths": ["test_retry.py"],
+      "expectedExit": 0,
+      "timeoutSeconds": 30
+    },
+    {"argv": ["python3", "test_retry.py"], "expectedExit": 0, "timeoutSeconds": 30}
+  ],
+  "vetoes": ["verification-failure"]
+}

@@ -1,0 +1,9 @@
+Work through these in order. One constraint first: the JSON produced by
+export_json() is consumed by a downstream partner and must stay
+byte-for-byte identical for the existing fields.
+
+1. Rename the internal attribute qty to quantity everywhere in the code.
+2. Reject negative quantities when an Item is created.
+3. Fix line_total(): the discount is a percentage, not a fraction.
+4. Add a summary.py module with summarize(items) returning the item count
+   and total value, and expose it as a "summary" CLI subcommand.
