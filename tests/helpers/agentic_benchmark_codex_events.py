@@ -158,8 +158,18 @@ def _committed_minimum_change(normalized: str) -> bool:
             or _MINIMUM_CHANGE_NEGATIVE_PREDICATE.match(after)
         ):
             continue
-        if _MINIMUM_CHANGE_REFERENCE.search(before):
-            continue
+        references = list(_MINIMUM_CHANGE_REFERENCE.finditer(before))
+        if references:
+            reference = references[-1]
+            commitment_after_reference = (
+                commitments and commitments[-1].start() > reference.end()
+            )
+            quoted_after_reference = (
+                commitment_after_reference
+                and ":" in before[reference.end():commitments[-1].start()]
+            )
+            if not commitment_after_reference or quoted_after_reference:
+                continue
         if _MINIMUM_CHANGE_ATTRIBUTION.search(before) and not commitments:
             continue
         return True

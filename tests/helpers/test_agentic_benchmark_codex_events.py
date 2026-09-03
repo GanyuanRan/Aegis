@@ -217,6 +217,7 @@ class CodexEventReductionTest(unittest.TestCase):
             'The requirement is: "make the smallest fix."',
             "According to the task, make the smallest fix.",
             "The policy's instruction is to make the smallest fix.",
+            "The policy says: I'll make the smallest fix.",
         )
         for message in messages:
             with self.subTest(message=message):
@@ -236,6 +237,7 @@ class CodexEventReductionTest(unittest.TestCase):
             "It is unclear, but the minimal change here is enough.",
             "Per policy, I'll make the smallest fix.",
             "I will follow the guideline and make the smallest fix.",
+            "The prompt says the task is small, and I'll make the smallest fix.",
         )
         for message in messages:
             with self.subTest(message=message):
