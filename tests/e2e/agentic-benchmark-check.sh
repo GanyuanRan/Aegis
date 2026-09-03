@@ -479,7 +479,7 @@ assert_contains "$baseline" "AEGIS_LIVE_REPLAY=1" \
     "benchmark baseline gates live capture behind explicit opt-in"
 assert_contains "$baseline" "must not fabricate a no-Aegis baseline" \
     "benchmark baseline forbids fabricated live no-Aegis baseline"
-assert_contains "$baseline" "All ten minimum scenario classes" \
+assert_contains "$baseline" "All eleven minimum scenario classes" \
     "benchmark baseline defines deterministic coverage for all minimum scenarios"
 assert_contains "$baseline" "explicit coverage gap" \
     "benchmark baseline keeps missing replay coverage explicit"
@@ -509,11 +509,11 @@ assert_contains "$baseline" "does not provide variance, held-out, blind-review, 
     "benchmark baseline rejects single static replay overclaims"
 assert_contains "$baseline" "automatically promote a candidate" \
     "benchmark baseline keeps candidate promotion advisory"
-assert_contains "$baseline" "exactly 30 cases" \
-    "benchmark baseline defines the concrete thirty-case target"
+assert_contains "$baseline" "exactly 33 cases" \
+    "benchmark baseline defines the concrete thirty-three-case target"
 assert_contains "$baseline" "arm-neutral and observable-outcome-based" \
     "benchmark baseline requires fair live outcome scoring"
-assert_contains "$baseline" "44- or 132-attempt ceiling" \
+assert_contains "$baseline" "48- or 144-attempt ceiling" \
     "benchmark baseline bounds paid retry attempts"
 assert_contains "$baseline" "sanitized, path-independent advisory report" \
     "benchmark baseline defines a public-safe report projection"
@@ -567,8 +567,8 @@ coordinated-wrong-scenario|coordinated replay scenario remap|controlled replay r
 refs-without-live-eligibility|controlled refs without live eligibility|live replay eligibility must equal controlled replay availability
 controlled-replay-held-out|controlled replay held-out overclaim|must use development partition
 live-tier-in-progress|live harness implementation status regression|live held-out harness must be implemented after its offline gates pass
-standard-valid-run-target|standard valid-run target drift|standard-held-out.validRunTarget must be 40|matrix-only
-standard-paid-attempt-ceiling|standard paid-attempt ceiling drift|standard-held-out.paidAttemptCeiling must be 44|matrix-only
+standard-valid-run-target|standard valid-run target drift|standard-held-out.validRunTarget must be 44|matrix-only
+standard-paid-attempt-ceiling|standard paid-attempt ceiling drift|standard-held-out.paidAttemptCeiling must be 48|matrix-only
 standard-workers|unsupported standard worker count|standard-held-out.workers must be 8|matrix-only
 standard-wall-budget|standard wall budget drift|standard-held-out.wallClockBudgetSeconds must be 7200|matrix-only
 extended-wall-budget|extended wall budget drift|extended-held-out.wallClockBudgetSeconds must be 18000|matrix-only
@@ -591,7 +591,7 @@ matrix-top-level-repetitions|matrix top-level legacy repetitions alias|matrix to
 legacy-live-tier-alias|retired live tier alias|evaluationTiers must define the four-tier contract exactly|matrix-only
 live-score-source|arm-biased live scorer drift|live held-out scorer must remain arm-neutral and outcome-based|matrix-only
 live-supports-promotion|live promotion overclaim|live held-out tier cannot support promotion evidence by itself|matrix-only
-portfolio-case-count|portfolio case-count drift|casePortfolio case count must be 30|matrix-only
+portfolio-case-count|portfolio case-count drift|casePortfolio case count must be 33|matrix-only
 portfolio-status|portfolio implementation status regression|casePortfolio must be implemented after concrete manifest validation|matrix-only
 portfolio-repetitions|case portfolio repetitions alias|casePortfolio must contain exactly the canonical portfolio fields|matrix-only
 portfolio-workers|case portfolio workers alias|casePortfolio must contain exactly the canonical portfolio fields|matrix-only
@@ -627,8 +627,8 @@ CASES
 while IFS='|' read -r mutation label expected_error; do
     assert_negative_portfolio_case "$mutation" "$label" "$expected_error"
 done <<'CASES'
-missing-case|29-case portfolio|case manifest must contain exactly 30 cases
-extra-case|31-case portfolio|case manifest must contain exactly 30 cases
+missing-case|32-case portfolio|case manifest must contain exactly 33 cases
+extra-case|34-case portfolio|case manifest must contain exactly 33 cases
 duplicate-id|duplicate portfolio case id|case manifest ids must be unique
 wrong-partition|wrong case partition|does not match the fixed scenario/partition case id
 fourth-variant|fourth case variant|variant does not match its partition
@@ -736,8 +736,8 @@ from pathlib import Path
 
 profiles = {
     "development-pilot": (1, 2, 2, 2, 1200),
-    "standard-held-out": (20, 40, 44, 8, 7200),
-    "extended-held-out": (20, 120, 132, 8, 18000),
+    "standard-held-out": (22, 44, 48, 8, 7200),
+    "extended-held-out": (22, 132, 144, 8, 18000),
 }
 for path in sys.argv[1:]:
     batch_path = Path(path)

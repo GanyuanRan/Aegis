@@ -47,11 +47,11 @@ UNSUPPORTED_CLAIMS = (
 PROFILE_CONTRACTS = {
     "standard-held-out": {
         "datasetPartitions": ["held-out-normal", "held-out-boundary"],
-        "caseCount": 20,
+        "caseCount": 22,
         "arms": list(ARMS),
         "repetitions": 1,
-        "targetRuns": 40,
-        "maxAttempts": 44,
+        "targetRuns": 44,
+        "maxAttempts": 48,
         "publicationEligible": True,
         "publicationAuthority": "advisory-only",
         "supportedEvidence": ["held-out-evidence"],
@@ -63,11 +63,11 @@ PROFILE_CONTRACTS = {
     },
     "extended-held-out": {
         "datasetPartitions": ["held-out-normal", "held-out-boundary"],
-        "caseCount": 20,
+        "caseCount": 22,
         "arms": list(ARMS),
         "repetitions": 3,
-        "targetRuns": 120,
-        "maxAttempts": 132,
+        "targetRuns": 132,
+        "maxAttempts": 144,
         "publicationEligible": True,
         "publicationAuthority": "advisory-only",
         "supportedEvidence": ["held-out-evidence", "repeated-run-evidence"],
@@ -216,7 +216,7 @@ def cluster_interval(records: list[dict[str, Any]], seed: str, iterations: int =
 
 
 def validate_matrix_profile_contracts_value(matrix: dict[str, Any]) -> None:
-    require(matrix.get("version") == 6, "renderer requires benchmark matrix version 6")
+    require(matrix.get("version") == 7, "renderer requires benchmark matrix version 7")
     run_profiles = matrix.get("runProfiles")
     require(isinstance(run_profiles, list), "benchmark matrix runProfiles must be a list")
     profiles = {
@@ -296,7 +296,7 @@ def derived_metrics(report: dict[str, Any]) -> dict[str, Any]:
         require(case_id not in case_scenarios or case_scenarios[case_id] == scenario, f"case scenario drifted: {case_id}")
         case_scenarios[case_id] = scenario
         normalized.append(dict(record))
-    require(len(case_scenarios) == 20, "caseResults must contain exactly 20 held-out cases")
+    require(len(case_scenarios) == 22, "caseResults must contain exactly 22 held-out cases")
     require(set(case_scenarios.values()) == set(SCENARIOS), "caseResults must cover all ten scenario classes")
     for scenario in SCENARIOS:
         require(sum(value == scenario for value in case_scenarios.values()) == 2, f"scenario must contain exactly two held-out cases: {scenario}")
@@ -560,7 +560,7 @@ def markdown(report: dict[str, Any], language: str) -> str:
         metric, baseline, aegis, change = "Metric", "Without Aegis", "With Aegis", "Difference"
         contract, unsafe = "Contract pass rate", "Unsafe outcome rate (lower is better)"
         scenario_title = "Scenario class"
-        profile_line = f"Profile: `{report['profileId']}` · `{report['model']['requested']}` / `{report['model']['reasoningEffort']}` · n={target_runs} runs / 20 cases."
+        profile_line = f"Profile: `{report['profileId']}` · `{report['model']['requested']}` / `{report['model']['reasoningEffort']}` · n={target_runs} runs / 22 cases."
         limitations_title = "Limitations:"
     else:
         title = "Agentic Benchmark 结果"
@@ -568,7 +568,7 @@ def markdown(report: dict[str, Any], language: str) -> str:
         metric, baseline, aegis, change = "指标", "不使用 Aegis", "使用 Aegis", "差值"
         contract, unsafe = "合同通过率", "不安全结果率（越低越好）"
         scenario_title = "场景类别"
-        profile_line = f"配置：`{report['profileId']}` · `{report['model']['requested']}` / `{report['model']['reasoningEffort']}` · n={target_runs} 次运行 / 20 个案例。"
+        profile_line = f"配置：`{report['profileId']}` · `{report['model']['requested']}` / `{report['model']['reasoningEffort']}` · n={target_runs} 次运行 / 22 个案例。"
         limitations_title = "限制："
     rows = [
         f"### {title}",
@@ -597,9 +597,9 @@ def markdown(report: dict[str, Any], language: str) -> str:
         )
     interval = overall["deltaInterval95"]
     footer = (
-        f"n={target_runs} runs / 20 cases; 95% case-cluster interval: {delta(interval['lower'])} to {delta(interval['upper'])}."
+        f"n={target_runs} runs / 22 cases; 95% case-cluster interval: {delta(interval['lower'])} to {delta(interval['upper'])}."
         if language == "en"
-        else f"n={target_runs} 次运行 / 20 个案例；95% 案例簇区间：{delta(interval['lower'])} 至 {delta(interval['upper'])}。"
+        else f"n={target_runs} 次运行 / 22 个案例；95% 案例簇区间：{delta(interval['lower'])} 至 {delta(interval['upper'])}。"
     )
     rows.extend([
         "",
@@ -624,7 +624,7 @@ def svg(report: dict[str, Any]) -> str:
         f'<rect width="{width}" height="{height}" fill="#ffffff"/>',
         '<style>text{font-family:ui-sans-serif,system-ui,sans-serif;fill:#172033}.title{font-size:28px;font-weight:700}.section{font-size:18px;font-weight:700}.label{font-size:12px}.value{font-size:12px;font-weight:700}.muted{font-size:12px;fill:#526174}.grid{stroke:#d8dee9;stroke-width:1}</style>',
         '<text id="chart-title" class="title" x="40" y="46">Aegis agentic benchmark</text>',
-        f'<text class="muted" x="40" y="70">Profile {html.escape(report["profileId"])} · advisory held-out evidence · n={target_runs} runs / 20 cases</text>',
+        f'<text class="muted" x="40" y="70">Profile {html.escape(report["profileId"])} · advisory held-out evidence · n={target_runs} runs / 22 cases</text>',
     ]
     for tick in range(0, 101, 20):
         x = plot_x + plot_width * tick / 100
@@ -700,7 +700,7 @@ def synthetic_private(kind: str, profile_id: str = "extended-held-out") -> dict[
         "partition": "held-out",
         "versions": {"aegis": "2.5.3-test", "codex": "codex-cli 0.0.0-test", "bwrap": "bubblewrap 0.0.0-test"},
         "model": {"requested": "test-model", "reasoningEffort": "high", "observed": ["test-model"], "observedStatus": "recorded"},
-        "design": {"portfolioCaseCount": 30, "caseCount": 20, "arms": list(ARMS), "repetitions": profile["repetitions"], "targetRuns": profile["targetRuns"], "maxAttempts": profile["maxAttempts"], "clusterUnit": "case"},
+        "design": {"portfolioCaseCount": 33, "caseCount": 22, "arms": list(ARMS), "repetitions": profile["repetitions"], "targetRuns": profile["targetRuns"], "maxAttempts": profile["maxAttempts"], "clusterUnit": "case"},
         "attempts": {"total": profile["targetRuns"], "valid": profile["targetRuns"], "passes": passes, "fails": profile["targetRuns"] - passes, "invalid": 0, "invalidReasons": {}, "remaining": 0},
         "overall": derived["overall"],
         "perScenarioClass": derived["perScenarioClass"],
@@ -761,7 +761,7 @@ def self_test(print_golden: bool = False) -> None:
             require("Contract pass rate by scenario class" not in first[1], f"{golden_id} SVG retained scenario-class detail")
             require(all(html.escape(scenario) not in first[1] for scenario in SCENARIOS), f"{golden_id} SVG retained scenario labels")
             require(all(percent(public["overall"]["arms"][arm][metric]) in first[1] for arm in ARMS for metric in ("passRate", "unsafeOutcomeRate")), f"{golden_id} SVG omitted an overall metric value")
-            profile_label = f"{profile_id} · advisory held-out evidence · n={PROFILE_CONTRACTS[profile_id]['targetRuns']} runs / 20 cases"
+            profile_label = f"{profile_id} · advisory held-out evidence · n={PROFILE_CONTRACTS[profile_id]['targetRuns']} runs / 22 cases"
             require(profile_label in first[1], f"{golden_id} SVG profile shape drifted")
             require(all(item in first[2] for item in limitation_texts(public, "en")), f"{golden_id} Markdown limitations drifted")
             digest = bundle_hash(first)

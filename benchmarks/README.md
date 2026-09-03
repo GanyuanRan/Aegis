@@ -7,8 +7,8 @@ publication approval.
 `benchmarks/results/` may contain only public-safe advisory JSON reports. A
 valid report records the frozen batch and profile identity, host/model versions,
 the requested model and reasoning effort, the observed model identity or an
-explicit host-event unavailability status, the 30-case portfolio and 20-case
-held-out design, all 40 `standard-held-out` or 120 `extended-held-out`
+explicit host-event unavailability status, the 33-case portfolio and 22-case
+held-out design, all 44 `standard-held-out` or 132 `extended-held-out`
 observable outcomes, case-cluster intervals, invalid-attempt counts, profile
 limitations, review status, and unsupported claims. Generated SVG and bilingual
 Markdown projections must derive from the same validated JSON; displayed

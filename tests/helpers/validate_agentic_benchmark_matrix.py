@@ -106,14 +106,14 @@ EXPECTED_CONTROLLED_REPLAY_MAPPING = {
 EXPECTED_LIVE_PARTITIONS = ["held-out-normal", "held-out-boundary"]
 EXPECTED_LIVE_ARMS = ["baseline-no-aegis", "aegis-auto"]
 EXPECTED_PORTFOLIO_PARTITIONS = {
-    "development": 10,
-    "held-out-normal": 10,
-    "held-out-boundary": 10,
+    "development": 11,
+    "held-out-normal": 11,
+    "held-out-boundary": 11,
 }
 EXPECTED_CASE_ROLE_COUNTS = {
-    "development": 10,
+    "development": 11,
     "sentinel": 12,
-    "discriminator": 8,
+    "discriminator": 10,
 }
 EXPECTED_SENTINEL_DEFINITION = "regression guard for safety, fast-path cheapness, or stable expected behavior; never presented as arm discrimination evidence"
 EXPECTED_DISCRIMINATOR_DEFINITION = "case intended to expose an arm difference or a shared safety defect; observed arm separation is not guaranteed"
@@ -266,11 +266,11 @@ EXPECTED_RUN_PROFILES = {
     },
     "standard-held-out": {
         "datasetPartitions": EXPECTED_LIVE_PARTITIONS,
-        "caseCount": 20,
+        "caseCount": 22,
         "arms": EXPECTED_LIVE_ARMS,
         "repetitionsPerCase": 1,
-        "validRunTarget": 40,
-        "paidAttemptCeiling": 44,
+        "validRunTarget": 44,
+        "paidAttemptCeiling": 48,
         "workers": 8,
         "wallClockBudgetSeconds": 7200,
         "preflightTimeoutSeconds": 30,
@@ -283,11 +283,11 @@ EXPECTED_RUN_PROFILES = {
     },
     "extended-held-out": {
         "datasetPartitions": EXPECTED_LIVE_PARTITIONS,
-        "caseCount": 20,
+        "caseCount": 22,
         "arms": EXPECTED_LIVE_ARMS,
         "repetitionsPerCase": 3,
-        "validRunTarget": 120,
-        "paidAttemptCeiling": 132,
+        "validRunTarget": 132,
+        "paidAttemptCeiling": 144,
         "workers": 8,
         "wallClockBudgetSeconds": 18000,
         "preflightTimeoutSeconds": 30,
@@ -462,8 +462,8 @@ def validate_case_portfolio_contract(data: dict[str, Any]) -> None:
         "casePortfolio must be implemented after concrete manifest validation",
     )
     require(portfolio.get("schemaVersion") == 2, "casePortfolio schema version must be 2")
-    require(portfolio.get("caseCount") == 30, "casePortfolio case count must be 30")
-    require(portfolio.get("scenarioClassCount") == 10, "casePortfolio scenario class count must be 10")
+    require(portfolio.get("caseCount") == 33, "casePortfolio case count must be 33")
+    require(portfolio.get("scenarioClassCount") == 11, "casePortfolio scenario class count must be 11")
     require(portfolio.get("partitions") == EXPECTED_PORTFOLIO_PARTITIONS, "casePortfolio partitions drifted")
     require(portfolio.get("arms") == EXPECTED_LIVE_ARMS, "casePortfolio arms drifted")
 
@@ -784,7 +784,7 @@ def validate_matrix(path: Path) -> None:
         "matrix top-level fields must match the exact v6 schema; "
         f"unexpected: {unexpected_fields}; missing: {missing_fields}",
     )
-    require(data.get("version") == 6, "version must be 6")
+    require(data.get("version") == 7, "version must be 7")
     require(data.get("status") == "draft", "status must be draft")
     require("runtime authority" in data.get("primaryQuestion", ""), "primary question must name runtime authority boundary")
     validate_arms(data)

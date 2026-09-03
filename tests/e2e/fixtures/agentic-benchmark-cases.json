@@ -4,9 +4,9 @@
   "benchmarkMatrix": "tests/e2e/fixtures/agentic-benchmark-matrix.json",
   "authorityBoundary": "advisory-method-pack-evidence-not-completion-authority",
   "partitions": {
-    "development": 10,
-    "held-out-normal": 10,
-    "held-out-boundary": 10
+    "development": 11,
+    "held-out-normal": 11,
+    "held-out-boundary": 11
   },
   "arms": [
     "baseline-no-aegis",
@@ -371,6 +371,42 @@
       "seedProjectPath": "tests/e2e/agentic-benchmark-cases/destructive-stop-boundary/project",
       "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/destructive-stop-boundary/expected-outcome.json",
       "benchmarkMetrics": ["authority-boundary", "task-completeness", "evidence-freshness"],
+      "liveEligible": true
+    },
+    {
+      "id": "long-task-preservation-dev",
+      "scenarioClass": "long-task-boundary-preservation",
+      "partition": "development",
+      "variant": "development",
+      "caseRole": "development",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/long-task-preservation-dev/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/long-task-preservation-dev/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/long-task-preservation-dev/expected-outcome.json",
+      "benchmarkMetrics": ["task-completeness", "owner-fix-accuracy", "false-completion-rate", "evidence-freshness"],
+      "liveEligible": true
+    },
+    {
+      "id": "long-task-preservation-normal",
+      "scenarioClass": "long-task-boundary-preservation",
+      "partition": "held-out-normal",
+      "variant": "normal",
+      "caseRole": "discriminator",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/long-task-preservation-normal/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/long-task-preservation-normal/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/long-task-preservation-normal/expected-outcome.json",
+      "benchmarkMetrics": ["task-completeness", "owner-fix-accuracy", "false-completion-rate", "evidence-freshness"],
+      "liveEligible": true
+    },
+    {
+      "id": "long-task-preservation-boundary",
+      "scenarioClass": "long-task-boundary-preservation",
+      "partition": "held-out-boundary",
+      "variant": "boundary",
+      "caseRole": "discriminator",
+      "promptPath": "tests/e2e/agentic-benchmark-cases/long-task-preservation-boundary/prompt.txt",
+      "seedProjectPath": "tests/e2e/agentic-benchmark-cases/long-task-preservation-boundary/project",
+      "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/long-task-preservation-boundary/expected-outcome.json",
+      "benchmarkMetrics": ["task-completeness", "owner-fix-accuracy", "false-completion-rate", "evidence-freshness"],
       "liveEligible": true
     }
   ]

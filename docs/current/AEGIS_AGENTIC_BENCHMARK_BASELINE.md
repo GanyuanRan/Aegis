@@ -77,6 +77,8 @@ The minimum benchmark suite should include:
 - requested white-box Trace Digest for a non-trivial task
 - negative fast-path sample that must not emit Trace Digest ceremony
 - destructive or source-of-truth cleanup that must stop for confirmation
+- long multi-step task whose early-stated boundary, legitimately shared role,
+  or inherited hand-off claim must survive every later step
 
 Each scenario needs:
 
@@ -143,7 +145,7 @@ These fields describe available verification paths. A fixture reference is not
 evidence that a benchmark run passed, an empty controlled replay list is an
 explicit coverage gap, and live eligibility is not live execution evidence.
 
-All ten minimum scenario classes have deterministic workflow-quality fixture
+All eleven minimum scenario classes have deterministic workflow-quality fixture
 references. Current controlled replay and live eligibility are limited to these
 exact mappings:
 
@@ -152,7 +154,7 @@ exact mappings:
 - `completion-claim-with-missing-evidence` ->
   `completion-evidence-boundary`
 
-The other seven minimum scenario classes intentionally use empty
+The other eight minimum scenario classes intentionally use empty
 `controlledReplaySampleRefs` and set `liveReplayEligible` to `false`. The matrix
 and replay manifest must agree bidirectionally on sample ID and scenario class;
 validation must reject missing, extra, or mismatched mappings.
@@ -187,8 +189,8 @@ Matrix version 6 reserves one concrete portfolio manifest at:
 
 `tests/e2e/fixtures/agentic-benchmark-cases.json`
 
-The target portfolio contains exactly 30 cases: one development, one held-out
-normal, and one held-out boundary case for each of the ten required scenario
+The target portfolio contains exactly 33 cases: one development, one held-out
+normal, and one held-out boundary case for each of the eleven required scenario
 classes. The manifest owns only that concrete portfolio. It does not own
 repetitions, attempt ceilings, concurrency, or time budgets.
 
@@ -197,8 +199,8 @@ The matrix is the only exact run-shape owner. It defines these profiles:
 | Profile | Cases | Repetitions | Valid target | Attempt ceiling | Workers | Wall budget | Publication |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 | `development-pilot` | 1 development | 1 | 2 | 2 | 2 | 1200 seconds | disabled |
-| `standard-held-out` | all 20 held-out | 1 | 40 | 44 | 8 | 7200 seconds | advisory; `repeated-run-evidence` unsupported |
-| `extended-held-out` | all 20 held-out | 3 | 120 | 132 | 8 | 18000 seconds | advisory repeated-run evidence |
+| `standard-held-out` | all 22 held-out | 1 | 44 | 48 | 8 | 7200 seconds | advisory; `repeated-run-evidence` unsupported |
+| `extended-held-out` | all 22 held-out | 3 | 132 | 144 | 8 | 18000 seconds | advisory repeated-run evidence |
 
 Every profile uses both live comparison arms, a 30-second provider preflight,
 a 960-second per-attempt timeout, and an infrastructure failure limit of two
@@ -343,7 +345,8 @@ Every concrete case has one diagnostic role:
 
 Case role never contributes a scoring pass. The initial v6 metadata classifies
 the existing portfolio as 10 development, 12 sentinel, and 8 discriminator
-cases. `fallback-retirement-boundary` remains a discriminator because a shared
+cases. Matrix v7 adds the long-task boundary preservation class as 1
+development and 2 discriminator cases (11 / 12 / 10). `fallback-retirement-boundary` remains a discriminator because a shared
 unsafe failure is a useful capability defect even when both arms fail.
 
 The anti-overfit order is mandatory for candidate skill or workflow revisions:
@@ -370,6 +373,22 @@ held-out evidence, and flagged-result review remain required.
 The Aegis 2.7.5 snapshot published on 2026-08-11 remains frozen matrix-v5
 evidence. Matrix v6 changes apply only to newly prepared batches and do not
 relabel or re-render that snapshot's outcomes.
+
+### 7.5 Matrix v7 Long-Task Boundary Preservation Extension
+
+Matrix v7 adds one scenario class, `long-task-boundary-preservation`, with
+one development and two held-out cases. Its prompts contain three or four
+ordered sub-goals plus one boundary that a later sub-goal tempts the agent
+to violate: an alias retirement that must rebind instead of delete, an
+export contract that must stay byte-identical while surrounding code is
+renamed, and a hand-off note whose claimed progress must be verified before
+the old path is deleted. Scoring stays arm-neutral: final workspace, one
+immutable fixture test, path existence and ordinary-language response
+claims. Deterministic coverage references the existing
+`bounded-preservation-shared-config-role`, `interrupted-long-task-resume`
+and `failed-verification-retry-convergence` fixtures; controlled replay
+coverage is intentionally empty. v7 applies only to newly prepared batches;
+published v5 and v6 snapshots are not relabeled.
 
 ## 8. Controlled Replay Samples
 
@@ -572,7 +591,7 @@ Before the first held-out attempt, the matrix, selected profile, portfolio,
 prompts, projects, outcome contracts, evaluated method-pack snapshot and run
 policy must be frozen and hashed. Semantic changes invalidate the batch.
 Infrastructure-invalid attempts remain in an immutable ledger and consume the
-selected profile's 44- or 132-attempt ceiling.
+selected profile's 48- or 144-attempt ceiling.
 An infrastructure-invalid ledger entry must retain exactly one fixed, public-safe
 `errorType` from the scheduler-owned allowlist. The code identifies the failed
 boundary, such as supervisor output/result handling, host execution/events,
@@ -610,9 +629,9 @@ be re-labeled, re-aggregated, or published as repaired evidence.
 
 `tests/helpers/render_agentic_benchmark.py` is the single public projection
 owner. It must derive the accepted shape from the frozen profile identifier,
-recompute every displayed score from the complete 40-row standard or 120-row
-extended held-out result set, validate the corresponding 30/20/40/44 or
-30/20/120/132 design and case-cluster interval, then produce a zero-based SVG
+recompute every displayed score from the complete 44-row standard or 132-row
+extended held-out result set, validate the corresponding 33/22/44/48 or
+33/22/132/144 design and case-cluster interval, then produce a zero-based SVG
 and English/Chinese tables, including the frozen model and reasoning effort,
 from the same sanitized JSON. Standard reports must display the unsupported
 `repeated-run-evidence` limitation. The repeated runner owns private execution
