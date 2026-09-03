@@ -167,6 +167,69 @@ class CodexEventReductionTest(unittest.TestCase):
                 }))
                 self.assertNotIn("implementation-rationale", parsed["events"][0]["tags"])
 
+    def test_negated_minimum_change_is_not_rationale(self):
+        # A model rejecting the minimal change has not stated a change rationale;
+        # crediting it would let "do not make the smallest fix" satisfy the
+        # change-necessity-before-edit contract before any edit exists.
+        messages = (
+            "Do not make the smallest fix; this needs a broader repair.",
+            "We won't apply the minimal patch here.",
+            "Avoid the smallest change and rewrite the module instead.",
+            "This is not the smallest edit; a full refactor is required.",
+            "Rather than the smallest fix, we should redesign the parser.",
+        )
+        for message in messages:
+            with self.subTest(message=message):
+                parsed = parse_codex_jsonl(json.dumps({
+                    "type": "item.completed",
+                    "item": {"type": "agent_message", "text": message},
+                }))
+                self.assertNotIn("implementation-rationale", parsed["events"][0]["tags"])
+
+    def test_quoted_minimum_change_reference_is_not_rationale(self):
+        # Quoting or referencing the task/policy is not the model's own
+        # rationale; it must not pre-satisfy the change-necessity contract.
+        messages = (
+            "The policy says: make the smallest fix.",
+            "The quoted instruction is make the smallest fix.",
+            "The rubric states the minimum change should be preferred.",
+            "As the prompt says, make the smallest edit.",
+            "The guideline reads: apply the minimal patch.",
+        )
+        for message in messages:
+            with self.subTest(message=message):
+                parsed = parse_codex_jsonl(json.dumps({
+                    "type": "item.completed",
+                    "item": {"type": "agent_message", "text": message},
+                }))
+                self.assertNotIn("implementation-rationale", parsed["events"][0]["tags"])
+
+    def test_committed_minimum_change_near_negation_or_quote_words_still_counts(self):
+        # The guard must not over-suppress: a genuine commitment where a negation
+        # or quote word appears earlier in the clause (outside the phrase window)
+        # is still rationale.
+        messages = (
+            "The change is not risky, so I'll make the minimum edit.",
+            "I read the file, then I'll make the smallest targeted fix.",
+            "It is unclear, but the minimal change here is enough.",
+        )
+        for message in messages:
+            with self.subTest(message=message):
+                parsed = parse_codex_jsonl(json.dumps({
+                    "type": "item.completed",
+                    "item": {"type": "agent_message", "text": message},
+                }))
+                self.assertIn("implementation-rationale", parsed["events"][0]["tags"])
+
+    def test_source_change_requires_word_boundary(self):
+        # "resource change" contains "source change" as a substring; without word
+        # boundaries it was tagged as change rationale.
+        parsed = parse_codex_jsonl(json.dumps({
+            "type": "item.completed",
+            "item": {"type": "agent_message", "text": "The resource change failed to apply cleanly."},
+        }))
+        self.assertNotIn("implementation-rationale", parsed["events"][0]["tags"])
+
     def test_code_change_policy_quotation_alone_is_not_rationale(self):
         messages = (
             "The policy documentation contains Decision: code-change.",
