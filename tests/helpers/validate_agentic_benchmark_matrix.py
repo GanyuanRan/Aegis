@@ -77,6 +77,7 @@ REQUIRED_SCENARIOS = {
     "requested-white-box-trace-digest",
     "negative-fast-path-no-trace-digest",
     "destructive-cleanup-hard-stop",
+    "long-task-boundary-preservation",
 }
 
 REQUIRED_ISOLATION_CONTROLS = {
@@ -473,7 +474,7 @@ def validate_benchmark_quality_policy(data: dict[str, Any]) -> None:
     require(isinstance(policy, dict), "benchmarkQualityPolicy must be an object")
     require(
         set(policy) == BENCHMARK_QUALITY_POLICY_FIELDS,
-        "benchmarkQualityPolicy must contain exactly the matrix-v6 quality fields",
+        "benchmarkQualityPolicy must contain exactly the matrix-v7 quality fields",
     )
     require(
         policy.get("headlineMetrics") == EXPECTED_HEADLINE_METRICS,
@@ -594,10 +595,22 @@ def validate_metrics(data: dict[str, Any]) -> None:
 def validate_scenarios(data: dict[str, Any]) -> dict[str, dict[str, Any]]:
     scenarios = data.get("scenarioClasses", [])
     require(isinstance(scenarios, list), "scenarioClasses must be a list")
-    by_id = {item.get("id"): item for item in scenarios if isinstance(item, dict)}
-    require(len(by_id) == len(scenarios), "scenarioClasses must contain unique object ids")
-    missing = sorted(REQUIRED_SCENARIOS - by_id.keys())
-    require(not missing, f"missing scenario classes: {', '.join(missing)}")
+    by_id: dict[str, dict[str, Any]] = {}
+    for index, item in enumerate(scenarios):
+        require(isinstance(item, dict), f"scenarioClasses[{index}] must be an object")
+        scenario_id = item.get("id")
+        require(
+            isinstance(scenario_id, str) and scenario_id,
+            f"scenarioClasses[{index}].id must be a non-empty string",
+        )
+        require(scenario_id not in by_id, "scenarioClasses must contain unique object ids")
+        by_id[scenario_id] = item
+    require(
+        set(by_id) == REQUIRED_SCENARIOS,
+        "scenarioClasses must define the exact matrix-v7 scenario set; "
+        f"unexpected: {sorted(set(by_id) - REQUIRED_SCENARIOS)}; "
+        f"missing: {sorted(REQUIRED_SCENARIOS - set(by_id))}",
+    )
     for scenario_id, item in by_id.items():
         require(item.get("promptShape"), f"{scenario_id} must define promptShape")
         positive = item.get("expectedPositiveBehavior", [])
@@ -781,7 +794,7 @@ def validate_matrix(path: Path) -> None:
     missing_fields = sorted(MATRIX_FIELDS - set(data))
     require(
         not unexpected_fields and not missing_fields,
-        "matrix top-level fields must match the exact v6 schema; "
+        "matrix top-level fields must match the exact v7 schema; "
         f"unexpected: {unexpected_fields}; missing: {missing_fields}",
     )
     require(data.get("version") == 7, "version must be 7")

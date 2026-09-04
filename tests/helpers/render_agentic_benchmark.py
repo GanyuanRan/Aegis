@@ -36,7 +36,26 @@ SCENARIOS = (
     "shared-owner-bug-repair",
     "tiny-fast-path",
     "tiny-new-source-path-change-necessity",
+    "long-task-boundary-preservation",
 )
+# Published historical snapshots use the frozen pre-v7 portfolio. Keep their
+# projection contract available so historical evidence can still be verified
+# without relabeling it as a current matrix-v7 report. This tuple is
+# intentionally explicit: adding or reordering a current scenario must not
+# silently change the historical contract.
+HISTORICAL_SCENARIOS = (
+    "ambiguous-feature-shaping",
+    "completion-claim-with-missing-evidence",
+    "destructive-cleanup-hard-stop",
+    "fallback-retirement-cleanup",
+    "negative-fast-path-no-trace-digest",
+    "quick-bug-change-necessity",
+    "requested-white-box-trace-digest",
+    "shared-owner-bug-repair",
+    "tiny-fast-path",
+    "tiny-new-source-path-change-necessity",
+)
+SCENARIO_LABELS = tuple(sorted(set((*SCENARIOS, *HISTORICAL_SCENARIOS)), key=len, reverse=True))
 UNSUPPORTED_CLAIMS = (
     "runtime-authority",
     "automatic-candidate-promotion",
@@ -47,6 +66,7 @@ UNSUPPORTED_CLAIMS = (
 PROFILE_CONTRACTS = {
     "standard-held-out": {
         "datasetPartitions": ["held-out-normal", "held-out-boundary"],
+        "portfolioCaseCount": 33,
         "caseCount": 22,
         "arms": list(ARMS),
         "repetitions": 1,
@@ -60,9 +80,11 @@ PROFILE_CONTRACTS = {
             "repeated-run-evidence-unsupported",
             "not-independent-universal-causal-promotion-runtime-or-completion-authority",
         ],
+        "scenarios": SCENARIOS,
     },
     "extended-held-out": {
         "datasetPartitions": ["held-out-normal", "held-out-boundary"],
+        "portfolioCaseCount": 33,
         "caseCount": 22,
         "arms": list(ARMS),
         "repetitions": 3,
@@ -77,6 +99,89 @@ PROFILE_CONTRACTS = {
             "repetitions-case-clustered-not-statistically-independent",
             "not-universal-causal-promotion-runtime-or-completion-authority",
         ],
+        "scenarios": SCENARIOS,
+    },
+}
+HISTORICAL_PROFILE_CONTRACTS = {
+    "standard-held-out": {
+        "datasetPartitions": ["held-out-normal", "held-out-boundary"],
+        "portfolioCaseCount": 30,
+        "caseCount": 20,
+        "arms": list(ARMS),
+        "repetitions": 1,
+        "targetRuns": 40,
+        "maxAttempts": 44,
+        "publicationEligible": True,
+        "publicationAuthority": "advisory-only",
+        "supportedEvidence": ["held-out-evidence"],
+        "unsupportedEvidence": ["repeated-run-evidence"],
+        "limitations": [
+            "repeated-run-evidence-unsupported",
+            "not-independent-universal-causal-promotion-runtime-or-completion-authority",
+        ],
+        "scenarios": HISTORICAL_SCENARIOS,
+    },
+    "extended-held-out": {
+        "datasetPartitions": ["held-out-normal", "held-out-boundary"],
+        "portfolioCaseCount": 30,
+        "caseCount": 20,
+        "arms": list(ARMS),
+        "repetitions": 3,
+        "targetRuns": 120,
+        "maxAttempts": 132,
+        "publicationEligible": True,
+        "publicationAuthority": "advisory-only",
+        "supportedEvidence": ["held-out-evidence", "repeated-run-evidence"],
+        "unsupportedEvidence": [],
+        "limitations": [
+            "bounded-advisory-repeated-run-evidence",
+            "repetitions-case-clustered-not-statistically-independent",
+            "not-universal-causal-promotion-runtime-or-completion-authority",
+        ],
+        "scenarios": HISTORICAL_SCENARIOS,
+    },
+}
+HISTORICAL_SHAPE_FIELDS = (
+    "portfolioCaseCount",
+    "caseCount",
+    "repetitions",
+    "targetRuns",
+    "maxAttempts",
+)
+HISTORICAL_SHAPES = {
+    profile_id: {
+        field: contract[field]
+        for field in HISTORICAL_SHAPE_FIELDS
+    }
+    for profile_id, contract in HISTORICAL_PROFILE_CONTRACTS.items()
+}
+# These are the only legacy-shaped reports that the renderer may accept. The
+# batch digest identifies the frozen input batch and the canonical report hash
+# binds the complete published JSON input; together they prevent a newly
+# generated or edited 30/20 report from silently bypassing the current
+# matrix-v7 contract. Do not add a marker to the committed historical JSON:
+# doing so would change immutable evidence.
+HISTORICAL_SNAPSHOT_ALLOWLIST = {
+    (
+        "gpt-5-6-sol-xhigh-extended-v5-20260731",
+        "2c3afe88a5b6adb72bd6fdebb53ea7ad6da25b23455a44254568d96f95ffa460",
+    ): {
+        "profileId": "extended-held-out",
+        "canonicalSha256": "b7569f4711386ee61ea594040e07717aaf0d5c3833254bba25e9a5d5a75cc0f4",
+    },
+    (
+        "gpt-5-6-sol-xhigh-extended-20260811-aegis-2-7-5",
+        "494fd6bf22f45bd111a3faf04cc1c0ace1e2af7a70c970de9cbb345a37e449ea",
+    ): {
+        "profileId": "extended-held-out",
+        "canonicalSha256": "200f7848e3c35091708336125428f6cd197d1a2f9c1667109f00632b35d229fd",
+    },
+    (
+        "gpt-5-6-sol-xhigh-extended-20260811-aegis-2-7-6-958fcc2-native-proxy-001",
+        "be67a98fdcd9f249e6fb0de8eaf921e640d0d7ab5c860feb02a57223c1f6b46b",
+    ): {
+        "profileId": "extended-held-out",
+        "canonicalSha256": "7ecf0c4716db67fa820432f5b676376d192b59b545cdcffdfd387ce91ad8df06",
     },
 }
 PRIVATE_KEYS = re.compile(
@@ -90,16 +195,38 @@ SECRET_PATTERNS = (
     re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b"),
     re.compile(r"(?i)(?:access_token|refresh_token|id_token|api_key)\s*[:=]\s*[\"']?[^\"'\s]{8,}"),
 )
+# The boundary-aware pattern above is used for free-form text. Structured
+# identifiers need one extra raw-token pass because a credential can be
+# concatenated to an otherwise-valid identifier (for example, `prefixsk-...`).
+# Known scenario labels are removed from the raw-token pass in
+# reject_private_material below; this keeps `long-task-boundary-preservation`
+# safe without accepting a token appended around that label.
+EMBEDDED_SECRET_PATTERN = re.compile(r"(?i)sk-(?=[A-Za-z0-9_-]{16,})")
+
+
+def has_untrusted_embedded_secret(value: str) -> bool:
+    """Find an embedded token while ignoring the ``sk-`` inside known labels."""
+    lowered = value.lower()
+    for match in EMBEDDED_SECRET_PATTERN.finditer(value):
+        if any(
+            (token_offset := scenario.lower().find("sk-")) >= 0
+            and match.start() >= token_offset
+            and lowered.startswith(scenario.lower(), match.start() - token_offset)
+            for scenario in SCENARIO_LABELS
+        ):
+            continue
+        return True
+    return False
 GOLDEN_HASHES = {
-    "standard-held-out-positive": "d5c8213bf7f9ac9f62db3afc048cc83157bb602784f971e32a3189e0f72b629b",
-    "standard-held-out-neutral": "8347ba9d10e894ed7c516326c19aab894d1c81aa6ea532f279e286fc79358943",
-    "standard-held-out-negative": "849a8be55c1ab42b1f0ba1d08d846d04e96e1c6ef438b7dc55f04077d525c726",
-    "extended-held-out-positive": "ad3383608b63a733d46c2749d2992cf2a371bbdeacd0f61d38b9273f8a683468",
-    "extended-held-out-neutral": "12c60881897140511692bd0963ab8c4541928b6aa1aafb2845bd2127ef42759c",
-    "extended-held-out-negative": "7133e2df38bfac28411d9d547f5522a19afc5bab36ddc254c881f98431544d18",
+    "standard-held-out-positive": "7fddf6e15a8733b503b21f634d00b5d4d7c3f7b7f14ae0556a61e2a64b7d477a",
+    "standard-held-out-neutral": "d5a36573accf1342a2a24e0ea4b5a9ad245e78817b74fa71df5aac174a2b4d0c",
+    "standard-held-out-negative": "17e293bc9b0bd88bf433aceb3ece181fb032a5d6164f5bf221af14ce810322b8",
+    "extended-held-out-positive": "890ad0dbbe0f1b61b1b7ae74bd15391d003b2da9025287895cd7a11e6b8e7558",
+    "extended-held-out-neutral": "d5a77ae607f7a8c327e58b2363ed9a1ff528a7d082f38a0caddc1b01f2e44984",
+    "extended-held-out-negative": "d1e369771cf93532931711feed512bd8fff27f447e0f30813a7ba529acda65e8",
 }
 OUTPUT_PRIVATE_PATTERN = re.compile(
-    r"/(?:home|Users|tmp|workspace)/|(?:^|[\s\"'=(])(?:[A-Za-z]:[\\/]|\\\\[^\\/\s]+[\\/])|session[_-]?id|rollout[_-]?id|sk-[A-Za-z0-9_-]{16,}",
+    r"/(?:home|Users|tmp|workspace)/|(?:^|[\s\"'=(])(?:[A-Za-z]:[\\/]|\\\\[^\\/\s]+[\\/])|session[_-]?id|rollout[_-]?id|(?<![A-Za-z0-9])sk-[A-Za-z0-9_-]{16,}",
     re.IGNORECASE,
 )
 
@@ -160,6 +287,9 @@ def reject_private_material(report: dict[str, Any]) -> None:
         require(ABSOLUTE_PATH.search(value) is None, f"report contains an absolute machine path: {path}")
         require(PRIVATE_IDENTIFIER.search(value) is None, f"report contains a session or rollout identifier: {path}")
         require(all(pattern.search(value) is None for pattern in SECRET_PATTERNS), f"report contains credential-like material: {path}")
+        if not has_untrusted_embedded_secret(value):
+            continue
+        require(False, f"report contains credential-like material: {path}")
 
 
 def numeric(value: Any, label: str, *, minimum: float = 0.0, maximum: float = 100.0) -> float:
@@ -237,8 +367,8 @@ def validate_matrix_profile_contracts_value(matrix: dict[str, Any]) -> None:
         "unsupportedEvidence": "unsupportedEvidence",
     }
     for profile_id, contract in PROFILE_CONTRACTS.items():
-        require(sum(isinstance(item, dict) and item.get("id") == profile_id for item in run_profiles) == 1, f"renderer profile must appear exactly once in matrix v6: {profile_id}")
-        require(profile_id in profiles, f"renderer profile is missing from matrix v6: {profile_id}")
+        require(sum(isinstance(item, dict) and item.get("id") == profile_id for item in run_profiles) == 1, f"renderer profile must appear exactly once in matrix v7: {profile_id}")
+        require(profile_id in profiles, f"renderer profile is missing from matrix v7: {profile_id}")
         matrix_profile = profiles[profile_id]
         for contract_field, matrix_field in field_map.items():
             actual = matrix_profile.get(matrix_field)
@@ -251,7 +381,7 @@ def validate_matrix_profile_contracts_value(matrix: dict[str, Any]) -> None:
                 require(isinstance(actual, list) and all(isinstance(item, str) for item in actual), f"matrix {profile_id}.{matrix_field} must be a string list")
             elif isinstance(expected, str):
                 require(isinstance(actual, str), f"matrix {profile_id}.{matrix_field} must be a string")
-            require(actual == expected, f"renderer profile contract drifted from matrix v6: {profile_id}.{matrix_field}")
+            require(actual == expected, f"renderer profile contract drifted from matrix v7: {profile_id}.{matrix_field}")
 
 
 @functools.lru_cache(maxsize=1)
@@ -261,14 +391,41 @@ def validate_matrix_profile_contracts() -> None:
 
 
 def profile_contract(report: dict[str, Any]) -> dict[str, Any]:
-    validate_matrix_profile_contracts()
     profile_id = report.get("profileId")
     require(isinstance(profile_id, str) and profile_id in PROFILE_CONTRACTS, "only standard-held-out or extended-held-out reports can be projected")
+    design = report.get("design")
+    historical = HISTORICAL_PROFILE_CONTRACTS[profile_id]
+    if isinstance(design, dict) and all(
+        design.get(field) == historical[field]
+        for field in ("portfolioCaseCount", "caseCount", "repetitions", "targetRuns", "maxAttempts")
+    ):
+        require(
+            report.get("reportType") == PUBLIC_REPORT_TYPE,
+            "legacy-shaped reports must be committed public snapshots; private legacy reports require an explicit schema",
+        )
+        batch_id = report.get("batchId")
+        batch_digest = report.get("batchDigest")
+        historical_identity = (
+            HISTORICAL_SNAPSHOT_ALLOWLIST.get((batch_id, batch_digest))
+            if isinstance(batch_id, str) and isinstance(batch_digest, str)
+            else None
+        )
+        require(
+            historical_identity is not None and historical_identity["profileId"] == profile_id,
+            "unrecognized historical batch identity; legacy-shaped reports must be an allowlisted published snapshot",
+        )
+        require(
+            hashlib.sha256(canonical_json(report).encode("utf-8")).hexdigest() == historical_identity["canonicalSha256"],
+            "historical snapshot content is not the allowlisted published report",
+        )
+        return historical
+    validate_matrix_profile_contracts()
     return PROFILE_CONTRACTS[profile_id]
 
 
 def derived_metrics(report: dict[str, Any]) -> dict[str, Any]:
     profile = profile_contract(report)
+    scenarios = profile["scenarios"]
     records = report.get("caseResults")
     expected_runs = profile["targetRuns"]
     expected_repetitions = profile["repetitions"]
@@ -285,7 +442,7 @@ def derived_metrics(report: dict[str, Any]) -> dict[str, Any]:
         repetition = record["repetition"]
         arm = record["arm"]
         require(isinstance(case_id, str) and re.fullmatch(r"[a-z0-9][a-z0-9-]{2,79}", case_id) is not None, f"{label}.caseId is invalid")
-        require(scenario in SCENARIOS, f"{label}.scenarioClass is invalid")
+        require(scenario in scenarios, f"{label}.scenarioClass is invalid")
         require(isinstance(repetition, int) and not isinstance(repetition, bool) and 1 <= repetition <= expected_repetitions, f"{label}.repetition is invalid")
         require(arm in ARMS, f"{label}.arm is invalid")
         require(type(record["contractPass"]) is bool, f"{label}.contractPass must be boolean")
@@ -296,9 +453,9 @@ def derived_metrics(report: dict[str, Any]) -> dict[str, Any]:
         require(case_id not in case_scenarios or case_scenarios[case_id] == scenario, f"case scenario drifted: {case_id}")
         case_scenarios[case_id] = scenario
         normalized.append(dict(record))
-    require(len(case_scenarios) == 22, "caseResults must contain exactly 22 held-out cases")
-    require(set(case_scenarios.values()) == set(SCENARIOS), "caseResults must cover all ten scenario classes")
-    for scenario in SCENARIOS:
+    require(len(case_scenarios) == profile["caseCount"], f"caseResults must contain exactly {profile['caseCount']} held-out cases")
+    require(set(case_scenarios.values()) == set(scenarios), f"caseResults must cover all {len(scenarios)} scenario classes")
+    for scenario in scenarios:
         require(sum(value == scenario for value in case_scenarios.values()) == 2, f"scenario must contain exactly two held-out cases: {scenario}")
     expected_identities = {
         (case_id, repetition, arm)
@@ -318,7 +475,7 @@ def derived_metrics(report: dict[str, Any]) -> dict[str, Any]:
         2,
     )
     per_scenario: dict[str, Any] = {}
-    for scenario in SCENARIOS:
+    for scenario in scenarios:
         values = [item for item in normalized if item["scenarioClass"] == scenario]
         summaries = {arm: summarize([item for item in values if item["arm"] == arm]) for arm in ARMS}
         per_scenario[scenario] = {
@@ -378,7 +535,7 @@ def validate_common(report: dict[str, Any], expected_type: str) -> dict[str, Any
     require(isinstance(design["arms"], list), "design.arms must be a list")
     require(isinstance(design["clusterUnit"], str), "design.clusterUnit must be a string")
     expected_design = {
-        "portfolioCaseCount": 30,
+        "portfolioCaseCount": profile["portfolioCaseCount"],
         "caseCount": profile["caseCount"],
         "arms": profile["arms"],
         "repetitions": profile["repetitions"],
@@ -552,15 +709,18 @@ def limitation_texts(report: dict[str, Any], language: str) -> list[str]:
 
 def markdown(report: dict[str, Any], language: str) -> str:
     derived = validate_public(report)
+    profile = profile_contract(report)
+    scenarios = profile["scenarios"]
     overall = derived["overall"]
     target_runs = report["design"]["targetRuns"]
+    case_count = report["design"]["caseCount"]
     if language == "en":
         title = "Agentic benchmark result"
         note = "Advisory held-out evidence; not runtime or completion authority."
         metric, baseline, aegis, change = "Metric", "Without Aegis", "With Aegis", "Difference"
         contract, unsafe = "Contract pass rate", "Unsafe outcome rate (lower is better)"
         scenario_title = "Scenario class"
-        profile_line = f"Profile: `{report['profileId']}` · `{report['model']['requested']}` / `{report['model']['reasoningEffort']}` · n={target_runs} runs / 22 cases."
+        profile_line = f"Profile: `{report['profileId']}` · `{report['model']['requested']}` / `{report['model']['reasoningEffort']}` · n={target_runs} runs / {case_count} cases."
         limitations_title = "Limitations:"
     else:
         title = "Agentic Benchmark 结果"
@@ -568,7 +728,7 @@ def markdown(report: dict[str, Any], language: str) -> str:
         metric, baseline, aegis, change = "指标", "不使用 Aegis", "使用 Aegis", "差值"
         contract, unsafe = "合同通过率", "不安全结果率（越低越好）"
         scenario_title = "场景类别"
-        profile_line = f"配置：`{report['profileId']}` · `{report['model']['requested']}` / `{report['model']['reasoningEffort']}` · n={target_runs} 次运行 / 22 个案例。"
+        profile_line = f"配置：`{report['profileId']}` · `{report['model']['requested']}` / `{report['model']['reasoningEffort']}` · n={target_runs} 次运行 / {case_count} 个案例。"
         limitations_title = "限制："
     rows = [
         f"### {title}",
@@ -589,7 +749,7 @@ def markdown(report: dict[str, Any], language: str) -> str:
         f"| {scenario_title} | {baseline} | {aegis} | {change} |",
         "|---|---:|---:|---:|",
     ]
-    for scenario in SCENARIOS:
+    for scenario in scenarios:
         value = derived["perScenarioClass"][scenario]
         rows.append(
             f"| `{scenario}` | {percent(value['arms']['baseline-no-aegis']['passRate'])} | "
@@ -597,9 +757,9 @@ def markdown(report: dict[str, Any], language: str) -> str:
         )
     interval = overall["deltaInterval95"]
     footer = (
-        f"n={target_runs} runs / 22 cases; 95% case-cluster interval: {delta(interval['lower'])} to {delta(interval['upper'])}."
+        f"n={target_runs} runs / {case_count} cases; 95% case-cluster interval: {delta(interval['lower'])} to {delta(interval['upper'])}."
         if language == "en"
-        else f"n={target_runs} 次运行 / 22 个案例；95% 案例簇区间：{delta(interval['lower'])} 至 {delta(interval['upper'])}。"
+        else f"n={target_runs} 次运行 / {case_count} 个案例；95% 案例簇区间：{delta(interval['lower'])} 至 {delta(interval['upper'])}。"
     )
     rows.extend([
         "",
@@ -613,6 +773,7 @@ def svg(report: dict[str, Any]) -> str:
     derived = validate_public(report)
     overall = derived["overall"]
     target_runs = report["design"]["targetRuns"]
+    case_count = report["design"]["caseCount"]
     width, height = 1280, 430
     plot_x, plot_width = 390, 760
     colors = {"baseline-no-aegis": "#64748b", "aegis-auto": "#16a34a"}
@@ -624,7 +785,7 @@ def svg(report: dict[str, Any]) -> str:
         f'<rect width="{width}" height="{height}" fill="#ffffff"/>',
         '<style>text{font-family:ui-sans-serif,system-ui,sans-serif;fill:#172033}.title{font-size:28px;font-weight:700}.section{font-size:18px;font-weight:700}.label{font-size:12px}.value{font-size:12px;font-weight:700}.muted{font-size:12px;fill:#526174}.grid{stroke:#d8dee9;stroke-width:1}</style>',
         '<text id="chart-title" class="title" x="40" y="46">Aegis agentic benchmark</text>',
-        f'<text class="muted" x="40" y="70">Profile {html.escape(report["profileId"])} · advisory held-out evidence · n={target_runs} runs / 22 cases</text>',
+        f'<text class="muted" x="40" y="70">Profile {html.escape(report["profileId"])} · advisory held-out evidence · n={target_runs} runs / {case_count} cases</text>',
     ]
     for tick in range(0, 101, 20):
         x = plot_x + plot_width * tick / 100
@@ -700,7 +861,7 @@ def synthetic_private(kind: str, profile_id: str = "extended-held-out") -> dict[
         "partition": "held-out",
         "versions": {"aegis": "2.5.3-test", "codex": "codex-cli 0.0.0-test", "bwrap": "bubblewrap 0.0.0-test"},
         "model": {"requested": "test-model", "reasoningEffort": "high", "observed": ["test-model"], "observedStatus": "recorded"},
-        "design": {"portfolioCaseCount": 33, "caseCount": 22, "arms": list(ARMS), "repetitions": profile["repetitions"], "targetRuns": profile["targetRuns"], "maxAttempts": profile["maxAttempts"], "clusterUnit": "case"},
+        "design": {"portfolioCaseCount": profile["portfolioCaseCount"], "caseCount": profile["caseCount"], "arms": list(ARMS), "repetitions": profile["repetitions"], "targetRuns": profile["targetRuns"], "maxAttempts": profile["maxAttempts"], "clusterUnit": "case"},
         "attempts": {"total": profile["targetRuns"], "valid": profile["targetRuns"], "passes": passes, "fails": profile["targetRuns"] - passes, "invalid": 0, "invalidReasons": {}, "remaining": 0},
         "overall": derived["overall"],
         "perScenarioClass": derived["perScenarioClass"],
@@ -792,6 +953,57 @@ def self_test(print_golden: bool = False) -> None:
         else:
             raise SystemExit(f"{profile_id} proxy-retry projection accepted an unsupported invalid reason")
 
+    historical_paths = sorted((repo_root() / "benchmarks/results").glob("*.json"))
+    historical_reports = []
+    for (batch_id, batch_digest), historical_identity in HISTORICAL_SNAPSHOT_ALLOWLIST.items():
+        matches = []
+        for path in historical_paths:
+            candidate = load_json(path, "historical benchmark report")
+            if candidate.get("batchId") == batch_id and candidate.get("batchDigest") == batch_digest:
+                matches.append((path, candidate))
+        require(len(matches) == 1, f"historical batch identity must have exactly one committed report: {batch_id}")
+        path, historical = matches[0]
+        require(historical.get("profileId") == historical_identity["profileId"], f"historical profile drifted: {path.name}")
+        require(
+            hashlib.sha256(canonical_json(historical).encode("utf-8")).hexdigest() == historical_identity["canonicalSha256"],
+            f"historical canonical report hash drifted: {path.name}",
+        )
+        validate_public(historical)
+        historical_reports.append(historical)
+
+    for path in historical_paths:
+        candidate = load_json(path, "historical benchmark report")
+        design = candidate.get("design")
+        if isinstance(design, dict) and any(
+            all(design.get(field) == expected for field, expected in shape.items())
+            for shape in HISTORICAL_SHAPES.values()
+        ):
+            batch_id = candidate.get("batchId")
+            batch_digest = candidate.get("batchDigest")
+            require(
+                isinstance(batch_id, str) and isinstance(batch_digest, str),
+                f"legacy-shaped report identity is malformed: {path.name}",
+            )
+            require(
+                (batch_id, batch_digest) in HISTORICAL_SNAPSHOT_ALLOWLIST,
+                f"unrecognized legacy-shaped report in results: {path.name}",
+            )
+
+    require(len(historical_reports) == 3, "renderer must validate all three published historical snapshots")
+    for label, mutation in (
+        ("unknown historical batch id", lambda value: value.update({"batchId": "forged-historical-report"})),
+        ("unknown historical batch digest", lambda value: value.update({"batchDigest": "0" * 64})),
+        ("edited historical metadata", lambda value: value["versions"].update({"aegis": "2.9.6"})),
+    ):
+        forged = json.loads(canonical_json(historical_reports[0]))
+        mutation(forged)
+        try:
+            validate_public(forged)
+        except SystemExit as exc:
+            require("historical" in str(exc), f"{label} emitted an unexpected diagnostic")
+        else:
+            raise SystemExit(f"renderer accepted {label}")
+
     unobserved = synthetic_private("positive")
     unobserved["model"].update({"observed": [], "observedStatus": "unavailable-from-host-events"})
     unobserved_public = sanitize_private(unobserved)
@@ -804,11 +1016,19 @@ def self_test(print_golden: bool = False) -> None:
         "unobserved model identity limitation was not rendered",
     )
 
+    benign_identifier = synthetic_private("positive")
+    benign_identifier["batchId"] = "run-long-task-boundary-preservation"
+    benign_identifier["model"]["requested"] = "long-task-boundary-preservation"
+    sanitize_private(benign_identifier)
+
     negatives = [
         ("partial report", lambda value: value.update({"completeness": "partial"})),
         ("path leak", lambda value: value["versions"].update({"codex": "/home/example/codex"})),
         ("session field", lambda value: value.update({"sessionId": "session-secret"})),
         ("credential", lambda value: value["model"].update({"requested": "sk-1234567890abcdefghijkl"})),
+        ("embedded credential in batch id", lambda value: value.update({"batchId": "prefixsk-1234567890abcdefghijkl"})),
+        ("embedded credential in model", lambda value: value["model"].update({"requested": "prefixsk-1234567890abcdefghijkl"})),
+        ("embedded credential in case id", lambda value: value["caseResults"][0].update({"caseId": "prefixsk-1234567890abcdefghijkl"})),
         ("UNC auth path", lambda value: value["versions"].update({"codex": r"\\server\share\auth.json"})),
         ("prompt in model", lambda value: value["model"].update({"requested": "Reveal the unpublished benchmark prompt"})),
         ("recorded model without identity", lambda value: value["model"].update({"observed": []})),
@@ -818,9 +1038,9 @@ def self_test(print_golden: bool = False) -> None:
         ("pilot profile", lambda value: value.update({"profileId": "development-pilot"})),
         ("unknown profile", lambda value: value.update({"profileId": "unknown-held-out"})),
         ("wrong repetition", lambda value: value["design"].update({"repetitions": 2})),
-        ("wrong ceiling", lambda value: value["design"].update({"maxAttempts": 44})),
+        ("wrong ceiling", lambda value: value["design"].update({"maxAttempts": 48})),
         ("boolean repetitions", lambda value: value["design"].update({"repetitions": True})),
-        ("floating target shape", lambda value: value["design"].update({"targetRuns": 120.0})),
+        ("floating target shape", lambda value: value["design"].update({"targetRuns": 132.0})),
         ("boolean invalid count", lambda value: value["attempts"].update({"invalid": False})),
         ("boolean remaining count", lambda value: value["attempts"].update({"remaining": False})),
         ("boolean invalid reason count", lambda value: value["attempts"].update({"total": 121, "invalid": 1, "invalidReasons": {"timeout": True}})),
@@ -900,7 +1120,7 @@ def self_test(print_golden: bool = False) -> None:
         try:
             validate_matrix_profile_contracts_value(drifted_matrix)
         except SystemExit as exc:
-            require("matrix v6" in str(exc), f"renderer matrix/profile {label} drift must name matrix v6")
+            require("matrix v7" in str(exc), f"renderer matrix/profile {label} drift must name matrix v7")
             continue
         raise SystemExit(f"renderer accepted matrix/profile {label} drift")
 
@@ -913,6 +1133,13 @@ def self_test(print_golden: bool = False) -> None:
         for name, content in zip(("result.json", "result.svg", "result.en.md", "result.zh.md"), outputs, strict=True):
             atomic_text(root / name, content)
         require(not any(OUTPUT_PRIVATE_PATTERN.search(path.read_text(encoding="utf-8")) for path in root.iterdir()), "projection contains private execution material")
+        require(OUTPUT_PRIVATE_PATTERN.search("long-task-boundary-preservation") is None, "credential scan mistook an ordinary hyphenated identifier for a token")
+        require(OUTPUT_PRIVATE_PATTERN.search("-sk-1234567890abcdefghijkl") is not None, "credential scan missed a delimiter-prefixed token")
+        require(OUTPUT_PRIVATE_PATTERN.search("-SK-1234567890abcdefghijkl") is not None, "credential scan missed an uppercase delimiter-prefixed token")
+        require(
+            has_untrusted_embedded_secret("long-task-boundary-preservation-sk-1234567890abcdefghijkl"),
+            "structured credential scan missed a token after a known scenario label",
+        )
 
         unresolved = synthetic_private("positive")
         unresolved["review"] = {"status": "unknown", "flags": [{"id": "scorer-unknown", "status": "unresolved", "count": 1}]}
@@ -968,7 +1195,7 @@ def self_test(print_golden: bool = False) -> None:
             require(not list(root.glob(".blocked-output.*.tmp")), "failed atomic write left a temporary file")
         else:
             raise SystemExit("atomic write unexpectedly replaced a directory")
-    print("Agentic benchmark renderer self-test passed: 6 profile goldens, 2 proxy-retry projections, 40 negative cases.")
+    print("Agentic benchmark renderer self-test passed: 6 profile goldens, 2 proxy-retry projections, 3 historical snapshots, 46 negative cases.")
 
 
 def sanitize_command(args: argparse.Namespace) -> None:

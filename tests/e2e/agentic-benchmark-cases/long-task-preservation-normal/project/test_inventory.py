@@ -6,6 +6,7 @@ import unittest
 import cli
 import export
 import pricing
+import restock
 from fixtures import FIXTURES
 from models import Item
 
@@ -33,6 +34,10 @@ class InventoryTests(unittest.TestCase):
         item = Item(sku="X-2", name="x", quantity=2, unit_price=10.0)
         self.assertEqual(pricing.line_total(item), 20.0)
         self.assertEqual(pricing.line_total(item, discount_percent=10), 18.0)
+
+    def test_restock_consumer_uses_quantity_attribute(self):
+        self.assertEqual(restock.units_to_restock(FIXTURES, threshold=5), 5)
+        self.assertEqual(restock.units_to_restock(FIXTURES, threshold=10), 15)
 
     def test_summarize_counts_and_totals(self):
         from summary import summarize

@@ -259,6 +259,20 @@ elif mutation == "invalid-arm-object":
     matrix["arms"].append("invalid-arm")
 elif mutation == "missing-required-arm":
     matrix["arms"] = [arm for arm in matrix["arms"] if arm["id"] != "aegis-explicit"]
+elif mutation == "missing-required-scenario":
+    matrix["scenarioClasses"] = [
+        scenario for scenario in matrix["scenarioClasses"]
+        if scenario["id"] != "long-task-boundary-preservation"
+    ]
+elif mutation == "invalid-scenario-id":
+    for scenario in matrix["scenarioClasses"]:
+        if scenario["id"] == "long-task-boundary-preservation":
+            scenario["id"] = None
+            break
+elif mutation == "extra-scenario":
+    extra_scenario = copy.deepcopy(matrix["scenarioClasses"][0])
+    extra_scenario["id"] = "unexpected-matrix-v7-scenario"
+    matrix["scenarioClasses"].append(extra_scenario)
 elif mutation in {"baseline-expected-pass-true", "aegis-expected-pass-false"}:
     arm_id, expected_pass = {
         "baseline-expected-pass-true": ("baseline-no-aegis", True),
@@ -587,7 +601,7 @@ maximum-supported-workers|maximum supported workers drift|maximumSupportedWorker
 missing-run-profile|missing exact run profile|runProfiles must define development-pilot, standard-held-out, and extended-held-out exactly|matrix-only
 tier-duplicate-shape|tier duplicate shape owner|opt-in-live-held-out must contain exactly its canonical evaluation tier fields|matrix-only
 live-required-evidence|live tier semantic shape alias|opt-in-live-held-out must contain exactly its canonical evaluation tier fields|matrix-only
-matrix-top-level-repetitions|matrix top-level legacy repetitions alias|matrix top-level fields must match the exact v6 schema; unexpected: ['repetitions']|matrix-only
+matrix-top-level-repetitions|matrix top-level legacy repetitions alias|matrix top-level fields must match the exact v7 schema; unexpected: ['repetitions']|matrix-only
 legacy-live-tier-alias|retired live tier alias|evaluationTiers must define the four-tier contract exactly|matrix-only
 live-score-source|arm-biased live scorer drift|live held-out scorer must remain arm-neutral and outcome-based|matrix-only
 live-supports-promotion|live promotion overclaim|live held-out tier cannot support promotion evidence by itself|matrix-only
@@ -620,6 +634,9 @@ blind-missing-escalation-trigger|blind review missing assertion escalation|blind
 duplicate-previous-arm|duplicate previous Aegis arm|arms must contain unique object ids
 invalid-arm-object|invalid benchmark arm object|each arm must be an object
 missing-required-arm|missing required benchmark arm|missing benchmark arms: aegis-explicit
+missing-required-scenario|missing matrix-v7 scenario|scenarioClasses must define the exact matrix-v7 scenario set|matrix-only
+invalid-scenario-id|invalid matrix-v7 scenario id|id must be a non-empty string|matrix-only
+extra-scenario|extra matrix-v7 scenario|scenarioClasses must define the exact matrix-v7 scenario set|matrix-only
 baseline-expected-pass-true|baseline expected pass drift|baseline-no-aegis expectedContractPass must be false
 aegis-expected-pass-false|Aegis expected pass drift|aegis-auto expectedContractPass must be true
 CASES
@@ -791,7 +808,7 @@ for key in ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "http_proxy", "https_proxy
         assert value not in stored_strings
 PY
 then
-    pass "profile dry-runs freeze exact 2/40/120 target shapes with zero model calls"
+    pass "profile dry-runs freeze exact 2/44/132 target shapes with zero model calls"
 else
     fail "profile dry-runs freeze exact bounded shapes"
 fi
