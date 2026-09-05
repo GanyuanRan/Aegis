@@ -1,6 +1,6 @@
 # Aegis Release Notes
 
-## Unreleased
+## v2.9.8 (2026-09-05)
 
 ### Add long-task boundary preservation coverage to the agentic benchmark
 
@@ -12,6 +12,18 @@
   benchmark's advisory evidence boundary is preserved.
 - Keep the three committed pre-v7 public snapshots available for exact,
   verification-only projection without relabeling them as current evidence.
+
+### Verification boundary
+
+- Version-bump audit passed: 8 declared manifests in sync at `2.9.8`; no
+  undeclared `2.9.8` references.
+- PR #44 CI (`method-pack-checks`, CodeRabbit review) passed on the merged
+  head; post-merge validation on `main` passed: case manifest (33 cases,
+  11 scenarios), matrix validation, renderer self-test (6 profile goldens,
+  3 historical snapshots, 46 negative cases); `git diff --check` passed.
+- No live held-out measurement of the new boundary discriminator on the final
+  commit; the three CodeRabbit findings were verified fixed by reviewer
+  code inspection.
 
 ## v2.9.7 (2026-09-05)
 
