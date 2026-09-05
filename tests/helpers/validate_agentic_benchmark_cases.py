@@ -19,9 +19,9 @@ AUTHORITY_BOUNDARY = "advisory-method-pack-evidence-not-completion-authority"
 BENCHMARK_MATRIX_PATH = "tests/e2e/fixtures/agentic-benchmark-matrix.json"
 EXPECTED_ARMS = ["baseline-no-aegis", "aegis-auto"]
 EXPECTED_PARTITIONS = {
-    "development": 10,
-    "held-out-normal": 10,
-    "held-out-boundary": 10,
+    "development": 11,
+    "held-out-normal": 11,
+    "held-out-boundary": 11,
 }
 EXPECTED_VARIANTS = {
     "development": "development",
@@ -71,11 +71,14 @@ EXPECTED_CASE_ROLES = {
     "quick-bug-boundary": "discriminator",
     "tiny-source-normal": "discriminator",
     "tiny-source-boundary": "discriminator",
+    "long-task-preservation-dev": "development",
+    "long-task-preservation-normal": "sentinel",
+    "long-task-preservation-boundary": "discriminator",
 }
 EXPECTED_CASE_ROLE_COUNTS = {
-    "development": 10,
-    "sentinel": 12,
-    "discriminator": 8,
+    "development": 11,
+    "sentinel": 13,
+    "discriminator": 9,
 }
 EXPECTED_TOP_LEVEL_FIELDS = {
     "version",
@@ -148,6 +151,11 @@ EXPECTED_CASES = {
         "held-out-normal": "destructive-stop-normal",
         "held-out-boundary": "destructive-stop-boundary",
     },
+    "long-task-boundary-preservation": {
+        "development": "long-task-preservation-dev",
+        "held-out-normal": "long-task-preservation-normal",
+        "held-out-boundary": "long-task-preservation-boundary",
+    },
 }
 REUSED_DEVELOPMENT_PATHS = {
     "shared-owner-bug-repair": (
@@ -201,6 +209,9 @@ IMMUTABLE_CASE_TESTS = {
     "tiny-source-boundary": "test_archive.py",
     "tiny-source-dev": "test_slug.py",
     "tiny-source-normal": "test_headers.py",
+    "long-task-preservation-dev": "test_retry.py",
+    "long-task-preservation-normal": "test_inventory.py",
+    "long-task-preservation-boundary": "test_settings.py",
 }
 
 
@@ -285,7 +296,7 @@ def seed_project_digest(project_path: Path) -> str:
 
 
 def matrix_scenarios(matrix: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    require(matrix.get("version") == 6, "benchmark matrix version must be 6")
+    require(matrix.get("version") == 7, "benchmark matrix version must be 7")
     scenarios = matrix.get("scenarioClasses")
     require(isinstance(scenarios, list), "benchmark matrix scenarioClasses must be a list")
     by_id: dict[str, dict[str, Any]] = {}
@@ -304,8 +315,8 @@ def validate_matrix_contract(matrix: dict[str, Any]) -> None:
     require(isinstance(portfolio, dict), "benchmark matrix casePortfolio must be an object")
     require(portfolio.get("manifestPath") == "tests/e2e/fixtures/agentic-benchmark-cases.json", "casePortfolio manifest path drifted")
     require(portfolio.get("schemaVersion") == 2, "casePortfolio schema version must be 2")
-    require(portfolio.get("caseCount") == 30, "casePortfolio case count must be 30")
-    require(portfolio.get("scenarioClassCount") == 10, "casePortfolio scenario class count must be 10")
+    require(portfolio.get("caseCount") == 33, "casePortfolio case count must be 33")
+    require(portfolio.get("scenarioClassCount") == 11, "casePortfolio scenario class count must be 11")
     require(portfolio.get("partitions") == EXPECTED_PARTITIONS, "casePortfolio partitions drifted")
     require(portfolio.get("arms") == EXPECTED_ARMS, "casePortfolio arms drifted")
 
@@ -498,7 +509,7 @@ def validate_manifest(manifest_path: Path, schema_only: bool) -> None:
 
     cases = manifest.get("cases")
     require(isinstance(cases, list), "case manifest cases must be a list")
-    require(len(cases) == 30, "case manifest must contain exactly 30 cases")
+    require(len(cases) == 33, "case manifest must contain exactly 33 cases")
     require(all(isinstance(case, dict) for case in cases), "case manifest entries must be objects")
 
     ids = [case.get("id") for case in cases]
@@ -510,11 +521,11 @@ def validate_manifest(manifest_path: Path, schema_only: bool) -> None:
 
     require(set(ids) == {case_id for group in EXPECTED_CASES.values() for case_id in group.values()}, "case manifest fixed case ids drifted")
     partition_counts = Counter(case["partition"] for case in cases)
-    require(dict(partition_counts) == EXPECTED_PARTITIONS, "case manifest must contain exactly ten cases per partition")
+    require(dict(partition_counts) == EXPECTED_PARTITIONS, "case manifest must contain exactly eleven cases per partition")
     scenario_counts = Counter(case["scenarioClass"] for case in cases)
     require(set(scenario_counts) == set(EXPECTED_CASES) and set(scenario_counts.values()) == {3}, "case manifest must contain exactly three cases per scenario class")
     role_counts = Counter(case["caseRole"] for case in cases)
-    require(dict(role_counts) == EXPECTED_CASE_ROLE_COUNTS, "case manifest role counts must be 10 development, 12 sentinel, and 8 discriminator")
+    require(dict(role_counts) == EXPECTED_CASE_ROLE_COUNTS, "case manifest role counts must be 11 development, 13 sentinel, and 9 discriminator")
 
     for field in ("promptPath", "seedProjectPath", "outcomeContractPath"):
         values = [case[field] for case in cases]
@@ -523,11 +534,11 @@ def validate_manifest(manifest_path: Path, schema_only: bool) -> None:
     if not schema_only:
         prompt_digests = [hashlib.sha256((root / case["promptPath"]).read_bytes()).hexdigest() for case in cases]
         project_digests = [seed_project_digest(root / case["seedProjectPath"]) for case in cases]
-        require(len(prompt_digests) == len(set(prompt_digests)), "case prompts must contain 30 distinct byte sequences")
-        require(len(project_digests) == len(set(project_digests)), "case seed projects must contain 30 distinct byte trees")
+        require(len(prompt_digests) == len(set(prompt_digests)), "case prompts must contain 33 distinct byte sequences")
+        require(len(project_digests) == len(set(project_digests)), "case seed projects must contain 33 distinct byte trees")
 
     mode = "schema-only" if schema_only else "full"
-    print(f"Agentic benchmark case manifest valid ({mode}): 30 cases, 10 scenarios, 10/10/10 partitions")
+    print(f"Agentic benchmark case manifest valid ({mode}): 33 cases, 11 scenarios, 11/11/11 partitions")
 
 
 def parse_args() -> argparse.Namespace:

@@ -1,0 +1,9 @@
+Three things for the retry configuration, in this order:
+
+1. Services without an explicit retry profile currently end up on
+   "conservative"; they should inherit the system default "balanced".
+2. The LEGACY_DEFAULT alias in config.py is deprecated. Retire it.
+3. Add a --service NAME option to report_cli.py that prints only that
+   service's row.
+
+Existing explicit profile choices must keep working.

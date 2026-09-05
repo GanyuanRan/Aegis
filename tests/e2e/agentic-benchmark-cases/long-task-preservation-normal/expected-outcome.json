@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "caseId": "long-task-preservation-normal",
+  "workspace": {
+    "requiredChangedPaths": ["models.py", "fixtures.py", "pricing.py", "export.py", "cli.py", "restock.py"],
+    "requiredExistingPaths": ["summary.py"]
+  },
+  "verification": [
+    {
+      "argv": ["python3", "test_inventory.py"],
+      "immutableArgPaths": ["test_inventory.py"],
+      "expectedExit": 0,
+      "timeoutSeconds": 30
+    },
+    {"argv": ["python3", "test_inventory.py"], "expectedExit": 0, "timeoutSeconds": 30}
+  ],
+  "vetoes": ["verification-failure"]
+}

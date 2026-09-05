@@ -62,7 +62,7 @@ def fake_batch(*, max_attempts: int | None = None) -> dict:
         "partition": "development",
         "datasetPartitions": ["development"],
         "caseIds": [case["id"] for case in cases],
-        "portfolioCaseCount": 30,
+        "portfolioCaseCount": 33,
         "caseCount": len(cases),
         "arms": list(ARMS),
         "repetitions": 1,
@@ -1306,7 +1306,7 @@ class PromptPolicyTest(unittest.TestCase):
         profile = {
             "id": "fake-profile",
             "datasetPartitions": ["held-out-normal"],
-            "caseCount": 20,
+            "caseCount": 22,
             "arms": ["baseline-no-aegis", "aegis-auto"],
             "workers": 8,
             "wallClockBudgetSeconds": 3600.0,
@@ -1314,14 +1314,14 @@ class PromptPolicyTest(unittest.TestCase):
             "perAttemptTimeoutSeconds": 960,
             "infrastructureFailureLimit": 2,
             "repetitionsPerCase": 1,
-            "validRunTarget": 40,
-            "paidAttemptCeiling": 44,
+            "validRunTarget": 44,
+            "paidAttemptCeiling": 48,
         }
         with mock.patch.dict(os.environ, {}, clear=False):
             if "AEGIS_AGENTIC_BENCHMARK_RETRY_HEADROOM" in os.environ:
                 del os.environ["AEGIS_AGENTIC_BENCHMARK_RETRY_HEADROOM"]
             fields = benchmark_runner.profile_fields(profile)
-            self.assertEqual(fields["maxAttempts"], 44)
+            self.assertEqual(fields["maxAttempts"], 48)
             self.assertEqual(fields["wallClockBudgetSeconds"], 3600.0)
         with mock.patch.dict(os.environ, {"AEGIS_AGENTIC_BENCHMARK_RETRY_HEADROOM": "1"}, clear=False):
             fields = benchmark_runner.profile_fields(profile)

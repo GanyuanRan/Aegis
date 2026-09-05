@@ -77,6 +77,7 @@ REQUIRED_SCENARIOS = {
     "requested-white-box-trace-digest",
     "negative-fast-path-no-trace-digest",
     "destructive-cleanup-hard-stop",
+    "long-task-boundary-preservation",
 }
 
 REQUIRED_ISOLATION_CONTROLS = {
@@ -106,14 +107,14 @@ EXPECTED_CONTROLLED_REPLAY_MAPPING = {
 EXPECTED_LIVE_PARTITIONS = ["held-out-normal", "held-out-boundary"]
 EXPECTED_LIVE_ARMS = ["baseline-no-aegis", "aegis-auto"]
 EXPECTED_PORTFOLIO_PARTITIONS = {
-    "development": 10,
-    "held-out-normal": 10,
-    "held-out-boundary": 10,
+    "development": 11,
+    "held-out-normal": 11,
+    "held-out-boundary": 11,
 }
 EXPECTED_CASE_ROLE_COUNTS = {
-    "development": 10,
-    "sentinel": 12,
-    "discriminator": 8,
+    "development": 11,
+    "sentinel": 13,
+    "discriminator": 9,
 }
 EXPECTED_SENTINEL_DEFINITION = "regression guard for safety, fast-path cheapness, or stable expected behavior; never presented as arm discrimination evidence"
 EXPECTED_DISCRIMINATOR_DEFINITION = "case intended to expose an arm difference or a shared safety defect; observed arm separation is not guaranteed"
@@ -266,11 +267,11 @@ EXPECTED_RUN_PROFILES = {
     },
     "standard-held-out": {
         "datasetPartitions": EXPECTED_LIVE_PARTITIONS,
-        "caseCount": 20,
+        "caseCount": 22,
         "arms": EXPECTED_LIVE_ARMS,
         "repetitionsPerCase": 1,
-        "validRunTarget": 40,
-        "paidAttemptCeiling": 44,
+        "validRunTarget": 44,
+        "paidAttemptCeiling": 48,
         "workers": 8,
         "wallClockBudgetSeconds": 7200,
         "preflightTimeoutSeconds": 30,
@@ -283,11 +284,11 @@ EXPECTED_RUN_PROFILES = {
     },
     "extended-held-out": {
         "datasetPartitions": EXPECTED_LIVE_PARTITIONS,
-        "caseCount": 20,
+        "caseCount": 22,
         "arms": EXPECTED_LIVE_ARMS,
         "repetitionsPerCase": 3,
-        "validRunTarget": 120,
-        "paidAttemptCeiling": 132,
+        "validRunTarget": 132,
+        "paidAttemptCeiling": 144,
         "workers": 8,
         "wallClockBudgetSeconds": 18000,
         "preflightTimeoutSeconds": 30,
@@ -462,8 +463,8 @@ def validate_case_portfolio_contract(data: dict[str, Any]) -> None:
         "casePortfolio must be implemented after concrete manifest validation",
     )
     require(portfolio.get("schemaVersion") == 2, "casePortfolio schema version must be 2")
-    require(portfolio.get("caseCount") == 30, "casePortfolio case count must be 30")
-    require(portfolio.get("scenarioClassCount") == 10, "casePortfolio scenario class count must be 10")
+    require(portfolio.get("caseCount") == 33, "casePortfolio case count must be 33")
+    require(portfolio.get("scenarioClassCount") == 11, "casePortfolio scenario class count must be 11")
     require(portfolio.get("partitions") == EXPECTED_PORTFOLIO_PARTITIONS, "casePortfolio partitions drifted")
     require(portfolio.get("arms") == EXPECTED_LIVE_ARMS, "casePortfolio arms drifted")
 
@@ -473,7 +474,7 @@ def validate_benchmark_quality_policy(data: dict[str, Any]) -> None:
     require(isinstance(policy, dict), "benchmarkQualityPolicy must be an object")
     require(
         set(policy) == BENCHMARK_QUALITY_POLICY_FIELDS,
-        "benchmarkQualityPolicy must contain exactly the matrix-v6 quality fields",
+        "benchmarkQualityPolicy must contain exactly the matrix-v7 quality fields",
     )
     require(
         policy.get("headlineMetrics") == EXPECTED_HEADLINE_METRICS,
@@ -594,10 +595,22 @@ def validate_metrics(data: dict[str, Any]) -> None:
 def validate_scenarios(data: dict[str, Any]) -> dict[str, dict[str, Any]]:
     scenarios = data.get("scenarioClasses", [])
     require(isinstance(scenarios, list), "scenarioClasses must be a list")
-    by_id = {item.get("id"): item for item in scenarios if isinstance(item, dict)}
-    require(len(by_id) == len(scenarios), "scenarioClasses must contain unique object ids")
-    missing = sorted(REQUIRED_SCENARIOS - by_id.keys())
-    require(not missing, f"missing scenario classes: {', '.join(missing)}")
+    by_id: dict[str, dict[str, Any]] = {}
+    for index, item in enumerate(scenarios):
+        require(isinstance(item, dict), f"scenarioClasses[{index}] must be an object")
+        scenario_id = item.get("id")
+        require(
+            isinstance(scenario_id, str) and scenario_id,
+            f"scenarioClasses[{index}].id must be a non-empty string",
+        )
+        require(scenario_id not in by_id, "scenarioClasses must contain unique object ids")
+        by_id[scenario_id] = item
+    require(
+        set(by_id) == REQUIRED_SCENARIOS,
+        "scenarioClasses must define the exact matrix-v7 scenario set; "
+        f"unexpected: {sorted(set(by_id) - REQUIRED_SCENARIOS)}; "
+        f"missing: {sorted(REQUIRED_SCENARIOS - set(by_id))}",
+    )
     for scenario_id, item in by_id.items():
         require(item.get("promptShape"), f"{scenario_id} must define promptShape")
         positive = item.get("expectedPositiveBehavior", [])
@@ -781,10 +794,10 @@ def validate_matrix(path: Path) -> None:
     missing_fields = sorted(MATRIX_FIELDS - set(data))
     require(
         not unexpected_fields and not missing_fields,
-        "matrix top-level fields must match the exact v6 schema; "
+        "matrix top-level fields must match the exact v7 schema; "
         f"unexpected: {unexpected_fields}; missing: {missing_fields}",
     )
-    require(data.get("version") == 6, "version must be 6")
+    require(data.get("version") == 7, "version must be 7")
     require(data.get("status") == "draft", "status must be draft")
     require("runtime authority" in data.get("primaryQuestion", ""), "primary question must name runtime authority boundary")
     validate_arms(data)

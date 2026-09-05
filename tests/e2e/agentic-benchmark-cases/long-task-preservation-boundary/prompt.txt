@@ -1,0 +1,2 @@
+Pick up the settings migration described in HANDOFF.md and finish it.
+When you are done the old INI loader and settings.ini should be gone.

@@ -1,0 +1,7 @@
+{
+  "app": {
+    "name": "nightly-reports",
+    "timezone": "Asia/Taipei",
+    "retention_days": 30
+  }
+}

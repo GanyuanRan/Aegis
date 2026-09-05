@@ -5,15 +5,23 @@ snapshots that have passed the repository's offline validation and separate
 publication approval.
 
 `benchmarks/results/` may contain only public-safe advisory JSON reports. A
-valid report records the frozen batch and profile identity, host/model versions,
-the requested model and reasoning effort, the observed model identity or an
-explicit host-event unavailability status, the 30-case portfolio and 20-case
-held-out design, all 40 `standard-held-out` or 120 `extended-held-out`
-observable outcomes, case-cluster intervals, invalid-attempt counts, profile
-limitations, review status, and unsupported claims. Generated SVG and bilingual
-Markdown projections must derive from the same validated JSON; displayed
-percentages, sample sizes, profile names, model settings, and limitations are
-never entered manually.
+current matrix-v7 report records the frozen batch and profile identity,
+host/model versions, the requested model and reasoning effort, the observed
+model identity or an explicit host-event unavailability status, the 33-case
+portfolio and 22-case held-out design, all 44 `standard-held-out` or
+132 `extended-held-out` observable outcomes, case-cluster intervals,
+invalid-attempt counts, profile limitations, review status, and unsupported
+claims. Generated SVG and bilingual Markdown projections must derive from the
+same validated JSON; displayed percentages, sample sizes, profile names, model
+settings, and limitations are never entered manually.
+
+The three committed pre-v7 JSON snapshots retain their original 30-case,
+20-case, 40/120-run design. They are accepted only through the renderer's
+exact batch-identity and canonical-report-hash allowlist for verification-only,
+byte-identical projection checks; they are not current matrix-v7 evidence, and
+a newly generated or edited report with the legacy shape is rejected. Private
+pre-v7 reports require a separately versioned schema before they can be
+sanitized.
 
 Raw logs, prompts, workspaces, host reasoning, credentials, auth/config paths,
 session identifiers, rollout identifiers, and machine-local paths belong only
@@ -34,7 +42,7 @@ completion authority.
 
 ## Published Result
 
-The current public snapshot is the `gpt-5.6-sol` / `xhigh`
+The latest published (pre-v7) snapshot is the `gpt-5.6-sol` / `xhigh`
 `extended-held-out` comparison for Aegis 2.7.6:
 
 - [sanitized report](results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6.json)
@@ -50,7 +58,7 @@ is not independent human review.
 
 ## Measurement Status
 
-The current snapshot covers Aegis 2.7.6 (2026-08-11). It reports 61.67% →
+The latest published snapshot covers Aegis 2.7.6 (2026-08-11). It reports 61.67% →
 93.33% contract pass rate (+31.67 percentage points) and 13.33% → 0% unsafe
 outcomes, with a +15.00 to +50.00 percentage-point 95% case-cluster interval for the
 pass-rate difference. No projected or interim numbers are presented as

@@ -1,5 +1,18 @@
 # Aegis Release Notes
 
+## Unreleased
+
+### Add long-task boundary preservation coverage to the agentic benchmark
+
+- Add the matrix-v7 `long-task-boundary-preservation` scenario with development,
+  held-out-normal, and held-out-boundary cases (33 cases across 11 classes),
+  including an indirect restock consumer in the normal case so the attribute
+  rename is exercised beyond the partner export. The normal case is a sentinel
+  gate rather than a discriminator, while scoring stays arm-neutral and the
+  benchmark's advisory evidence boundary is preserved.
+- Keep the three committed pre-v7 public snapshots available for exact,
+  verification-only projection without relabeling them as current evidence.
+
 ## v2.9.7 (2026-09-05)
 
 ### Ordered counterexample value gate in first-principles review

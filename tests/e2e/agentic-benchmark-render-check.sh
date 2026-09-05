@@ -78,7 +78,7 @@ else
     fail "sanitize/render CLI projection is byte-identical"
 fi
 
-if rg -n '/home/|/Users/|[A-Za-z]:\\|session[_-]?id|rollout[_-]?id|sk-[A-Za-z0-9_-]{16,}' \
+if rg -n '/home/|/Users/|[A-Za-z]:\\|session[_-]?id|rollout[_-]?id|(^|[^A-Za-z0-9])[sS][kK]-[A-Za-z0-9_-]{16,}' \
     "$projection_root/public.json" "$projection_root/result-a.svg" \
     "$projection_root/result-a.en.md" "$projection_root/result-a.zh.md" >/dev/null; then
     fail "generated projection excludes machine paths, IDs and credentials"
@@ -88,7 +88,7 @@ fi
 
 if rg -q '0%' "$projection_root/result-a.svg" \
     && rg -q '100%' "$projection_root/result-a.svg" \
-    && rg -q 'standard-held-out.*n=40 runs / 20 cases' "$projection_root/result-a.svg" \
+    && rg -q 'standard-held-out.*n=44 runs / 22 cases' "$projection_root/result-a.svg" \
     && rg -q 'Repeated-run evidence is unsupported' "$projection_root/result-a.en.md" \
     && rg -q 'lower is better' "$projection_root/result-a.svg" \
     && ! rg -q 'Contract pass rate by scenario class|ambiguous-feature-shaping' "$projection_root/result-a.svg" \
@@ -121,9 +121,9 @@ else
 fi
 
 if [[ -f benchmarks/README.md ]] \
-    && rg -q '40 `standard-held-out`' benchmarks/README.md \
-    && rg -q '120 `extended-held-out`' benchmarks/README.md \
-    && rg -q 'current public snapshot' benchmarks/README.md \
+    && rg -q '44 `standard-held-out`' benchmarks/README.md \
+    && rg -q '132 `extended-held-out`' benchmarks/README.md \
+    && rg -q 'latest published \(pre-v7\) snapshot' benchmarks/README.md \
     && rg -q 'advisory' benchmarks/README.md \
     && rg -qi 'raw logs' benchmarks/README.md; then
     pass "benchmark evidence boundary is documented"
@@ -152,24 +152,41 @@ else
     fail "README current pointers match the Aegis 2.7.6 snapshot"
 fi
 
-published_projection_root="$projection_root/published"
-mkdir -p "$published_projection_root"
-if [[ -f "${published_result}.json" && -f "${published_result}.svg" \
-    && -f "${published_result}.en.md" && -f "${published_result}.zh-CN.md" ]] \
-    && "${PYTHON_CMD[@]}" tests/helpers/render_agentic_benchmark.py render \
-        --report "${published_result}.json" \
-        --svg "$published_projection_root/result.svg" \
-        --markdown-en "$published_projection_root/result.en.md" \
-        --markdown-zh "$published_projection_root/result.zh-CN.md" \
-    && [[ "$(git hash-object --path="${published_result}.svg" "${published_result}.svg")" == "$(git hash-object --path="${published_result}.svg" "$published_projection_root/result.svg")" ]] \
-    && [[ "$(git hash-object --path="${published_result}.en.md" "${published_result}.en.md")" == "$(git hash-object --path="${published_result}.en.md" "$published_projection_root/result.en.md")" ]] \
-    && [[ "$(git hash-object --path="${published_result}.zh-CN.md" "${published_result}.zh-CN.md")" == "$(git hash-object --path="${published_result}.zh-CN.md" "$published_projection_root/result.zh-CN.md")" ]] \
-    && ! rg -n '/home/|/Users/|[A-Za-z]:\\|session[_-]?id|rollout[_-]?id|sk-[A-Za-z0-9_-]{16,}' \
-        "${published_result}.json" "${published_result}.svg" \
-        "${published_result}.en.md" "${published_result}.zh-CN.md" >/dev/null; then
-    pass "authorized public bundle validates and matches canonical rendering"
+historical_projection_root="$projection_root/historical"
+mkdir -p "$historical_projection_root"
+historical_bases=(
+    "benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731"
+    "benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811"
+    "benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6"
+)
+historical_ok=true
+for historical_result in "${historical_bases[@]}"; do
+    historical_name="${historical_result##*/}"
+    historical_output_root="$historical_projection_root/$historical_name"
+    mkdir -p "$historical_output_root"
+    if [[ -f "${historical_result}.json" && -f "${historical_result}.svg" \
+        && -f "${historical_result}.en.md" && -f "${historical_result}.zh-CN.md" ]] \
+        && "${PYTHON_CMD[@]}" tests/helpers/render_agentic_benchmark.py render \
+            --report "${historical_result}.json" \
+            --svg "$historical_output_root/result.svg" \
+            --markdown-en "$historical_output_root/result.en.md" \
+            --markdown-zh "$historical_output_root/result.zh-CN.md" \
+        && cmp -s "${historical_result}.svg" "$historical_output_root/result.svg" \
+        && cmp -s "${historical_result}.en.md" "$historical_output_root/result.en.md" \
+        && cmp -s "${historical_result}.zh-CN.md" "$historical_output_root/result.zh-CN.md" \
+        && ! rg -n '/home/|/Users/|[A-Za-z]:\\|session[_-]?id|rollout[_-]?id|(^|[^A-Za-z0-9])[sS][kK]-[A-Za-z0-9_-]{16,}' \
+            "${historical_result}.json" "${historical_result}.svg" \
+            "${historical_result}.en.md" "${historical_result}.zh-CN.md" >/dev/null; then
+        continue
+    fi
+    historical_ok=false
+    echo "  [FAIL DETAIL] historical bundle: $historical_result"
+done
+
+if [[ "$historical_ok" == true ]]; then
+    pass "all three authorized historical bundles validate and match canonical rendering"
 else
-    fail "authorized public bundle validates and matches canonical rendering"
+    fail "all three authorized historical bundles validate and match canonical rendering"
 fi
 
 if (( failures > 0 )); then
