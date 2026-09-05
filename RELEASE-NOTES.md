@@ -13,6 +13,44 @@
 - Keep the three committed pre-v7 public snapshots available for exact,
   verification-only projection without relabeling them as current evidence.
 
+## v2.9.7 (2026-09-05)
+
+### Ordered counterexample value gate in first-principles review
+
+- Replace the `Falsification matrix` enumeration with Gates 0-6, evaluated in
+  order with stop at the first failing gate (`skills/first-principles-review/SKILL.md:117`):
+  Gate 0 premise evidence (stage-graded — design stage accepts spec/logic refs,
+  implementation/runtime stage requires log, telemetry, or test evidence; no
+  evidence parks the counterexample as watch-listed without entering value
+  evaluation); Gate 1 decidability (no obtainable judging evidence parks it as
+  a watched falsifier); Gate 2 value (any one of: lowers future fix
+  probability, shrinks the solution set, exposes a missing actionable
+  acceptance criterion, or the same broken assumption is reused elsewhere);
+  Gate 3 cost match (change cost vs business priority, costed at the current
+  stage; deferred-but-valid counterexamples are recorded, never parked orally);
+  Gate 4 goal regression (constrained solution still meets the original goal;
+  re-read the accepted-constraint list at existing checkpoints); Gate 5
+  minimize-then-classify (boundary-shaped destructive claims must be minimized
+  first; premise attacks classify as destructive directly; classes are
+  destructive / supplementary / watch-listed; conflicting counterexamples are
+  decided by business-goal ranking, never by stacking constraints); Gate 6
+  adoption trace (cheapest checkable form written into the existing owner doc).
+- `AEGIS_PROCESS_BASELINE.md`: Bounded Preservation now re-reads the
+  accepted-constraint list against the original goal at existing checkpoints
+  (design review, plan approval, pre-completion verification); no new counter
+  is created for this. No new owner, file, checkpoint, or ceremony.
+
+### Verification boundary
+
+- Version-bump audit passed: 8 declared manifests in sync at `2.9.7`
+  (`package.json`, `kimi.plugin.json`, `.claude-plugin/plugin.json`,
+  `.cursor-plugin/plugin.json`, `.codex-plugin/plugin.json`,
+  `.codebuddy-plugin/plugin.json`, `.claude-plugin/marketplace.json`,
+  `.codebuddy-plugin/marketplace.json`); no undeclared `2.9.7` references.
+- `tests/e2e/first-principles-review-check.sh` passed;
+  `tests/e2e/workflow-quality-check.sh` passed; workflow quality matrix
+  validation passed; `git diff --check` passed.
+
 ## v2.9.6 (2026-09-03)
 
 ### Harden benchmark prompt-input and rationale recognition

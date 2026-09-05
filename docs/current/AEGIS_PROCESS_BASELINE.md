@@ -54,7 +54,10 @@ The current process baseline follows these core principles:
   highest-risk counterexample, and material unknown or uninspected surfaces.
   Each known explicit anchor or reference gets an explainable disposition:
   preserve it, rebind it to the canonical owner, retire it with reason, or
-  reject it because of a conflict. Unresolved relationships remain unknown
+  reject it because of a conflict. Re-read the accepted-constraint list against
+  the original goal at existing checkpoints (design review, plan approval,
+  pre-completion verification); no new counter is created for this. Unresolved
+  relationships remain unknown
   rather than being re-inferred downstream. This is a decision reminder, not a
   claim that an agent has discovered every implicit consumer or behavior. The
   Method Pack can calibrate the claim and expose the boundary; exhaustive
