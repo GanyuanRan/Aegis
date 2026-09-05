@@ -390,7 +390,7 @@
       "scenarioClass": "long-task-boundary-preservation",
       "partition": "held-out-normal",
       "variant": "normal",
-      "caseRole": "discriminator",
+      "caseRole": "sentinel",
       "promptPath": "tests/e2e/agentic-benchmark-cases/long-task-preservation-normal/prompt.txt",
       "seedProjectPath": "tests/e2e/agentic-benchmark-cases/long-task-preservation-normal/project",
       "outcomeContractPath": "tests/e2e/agentic-benchmark-cases/long-task-preservation-normal/expected-outcome.json",

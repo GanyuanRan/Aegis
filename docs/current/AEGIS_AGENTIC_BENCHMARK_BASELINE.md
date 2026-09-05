@@ -345,8 +345,11 @@ Every concrete case has one diagnostic role:
 
 Case role never contributes a scoring pass. The pre-v7 metadata classified the
 older portfolio as 10 development, 12 sentinel, and 8 discriminator cases.
-Matrix v7 adds the long-task boundary preservation class as 1 development and
-2 discriminator cases, resulting in 11 / 12 / 10.
+Matrix v7 adds the long-task boundary preservation class as 1 development,
+1 sentinel, and 1 discriminator case, resulting in 11 / 13 / 9.
+`long-task-preservation-normal` is a sentinel: both arms are expected to pass
+its hardened fixture (indirect restock consumer, two threshold expectations),
+and it is not presented as arm discrimination evidence.
 `fallback-retirement-boundary` remains a discriminator because a shared unsafe
 failure is a useful capability defect even when both arms fail.
 

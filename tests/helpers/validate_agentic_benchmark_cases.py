@@ -72,13 +72,13 @@ EXPECTED_CASE_ROLES = {
     "tiny-source-normal": "discriminator",
     "tiny-source-boundary": "discriminator",
     "long-task-preservation-dev": "development",
-    "long-task-preservation-normal": "discriminator",
+    "long-task-preservation-normal": "sentinel",
     "long-task-preservation-boundary": "discriminator",
 }
 EXPECTED_CASE_ROLE_COUNTS = {
     "development": 11,
-    "sentinel": 12,
-    "discriminator": 10,
+    "sentinel": 13,
+    "discriminator": 9,
 }
 EXPECTED_TOP_LEVEL_FIELDS = {
     "version",
@@ -525,7 +525,7 @@ def validate_manifest(manifest_path: Path, schema_only: bool) -> None:
     scenario_counts = Counter(case["scenarioClass"] for case in cases)
     require(set(scenario_counts) == set(EXPECTED_CASES) and set(scenario_counts.values()) == {3}, "case manifest must contain exactly three cases per scenario class")
     role_counts = Counter(case["caseRole"] for case in cases)
-    require(dict(role_counts) == EXPECTED_CASE_ROLE_COUNTS, "case manifest role counts must be 11 development, 12 sentinel, and 10 discriminator")
+    require(dict(role_counts) == EXPECTED_CASE_ROLE_COUNTS, "case manifest role counts must be 11 development, 13 sentinel, and 9 discriminator")
 
     for field in ("promptPath", "seedProjectPath", "outcomeContractPath"):
         values = [case[field] for case in cases]

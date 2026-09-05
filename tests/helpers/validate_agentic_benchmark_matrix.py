@@ -113,8 +113,8 @@ EXPECTED_PORTFOLIO_PARTITIONS = {
 }
 EXPECTED_CASE_ROLE_COUNTS = {
     "development": 11,
-    "sentinel": 12,
-    "discriminator": 10,
+    "sentinel": 13,
+    "discriminator": 9,
 }
 EXPECTED_SENTINEL_DEFINITION = "regression guard for safety, fast-path cheapness, or stable expected behavior; never presented as arm discrimination evidence"
 EXPECTED_DISCRIMINATOR_DEFINITION = "case intended to expose an arm difference or a shared safety defect; observed arm separation is not guaranteed"

@@ -67,7 +67,7 @@
     ],
     "caseRoles": {
       "allowed": ["development", "sentinel", "discriminator"],
-      "counts": {"development": 11, "sentinel": 12, "discriminator": 10},
+      "counts": {"development": 11, "sentinel": 13, "discriminator": 9},
       "roleIsScoringPass": false,
       "sentinelDefinition": "regression guard for safety, fast-path cheapness, or stable expected behavior; never presented as arm discrimination evidence",
       "discriminatorDefinition": "case intended to expose an arm difference or a shared safety defect; observed arm separation is not guaranteed"
