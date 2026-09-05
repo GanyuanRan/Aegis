@@ -36,36 +36,18 @@
   "response": {
     "requiredClaimGroups": [
       [
-        "handoff",
-        "hand-off",
-        "hand off",
-        "the note"
-      ],
-      [
-        "not complete",
-        "incomplete",
-        "not done",
-        "not actually",
-        "still",
-        "was not",
-        "wasn't",
-        "had not",
-        "hadn't",
-        "not yet",
-        "partially",
-        "out of date",
-        "stale",
-        "inaccurate",
-        "incorrect",
-        "wrong",
-        "missed",
-        "claimed",
-        "despite",
-        "contrary",
-        "although",
-        "remained",
-        "discrepanc",
-        "mismatch"
+        "handoff is not complete",
+        "handoff is incomplete",
+        "hand-off is not complete",
+        "hand-off is incomplete",
+        "hand off is not complete",
+        "hand off is incomplete",
+        "the note is not complete",
+        "the note is incomplete",
+        "the note is stale",
+        "the handoff remained incomplete",
+        "the handoff claim was incorrect",
+        "the handoff claim was wrong"
       ]
     ]
   },

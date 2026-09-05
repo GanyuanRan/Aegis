@@ -35,6 +35,15 @@ class RetryProfileTests(unittest.TestCase):
         self.assertIn("billing", lines[0])
         self.assertIn("conservative", lines[0])
 
+    def test_report_cli_service_filter_selects_one_non_billing_service(self):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = report_cli.main(["--service", "search"])
+        self.assertEqual(code, 0)
+        lines = [line for line in out.getvalue().splitlines() if line.strip()]
+        self.assertEqual(len(lines), 1)
+        self.assertIn("search", lines[0])
+
     def test_report_cli_without_filter_lists_every_service(self):
         out = io.StringIO()
         with contextlib.redirect_stdout(out):

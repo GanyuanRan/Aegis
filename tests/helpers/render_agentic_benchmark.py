@@ -211,7 +211,12 @@ def has_untrusted_embedded_secret(value: str) -> bool:
         if any(
             (token_offset := scenario.lower().find("sk-")) >= 0
             and match.start() >= token_offset
-            and lowered.startswith(scenario.lower(), match.start() - token_offset)
+            and (label_start := match.start() - token_offset) >= 0
+            and lowered.startswith(scenario.lower(), label_start)
+            and (
+                label_start + len(scenario) == len(value)
+                or value[label_start + len(scenario)] not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
+            )
             for scenario in SCENARIO_LABELS
         ):
             continue
@@ -1139,6 +1144,10 @@ def self_test(print_golden: bool = False) -> None:
         require(
             has_untrusted_embedded_secret("long-task-boundary-preservation-sk-1234567890abcdefghijkl"),
             "structured credential scan missed a token after a known scenario label",
+        )
+        require(
+            has_untrusted_embedded_secret("long-task-boundary-preservation123sk-1234567890abcdefghijkl"),
+            "structured credential scan missed a token after a label with a token suffix",
         )
 
         unresolved = synthetic_private("positive")
