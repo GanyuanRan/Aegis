@@ -1,5 +1,35 @@
 # Aegis Release Notes
 
+## v2.10.0 (2026-09-07)
+
+### Debugging skill restructure: single thread plus triggered gates
+
+- `systematic-debugging` main body shrinks from 11977 to 10874 bytes (hard
+  ceiling 12000; back inside the target band): Change Necessity fields,
+  Minimality Check fields, and both Pre-Edit templates move to a new
+  `Pre-edit gate detail` section in `advanced-debugging-governance.md`; the
+  main file keeps trigger lines only. TDD route paragraph compresses to a
+  one-line pointer at `test-driven-development`; two restating sentences are
+  removed. All test-locked vocabulary (PatchShape fields, verdict line,
+  preservation phrases, both Pre-Edit headings, TDD locked sentences,
+  workspace-helper commands) stays in the main file; no test contract changes.
+- Scope guard added in v2.9.9 follow-up: minimisation narrows the repro, never
+  the fix scope — still drill upward to the canonical owner; the minimised
+  repro is the test input and the correct seam is the test placement.
+- No behavior change: same gates, same triggers, less must-read text per
+  injection.
+
+### Verification boundary
+
+- Version-bump audit passed: 8 declared manifests in sync at `2.10.0`; no
+  undeclared `2.10.0` references.
+- `tests/e2e/context-budget-check.sh`, `debugging-patch-shape-gate-check.sh`,
+  `workflow-quality-check.sh`, `trigger-health-check.sh`,
+  `minimality-reference-check.sh`, `tdd-policy-check.sh`,
+  `long-task-continuation-check.sh`, and `layer1-fast-check.sh` passed
+  (layer1 retains the known Windows-only agentic-benchmark fixture
+  environment bound); `git diff --check` passed.
+
 ## v2.9.9 (2026-09-07)
 
 ### Debugging micro-discipline: minimise, tag, and seam
