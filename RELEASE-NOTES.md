@@ -1,5 +1,28 @@
 # Aegis Release Notes
 
+## v2.9.9 (2026-09-07)
+
+### Debugging micro-discipline: minimise, tag, and seam
+
+- `systematic-debugging`: shrink the repro until every remaining element is
+  load-bearing (removing any one of them clears the failure); the minimised
+  repro becomes the regression test (`skills/systematic-debugging/SKILL.md`).
+- `systematic-debugging` closeout: tag temporary debug logs with a unique
+  prefix (e.g. `[DEBUG-a4f2]`) during diagnosis so cleanup is one grep, and
+  confirm their removal before close.
+- `verification-before-completion`: place the regression test at the seam that
+  exercises the real bug pattern as it occurs at the call site; a seam too
+  shallow to replicate the triggering chain gives false confidence. If no such
+  seam exists, record the missing seam as the finding (the architecture
+  prevents locking the bug down) and lower confidence. No new owner, file, or
+  ceremony.
+
+### Verification boundary
+
+- Version-bump audit passed: 8 declared manifests in sync at `2.9.9`; no
+  undeclared `2.9.9` references.
+- `tests/e2e/workflow-quality-check.sh` passed; `git diff --check` passed.
+
 ## v2.9.8 (2026-09-05)
 
 ### Add long-task boundary preservation coverage to the agentic benchmark

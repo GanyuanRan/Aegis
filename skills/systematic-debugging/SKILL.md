@@ -65,7 +65,9 @@ Pass root cause, avoided misfix, boundary, evidence, complexity, and risk to
    success criteria.
 2. Reproduce consistently. If reproduction is not stable, read
    `feedback-loop-construction.md` **only when evidence shows intermittent or
-   timing-dependent reproduction** and build a bounded automated loop.
+   timing-dependent reproduction** and build a bounded automated loop. Shrink
+   the repro until every remaining element is load-bearing (removing any one
+   of them clears the failure); the minimised repro becomes the regression test.
 3. Inspect recent changes and compare a working example. Code is evidence; if
    authority, glossary, code, and tests disagree, compose
    `establishing-project-context` rather than silently redefining a term.
@@ -231,7 +233,9 @@ Always report:
   disposition, retention reason/trigger, removal check.
 
 Confirm the reproduction, same-pattern handling, authority, complexity, and
-retirement. Confidence: A = direct regression evidence; B = strong evidence
+retirement. Tag temporary debug logs with a unique prefix (e.g. `[DEBUG-a4f2]`)
+during diagnosis so cleanup is one grep, and confirm their removal before
+close. Confidence: A = direct regression evidence; B = strong evidence
 with bounded unknowns; C = partial and not resolved.
 
 `Trace Digest` may summarize audit evidence; never expose chain-of-thought or

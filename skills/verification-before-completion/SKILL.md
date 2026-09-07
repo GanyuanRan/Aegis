@@ -54,6 +54,10 @@ Keep these slots explicit and auditable:
 - `C`: partial evidence only; do not claim full completion.
 
 When tests shape the claim, include target test and related regression evidence.
+Place the regression test at the seam that exercises the real bug pattern as it
+occurs at the call site; a seam too shallow to replicate the triggering chain
+gives false confidence. If no such seam exists, record the missing seam as the
+finding (the architecture prevents locking the bug down) and lower confidence.
 If automation is blocked, give reproducible manual steps and lower confidence.
 Evidence is not completion authority.
 
