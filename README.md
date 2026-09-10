@@ -11,7 +11,7 @@
     <a href="https://github.com/GanyuanRan/Aegis" alt="GitHub Stars">
         <img src="https://img.shields.io/github/stars/GanyuanRan/Aegis?style=flat&label=Stars" /></a>
     <a href="https://gitcode.com/m0_67899281/Aegis" alt="AtomGit Stars">
-        <img src="https://gitcode.com/m0_67899281/Aegis/star/new_badge.svg" /></a>
+        <img src="https://gitcode.com/m0_67899281/Aegis/star/new_badge.svg" alt="AtomGit G-Star" height="32" /></a>
     <a href="https://olud.ai/project/ganyuanran-aegis.html" alt="Aegis on olud.ai">
         <img src="https://olud.ai/badge.php?tool=ganyuanran-aegis" alt="Aegis on olud.ai" /></a>
 </p>
