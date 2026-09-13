@@ -1,5 +1,46 @@
 # Aegis Release Notes
 
+## v2.10.1 (2026-09-13)
+
+### Verification closeout progressive disclosure
+
+- Reduce `verification-before-completion/SKILL.md` from 8,989 to 7,495 bytes
+  while preserving its explicit activation gate, fresh-evidence downgrade,
+  L0/L1/L2 routes, single closeout owner, task-versus-requirement boundary,
+  task-scoped Git receipt, governance/retirement closure, destructive-action
+  permission boundary, localization, and Method Pack non-authority.
+- Move conditional Aegis workspace `bundle` / `check` command detail into the
+  existing `expanded-closeout.md` Workspace Integrity owner. The main body
+  retains direct routing for both workspace changes and pre-existing work
+  records, so progressive disclosure does not make either path unreachable.
+- Add deterministic contracts for helper-command ownership, the independent
+  work-record trigger, scoped destructive permission, verify-before-commit
+  ordering, and completion claims bounded by fresh evidence.
+
+### Public discovery surface
+
+- Add the compact AtomGit star badge to both English and Chinese README files,
+  keeping the GitHub repository and release surfaces unchanged.
+
+### Benefits and verification boundary
+
+- The default verification payload is 1,494 bytes smaller (16.6%) and returns
+  below its 7,500-byte warning target. The combined debugging/verification,
+  debug-route, plan-execution, and long-task route bundles also return below
+  their warning targets. These are Method Pack maintenance and prompt-payload
+  improvements, not claims about provider latency, billing, or cache behavior.
+- Version-bump audit passed: 8 declared manifests are synchronized at `2.10.1`
+  with no undeclared version references.
+- The required full E2E release command was run through Git Bash. Governance,
+  Layer 2, and Layer 3 passed; Layer 1 passed 40 checks and retained its known
+  Windows environment boundary because the offline Codex benchmark fixture is
+  unsupported on this platform. Focused workflow/governance/context checks,
+  host projection checks, Codex plugin-sync regression, OpenCode base suite,
+  and `git diff --check` passed. The environment-bound fixture is not claimed
+  as fresh benchmark or live-host evidence.
+- No benchmark artifact, scoring rule, result, or benchmark claim changed in
+  this release.
+
 ## v2.10.0 (2026-09-07)
 
 ### Debugging skill restructure: single thread plus triggered gates
