@@ -99,7 +99,7 @@ for file in \
     skills/test-driven-development/SKILL.md \
     skills/systematic-debugging/SKILL.md \
     skills/long-task-continuation/SKILL.md \
-    skills/verification-before-completion/SKILL.md \
+    skills/verification-before-completion/expanded-closeout.md \
     docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md \
     docs/current/AEGIS_PROCESS_BASELINE.md; do
     assert_contains "$file" "<aegis-workspace-helper>" "$file uses installed-helper placeholder"

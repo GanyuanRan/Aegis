@@ -867,6 +867,24 @@ assert_contains "$verification_skill" "must not replace the receipt|competing fi
     "verification skill prevents adjacent structures from replacing the receipt"
 assert_contains "$verification_expanded" "no card here is a second final owner" \
     "expanded closeout does not create a competing final owner"
+assert_not_contains "$verification_skill" "<aegis-workspace-helper>" \
+    "verification main keeps conditional workspace helper commands out of the default payload"
+assert_contains_all "$verification_expanded" \
+    "expanded closeout owns conditional workspace helper commands" \
+    "<aegis-workspace-helper> bundle" "<aegis-workspace-helper> check" \
+    "structure, not evidence sufficiency"
+assert_contains "$verification_skill" \
+    "docs/aegis/.*changed.*work record exists.*Workspace Integrity|work record exists.*docs/aegis/.*Workspace Integrity" \
+    "verification main preserves both workspace-integrity route conditions"
+assert_contains "$verification_expanded" "work record exists" \
+    "expanded workspace owner accepts an existing work record"
+assert_contains "$verification_skill" "broad assent.*not scoped permission" \
+    "verification keeps destructive authorization wording explicit"
+assert_contains "$verification_skill" \
+    "After fresh verification.*local commit|local task commit follows fresh verification" \
+    "verification keeps verify-before-commit ordering explicit"
+assert_contains "$verification_skill" "scope covered by fresh evidence" \
+    "verification keeps completion evidence scope unambiguous"
 assert_contains "$verification_skill" "Key judgment" \
     "verification skill reports key judgment in the unified receipt"
 assert_contains "$verification_skill" "Avoided misfix" \
