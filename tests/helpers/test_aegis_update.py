@@ -146,6 +146,51 @@ class AegisUpdateRegistryTests(unittest.TestCase):
 
         self.assertEqual([item["id"] for item in selected], ["codex:default", "opencode:default"])
 
+    def _run_registry_update(self, tmp: str, *, verify: bool, verified: bool) -> dict:
+        registry_path = Path(tmp) / "installations.json"
+        registry_path.write_text(
+            json.dumps(
+                {
+                    "schemaVersion": 1,
+                    "installations": [
+                        {"id": "codex:default", "host": "codex", "methodPackRoot": tmp}
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        fake_result = {
+            "id": "codex:default",
+            "host": "codex",
+            "status": "updated",
+            "beforeCommit": "old",
+            "afterCommit": "new",
+            "verified": verified,
+        }
+        with patch.object(update, "update_installation", return_value=dict(fake_result)):
+            update.update_registered_installations(
+                registry_path,
+                [{"id": "codex:default", "host": "codex", "methodPackRoot": tmp}],
+                config_path=None,
+                dry_run=False,
+                stash=False,
+                force=False,
+                verify=verify,
+            )
+        return json.loads(registry_path.read_text(encoding="utf-8"))["installations"][0]
+
+    def test_update_records_last_verified_commit_only_after_verification(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-") as tmp:
+            entry = self._run_registry_update(tmp, verify=True, verified=True)
+            self.assertEqual(entry["lastVerifiedCommit"], "new")
+            self.assertIn("lastVerifiedAt", entry)
+
+    def test_update_without_verify_does_not_claim_verified_commit(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-update-") as tmp:
+            entry = self._run_registry_update(tmp, verify=False, verified=False)
+            self.assertNotIn("lastVerifiedCommit", entry)
+            self.assertNotIn("lastVerifiedAt", entry)
+
     def test_json_flag_is_accepted_after_subcommand(self):
         parser = update.build_parser()
 

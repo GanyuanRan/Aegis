@@ -837,7 +837,12 @@ def update_registered_installations(
                 }
                 shared_root_refs[root_key] = tracked_ref
         results.append(result)
-        if not dry_run and result.get("afterCommit") and entry.get("id") in by_id:
+        if (
+            not dry_run
+            and result.get("afterCommit")
+            and result.get("verified")
+            and entry.get("id") in by_id
+        ):
             by_id[entry["id"]]["lastVerifiedCommit"] = result["afterCommit"]
             by_id[entry["id"]]["lastVerifiedAt"] = utc_now()
     if not dry_run:
