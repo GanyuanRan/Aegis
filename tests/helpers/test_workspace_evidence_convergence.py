@@ -257,6 +257,35 @@ class EvidenceConvergenceTests(unittest.TestCase):
             self.assertIn("## Current Checkpoint", text)
             self.assertIn("todo-7", text)
 
+    def test_bounded_checkpoint_history_keeps_newest_entries_first(self):
+        with tempfile.TemporaryDirectory(prefix="aegis-checkpoint-") as tmp:
+            root = Path(tmp)
+            work = new_work_record(root)
+            for index in range(8):
+                workspace.command_add_checkpoint(
+                    args(
+                        root=str(root),
+                        work=work.name,
+                        date="2026-09-01",
+                        current_todo=f"todo-{index}",
+                        completed_todo=[f"done-{index}"],
+                        active_slice="slice-1",
+                        evidence_ref=[],
+                        blocked_on=None,
+                        next_step=f"step-{index}",
+                        resume_instruction=f"resume-{index}",
+                        unsafe_to_assume=[],
+                    )
+                )
+            text = (work / "20-checkpoint.md").read_text(encoding="utf-8")
+            history = text.split("## Recent Checkpoint History", 1)[1]
+            # Current is todo-7; history keeps the five newest predecessors.
+            for index in range(2, 7):
+                self.assertIn(f"todo-{index}", history)
+            for index in range(0, 2):
+                self.assertNotIn(f"todo-{index}", history)
+            self.assertLess(history.index("todo-6"), history.index("todo-2"))
+
 
 if __name__ == "__main__":
     unittest.main()
