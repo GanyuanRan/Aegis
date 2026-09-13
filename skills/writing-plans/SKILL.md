@@ -342,12 +342,16 @@ for a proven external boundary, or stopping for persistent-state confirmation,
 compose `anti-entropy-governance`. Keep it as a narrow classification and
 guardrail owner; it does not authorize destructive execution.
 
-Use `Planless Slice Lane` before writing or saving a plan when all of these are
-true:
+Use `Planless Slice Lane` before writing or saving a plan when one of these
+entry conditions holds:
 
-- a parent spec or parent plan already defines the workstream
-- the current request is executing or refining one bounded task from that
-  parent
+- a parent spec or parent plan already defines the workstream, and the current
+  request is executing or refining one bounded task from that parent
+- the change is mechanical or bounded and needs no parent document (the
+  no-parent branch under `# Execute`)
+
+and both of these are true:
+
 - no new owner, contract, schema, public API, architecture boundary, migration,
   persistence, security/permission, distribution/release surface, or unclear
   verification boundary appears
