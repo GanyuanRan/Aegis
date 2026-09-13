@@ -146,17 +146,14 @@ class AegisUpdateRegistryTests(unittest.TestCase):
 
         self.assertEqual([item["id"] for item in selected], ["codex:default", "opencode:default"])
 
-    def _run_registry_update(self, tmp: str, *, verify: bool, verified: bool) -> dict:
+    def _run_registry_update(
+        self, tmp: str, *, verify: bool, verified: bool, existing: dict | None = None
+    ) -> dict:
         registry_path = Path(tmp) / "installations.json"
+        entry = {"id": "codex:default", "host": "codex", "methodPackRoot": tmp}
+        entry.update(existing or {})
         registry_path.write_text(
-            json.dumps(
-                {
-                    "schemaVersion": 1,
-                    "installations": [
-                        {"id": "codex:default", "host": "codex", "methodPackRoot": tmp}
-                    ],
-                }
-            ),
+            json.dumps({"schemaVersion": 1, "installations": [entry]}),
             encoding="utf-8",
         )
         fake_result = {
@@ -190,6 +187,15 @@ class AegisUpdateRegistryTests(unittest.TestCase):
             entry = self._run_registry_update(tmp, verify=False, verified=False)
             self.assertNotIn("lastVerifiedCommit", entry)
             self.assertNotIn("lastVerifiedAt", entry)
+
+    def test_update_without_verify_keeps_previous_verified_metadata(self):
+        previous = {"lastVerifiedCommit": "old", "lastVerifiedAt": "2026-09-01T00:00:00Z"}
+        with tempfile.TemporaryDirectory(prefix="aegis-update-") as tmp:
+            entry = self._run_registry_update(
+                tmp, verify=False, verified=False, existing=dict(previous)
+            )
+            self.assertEqual(entry["lastVerifiedCommit"], previous["lastVerifiedCommit"])
+            self.assertEqual(entry["lastVerifiedAt"], previous["lastVerifiedAt"])
 
     def test_json_flag_is_accepted_after_subcommand(self):
         parser = update.build_parser()
