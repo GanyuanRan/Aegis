@@ -872,7 +872,9 @@ def bounded_checkpoint_markdown(path: Path, current_block: str) -> None:
         cleaned = block.strip()
         if cleaned:
             history.append(cleaned)
-    recent = history[-MAX_CHECKPOINT_HISTORY:]
+    # history is newest-first (previous Current, then prior updates in file
+    # order), so keep the head to retain the most recent entries.
+    recent = history[:MAX_CHECKPOINT_HISTORY]
 
     drift_match = re.search(r"(?ms)^## DriftCheckDraft\n\n(.*?)(?=\n## |\Z)", existing)
 
