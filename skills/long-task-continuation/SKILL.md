@@ -38,7 +38,10 @@ Use this skill when any of these are true:
 
 For short direct answers or one-command checks, do not force this protocol.
 
-Multi-step, todo-driven, or subagent-using tasks do not force durable records by themselves; keep an inline checkpoint unless the task also crosses sessions, needs handoff, or requires resumable state.
+Multi-step, todo-driven, possible-compaction, and subagent use do not force
+durable records by themselves. Use `work/` for medium+ complexity or when work
+actually crosses sessions, needs handoff, or requires resumable state;
+otherwise keep an inline checkpoint.
 
 ## Required Artifacts
 
@@ -56,45 +59,49 @@ Maintain artifacts under `docs/aegis/work/YYYY-MM-DD-<slug>/`:
 | EvidenceBundleDraft | `90-evidence.md` and optional `evidence-bundle-draft.json` | Per-slice protocol |
 | Reflection | `99-reflection.md` | Completion candidate |
 
-For medium+ complexity tasks only. Low-complexity tasks skip work/.
+The table applies only when the durable-record rule above selects `work/`.
 
 `Execution Readiness View` may be included inline in `10-intent.md` or the
 active checkpoint when the workstream is medium/high, subagent-driven,
 handoff-prone, long-running, architecture / contract sensitive, or
 compatibility / retirement sensitive. It is a human-readable rendering of
-existing drafts and the parent plan, not a new JSON artifact type and not
-completion authority.
+existing drafts and any parent plan, not a new JSON artifact or completion
+authority.
 
 Planless Slice Lane:
 
-- Use this lane when a parent plan or parent spec already owns the long-task
-  workstream and the current micro-slice only executes or refines one bounded
-  parent task.
+- Use this lane when an existing parent plan/spec owns the current micro-slice
+  and it executes or refines one bounded parent task, or through the no-parent
+  branch for a direct bounded mechanical request with no new durable or unclear
+  verification boundary.
 - Record a compact Slice Card instead of creating another durable plan/spec:
 
   ```text
   Slice Card:
   - Goal:
-  - Parent plan/spec:
+  - Parent plan/spec: <ref> | none — direct bounded request
   - Files:
   - Boundary:
   - Verification:
   - Stop:
   ```
 
-- Slice Card `Goal` anchors slice-level completeness only.
-- It does not by itself grant whole-task completion.
+- Slice Card `Goal` anchors slice-level completeness only, never whole-task
+  completion.
 - Final completion still requires `verification-before-completion` Goal Closure
-  against the parent plan/spec and any active goal frame, rendered through the
-  unified Aegis impact/safety receipt unless audit detail is requested.
+  against the parent when present or the direct bounded request otherwise, plus
+  any active goal frame, through the unified Aegis impact/safety receipt unless
+  audit detail is requested.
 
-- Do not create new plan/spec files for micro-slices that stay inside the
-  parent plan, existing compatibility boundary, and known verification path.
-- Update the existing checkpoint, evidence, and drift records when persistent
-  state is needed.
+- Do not create a plan/spec merely to supply a parent for an otherwise bounded
+  slice.
+- Parent-owned slices reuse existing checkpoint/evidence/drift records.
+  No-parent low-complexity slices use an inline checkpoint; durable records
+  follow the rule above.
 - Escalate out of this lane only when a new owner, contract, schema, public API,
   architecture boundary, migration, persistence, security/permission,
-  distribution/release surface, or unclear verification boundary appears.
+  distribution/release surface, unclear verification boundary, or mismatch
+  with the parent scope or acceptance appears.
 
 When durable architecture decisions are in scope, these work records are the
 preferred ADR Auto Backfill source. Preserve ADR signals, source refs,
@@ -106,8 +113,8 @@ These are draft / hint / projection inputs. They are not authoritative runtime r
 
 ## Workspace Helper Protocol
 
-When configured Aegis workspace support or installed Aegis workspace support is
-available, use it for the target project workspace and lifecycle records:
+When this rule selects `work/` and configured or installed Aegis workspace
+support is available, use it for target-project lifecycle records:
 
 1. Initialize before writing work records:
 
@@ -115,7 +122,7 @@ available, use it for the target project workspace and lifecycle records:
    python <aegis-workspace-helper> init --root <target-project-root>
    ```
 
-2. For a new medium+ task process trail, prefer helper-backed lifecycle
+2. For a new durable task process trail, prefer helper-backed lifecycle
    creation over hand-created files:
 
    ```bash
@@ -187,9 +194,9 @@ Before long-task execution:
    - blocked-on items
    - next step
 8. If baseline refs are missing, pause in `needs-baseline-readback`.
-9. If the workspace helper is available, use `aegis-workspace.py new-work` to
-   create/index the first `docs/aegis/work/` files and run `check --root
-   <target-project-root>` before continuing.
+9. If this rule selects `work/` and the helper is available, use
+   `aegis-workspace.py new-work` to create/index the first `docs/aegis/work/`
+   files and run `check --root <target-project-root>` before continuing.
 
 ## Retry Convergence Protocol
 
@@ -216,8 +223,8 @@ Before each work slice, restate:
 5. verification command or manual check
 6. `Execution Readiness View` alignment when one exists
 
-For micro-slices under an existing parent plan, use the Planless Slice Lane and
-state the Slice Card instead of opening a new planning/specification artifact.
+For bounded parent-plan or no-parent slices inside the lane guards, state the
+Planless Slice Card instead of opening a new planning/specification artifact.
 
 After each work slice, update:
 
@@ -227,7 +234,8 @@ After each work slice, update:
 4. blockers
 5. next step
 6. drift check
-7. helper-backed JSON sidecars through `aegis-workspace.py add-checkpoint`,
+7. when an active helper-backed work record exists, update JSON sidecars through
+   `aegis-workspace.py add-checkpoint`,
    `aegis-workspace.py add-baseline-usage`, `aegis-workspace.py add-evidence`, and `aegis-workspace.py add-drift-check`
    when available
 8. failed verification: `add-attempt` with the current `--slice-id`; do not add

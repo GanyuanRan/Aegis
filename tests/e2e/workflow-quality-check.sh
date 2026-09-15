@@ -51,6 +51,28 @@ assert_contains_all() {
     pass "$label"
 }
 
+assert_section_contains_all() {
+    local file="$1"
+    local start_line="$2"
+    local end_line="$3"
+    local label="$4"
+    shift 4
+
+    local section pattern
+    section="$(awk -v start="$start_line" -v end="$end_line" '
+        $0 == start { capture = 1; next }
+        capture && $0 == end { exit }
+        capture { print }
+    ' "$file")"
+    for pattern in "$@"; do
+        if ! grep -qE "$pattern" <<<"$section"; then
+            fail "$label"
+            return
+        fi
+    done
+    pass "$label"
+}
+
 assert_not_contains() {
     local file="$1"
     local pattern="$2"
@@ -323,6 +345,14 @@ assert_contains "$baseline" "Planless Slice Lane" \
     "workflow quality baseline includes planless slice lane"
 assert_contains "$baseline" "Slice Card" \
     "workflow quality baseline includes slice card"
+assert_contains "$process_doc" "without a parent" \
+    "process baseline supports direct bounded planless slices without a parent"
+assert_contains "$baseline" "none — direct bounded request" \
+    "workflow quality baseline defines the no-parent slice card anchor"
+assert_contains "$matrix" '"id": "no-parent-planless-continuation"' \
+    "workflow quality matrix covers no-parent planless continuation"
+assert_contains "$matrix" '"id": "low-complexity-no-parent-handoff-durable"' \
+    "workflow quality matrix covers the durable no-parent handoff branch"
 assert_contains "$baseline" "one parent spec.*one parent plan|one parent plan.*one parent spec" \
     "workflow quality baseline defines artifact budget"
 assert_contains "$baseline" "Findings First" \
@@ -821,6 +851,54 @@ assert_contains "skills/long-task-continuation/SKILL.md" "Slice Card" \
     "long-task continuation includes slice card"
 assert_contains "skills/long-task-continuation/SKILL.md" "parent plan" \
     "long-task continuation reuses parent plan for micro-slices"
+assert_section_contains_all "skills/long-task-continuation/SKILL.md" \
+    'Planless Slice Lane:' \
+    'When durable architecture decisions are in scope, these work records are the' \
+    "long-task continuation supports direct bounded no-parent slices" \
+    "no-parent" "none — direct bounded request" "direct bounded request" "inline checkpoint"
+assert_section_contains_all "$process_doc" '### 3.0h Micro-Slice Artifact Budget' \
+    '### 3.0i Change Necessity Before Source Edits' \
+    "process baseline preserves the parent-owned planless lane boundary" \
+    "existing plan/spec owns the current micro-slice" "bounded parent task" \
+    "parent scope or" "acceptance" "possible compaction" "do not force one"
+assert_section_contains_all "$process_doc" \
+    '### 12.3 Workspace Shell and Task Work Record' \
+    '### 12.4 Spec Brief and Design Spec' \
+    "process baseline scopes the long-task durable-record selector" \
+    "Task Work Record is a durable process trail" "For long-task continuation" \
+    "medium/high work" "actually crosses sessions" "needs handoff" \
+    "resumable state"
+assert_section_contains_all "$process_doc" '### 12.5 Complexity Routing' \
+    '### 12.6 Workspace Integrity Checks' \
+    "process baseline keeps low and medium routing consistent" \
+    'no `work/` by default' \
+    'medium long-task continuation creates `work/`'
+assert_not_contains "$process_doc" 'Low-complexity tasks \(no `work/`' \
+    "process baseline does not make low-complexity work records impossible"
+assert_not_contains "$process_doc" \
+    'Task Work Record is created only for medium/high|Low-complexity tasks skip `work/`' \
+    "process baseline retires competing durable-record selectors"
+assert_section_contains_all "$baseline" '### 3.12 Micro-Slice Artifact Budget' \
+    '### 3.13 Diagnostic Stop Transparency' \
+    "workflow quality baseline escalates parent scope or acceptance mismatch" \
+    "parent scope or" "acceptance"
+assert_section_contains_all "skills/long-task-continuation/SKILL.md" \
+    '## When To Use' '## Required Artifacts' \
+    "long-task continuation has one durable-record selection rule" \
+    "medium\\+" "actually crosses sessions" "needs handoff" "resumable state" \
+    "possible-compaction" "do not force" "durable records by themselves"
+assert_section_contains_all "skills/long-task-continuation/SKILL.md" \
+    '## Per-Slice Protocol' '## Resume Protocol' \
+    "long-task continuation updates helper sidecars only for an existing work record" \
+    "active helper-backed work record exists"
+assert_section_contains_all "skills/long-task-continuation/SKILL.md" \
+    'Planless Slice Lane:' \
+    'When durable architecture decisions are in scope, these work records are the' \
+    "planless parent slices escalate on parent scope or acceptance mismatch" \
+    "mismatch" "parent scope or acceptance"
+assert_not_contains "skills/long-task-continuation/SKILL.md" \
+    'For medium\+ complexity tasks only\. Low-complexity tasks skip work/' \
+    "long-task continuation retires the absolute low-complexity skip rule"
 assert_contains "skills/long-task-continuation/SKILL.md" "do not create.*plan.*spec|Do not create.*plan.*spec" \
     "long-task continuation prevents per-slice plan/spec files"
 assert_contains "skills/long-task-continuation/SKILL.md" "Execution Readiness View" \
