@@ -57,11 +57,20 @@ readme_en="README.md"
 readme_zh="README.zh-CN.md"
 doctor="scripts/aegis-doctor.py"
 matrix="tests/e2e/fixtures/trigger-health-matrix.json"
+skill_discipline="skills/using-aegis/references/skill-discipline.md"
+limitations="docs/current/AEGIS_KNOWN_LIMITATIONS.md"
+testing_doc="docs/testing.md"
+reentry_runner="tests/skill-triggering/run-codex-reentry-tests.sh"
 
 if [[ -f "$baseline" ]]; then
     pass "trigger health baseline exists"
 else
     fail "trigger health baseline exists"
+fi
+if [[ -f "$reentry_runner" ]]; then
+    pass "Codex multi-turn re-entry runner exists"
+else
+    fail "Codex multi-turn re-entry runner exists"
 fi
 
 assert_contains "$current_index" "AEGIS_TRIGGER_HEALTH_BASELINE.md" \
@@ -103,8 +112,16 @@ assert_contains "$baseline" "context pressure and re-entry" \
     "baseline includes context-pressure layer"
 assert_contains "$baseline" "compaction" \
     "baseline covers compaction as a trigger-health pressure signal"
+assert_contains "$baseline" "meaningful change in work type" \
+    "baseline covers an in-session work-type change as a re-entry signal"
 assert_contains "$baseline" "re-entry check" \
     "baseline defines compact re-entry check"
+assert_contains "$skill_discipline" "meaningful change in the current work type" \
+    "skill discipline re-enters routing after a meaningful work-type change"
+assert_contains "$limitations" "run-codex-reentry-tests.sh" \
+    "known limitation names the live Codex re-entry observer"
+assert_contains "$testing_doc" "Codex Multi-Turn Route Re-entry Smoke" \
+    "testing guide documents the live Codex re-entry observer"
 assert_contains "$baseline" "### L7 False Positive Control" \
     "baseline keeps false-positive control as L7"
 assert_contains "$baseline" "false positive over-triggering" \

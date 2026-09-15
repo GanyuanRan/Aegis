@@ -166,12 +166,14 @@ Failure owner:
 
 Question:
 
-- After a long session, heavy tool output, resume, or context compaction, does
-  the agent re-enter Aegis routing before continuing non-trivial work?
+- After a long session, heavy tool output, resume, context compaction, or a
+  meaningful change in work type, does the agent re-enter Aegis routing before
+  continuing non-trivial work?
 
 Evidence:
 
-- transcript shows a compact re-entry check after compaction or resume
+- transcript shows a compact re-entry check and task-specific route decision
+  after an unannounced work-type change or a host-proven compaction boundary
 - explicit call to `aegis:using-aegis` restores the expected route
 - trigger-health fixture comparing clean context with context-pressure prompts
 

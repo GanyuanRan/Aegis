@@ -89,6 +89,36 @@ authentication, the Codex version, and the selected model must be reported with
 the result. Static CI remains responsible for the portable policy and
 projection contracts.
 
+### Codex Multi-Turn Route Re-entry Smoke
+
+The route re-entry smoke observes two session transitions without naming an
+Aegis skill or announcing the transition in the user prompt:
+
+- ordinary implementation discussion followed by an anomaly report
+- debugging continuation after Codex records a real compaction boundary
+
+Run it from the release-candidate checkout:
+
+```bash
+AEGIS_CODEX_REENTRY_REPETITIONS=3 bash tests/skill-triggering/run-codex-reentry-tests.sh
+```
+
+The runner uses persistent Codex sessions because `exec resume` and durable
+compaction evidence require them. It verifies a `compacted` record after the
+first root turn starts and before the second root turn starts in Codex's
+session JSONL and requires an explicit task-specific route selection in the
+current turn's first assistant message. Later or negated skill mentions do not
+count, and both prompts prohibit repair writes. The runner prints the CLI
+version, model, and per-case evidence. A route miss is observed negative
+evidence and makes the command exit nonzero; a missing compaction record makes
+that sample invalid. The final summary separates observed-positive,
+observed-negative, and invalid-unobserved samples and completes every requested
+repetition before returning nonzero for any negative or invalid result. Set
+`CODEX_REENTRY_SESSION_HOME` when the CLI stores sessions outside `CODEX_HOME`
+or the host's default home. When WSL launches the default Windows Codex CLI,
+the helper resolves and converts the Windows profile automatically. This is an
+environment-bound model smoke and is not part of portable static CI.
+
 ### OpenCode Compatibility Review Tests
 
 For the current `Aegis` compatibility review, the OpenCode suite runs in two layers:

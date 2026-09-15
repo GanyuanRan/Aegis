@@ -872,11 +872,27 @@ request.
 - `bash tests/e2e/workflow-quality-check.sh`
 - repeated Codex route smoke covering auto/high-risk, auto/tiny, off/high-risk,
   and off/explicit-strict cases
+- `AEGIS_CODEX_REENTRY_REPETITIONS=3 bash tests/skill-triggering/run-codex-reentry-tests.sh`
+  covers an unannounced work-type change and continuation after a Codex-proven
+  compaction boundary. It scores a current-turn task-specific route before any
+  repair step and reports the Codex CLI version, model, and sample count.
+- Static checks and prompts that announce resume or compaction do not count as
+  live re-entry evidence. If the multi-turn smoke has not run or cannot prove
+  the host compaction boundary, report this half as unobserved; a proven
+  boundary followed by a route miss is observed negative evidence.
+- Fresh maintainer evidence on 2026-09-15 (Codex CLI 0.154.0,
+  `gpt-6-astra`, three runs per shape) recorded the expected route after the
+  unannounced work-type change and missed the current-turn route after a
+  host-proven compaction boundary. This is observed negative evidence, not the
+  repeated evidence needed for retirement.
 
 **Retirement Trigger**
 - Retire only when a supported runtime/host boundary can enforce route validity
   before source-edit tools, or repeated live evidence establishes an approved
   replacement boundary without claiming method-pack runtime authority
+- For the re-entry half, repeated multi-turn runs on a supported Codex version
+  must show the expected route after an unannounced work-type change and after
+  host-proven compaction, with model, host version, and sample count reported
 
 ## 3. Default Reading Rule
 
