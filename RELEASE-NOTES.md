@@ -1,5 +1,57 @@
 # Aegis Release Notes
 
+## v2.10.2 (2026-09-16)
+
+### Reliability fixes
+
+- Keep the five newest long-task checkpoint history entries in newest-first
+  order when the bounded list is full, instead of retaining the oldest five.
+- Update `lastVerifiedCommit` and `lastVerifiedAt` only after an installation
+  update actually completes verification. Runs using `--no-verify` now preserve
+  the previous verified state.
+- Defer the DeepSeek Harness routing bootstrap until the synchronous
+  `session/event` publication cycle has unwound. Epoch checks now invalidate
+  stale deliveries, agent disposal removes exact state, and bundle teardown
+  cancels pending work without adding a fallback or runtime authority.
+
+### Workflow consistency
+
+- Align the no-parent Planless Slice Lane across the process and workflow
+  baselines, `writing-plans`, and `long-task-continuation`. Bounded inline work
+  stays lightweight, while cross-session, handoff, resumable, and medium/high
+  complexity work still receives durable records.
+- Make the requesting-code-review example follow its own Findings First rule by
+  presenting issues before strengths.
+
+### Codex route re-entry observability
+
+- Add an environment-bound persistent Codex smoke for an unannounced change
+  from ordinary implementation discussion to anomaly investigation and for
+  continuation after a compaction boundary proven from Codex session evidence.
+- Score only an affirmative task-specific route in the current turn's first
+  assistant message, reject late or explicitly negated mentions, and report
+  observed-positive, observed-negative, and invalid-unobserved samples
+  separately.
+- Fresh evidence from three runs per shape on Codex CLI 0.154.0 with
+  `gpt-6-astra` selected the expected route after the work-type change but
+  missed the current-turn route after host-proven compaction. This remains a
+  documented model-mediated limitation, not a runtime guarantee or retirement
+  claim.
+
+### Verification and boundaries
+
+- Synchronize all 8 declared package/plugin manifests at `2.10.2`; the version
+  audit reports no undeclared current-version references.
+- The required full E2E release lane was run through Git Bash. Governance,
+  Layer 2, and Layer 3 passed; Layer 1 passed 41 checks and retained the known
+  Windows environment boundary because its offline Codex fixture packages a
+  Linux-native runtime and does not support Windows `AMD64`. Fresh Ubuntu CI
+  remains the authoritative host-neutral aggregate for that fixture.
+- Preserve plugin-installable distribution and the current host evidence
+  boundaries. Structural support is not restated as fresh live-host closeout.
+- Aegis remains `Aegis Method Pack (runtime-ready)` and does not grant an
+  authoritative `GateDecision`, `PolicySnapshot`, or completion authority.
+
 ## v2.10.1 (2026-09-13)
 
 ### Verification closeout progressive disclosure
