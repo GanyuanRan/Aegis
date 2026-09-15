@@ -138,8 +138,14 @@ Root improvement rule:
   Semantic capability and discoverable routing remain the acceptance boundary;
   size pressure never authorizes deleting required behavior.
 - Apply the Micro-Slice Artifact Budget when long tasks split into many tiny
-  slices: reuse the parent spec/plan, use a compact Slice Card, and avoid
-  per-slice plan/spec files unless a new durable boundary appears.
+  slices: parent-owned slices reuse the parent spec/plan; direct bounded
+  mechanical slices without a parent use `Parent plan/spec: none — direct
+  bounded request`. Both use a compact Slice Card and avoid per-slice plan/spec
+  files unless a new durable boundary appears.
+- Keep the Slice Card inline unless the long-task artifact rule selects durable
+  work: medium+ complexity, actual cross-session execution, required handoff, or
+  otherwise required resumable state. Possible compaction, multiple todos, or
+  subagent use alone do not select it.
 - Use an `Execution Readiness View` for medium/high, subagent, handoff-prone,
   or long-running execution handoffs when a compact plan-to-execution readback
   would reduce drift. Render it from existing runtime-ready drafts such as
@@ -529,9 +535,22 @@ The canonical reference is
 Micro-Slice Artifact Budget keeps long-task continuity from becoming artifact
 noise. A feature or workstream should normally have one parent spec and one
 parent plan when durable planning artifacts are needed. Tiny execution slices
-that do not change the durable boundary should use the Planless Slice Lane:
-record a Slice Card, update checkpoint/evidence/drift state, and continue from
-the parent plan.
+that do not change the durable boundary use one of two Planless Slice Lane
+entries:
+
+- a parent-owned slice whose existing plan/spec owns the current micro-slice and
+  whose work executes or refines one bounded parent task records a Slice Card,
+  updates checkpoint/evidence/drift state, and continues from that parent
+- a direct bounded mechanical slice without a parent records
+  `Parent plan/spec: none — direct bounded request` and does not create a plan
+  or spec merely to supply a parent
+
+When long-task continuity also applies, low-complexity work keeps an inline
+checkpoint by default. A durable work record is created or updated only when
+work actually crosses sessions, needs handoff, or requires resumable state;
+possible compaction, multiple todos, or subagent use alone do not force one.
+Completion reconciles the slice with the parent plan/spec when present,
+otherwise with the direct bounded request and any active goal frame.
 
 This is also artifact complexity governance: excessive plan, spec, or work-log
 fan-out is itself a complexity regression even when no source file grew.
@@ -539,7 +558,8 @@ fan-out is itself a complexity regression even when no source file grew.
 Escalate back to a durable spec or plan only when the slice introduces a new
 owner, contract, schema, public API, architecture boundary, migration,
 persistence, security/permission concern, distribution/release surface, or an
-unclear verification boundary.
+unclear verification boundary, or no longer matches the parent scope or
+acceptance.
 
 ### 3.0i Change Necessity Before Source Edits
 
@@ -897,7 +917,8 @@ Aegis Project Workspace hard binary rule:
   `docs/aegis/` unless a workflow explicitly needs a reusable project record.
 - **Active project record needed**: initialize or use `docs/aegis/` only when
   baseline bootstrap, spec writing, plan writing, medium/high debugging, ripple
-  triage, long-task continuation, or work evidence requires persistent files.
+  triage, reusable work evidence, or long-task continuation selected by the
+  durable-record rule requires persistent files.
 
 Use configured Aegis workspace support when it is available. The current
 repository ships zero-dependency scripts for workspace initialization,
@@ -928,7 +949,9 @@ docs/aegis/
 └── work/
 ```
 
-Task Work Record is created only for medium/high or long-running work:
+Task Work Record is a durable process trail. For long-task continuation, create
+it for medium/high work or when work actually crosses sessions, needs handoff,
+or requires resumable state:
 
 ```text
 docs/aegis/work/YYYY-MM-DD-<slug>/
@@ -959,11 +982,13 @@ the preferred authority when they already own the truth.
 ### 12.5 Complexity Routing
 
 - **Low complexity**: concise intent + baseline check → TDD Route +
-  verification, no `work/` created
+  verification; no `work/` by default, except for actual cross-session,
+  handoff, or resumable-state needs
 - **Medium complexity**: baseline read-set + session-internal plan + atomic
   tasks → TDD Route + verification; write a `Spec Brief` or a plan document
   only when what/why/acceptance needs pinning before planning and no existing
-  owner doc covers it; create `work/` only when a process trail is needed
+  owner doc covers it; medium long-task continuation creates `work/`, while
+  other medium work does so only when a process trail is needed
 - **High complexity**: Design Spec + plan + user confirmation → TDD Route +
   verification, `work/` created
 
@@ -1130,7 +1155,8 @@ For later change-date snapshots, preserve that role separation and record the
 owner / contract / dependency truths that changed. Do not regress to a flat repo-inventory checklist. Snapshots are evidence, not authority -
 `BASELINE-GOVERNANCE.md` remains the constitution.
 
-Low-complexity tasks (no `work/`, no 7-dimension review) do not trigger snapshot updates.
+Low-complexity tasks do not trigger snapshot updates unless one of the
+conditions above applies.
 
 ---
 

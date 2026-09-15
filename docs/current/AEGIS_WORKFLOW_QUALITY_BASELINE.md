@@ -145,8 +145,11 @@ Pass criteria:
 
 - global install/update/status tasks do not write target-project files
 - fast-path Q&A and tiny edits do not create `docs/aegis/`
-- spec, plan, medium/high debugging, long-task continuation, and reusable
-  evidence trails use configured workspace support when available
+- spec, plan, medium/high debugging, and reusable evidence trails use configured
+  workspace support when available
+- long-task continuation uses it for medium/high work or work that actually
+  crosses sessions, needs handoff, or requires resumable state; possible
+  compaction, multiple todos, or subagent use alone do not force persistent files
 - every new `docs/aegis/` file is indexed
 
 ### 3.8 Authority Boundary
@@ -256,19 +259,30 @@ Pass criteria:
 - a feature or workstream defaults to one parent spec and one parent plan when
   durable artifacts are needed
 - micro-slices that already fit the parent plan use the `Planless Slice Lane`
+- direct bounded mechanical slices without a parent may also use the lane when
+  no new durable boundary or unclear verification boundary appears
 - the `Planless Slice Lane` records a compact `Slice Card` instead of adding a
   new `docs/aegis/plans/*` or `docs/aegis/specs/*` file
 - `Slice Card` records the goal, parent plan/spec, touched files, boundary,
   verification, and stop condition for the current slice
+- the no-parent branch records
+  `Parent plan/spec: none — direct bounded request`; it does not create a plan
+  or spec merely to supply a parent
 - `Slice Card` anchors slice-level completeness only; whole-task completion
   still requires `verification-before-completion` to reconcile slice progress
-  with parent acceptance and goal closure
-- micro-slices update checkpoint, evidence, and drift state under the existing
-  long-task record when persistent state is needed
+  with parent acceptance when present, otherwise with the direct bounded
+  request and any active goal frame
+- parent-owned micro-slices update the existing long-task checkpoint, evidence,
+  and drift state when persistent state is needed; low-complexity no-parent work
+  keeps an inline checkpoint by default
+- any low-complexity slice creates or updates a durable work record only when it
+  actually crosses sessions, needs handoff, or requires resumable state;
+  possible compaction, multiple todos, or subagent use alone do not force one
 - durable plan/spec creation resumes only when the slice introduces a new
   owner, contract, schema, public API, architecture boundary, persistence or
   migration surface, security/permission risk, distribution/release surface, or
-  unclear verification boundary
+  unclear verification boundary, or no longer matches the parent scope or
+  acceptance
 - artifact fan-out itself is treated as a complexity signal for plan and process
   artifacts, not just a documentation style preference
 
@@ -839,7 +853,7 @@ Compact contract:
 Plan Basis: approved requirement/spec refs
 Aegis Visibility: which owner, contract, retirement, or verification pressure makes planning useful before execution
 BaselineUsageDraft: required baseline refs, acknowledged refs, cited refs, missing refs, decision
-Planless Slice Lane: use Slice Card when an existing parent plan/spec already owns the tiny slice
+Planless Slice Lane: use Slice Card when an existing parent plan/spec owns the tiny slice, or for a direct bounded mechanical slice without a parent and without a new durable boundary
 Files: owners and edit boundaries
 Compatibility: invariants and non-goals
 Change Necessity: user-visible need, no-change / non-code option, why code change, minimum boundary, decision
@@ -860,7 +874,8 @@ or retirement-sensitive execution. Skip it for tiny fast-path tasks unless the
 user asks for an execution handoff readback.
 
 Do not redesign without cause. Do not create a new durable plan when a compact
-Slice Card inside the parent workstream is enough.
+Slice Card inside the parent workstream is enough, or merely to give a direct
+bounded no-parent slice a parent document.
 
 ### 4.4 `systematic-debugging`
 
@@ -1199,7 +1214,7 @@ Compact contract:
 Aegis Visibility: why checkpoint, resume, drift, or handoff discipline is shaping this long task
 TodoCheckpointDraft: current todo, completed todos, active slice, next step
 BaselineUsageDraft: required refs, acknowledged refs, cited refs, missing refs, decision
-Slice Card: goal, parent plan/spec, files, boundary, verification, stop
+Slice Card: goal, parent plan/spec or `none — direct bounded request`, files, boundary, verification, stop
 Execution Readiness View: re-read or refresh when resuming a medium/high parent plan or handoff-prone workstream
 Evidence: command/file/log refs
 Process Artifact Pressure: active slice, retry count, terminal evidence state, convergence-stop
@@ -1208,9 +1223,12 @@ Risk / Unknown: blockers or missing evidence
 Next: next smallest safe action
 ```
 
-Low-complexity tasks skip `work/`. Micro-slices reuse the parent plan/spec and
-update the existing long-task checkpoint/evidence trail instead of creating
-per-slice plan or spec files.
+Low-complexity tasks keep an inline checkpoint by default. Durable `work/`
+records are used for medium+ tasks or when work actually crosses sessions,
+needs handoff, or requires resumable state; possible compaction, multiple todos,
+or subagent use alone do not force one. Parent-owned micro-slices reuse the
+parent plan/spec and its existing checkpoint/evidence trail. A direct bounded
+no-parent slice does not create a plan/spec merely to supply a parent.
 When an `Execution Readiness View` exists, resume and checkpoint updates compare
 the active slice against its intent lock, scope fence, baseline lock,
 compatibility boundary, retirement boundary, test obligations, and review gates.

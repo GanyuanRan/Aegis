@@ -1128,6 +1128,28 @@
       "verificationSignal": "git-diff-check-or-targeted-readback"
     },
     {
+      "id": "no-parent-planless-continuation",
+      "prompt": "This direct bounded mechanical change has no parent plan or spec and must not create one. Context may compact before verification, but the work will not cross sessions, need handoff, or require durable resumable state. Keep an inline checkpoint without inventing a parent or losing the direct request as the completion anchor.",
+      "expectedPrimarySkill": "long-task-continuation",
+      "allowedSecondarySkills": ["writing-plans", "verification-before-completion"],
+      "mustNotDo": ["invent-parent-plan", "create-plan-for-direct-bounded-slice", "drop-checkpoint-because-no-parent", "close-against-nonexistent-parent"],
+      "expectedOutputShape": "no-parent-planless-slice-card-with-direct-request-completion-anchor-and-bounded-checkpoint",
+      "workspacePolicy": "inline-checkpoint-because-possible-compaction-alone-does-not-select-durable-work",
+      "expectedArtifacts": [],
+      "verificationSignal": "parent-none-direct-bounded-request-no-plan-and-direct-request-goal-closure"
+    },
+    {
+      "id": "low-complexity-no-parent-handoff-durable",
+      "prompt": "This direct bounded mechanical task is low complexity and has no parent plan or spec, but it must be handed to another session after the edit. Keep it resumable without inventing a parent or plan, and create only the durable work record the actual handoff requires.",
+      "expectedPrimarySkill": "long-task-continuation",
+      "allowedSecondarySkills": ["writing-plans", "verification-before-completion"],
+      "mustNotDo": ["invent-parent-plan", "keep-inline-despite-required-handoff", "skip-required-work-record", "create-plan-for-direct-bounded-slice"],
+      "expectedOutputShape": "no-parent-planless-slice-card-with-durable-work-record-and-handoff-state",
+      "workspacePolicy": "durable-work-record-required-because-actual-handoff-needs-resumable-state",
+      "expectedArtifacts": ["TodoCheckpointDraft", "ResumeStateHint", "DriftCheckDraft", "EvidenceBundleDraft"],
+      "verificationSignal": "parent-none-direct-bounded-request-actual-handoff-durable-work-record-and-resume-readback"
+    },
+    {
       "id": "failed-verification-retry-convergence",
       "prompt": "The same long-task slice keeps failing verification. Keep a bounded resumable workspace without treating every failed run as a new slice or formal evidence.",
       "expectedPrimarySkill": "long-task-continuation",

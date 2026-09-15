@@ -73,6 +73,8 @@ EXPECTED_IDS = {
     "strong-opinion-retro-memory-filter",
     "strong-opinion-fast-path-no-persona",
     "interrupted-long-task-resume",
+    "no-parent-planless-continuation",
+    "low-complexity-no-parent-handoff-durable",
     "failed-verification-retry-convergence",
     "behavior-smoke-old-path-cleanup-anti-entropy",
     "governance-compat-cleanup",
@@ -921,6 +923,52 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
         "signals": ["latest-checkpoint", "worktree", "slice-card-readback"],
         "shapes": ["slice-card"],
     },
+    "no-parent-planless-continuation": {
+        "primary": "long-task-continuation",
+        "allowed": ["writing-plans", "verification-before-completion"],
+        "must_not": [
+            "invent-parent-plan",
+            "create-plan-for-direct-bounded-slice",
+            "drop-checkpoint-because-no-parent",
+            "close-against-nonexistent-parent",
+        ],
+        "signals": [
+            "parent-none-direct-bounded-request",
+            "no-plan",
+            "direct-request-goal-closure",
+        ],
+        "shapes": ["no-parent-planless-slice-card", "bounded-checkpoint"],
+        "no_artifacts": True,
+        "workspace": "inline-checkpoint-because-possible-compaction-alone-does-not-select-durable-work",
+    },
+    "low-complexity-no-parent-handoff-durable": {
+        "primary": "long-task-continuation",
+        "allowed": ["writing-plans", "verification-before-completion"],
+        "must_not": [
+            "invent-parent-plan",
+            "keep-inline-despite-required-handoff",
+            "skip-required-work-record",
+            "create-plan-for-direct-bounded-slice",
+        ],
+        "signals": [
+            "parent-none-direct-bounded-request",
+            "actual-handoff",
+            "durable-work-record",
+            "resume-readback",
+        ],
+        "shapes": [
+            "no-parent-planless-slice-card",
+            "durable-work-record",
+            "handoff-state",
+        ],
+        "artifacts": [
+            "TodoCheckpointDraft",
+            "ResumeStateHint",
+            "DriftCheckDraft",
+            "EvidenceBundleDraft",
+        ],
+        "workspace": "durable-work-record-required-because-actual-handoff-needs-resumable-state",
+    },
     "behavior-smoke-old-path-cleanup-anti-entropy": {
         "primary": "brainstorming",
         "allowed": ["anti-entropy-governance", "writing-plans"],
@@ -1272,6 +1320,12 @@ def validate_rule(sample_id: str, item: dict[str, Any], rule: dict[str, Any]) ->
             item.get("expectedOutputShape", ""),
             shape,
             f"{sample_id} output shape must include {shape}",
+        )
+    for artifact in rule.get("artifacts", []):
+        require_contains(
+            item.get("expectedArtifacts", []),
+            artifact,
+            f"{sample_id} must expect {artifact}",
         )
     if rule.get("no_artifacts"):
         require(not item.get("expectedArtifacts"), f"{sample_id} must not expect artifacts")
