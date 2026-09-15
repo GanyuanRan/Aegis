@@ -79,6 +79,29 @@ assert_before() {
     fi
 }
 
+assert_section_before() {
+    local file="$1"
+    local start_line="$2"
+    local end_line="$3"
+    local first_pattern="$4"
+    local second_pattern="$5"
+    local label="$6"
+    local section first_line second_line
+
+    section="$(awk -v start="$start_line" -v end="$end_line" '
+        $0 == start { capture = 1; next }
+        capture && $0 == end { exit }
+        capture { print }
+    ' "$file")"
+    first_line="$(grep -nE "$first_pattern" <<<"$section" | head -n 1 | cut -d: -f1 || true)"
+    second_line="$(grep -nE "$second_pattern" <<<"$section" | head -n 1 | cut -d: -f1 || true)"
+    if [[ -n "$first_line" && -n "$second_line" && "$first_line" -lt "$second_line" ]]; then
+        pass "$label"
+    else
+        fail "$label"
+    fi
+}
+
 echo "=== Workflow Quality Check ==="
 
 baseline="docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md"
@@ -644,6 +667,36 @@ assert_contains "skills/writing-plans/SKILL.md" "Planless Slice Lane" \
     "writing-plans includes planless slice lane"
 assert_contains "skills/writing-plans/SKILL.md" "Slice Card" \
     "writing-plans includes slice card"
+assert_contains_all "skills/writing-plans/SKILL.md" \
+    "writing-plans scopes its announcement to the selected route" \
+    '^\*\*Announce at start:\*\* on the plan-writing route' \
+    'Lane`, announce the lane instead and do not claim a plan is being created'
+assert_not_contains "skills/writing-plans/SKILL.md" \
+    '^\*\*Announce at start:\*\* "I.m using the writing-plans skill to create the implementation plan\."$' \
+    "writing-plans retires the unconditional plan-creation announcement"
+assert_contains_all "skills/writing-plans/SKILL.md" \
+    "writing-plans detailed exception supports the no-parent branch" \
+    '^Exception: use `Planless Slice Lane` when an existing parent plan/spec already$' \
+    '^owns the current tiny execution slice, or when the change is mechanical or$' \
+    '^bounded and needs no parent document\. Do not save a new plan\. Emit a compact$' \
+    '^On the no-parent branch, `Parent plan/spec:` is `none — direct bounded request`\.$'
+assert_contains_all "skills/writing-plans/SKILL.md" \
+    "writing-plans keeps both eligibility entries under shared guards" \
+    '^Use `Planless Slice Lane` before writing or saving a plan when one of these$' \
+    '^entry conditions holds:$' '^  no-parent branch under `# Execute`\)$' \
+    '^and both of these are true:$' '^  verification boundary appears$'
+assert_section_before "skills/writing-plans/SKILL.md" \
+    'Use `Planless Slice Lane` before writing or saving a plan when one of these' \
+    'The lane preserves long-task continuity without turning execution bookkeeping' \
+    '^- a parent spec or parent plan already defines the workstream' \
+    '^and both of these are true:$' \
+    "writing-plans places the parent-owned entry before shared guards"
+assert_section_before "skills/writing-plans/SKILL.md" \
+    'Use `Planless Slice Lane` before writing or saving a plan when one of these' \
+    'The lane preserves long-task continuity without turning execution bookkeeping' \
+    '^- the change is mechanical or bounded and needs no parent document' \
+    '^and both of these are true:$' \
+    "writing-plans places the no-parent entry before shared guards"
 assert_contains "skills/writing-plans/SKILL.md" "Execution Readiness View" \
     "writing-plans renders execution readiness view for handoff"
 assert_contains "skills/writing-plans/SKILL.md" "Intent Lock.*Scope Fence.*Baseline Lock|Baseline Lock.*Scope Fence.*Intent Lock" \
@@ -1088,6 +1141,9 @@ assert_contains "skills/requesting-code-review/code-reviewer.md" "Baseline / Cur
     "code reviewer template includes baseline/current authority section"
 assert_contains "skills/requesting-code-review/code-reviewer.md" "Findings First|Findings-first" \
     "code reviewer template leads with findings"
+assert_section_before "skills/requesting-code-review/code-reviewer.md" \
+    '## Example Output' '__end_of_example_output__' '^### Issues$' '^### Strengths$' \
+    "code reviewer example places issues before strengths"
 assert_contains "skills/requesting-code-review/code-reviewer.md" "bugs first, risk first, tests first" \
     "code reviewer template prioritizes bugs risks and tests"
 assert_contains "skills/requesting-code-review/code-reviewer.md" "ownership map, contract inventory, and dependency direction" \
