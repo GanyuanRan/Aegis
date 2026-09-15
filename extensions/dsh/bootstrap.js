@@ -107,21 +107,71 @@ export function installBootstrap(
   // be correlated with their events, so they are skipped rather than
   // injected blind.
   const agents = new Map();
+  const epochs = new Map();
   const pending = new Set();
+  const scheduledDeliveries = new Map();
+  let disposed = false;
+
+  const reportDeliveryFailure = (error) => {
+    console.error("[aegis] deferred bootstrap injection failed:", error);
+  };
+
+  const cancelDelivery = (sessionId) => {
+    const delivery = scheduledDeliveries.get(sessionId);
+    if (delivery === undefined) return;
+    clearTimeout(delivery.timer);
+    scheduledDeliveries.delete(sessionId);
+  };
+
+  const armDelivery = (sessionId, agent) => {
+    cancelDelivery(sessionId);
+    if (agent !== undefined) agents.set(sessionId, agent);
+    epochs.set(sessionId, (epochs.get(sessionId) ?? 0) + 1);
+    pending.add(sessionId);
+  };
+
+  const deferDelivery = (sessionId, agent, epoch, message) => {
+    const delivery = { agent, epoch, timer: undefined };
+    delivery.timer = setTimeout(() => {
+      if (scheduledDeliveries.get(sessionId) !== delivery) return;
+      scheduledDeliveries.delete(sessionId);
+      if (
+        disposed ||
+        agents.get(sessionId) !== agent ||
+        epochs.get(sessionId) !== epoch
+      ) {
+        return;
+      }
+      try {
+        agent.inject(message);
+      } catch (error) {
+        reportDeliveryFailure(error);
+      }
+    }, 0);
+    scheduledDeliveries.set(sessionId, delivery);
+  };
 
   const disposeLifecycle = ctx.on("agent/session-start", ({ agent }) => {
     if (agent.session?.header?.origin === "subagent") return;
     const sessionId = agent.session?.id;
     if (sessionId === undefined) return;
-    agents.set(sessionId, agent);
-    pending.add(sessionId);
+    armDelivery(sessionId, agent);
+  });
+
+  const disposeAgents = ctx.on("agent/disposed", ({ agent }) => {
+    const sessionId = agent.session?.id;
+    if (sessionId === undefined || agents.get(sessionId) !== agent) return;
+    cancelDelivery(sessionId);
+    agents.delete(sessionId);
+    epochs.delete(sessionId);
+    pending.delete(sessionId);
   });
 
   const disposeEvents = ctx.on("session/event", (session, event) => {
     const sessionId = session?.id;
     if (sessionId === undefined || !agents.has(sessionId)) return;
     if (event?.type === "compaction/end") {
-      pending.add(sessionId);
+      armDelivery(sessionId);
       return;
     }
     if (event?.type !== "tool/call" && event?.type !== "assistant/message") {
@@ -129,13 +179,22 @@ export function installBootstrap(
     }
     if (!pending.delete(sessionId)) return;
     const agent = agents.get(sessionId);
-    agent.inject(createBootstrapMessage(createUserMessage, bootstrap));
+    const epoch = epochs.get(sessionId);
+    const message = createBootstrapMessage(createUserMessage, bootstrap);
+    deferDelivery(sessionId, agent, epoch, message);
   });
 
   return () => {
+    disposed = true;
+    for (const delivery of scheduledDeliveries.values()) {
+      clearTimeout(delivery.timer);
+    }
+    scheduledDeliveries.clear();
     disposeLifecycle();
+    disposeAgents();
     disposeEvents();
     agents.clear();
+    epochs.clear();
     pending.clear();
   };
 }
