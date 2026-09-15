@@ -20,8 +20,9 @@ user explicitly named Aegis or this skill, proceed normally.
   3. Do not save a new plan for the micro-slice
 → Mechanical or bounded change with no durable boundary (no new owner,
   contract, schema, public API, migration, or compat surface)? → **Use
-  Planless Slice Lane without a parent document.** Emit the compact Slice Card,
-  skip the plan file, and record the change in the commit message.
+  Planless Slice Lane without a parent document.** Emit the compact Slice Card
+  with `Parent plan/spec: none — direct bounded request`, skip the plan file,
+  and record the change in the commit message.
 → Have approved spec/requirements for a new workstream or an escalation trigger? → **Write implementation plan. Assume engineer has zero context.**
   1. Scope check: fact/assumption/unknown, baseline, Requirement Ready Check, Ripple Signal Triage, compatibility boundary, dual-track needs
   2. File map: what files created/modified, clear boundaries, follow existing patterns
@@ -84,7 +85,9 @@ as appropriate. In `auto`, if the plan lacks a recorded decision, return to
 route selection before writing implementation tasks; never infer `strict`
 during decomposition.
 
-**Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
+**Announce at start:** on the plan-writing route, "I'm using the
+writing-plans skill to create the implementation plan." On `Planless Slice
+Lane`, announce the lane instead and do not claim a plan is being created.
 
 **Execution context:** Reuse the current branch/workspace by default. A branch
 needs independent history; a worktree needs concurrent checkout, blocking
@@ -96,10 +99,10 @@ unrelated dirty state, or explicit user/repository authority.
 Plan always goes to `plans/` — never to `work/`.
 (User preferences for plan location override this default.)
 
-Exception: if an existing parent plan/spec already owns the current tiny
-execution slice, use `Planless Slice Lane`. Do not save a new plan. Emit a
-compact `Slice Card` in the conversation or the active long-task checkpoint
-instead:
+Exception: use `Planless Slice Lane` when an existing parent plan/spec already
+owns the current tiny execution slice, or when the change is mechanical or
+bounded and needs no parent document. Do not save a new plan. Emit a compact
+`Slice Card` in the conversation or the active long-task checkpoint instead:
 
 ```text
 Slice Card:
@@ -110,6 +113,8 @@ Slice Card:
 - Verification:
 - Stop:
 ```
+
+On the no-parent branch, `Parent plan/spec:` is `none — direct bounded request`.
 
 If `docs/aegis/` does not exist and configured Aegis workspace support is
 available, initialize the target project first:
@@ -342,12 +347,16 @@ for a proven external boundary, or stopping for persistent-state confirmation,
 compose `anti-entropy-governance`. Keep it as a narrow classification and
 guardrail owner; it does not authorize destructive execution.
 
-Use `Planless Slice Lane` before writing or saving a plan when all of these are
-true:
+Use `Planless Slice Lane` before writing or saving a plan when one of these
+entry conditions holds:
 
-- a parent spec or parent plan already defines the workstream
-- the current request is executing or refining one bounded task from that
-  parent
+- a parent spec or parent plan already defines the workstream, and the current
+  request is executing or refining one bounded task from that parent
+- the change is mechanical or bounded and needs no parent document (the
+  no-parent branch under `# Execute`)
+
+and both of these are true:
+
 - no new owner, contract, schema, public API, architecture boundary, migration,
   persistence, security/permission, distribution/release surface, or unclear
   verification boundary appears
