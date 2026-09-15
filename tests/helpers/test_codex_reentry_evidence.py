@@ -53,6 +53,25 @@ class CodexReentryEvidenceTests(unittest.TestCase):
                 MODULE.route_recorded(log_path, "systematic-debugging")
             )
 
+    def test_allows_route_after_unrelated_negation(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            log_path = pathlib.Path(temp_dir) / "turn.jsonl"
+            event = {
+                "type": "item.completed",
+                "item": {
+                    "type": "agent_message",
+                    "text": (
+                        "I’ll use evidence, not guesses, then apply "
+                        "systematic-debugging before repair."
+                    ),
+                },
+            }
+            log_path.write_text(json.dumps(event) + "\n", encoding="utf-8")
+
+            self.assertTrue(
+                MODULE.route_recorded(log_path, "systematic-debugging")
+            )
+
     def test_does_not_count_a_failed_skill_read_as_a_route_record(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             log_path = pathlib.Path(temp_dir) / "turn.jsonl"
@@ -205,15 +224,28 @@ class CodexReentryEvidenceTests(unittest.TestCase):
             ):
                 MODULE.validate_session_summary(summary, require_compaction=True)
 
-    def test_validation_requires_two_turns_and_metadata(self) -> None:
+    def test_validation_requires_two_turns(self) -> None:
         incomplete = {
-            "cli_version": "unknown",
-            "models": [],
+            "cli_version": "0.154.0",
+            "models": ["gpt-test"],
             "turn_count": 1,
             "compacted_before_second_turn": False,
         }
 
         with self.assertRaisesRegex(MODULE.EvidenceError, "two root turns"):
+            MODULE.validate_session_summary(incomplete, require_compaction=False)
+
+    def test_validation_requires_cli_and_model_metadata(self) -> None:
+        incomplete = {
+            "cli_version": "unknown",
+            "models": [],
+            "turn_count": 2,
+            "compacted_before_second_turn": False,
+        }
+
+        with self.assertRaisesRegex(
+            MODULE.EvidenceError, "metadata is unavailable"
+        ):
             MODULE.validate_session_summary(incomplete, require_compaction=False)
 
     def test_find_rollout_requires_one_exact_thread_filename(self) -> None:

@@ -27,7 +27,11 @@ ROUTE_PATTERNS = {
     )
 }
 NEGATED_ROUTE_RE = re.compile(
-    r"\b(?:not|never|neither|cannot|could not|unable to)\b", re.IGNORECASE
+    r"\b(?:not|never|neither|cannot|could not|unable to)\b"
+    r"(?:\s+(?:load|use|follow|apply))?\s+(?:the\s+)?"
+    r"(?:systematic[- ]debugging|Aegis(?: systematic)? debugging "
+    r"(?:workflow|guidance))\b",
+    re.IGNORECASE,
 )
 
 
