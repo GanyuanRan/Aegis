@@ -55,6 +55,9 @@ single-owner, has no behavior change or strict signal, and has an obvious
 focused check. Absence of an explicit user TDD request is never evidence for
 `light`; the auto decision itself must be recorded.
 
+If risk remains unknown, return to requirements, debugging, or plan review
+before task decomposition; do not infer a TDD route from uncertainty.
+
 Only a `strict` decision with stated authority may prescribe failing-test,
 RED, GREEN, and REFACTOR steps. Otherwise plan the minimum change plus
 diagnostic reproduction or post-change regression. A missing auto decision
@@ -123,34 +126,43 @@ boundary. A tiny helper, guard, branch, fallback, adapter, or owner is not
 exempt. A `no-change`, `docs/config-only`, or `needs-clarification` result
 narrows or stops the code plan.
 
+Run `Ripple Signal Triage` before tasks when the change touches shared/core or
+cross-module behavior; a public API, schema, contract, compatibility,
+persistence, cache, export/readback, fallback, adapter, duplicate/legacy owner,
+retirement path, or both producer and consumer. If no signal fires, add no
+output. If one fires, identify the canonical owner and affected downstream consumers,
+state source-of-truth/contract/fallback/retirement risk, and carry expanded verification
+into the relevant task. A required owner/public-contract/source-of-truth change,
+retaining two owners, or adding a fallback, adapter, or compatibility branch
+returns to design or requires explicit prior alignment before implementation.
+
 Run a compact `Plan Pressure Test` before task decomposition: test owner / contract / retirement fit, higher-level architecture path, verification scope,
 and task executability. It may proceed, revise the plan, or return to design;
 it is not an approval authority.
 
 ## Conditional Detailed Guidance
 
-Read `expanded-planning-guidance.md` completely only when at least one trigger
-applies:
+Read only the trigger-matched section of `expanded-planning-guidance.md`:
+
+- `## Baseline And Requirement Detail` when specific baseline acknowledgement
+  needs structure or requirement readiness is incomplete/disputed;
+- `## New-Surface And Architecture Detail` when a new surface or new owner needs
+  `Existence Check`, `AEGIS_MINIMALITY_REFERENCE`, `Architecture Integrity Lens`,
+  or `first-principles-review` detail before task decomposition;
+- `## Complexity Detail` when material file-size, mixed-owner, add-in-place,
+  adapter, fallback, or shared-core pressure appears;
+- `## Execution Readiness Detail` for a long-running, handoff-prone,
+  subagent-driven, high-risk architecture/contract/compatibility/retirement handoff;
+- `## Workspace Save Detail` only when saving requires workspace initialization
+  or `INDEX.md` updates;
+- `## Execution Route Detail` only when route evidence needs a structured
+  handoff; and
+- `## Expanded Plan Review` only for an independent high-risk or handoff-heavy
+  review.
 
 The direct triggers cover baseline readiness, new surface or new owner,
-complexity pressure, workspace persistence, and execution handoff.
-
-- specific baseline delivery/acknowledgement needs a structured
-  `BaselineUsageDraft`, or readiness is incomplete or disputed;
-- the plan proposes a new surface or new owner and needs `Existence Check`,
-  `AEGIS_MINIMALITY_REFERENCE`, `Architecture Integrity Lens`, or
-  `first-principles-review` detail before task decomposition;
-- material file-size, mixed-owner, add-in-place, adapter, fallback, or shared-core
-  pressure requires expanded `Plan-Time Complexity Check` or `Complexity Budget`
-  detail;
-- a long-running, handoff-prone, subagent-driven, high-risk architecture,
-  contract, compatibility, or retirement-sensitive plan needs an auditable
-  expanded `Execution Readiness View`;
-- saving the plan requires workspace initialization or `INDEX.md` updates; or
-- execution-route evidence or a conditional governance card needs an auditable
-  schema.
-
-The reference supplies detail only. This main file owns routing, plan versus
+complexity pressure, workspace persistence, and execution handoff. The
+reference supplies detail only. This main file owns routing, plan versus
 Planless selection, task blocking, and execution handoff.
 
 For a new surface, use `Existence Check` and
@@ -166,8 +178,7 @@ enough. When pressure exists, load the expanded `Plan-Time Complexity Check`
 and `Complexity Budget`. An over-budget result must change the task boundary,
 add governance work, or stop for follow-up.
 
-For an ordinary medium/high handoff, state Intent Lock, Scope Fence, Baseline Lock, tests, and drift stop naturally. Load the expanded `Execution Readiness
-View` only for the auditable handoff triggers above. Neither form is a
+For an ordinary medium/high handoff, state Intent Lock, Scope Fence, Baseline Lock, tests, and drift stop naturally. Load the expanded `Execution Readiness View` only for the auditable handoff triggers above. Neither form is a
 `GateDecision`, `PolicySnapshot`, approval gate, or completion authority.
 
 If the plan must choose among deleting an old internal path, retaining a proven

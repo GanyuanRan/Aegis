@@ -207,12 +207,15 @@ CONTRACT_REQUIREMENTS = {
     ],
     "writing-plans": [
         "Aegis Visibility",
+        "Plan Basis",
+        "Files",
+        "Compatibility",
         "Change Necessity",
-        "Existence Check",
-        "Plan-Time Complexity Check",
-        "Complexity Budget",
         "Plan Pressure Test",
-        "Architecture Integrity Lens",
+        "TDD Route",
+        "Tasks",
+        "Risks",
+        "Retirement",
     ],
     "recording-architecture-decisions": [
         "Aegis Visibility",
@@ -228,6 +231,18 @@ CONTRACT_REQUIREMENTS = {
     "goal-framing": ["Aegis Visibility", "Stop condition", "Continuation"],
     "long-task-continuation": ["Aegis Visibility", "DriftCheckDraft", "Slice Card"],
     "requesting-code-review": ["Aegis Visibility", "Findings First", "Baseline Role Alignment"],
+}
+
+CONDITIONAL_CONTRACT_REQUIREMENTS = {
+    "writing-plans": [
+        "BaselineUsageDraft",
+        "Ripple Signal Triage",
+        "Existence Check",
+        "Architecture Integrity Lens",
+        "Complexity Budget",
+        "Plan-Time Complexity Check",
+        "Execution Readiness View",
+    ],
 }
 
 SAMPLE_RULES: dict[str, dict[str, Any]] = {
@@ -1280,6 +1295,22 @@ def validate_contracts(data: dict[str, Any]) -> None:
             require(
                 required in contracts[contract],
                 f"{contract} compact contract must include {required}",
+            )
+
+    conditional_contracts = data.get("conditionalOutputContracts", {})
+    for contract, required_values in CONDITIONAL_CONTRACT_REQUIREMENTS.items():
+        require(
+            contract in conditional_contracts,
+            f"conditional output contracts must include {contract}",
+        )
+        for required in required_values:
+            require(
+                required in conditional_contracts[contract],
+                f"{contract} conditional contract must include {required}",
+            )
+            require(
+                required not in contracts[contract],
+                f"{contract} compact contract must keep triggered {required} conditional",
             )
 
 

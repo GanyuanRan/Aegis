@@ -595,6 +595,17 @@ assert_contains_all "skills/brainstorming/SKILL.md" \
     "expanded-design-guidance\.md" "design probe" "scenario profile" \
     "workspace.*spec.*documentation|documentation.*workspace.*spec"
 assert_not_contains "skills/brainstorming/SKILL.md" \
+    '[Cc]ompletely' \
+    "brainstorming does not load every expanded section for one conditional trigger"
+assert_contains_all "skills/brainstorming/SKILL.md" \
+    "brainstorming maps evidence triggers to exact expanded headings" \
+    '## Design Probe' '## Software Scenario Profiles' \
+    '## Documentation And Workspace Bootstrap' '## Spec Self-Review'
+assert_contains_all "$brainstorming_expanded" \
+    "brainstorming expanded reference contains every mapped exact heading" \
+    '^## Design Probe$' '^## Software Scenario Profiles$' \
+    '^## Documentation And Workspace Bootstrap$' '^## Spec Self-Review$'
+assert_not_contains "skills/brainstorming/SKILL.md" \
     '^## BASELINE-GOVERNANCE\.md Template|^## Initial Baseline Snapshot Template' \
     "brainstorming keeps bootstrap templates out of the default instruction surface"
 assert_contains_all "$brainstorming_expanded" \
@@ -690,6 +701,20 @@ assert_contains_all "skills/writing-plans/SKILL.md" \
     "writing-plans routes conditional planning detail explicitly" \
     "expanded-planning-guidance\.md" "baseline.*readiness|readiness.*baseline" \
     "new surface|new owner" "complexity" "workspace" "handoff"
+assert_not_contains "skills/writing-plans/SKILL.md" \
+    '[Cc]ompletely' \
+    "writing-plans does not load every expanded section for one conditional trigger"
+assert_contains_all "skills/writing-plans/SKILL.md" \
+    "writing-plans maps conditional triggers to exact expanded headings" \
+    '## Workspace Save Detail' '## Baseline And Requirement Detail' \
+    '## New-Surface And Architecture Detail' '## Complexity Detail' \
+    '## Execution Readiness Detail' '## Execution Route Detail'
+assert_contains_all "$writing_plans_expanded" \
+    "writing-plans expanded reference contains every mapped exact heading" \
+    '^## Workspace Save Detail$' '^## Baseline And Requirement Detail$' \
+    '^## New-Surface And Architecture Detail$' '^## Complexity Detail$' \
+    '^## Execution Readiness Detail$' '^## Execution Route Detail$' \
+    '^## Expanded Plan Review$'
 assert_contains "skills/writing-plans/SKILL.md" \
     "conditional.*silent|silence.*conditional|do not emit.*conditional" \
     "writing-plans keeps untriggered governance structures out of default output"
@@ -721,6 +746,16 @@ assert_contains "skills/writing-plans/SKILL.md" "do not create implementation ta
     "writing-plans blocks implementation tasks when requirements are not ready"
 assert_contains "skills/writing-plans/SKILL.md" "Change Necessity" \
     "writing-plans surfaces change necessity before code-edit tasks"
+assert_contains_all "skills/writing-plans/SKILL.md" \
+    "writing-plans preserves ripple triage and downstream verification" \
+    "Ripple Signal Triage" "affected downstream consumers" "expanded verification"
+assert_contains_all "skills/writing-plans/SKILL.md" \
+    "writing-plans preserves the complete ripple alignment stop set" \
+    "retaining two owners" "fallback" "adapter" "compatibility branch" \
+    "returns to design.*explicit prior alignment|explicit prior alignment.*returns to design"
+assert_contains "skills/writing-plans/SKILL.md" \
+    "[Uu]nknown risk.*requirements.*debugging.*plan review|[Rr]isk.*unknown.*requirements.*debugging.*plan review" \
+    "writing-plans returns unknown auto-TDD risk before task decomposition"
 assert_contains "skills/writing-plans/SKILL.md" "Planless Slice Lane" \
     "writing-plans includes planless slice lane"
 assert_contains "skills/writing-plans/SKILL.md" "Slice Card" \
@@ -931,6 +966,19 @@ assert_contains_all "skills/long-task-continuation/SKILL.md" \
     "long-task continuation routes durable work detail explicitly" \
     "durable-work-guidance\.md" "new durable work record" "helper-backed" \
     "retry|attempt" "completion.*bundle|bundle.*completion"
+assert_not_contains "skills/long-task-continuation/SKILL.md" \
+    '[Cc]ompletely' \
+    "long-task continuation does not load every durable section for one lifecycle trigger"
+assert_contains_all "skills/long-task-continuation/SKILL.md" \
+    "long-task continuation maps lifecycle triggers to exact expanded headings" \
+    '## Required Artifact Layout' '## Create A Durable Work Record' \
+    '## Update A Slice' '## Retry Convergence Detail' \
+    '## Pause, Handoff, And Completion Bundle'
+assert_contains_all "$long_task_expanded" \
+    "long-task expanded reference contains every mapped exact heading" \
+    '^## Required Artifact Layout$' '^## Create A Durable Work Record$' \
+    '^## Update A Slice$' '^## Retry Convergence Detail$' \
+    '^## Pause, Handoff, And Completion Bundle$' '^## Expanded State Fields$'
 assert_not_contains "skills/long-task-continuation/SKILL.md" \
     '^\| Artifact \| File \| When \||^[[:space:]]+python <aegis-workspace-helper> (init|new-work|add-|bundle|check)' \
     "long-task continuation keeps artifact tables and helper commands out of the default instruction surface"
@@ -1492,6 +1540,19 @@ assert_contains_all "$baseline" \
     "progressive disclosure optimizes model steering before byte count" \
     "instruction and example" "byte count.*secondary|secondary.*byte count" \
     "positive.*negative.*route" "governance.*stop"
+assert_contains_all "$baseline" \
+    "writing-plans baseline separates default semantics from triggered expansions" \
+    "Default core" "Triggered expansions" "silent unless" \
+    "Ripple Signal Triage"
+assert_contains_all "$baseline" \
+    "writing-plans baseline keeps ordinary readiness natural and expanded readiness conditional" \
+    "ordinary medium/high handoff" "Intent Lock.*Scope Fence.*Baseline" \
+    "Use the expanded" "Execution Readiness View.*only"
+if tr '\n' ' ' < "$baseline" | grep -qE 'Execution Readiness View[^.]*medium/high'; then
+    fail "writing-plans baseline does not trigger expanded readiness from generic medium/high sizing"
+else
+    pass "writing-plans baseline does not trigger expanded readiness from generic medium/high sizing"
+fi
 assert_contains_all "skills/using-aegis/references/codex-tools.md" \
     "Codex mapping points to current Git lifecycle entry steps" \
     "using-git-worktrees.*Step 0" "finishing-a-development-branch.*Step 1"

@@ -325,9 +325,11 @@ Pass criteria:
 - `writing-plans` can use a compact `Plan Pressure Test` for owner / contract /
   retirement risk, verification scope, and task executability
 - `writing-plans` can render an `Execution Readiness View` from existing
-  runtime-ready drafts and the task plan for medium/high, subagent,
+  runtime-ready drafts and the task plan for high-risk architecture, contract,
+  compatibility, or retirement-sensitive execution, or for subagent-driven,
   handoff-prone, or long-running execution handoffs. This is a human-readable
-  view, not a new artifact owner or approval gate.
+  view, not a new artifact owner or approval gate; generic medium/high sizing
+  alone does not trigger it.
 - `brainstorming` and `writing-plans` can use a compact `Architecture Integrity
   Lens` when an executable direction may still encode responsibility overlap,
   a wrong canonical owner, caller-side fallback, stale path, or missed
@@ -853,31 +855,46 @@ Purpose:
 - turn approved requirements, a Spec Brief, or a Design Spec into executable
   implementation slices
 
-Compact contract:
+Default core (natural plan semantics, not mandatory cards):
 
 ```text
 Plan Basis: approved requirement/spec refs
 Aegis Visibility: which owner, contract, retirement, or verification pressure makes planning useful before execution
-BaselineUsageDraft: required baseline refs, acknowledged refs, cited refs, missing refs, decision
 Planless Slice Lane: use Slice Card when an existing parent plan/spec owns the tiny slice, or for a direct bounded mechanical slice without a parent and without a new durable boundary
 Files: owners and edit boundaries
 Compatibility: invariants and non-goals
 Change Necessity: user-visible need, no-change / non-code option, why code change, minimum boundary, decision
-Existence Check: proposed new surface, existing owner / reuse candidate, creation proof, entropy / retirement impact, decision
-Architecture Integrity Lens: invariant, owner/contract, overlap, higher-level path, retirement/falsifier, verdict
 Plan Pressure Test: owner / contract / retirement risk and verification scope
-Complexity Budget: artifact class, current pressure, projected post-change pressure, planned governance
-Plan-Time Complexity Check: target files, add-in-place risk, better boundary, recommendation
-Tasks: bite-sized steps with verification
+TDD Route: mode, decision, authority, test posture, verification
+Tasks: bounded steps with exact owners, files, and verification
 Risks: residual unknowns and rollback surface
 Retirement: old owner/fallback handling when applicable
-Execution Readiness View: optional human-readable rendering of intent lock, scope fence, baseline lock, owner / contract constraints, compatibility boundary, retirement boundary, task batches, test obligations, review gates, drift / rewind rules, and evidence required before completion
 ```
 
-Use `Execution Readiness View` when a plan is about to cross into subagent,
-handoff-prone, long-running, medium/high, architecture, contract, compatibility,
-or retirement-sensitive execution. Skip it for tiny fast-path tasks unless the
-user asks for an execution handoff readback.
+Triggered expansions stay silent unless their behavior signal fires:
+
+- `BaselineUsageDraft` for material baseline acknowledgement or missing refs
+- `Ripple Signal Triage` for shared/cross-module, contract, source-of-truth,
+  compatibility, producer/consumer, fallback, adapter, legacy, or retirement
+  pressure; record affected consumers and expanded verification
+- `Existence Check` and `Architecture Integrity Lens` for a proposed new
+  surface/owner or unresolved owner/contract direction
+- `Complexity Budget` and `Plan-Time Complexity Check` for material file/owner
+  shape pressure
+- `Execution Readiness View` for high-risk, long-running, subagent-driven, or
+  handoff-prone execution
+- expanded workspace, route, or review detail only for its named trigger
+
+This split is part of the contract: the default planning surface preserves the
+governance decisions, while untriggered schemas and examples do not steer the
+model merely because `writing-plans` was loaded.
+
+For an ordinary medium/high handoff, state Intent Lock, Scope Fence, Baseline
+Lock, tests, and drift/rewind rules naturally in the core plan. Use the expanded
+`Execution Readiness View` only for subagent-driven, handoff-prone, long-running,
+or high-risk architecture, contract, compatibility, or retirement-sensitive
+execution. Skip it for tiny fast-path tasks unless the user asks for an
+execution handoff readback.
 
 Do not redesign without cause. Do not create a new durable plan when a compact
 Slice Card inside the parent workstream is enough, or merely to give a direct
@@ -1221,7 +1238,7 @@ Aegis Visibility: why checkpoint, resume, drift, or handoff discipline is shapin
 TodoCheckpointDraft: current todo, completed todos, active slice, next step
 BaselineUsageDraft: required refs, acknowledged refs, cited refs, missing refs, decision
 Slice Card: goal, parent plan/spec or `none — direct bounded request`, files, boundary, verification, stop
-Execution Readiness View: re-read or refresh when resuming a medium/high parent plan or handoff-prone workstream
+Execution Readiness View: when a view already exists, re-read or refresh it during resume or handoff
 Evidence: command/file/log refs
 Process Artifact Pressure: active slice, retry count, terminal evidence state, convergence-stop
 DriftCheckDraft: scope, compatibility, retirement, decision

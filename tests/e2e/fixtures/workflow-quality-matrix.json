@@ -1165,7 +1165,7 @@
     "using-aegis": ["Route", "Aegis Reason Note", "ArchitectureReviewRequired", "Why", "Next"],
     "goal-framing": ["Aegis Visibility", "Goal", "Success evidence", "Stop condition", "Non-goals", "Route", "Next", "Continuation"],
     "brainstorming": ["Aegis Visibility", "TaskIntentDraft", "BaselineReadSetHint", "BaselineUsageDraft", "ImpactStatementDraft", "Product Risk Lens", "Existence Check", "Architecture Integrity Lens", "Baseline Role Alignment", "Complexity Budget", "Plan-Time Complexity Check", "Options", "Decision Needed"],
-    "writing-plans": ["Aegis Visibility", "Plan Basis", "BaselineUsageDraft", "Files", "Compatibility", "Change Necessity", "Existence Check", "Architecture Integrity Lens", "Plan Pressure Test", "Complexity Budget", "Plan-Time Complexity Check", "Execution Readiness View", "Tasks", "Risks", "Retirement"],
+    "writing-plans": ["Aegis Visibility", "Plan Basis", "Files", "Compatibility", "Change Necessity", "Plan Pressure Test", "TDD Route", "Tasks", "Risks", "Retirement"],
     "systematic-debugging": ["Aegis Visibility", "Symptom", "Reproduction", "Root Cause", "Layer Stop Card", "Pre-Claim Gate", "Topology Card", "Deeper Cause Challenge", "Quick Exit Proof", "Change Necessity", "Fix Boundary", "Minimality Check", "Existence Check", "Pre-Edit Complexity Check", "Pre-Edit Owner-Fit Decision", "Verification"],
     "test-driven-development": ["Aegis Visibility", "TDD Route", "Preflight Gate", "Change Necessity", "Complexity Budget", "Pre-Edit Complexity Check", "Pre-Edit Owner-Fit Decision", "RED", "GREEN", "REFACTOR", "Regression Scope"],
     "anti-entropy-governance": ["Aegis Visibility", "Anti-Entropy Declaration", "Retirement Decision", "Verification Plan", "Gap Closure", "Data Destruction Guard"],
@@ -1174,5 +1174,8 @@
     "verification-before-completion": ["Aegis Visibility", "Aegis Impact and Safety Receipt", "Key judgment", "Avoided misfix", "Boundary held", "Baseline alignment", "Complexity control", "Evidence strength", "Uncovered risk", "Next most valuable verification", "Aegis path", "evidence-action", "verification-result", "covered-scope", "uncovered-scope", "residual-risk", "confidence-grade", "Goal status", "Success evidence", "Stop state", "Non-goals respected", "L0 fast-path", "L1 compact receipt", "L2 triggered expansions", "conditional-expansion-triggers", "completion-boundary", "complexity-reference", "baseline-reference", "adr-reference", "anti-entropy-reference", "Natural Aegis closeout", "Semantic Slots", "Natural Surface", "Governance Receipt"],
     "long-task-continuation": ["Aegis Visibility", "TodoCheckpointDraft", "BaselineUsageDraft", "Slice Card", "Execution Readiness View", "Evidence", "DriftCheckDraft", "Risk / Unknown", "Next"],
     "executing-plans": ["Aegis Visibility", "Plan Review", "Todo", "Change Necessity", "Complexity Budget", "Pre-Edit Complexity Check", "Pre-Edit Owner-Fit Decision", "Execution Readiness View", "Verification", "Checkpoint"]
+  },
+  "conditionalOutputContracts": {
+    "writing-plans": ["BaselineUsageDraft", "Ripple Signal Triage", "Existence Check", "Architecture Integrity Lens", "Complexity Budget", "Plan-Time Complexity Check", "Execution Readiness View"]
   }
 }

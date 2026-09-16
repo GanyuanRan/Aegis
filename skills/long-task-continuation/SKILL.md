@@ -45,11 +45,17 @@ completion reflection when warranted. These are
 `DriftCheckDraft`, and `EvidenceBundleDraft` views—not authoritative runtime
 records or separate plan owners.
 
-When creating a new durable work record, updating helper-backed sidecars,
-recording retry/attempt convergence, or preparing a completion bundle, read
-`durable-work-guidance.md` completely. It owns artifact layout and
-`<aegis-workspace-helper>` command detail; this file owns carrier selection,
-resume order, drift decisions, and stop conditions.
+Read only the lifecycle-matched section of `durable-work-guidance.md`:
+
+- `## Required Artifact Layout` and `## Create A Durable Work Record` for a new durable work record;
+- `## Update A Slice` when an existing helper-backed record needs sidecar updates;
+- `## Retry Convergence Detail` for retry/attempt bookkeeping;
+- `## Pause, Handoff, And Completion Bundle` when preparing a pause, handoff, or completion bundle; and
+- `## Expanded State Fields` only when natural checkpoint prose is ambiguous.
+
+The reference owns artifact layout and `<aegis-workspace-helper>` command
+detail; this file owns carrier selection, resume order, drift decisions, and
+stop conditions.
 
 An `Execution Readiness View` may be kept in the intent or active checkpoint
 for medium/high, handoff-prone, long-running, subagent-driven, architecture,

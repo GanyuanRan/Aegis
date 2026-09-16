@@ -395,12 +395,23 @@ create accepted architecture memory from unexecuted ideas.
 
 ## Conditional Detailed Guidance
 
-Read `expanded-design-guidance.md` completely only when current evidence needs
-one of its conditional surfaces: a design probe, a scenario profile, or
-workspace / spec documentation after the Doc Necessity Gate passes. Do not
-load it for route selection, first-turn clarification, route-away cases, or an
-active Grilling Mode interview. The reference supplies detail; this main skill
-continues to own routing, design approval, and handoff.
+Conditional design probe, scenario profile, and workspace/spec documentation
+detail maps to explicit headings below.
+
+Read only the evidence-matched section of `expanded-design-guidance.md`:
+
+- `## Design Probe` only when existing evidence is insufficient and a bounded
+  probe can change the design direction;
+- `## Software Scenario Profiles` only after the work is classified as one of
+  its named scenario classes and profile-specific state/risk coverage is useful;
+- `## Documentation And Workspace Bootstrap` only after the Doc Necessity Gate
+  selects a spec or workspace artifact;
+- `## Spec Self-Review` only for a written Design Spec; and
+- a named baseline template section only when initializing that exact file.
+
+Do not load the reference for route selection, first-turn clarification,
+route-away cases, or an active Grilling Mode interview. The reference supplies
+detail; this main skill continues to own routing, design approval, and handoff.
 
 ## Design Ready And Design Complete
 
