@@ -4,7 +4,8 @@ This directory is reserved for sanitized, immutable Agentic Benchmark result
 snapshots that have passed the repository's offline validation and separate
 publication approval.
 
-`benchmarks/results/` may contain only public-safe advisory JSON reports. A
+`benchmarks/results/` may contain only public-safe advisory JSON reports and
+the SVG and bilingual Markdown projections generated from them. A
 current matrix-v7 report records the frozen batch and profile identity,
 host/model versions, the requested model and reasoning effort, the observed
 model identity or an explicit host-event unavailability status, the 33-case
