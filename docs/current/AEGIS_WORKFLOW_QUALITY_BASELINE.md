@@ -674,6 +674,12 @@ default loaded payload, but capability remains the acceptance boundary.
 
 Pass criteria:
 
+- optimize default model steering first: remove redundant instruction and example
+  payload, over-prescriptive formatting, and repeated explanations before
+  treating byte count as the objective; byte count is a secondary maintenance
+  signal, not evidence that a skill became simpler or safer
+- preserve positive and negative route behavior, governance gates and stop
+  conditions, and the smallest examples that materially stabilize invocation
 - each main body retains an executable quick/default path and explicit,
   evidence-based triggers for every direct reference it may require
 - moving deep detail into a direct reference does not weaken required semantic

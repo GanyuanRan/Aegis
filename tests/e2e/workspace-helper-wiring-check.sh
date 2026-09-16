@@ -22,8 +22,8 @@ require_pattern "skills/using-aegis/SKILL.md" "Active codebase question"
 require_pattern "skills/using-aegis/SKILL.md" "Workspace support is lazy"
 require_pattern "skills/using-aegis/SKILL.md" "configured Aegis"
 
-require_pattern "skills/brainstorming/SKILL.md" "<aegis-workspace-helper> append-index"
-require_pattern "skills/brainstorming/SKILL.md" "<aegis-workspace-helper> check"
+require_pattern "skills/brainstorming/expanded-design-guidance.md" "<aegis-workspace-helper> append-index"
+require_pattern "skills/brainstorming/expanded-design-guidance.md" "<aegis-workspace-helper> check"
 
 require_pattern "skills/writing-plans/SKILL.md" "<aegis-workspace-helper> append-index"
 require_pattern "skills/writing-plans/SKILL.md" "<aegis-workspace-helper> check"

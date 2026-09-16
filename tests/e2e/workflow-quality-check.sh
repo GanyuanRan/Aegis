@@ -589,6 +589,18 @@ assert_contains "skills/goal-framing/SKILL.md" "TaskIntentDraft" \
     "goal-framing exposes task intent goal frame"
 assert_contains "skills/brainstorming/SKILL.md" "Compact output contract" \
     "brainstorming exposes compact output contract"
+brainstorming_expanded="skills/brainstorming/expanded-design-guidance.md"
+assert_contains_all "skills/brainstorming/SKILL.md" \
+    "brainstorming routes conditional design detail explicitly" \
+    "expanded-design-guidance\.md" "design probe" "scenario profile" \
+    "workspace.*spec.*documentation|documentation.*workspace.*spec"
+assert_not_contains "skills/brainstorming/SKILL.md" \
+    '^## BASELINE-GOVERNANCE\.md Template|^## Initial Baseline Snapshot Template' \
+    "brainstorming keeps bootstrap templates out of the default instruction surface"
+assert_contains_all "$brainstorming_expanded" \
+    "expanded brainstorming guidance preserves conditional detail without owning routing" \
+    "does not own routing" "Design Probe" "Software Scenario Profiles" \
+    "BASELINE-GOVERNANCE\.md Template" "Initial Baseline Snapshot Template"
 assert_contains "skills/brainstorming/SKILL.md" "## Grilling Mode" \
     "brainstorming provides an explicit grilling mode"
 assert_contains "skills/brainstorming/SKILL.md" "overrides the normal brainstorming execution" \
@@ -645,23 +657,23 @@ assert_contains "skills/brainstorming/SKILL.md" "Design Complete is method readi
     "brainstorming keeps the completion authority boundary in handoff"
 assert_contains "skills/brainstorming/SKILL.md" "needs-acceptance-criteria" \
     "brainstorming surfaces missing acceptance criteria"
-assert_contains "skills/brainstorming/SKILL.md" "Product / Requirement Baseline" \
+assert_contains "$brainstorming_expanded" "Product / Requirement Baseline" \
     "brainstorming template names product requirement baseline role"
-assert_contains "skills/brainstorming/SKILL.md" "Architecture / Runtime Boundary Baseline" \
+assert_contains "$brainstorming_expanded" "Architecture / Runtime Boundary Baseline" \
     "brainstorming template names architecture runtime boundary baseline role"
-assert_contains "skills/brainstorming/SKILL.md" "initial dual-baseline snapshot|dual baselines" \
+assert_contains "$brainstorming_expanded" "initial dual-baseline snapshot|dual baselines" \
     "brainstorming template frames the first baseline as dual-baseline bootstrap"
-assert_contains "skills/brainstorming/SKILL.md" "Non-negotiables" \
+assert_contains "$brainstorming_expanded" "Non-negotiables" \
     "brainstorming template requires non-negotiables in the initial baseline"
-assert_contains "skills/brainstorming/SKILL.md" "Product Non-goals" \
+assert_contains "$brainstorming_expanded" "Product Non-goals" \
     "brainstorming template requires product non-goals in the initial baseline"
-assert_contains "skills/brainstorming/SKILL.md" "Architecture Non-negotiables" \
+assert_contains "$brainstorming_expanded" "Architecture Non-negotiables" \
     "brainstorming template requires architecture non-negotiables in the initial baseline"
-assert_contains "skills/brainstorming/SKILL.md" "Design Defect" \
+assert_contains "$brainstorming_expanded" "Design Defect" \
     "brainstorming template includes design defect"
-assert_contains "skills/brainstorming/SKILL.md" "Implementation Drift" \
+assert_contains "$brainstorming_expanded" "Implementation Drift" \
     "brainstorming template includes implementation drift"
-assert_contains "skills/brainstorming/SKILL.md" "scope: requirements | architecture | both" \
+assert_contains "$brainstorming_expanded" "scope: requirements | architecture | both" \
     "brainstorming template includes defect drift scope taxonomy"
 assert_contains "skills/brainstorming/SKILL.md" "Better file boundary" \
     "brainstorming checks better file boundary"
@@ -1446,6 +1458,10 @@ assert_contains_all "$baseline" \
     "workflow quality uses capability-first two-tier context budgets" \
     "warning target" "hard ceiling" "route-bundle budgets" \
     "required semantic slots, routes"
+assert_contains_all "$baseline" \
+    "progressive disclosure optimizes model steering before byte count" \
+    "instruction and example" "byte count.*secondary|secondary.*byte count" \
+    "positive.*negative.*route" "governance.*stop"
 assert_contains_all "skills/using-aegis/references/codex-tools.md" \
     "Codex mapping points to current Git lifecycle entry steps" \
     "using-git-worktrees.*Step 0" "finishing-a-development-branch.*Step 1"

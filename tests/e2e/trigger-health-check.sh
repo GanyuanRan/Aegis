@@ -187,9 +187,9 @@ assert_contains "skills/brainstorming/SKILL.md" "If the user chooses another ans
     "brainstorming gates user questions on decision impact"
 assert_contains "skills/brainstorming/SKILL.md" "Challenge Result" \
     "brainstorming returns a structured challenge result"
-assert_contains "skills/brainstorming/SKILL.md" "## Software Scenario Profiles" \
+assert_contains "skills/brainstorming/expanded-design-guidance.md" "## Software Scenario Profiles" \
     "brainstorming loads scenario profiles instead of every lens"
-assert_contains "skills/brainstorming/SKILL.md" "## Design Probe" \
+assert_contains "skills/brainstorming/expanded-design-guidance.md" "## Design Probe" \
     "brainstorming allows bounded disposable design probes"
 assert_contains "skills/brainstorming/SKILL.md" "## Design Ready And Design Complete" \
     "brainstorming defines readiness and handoff conditions"

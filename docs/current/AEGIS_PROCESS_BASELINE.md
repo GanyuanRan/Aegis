@@ -1148,9 +1148,10 @@ A new `baseline/YYYY-MM-DD-<scope>-baseline.md` MUST be created when any of the 
 5. **ADR Auto Backfill created, amended, or superseded a decision that changes current architecture state** — the baseline must either be updated or explicitly state why the existing baseline remains valid.
 
 For the first baseline in an uninitialized project, use the dual-baseline
-bootstrap template from `brainstorming/SKILL.md` so the project starts with an
-explicit `Product / Requirement Baseline` and an explicit `Architecture /
-Runtime Boundary Baseline`, each with its own non-negotiables and non-goals.
+bootstrap template from `brainstorming/expanded-design-guidance.md` so the
+project starts with an explicit `Product / Requirement Baseline` and an
+explicit `Architecture / Runtime Boundary Baseline`, each with its own
+non-negotiables and non-goals.
 For later change-date snapshots, preserve that role separation and record the
 owner / contract / dependency truths that changed. Do not regress to a flat repo-inventory checklist. Snapshots are evidence, not authority -
 `BASELINE-GOVERNANCE.md` remains the constitution.
