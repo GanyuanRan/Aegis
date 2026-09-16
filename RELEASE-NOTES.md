@@ -1,5 +1,53 @@
 # Aegis Release Notes
 
+## v2.10.5 (2026-09-16)
+
+### Lower-steering progressive disclosure
+
+- Refactor `brainstorming`, `writing-plans`, and `long-task-continuation` so
+  their default instruction surfaces retain executable routing, decisions,
+  gates, and stop conditions while conditional detail moves to direct
+  references.
+- Route each evidence-backed trigger to an exact `##` reference section rather
+  than loading every expanded instruction and example. This reduces default
+  model steering and schema imitation without treating byte reduction as the
+  primary objective.
+- Reduce the three main skill bodies from 1,536 to 902 lines and from 72,953 to
+  46,005 bytes in total. The individual main surfaces now measure:
+  `brainstorming` 474 lines / 24,552 bytes, `writing-plans` 252 lines / 12,910
+  bytes, and `long-task-continuation` 176 lines / 8,543 bytes.
+
+### Preserved governance behavior
+
+- Keep brainstorming's one-decision-question flow, Grilling Mode, design
+  approval boundary, authority checks, and no-implementation-before-approval
+  rule on the default path.
+- Keep planning's Change Necessity, Planless Slice Lane, TDD route ownership,
+  Ripple Signal Triage, downstream-consumer verification, retirement handling,
+  and alignment stop when a change would retain duplicate owners or add an
+  unapproved fallback, adapter, or compatibility branch.
+- Return unresolved automatic-TDD risk to requirements, debugging, or plan
+  review before task decomposition. Generic medium/high sizing no longer
+  triggers an expanded `Execution Readiness View`; the view remains available
+  for named high-risk, subagent, handoff, or long-running execution signals.
+- Keep continuation's inline-versus-durable selector, parent-plan reuse,
+  resume readback order, drift decisions, retry convergence, stop states, and
+  completion-authority boundary. Resume or handoff refreshes an execution view
+  only when one already exists.
+
+### Verification and boundaries
+
+- Add workflow-quality contracts for exact reference headings, conditional
+  loading, Ripple and TDD stop preservation, and the negative generic
+  medium/high readiness case.
+- Keep all eight declared package and plugin manifests synchronized at
+  `2.10.5`, with the version audit scanning for undeclared current-version
+  references.
+- Preserve plugin-installable distribution and the current host evidence
+  boundaries. Aegis remains `Aegis Method Pack (runtime-ready)` and does not
+  grant an authoritative `GateDecision`, `PolicySnapshot`, or completion
+  authority.
+
 ## v2.10.2 (2026-09-16)
 
 ### Reliability fixes
