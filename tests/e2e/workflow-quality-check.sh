@@ -926,6 +926,20 @@ assert_not_contains "skills/systematic-debugging/advanced-debugging-governance.m
     "advanced debugging reference does not duplicate the causal proof output"
 assert_contains "skills/systematic-debugging/advanced-debugging-governance.md" "H1:.*conditional" \
     "advanced debugging reference owns expanded hard-signal governance"
+long_task_expanded="skills/long-task-continuation/durable-work-guidance.md"
+assert_contains_all "skills/long-task-continuation/SKILL.md" \
+    "long-task continuation routes durable work detail explicitly" \
+    "durable-work-guidance\.md" "new durable work record" "helper-backed" \
+    "retry|attempt" "completion.*bundle|bundle.*completion"
+assert_not_contains "skills/long-task-continuation/SKILL.md" \
+    '^\| Artifact \| File \| When \||^[[:space:]]+python <aegis-workspace-helper> (init|new-work|add-|bundle|check)' \
+    "long-task continuation keeps artifact tables and helper commands out of the default instruction surface"
+assert_contains_all "$long_task_expanded" \
+    "durable work guidance preserves conditional detail without owning routing" \
+    "does not own routing" "Required Artifact Layout" \
+    "<aegis-workspace-helper> new-work" "<aegis-workspace-helper> add-checkpoint" \
+    "<aegis-workspace-helper> add-attempt" "<aegis-workspace-helper> add-evidence" \
+    "<aegis-workspace-helper> add-drift-check" "<aegis-workspace-helper> bundle"
 assert_contains "skills/long-task-continuation/SKILL.md" "Planless Slice Lane" \
     "long-task continuation includes planless slice lane"
 assert_contains "skills/long-task-continuation/SKILL.md" "Slice Card" \

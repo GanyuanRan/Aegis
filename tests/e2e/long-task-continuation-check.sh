@@ -18,6 +18,7 @@ required_files=(
     "$ARTIFACT_DIR/resume-state-hint.sample.json"
     "$ARTIFACT_DIR/drift-check-draft.sample.json"
     "skills/long-task-continuation/SKILL.md"
+    "skills/long-task-continuation/durable-work-guidance.md"
 )
 
 for path in "${required_files[@]}"; do
@@ -27,7 +28,7 @@ for path in "${required_files[@]}"; do
     fi
 done
 
-skill_text="$(cat skills/long-task-continuation/SKILL.md)"
+skill_text="$(cat skills/long-task-continuation/SKILL.md skills/long-task-continuation/durable-work-guidance.md)"
 
 for pattern in \
     "<aegis-workspace-helper> init" \

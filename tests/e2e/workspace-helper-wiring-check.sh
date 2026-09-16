@@ -35,12 +35,12 @@ require_pattern "skills/systematic-debugging/SKILL.md" "<aegis-workspace-helper>
 require_pattern "skills/systematic-debugging/SKILL.md" "<aegis-workspace-helper> add-evidence"
 require_pattern "skills/systematic-debugging/SKILL.md" "<aegis-workspace-helper> check"
 
-require_pattern "skills/long-task-continuation/SKILL.md" "<aegis-workspace-helper> new-work"
-require_pattern "skills/long-task-continuation/SKILL.md" "<aegis-workspace-helper> add-checkpoint"
-require_pattern "skills/long-task-continuation/SKILL.md" "<aegis-workspace-helper> add-attempt"
-require_pattern "skills/long-task-continuation/SKILL.md" "<aegis-workspace-helper> add-evidence"
-require_pattern "skills/long-task-continuation/SKILL.md" "<aegis-workspace-helper> add-drift-check"
-require_pattern "skills/long-task-continuation/SKILL.md" "<aegis-workspace-helper> bundle"
+require_pattern "skills/long-task-continuation/durable-work-guidance.md" "<aegis-workspace-helper> new-work"
+require_pattern "skills/long-task-continuation/durable-work-guidance.md" "<aegis-workspace-helper> add-checkpoint"
+require_pattern "skills/long-task-continuation/durable-work-guidance.md" "<aegis-workspace-helper> add-attempt"
+require_pattern "skills/long-task-continuation/durable-work-guidance.md" "<aegis-workspace-helper> add-evidence"
+require_pattern "skills/long-task-continuation/durable-work-guidance.md" "<aegis-workspace-helper> add-drift-check"
+require_pattern "skills/long-task-continuation/durable-work-guidance.md" "<aegis-workspace-helper> bundle"
 
 require_pattern "skills/recording-architecture-decisions/SKILL.md" "<aegis-workspace-helper> new-adr"
 require_pattern "skills/recording-architecture-decisions/SKILL.md" "<aegis-workspace-helper> amend-adr"
