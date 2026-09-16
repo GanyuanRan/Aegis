@@ -683,8 +683,24 @@ assert_contains "skills/brainstorming/SKILL.md" "does not override baseline evid
     "brainstorming product lens cannot override baseline evidence"
 assert_not_contains "skills/brainstorming/SKILL.md" "visual companion|Visual Companion|web browser|local URL" \
     "brainstorming does not offer retired browser visual companion"
+writing_plans_expanded="skills/writing-plans/expanded-planning-guidance.md"
 assert_contains "skills/writing-plans/SKILL.md" "Compact output contract" \
     "writing-plans exposes compact output contract"
+assert_contains_all "skills/writing-plans/SKILL.md" \
+    "writing-plans routes conditional planning detail explicitly" \
+    "expanded-planning-guidance\.md" "baseline.*readiness|readiness.*baseline" \
+    "new surface|new owner" "complexity" "workspace" "handoff"
+assert_contains "skills/writing-plans/SKILL.md" \
+    "conditional.*silent|silence.*conditional|do not emit.*conditional" \
+    "writing-plans keeps untriggered governance structures out of default output"
+assert_not_contains "skills/writing-plans/SKILL.md" \
+    '^BaselineUsageDraft:|^Requirement Ready Check:|^Existence Check:|^Execution Readiness View:|^Complexity Budget:|^Plan-Time Complexity Check:|^Execution Route:' \
+    "writing-plans keeps conditional schemas out of the default instruction surface"
+assert_contains_all "$writing_plans_expanded" \
+    "expanded planning guidance preserves conditional detail without owning routing" \
+    "does not own routing" "BaselineUsageDraft:" "Requirement Ready Check:" \
+    "Existence Check:" "Execution Readiness View:" "Complexity Budget:" \
+    "Plan-Time Complexity Check:" "Execution Route:"
 assert_contains "skills/writing-plans/SKILL.md" "Plan Pressure Test" \
     "writing-plans includes plan pressure test"
 assert_contains "skills/writing-plans/SKILL.md" "Existence Check" \

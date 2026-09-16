@@ -25,8 +25,8 @@ require_pattern "skills/using-aegis/SKILL.md" "configured Aegis"
 require_pattern "skills/brainstorming/expanded-design-guidance.md" "<aegis-workspace-helper> append-index"
 require_pattern "skills/brainstorming/expanded-design-guidance.md" "<aegis-workspace-helper> check"
 
-require_pattern "skills/writing-plans/SKILL.md" "<aegis-workspace-helper> append-index"
-require_pattern "skills/writing-plans/SKILL.md" "<aegis-workspace-helper> check"
+require_pattern "skills/writing-plans/expanded-planning-guidance.md" "<aegis-workspace-helper> append-index"
+require_pattern "skills/writing-plans/expanded-planning-guidance.md" "<aegis-workspace-helper> check"
 
 require_pattern "skills/test-driven-development/SKILL.md" "<aegis-workspace-helper> new-work"
 
