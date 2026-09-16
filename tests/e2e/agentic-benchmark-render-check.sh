@@ -123,7 +123,8 @@ fi
 if [[ -f benchmarks/README.md ]] \
     && rg -q '44 `standard-held-out`' benchmarks/README.md \
     && rg -q '132 `extended-held-out`' benchmarks/README.md \
-    && rg -q 'latest published \(pre-v7\) snapshot' benchmarks/README.md \
+    && rg -q 'latest published extended-held-out \(pre-v7\) snapshot' benchmarks/README.md \
+    && rg -q 'first published matrix-v7 snapshot' benchmarks/README.md \
     && rg -q 'advisory' benchmarks/README.md \
     && rg -qi 'raw logs' benchmarks/README.md; then
     pass "benchmark evidence boundary is documented"
@@ -152,41 +153,46 @@ else
     fail "README current pointers match the Aegis 2.7.6 snapshot"
 fi
 
-historical_projection_root="$projection_root/historical"
-mkdir -p "$historical_projection_root"
-historical_bases=(
+bundle_projection_root="$projection_root/bundles"
+mkdir -p "$bundle_projection_root"
+# The three pre-v7 historical bundles (validated through the renderer's
+# allowlist) and the committed matrix-v7 bundles listed below. The renderer
+# decides which contract applies; this loop only proves that each listed bundle
+# re-renders byte-identically and carries no private material.
+bundle_bases=(
     "benchmarks/results/gpt-5-6-sol-xhigh-extended-20260731"
     "benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811"
     "benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6"
+    "benchmarks/results/gpt-5-6-sol-xhigh-standard-20260913-v2-10-1"
 )
-historical_ok=true
-for historical_result in "${historical_bases[@]}"; do
-    historical_name="${historical_result##*/}"
-    historical_output_root="$historical_projection_root/$historical_name"
-    mkdir -p "$historical_output_root"
-    if [[ -f "${historical_result}.json" && -f "${historical_result}.svg" \
-        && -f "${historical_result}.en.md" && -f "${historical_result}.zh-CN.md" ]] \
+bundle_ok=true
+for bundle_base in "${bundle_bases[@]}"; do
+    bundle_name="${bundle_base##*/}"
+    bundle_output_root="$bundle_projection_root/$bundle_name"
+    mkdir -p "$bundle_output_root"
+    if [[ -f "${bundle_base}.json" && -f "${bundle_base}.svg" \
+        && -f "${bundle_base}.en.md" && -f "${bundle_base}.zh-CN.md" ]] \
         && "${PYTHON_CMD[@]}" tests/helpers/render_agentic_benchmark.py render \
-            --report "${historical_result}.json" \
-            --svg "$historical_output_root/result.svg" \
-            --markdown-en "$historical_output_root/result.en.md" \
-            --markdown-zh "$historical_output_root/result.zh-CN.md" \
-        && cmp -s "${historical_result}.svg" "$historical_output_root/result.svg" \
-        && cmp -s "${historical_result}.en.md" "$historical_output_root/result.en.md" \
-        && cmp -s "${historical_result}.zh-CN.md" "$historical_output_root/result.zh-CN.md" \
+            --report "${bundle_base}.json" \
+            --svg "$bundle_output_root/result.svg" \
+            --markdown-en "$bundle_output_root/result.en.md" \
+            --markdown-zh "$bundle_output_root/result.zh-CN.md" \
+        && cmp -s "${bundle_base}.svg" "$bundle_output_root/result.svg" \
+        && cmp -s "${bundle_base}.en.md" "$bundle_output_root/result.en.md" \
+        && cmp -s "${bundle_base}.zh-CN.md" "$bundle_output_root/result.zh-CN.md" \
         && ! rg -n '/home/|/Users/|[A-Za-z]:\\|session[_-]?id|rollout[_-]?id|(^|[^A-Za-z0-9])[sS][kK]-[A-Za-z0-9_-]{16,}' \
-            "${historical_result}.json" "${historical_result}.svg" \
-            "${historical_result}.en.md" "${historical_result}.zh-CN.md" >/dev/null; then
+            "${bundle_base}.json" "${bundle_base}.svg" \
+            "${bundle_base}.en.md" "${bundle_base}.zh-CN.md" >/dev/null; then
         continue
     fi
-    historical_ok=false
-    echo "  [FAIL DETAIL] historical bundle: $historical_result"
+    bundle_ok=false
+    echo "  [FAIL DETAIL] committed bundle: $bundle_base"
 done
 
-if [[ "$historical_ok" == true ]]; then
-    pass "all three authorized historical bundles validate and match canonical rendering"
+if [[ "$bundle_ok" == true ]]; then
+    pass "all ${#bundle_bases[@]} authorized committed bundles validate and match canonical rendering"
 else
-    fail "all three authorized historical bundles validate and match canonical rendering"
+    fail "all ${#bundle_bases[@]} authorized committed bundles validate and match canonical rendering"
 fi
 
 if (( failures > 0 )); then
