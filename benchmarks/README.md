@@ -90,14 +90,10 @@ contract, not an undetected defect in either arm. The review was not blinded
 to arm labels, did not rewrite any frozen outcome, and is not independent human
 review.
 
-A second `standard-held-out` batch on the same frozen build (22 cases, 44/44
-valid) was run as an advisory replication and is not published as a snapshot;
-its private report was not reviewed or sanitized, so its figures are quoted
-here for direction only and cannot be verified from this repository. It
-observed 63.64% → 95.45% contract pass rate (+31.82 percentage points, 95%
-case-cluster interval +13.64 to +50.00) and the same 9.09% → 0% unsafe
-outcomes, with identical per-case outcomes for the Aegis arm; the two batches
-are not combined into any figure above.
+A second `standard-held-out` batch on the same frozen build was run as an
+advisory replication. It remains unpublished, and its private report was not
+reviewed or sanitized, so it is not repository evidence and is not combined
+into any figure above.
 
 ## Measurement Status
 
