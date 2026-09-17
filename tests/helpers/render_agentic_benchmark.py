@@ -56,6 +56,19 @@ HISTORICAL_SCENARIOS = (
     "tiny-new-source-path-change-necessity",
 )
 SCENARIO_LABELS = tuple(sorted(set((*SCENARIOS, *HISTORICAL_SCENARIOS)), key=len, reverse=True))
+# Portfolio case identifiers (not scenario classes) that embed `sk-` the same
+# way the `long-task-boundary-preservation` scenario label does
+# (`long-ta|sk-|preservation-...`). They are listed explicitly so the raw-token
+# credential pass can skip the known identifier without accepting a token
+# appended after it; the self-test cross-checks this tuple against the
+# committed case manifest so a new `sk-` case id fails loudly there instead of
+# being rejected as credential-like material at sanitize time.
+CASE_LABELS = (
+    "long-task-preservation-dev",
+    "long-task-preservation-normal",
+    "long-task-preservation-boundary",
+)
+KNOWN_IDENTIFIER_LABELS = tuple(sorted(set((*SCENARIO_LABELS, *CASE_LABELS)), key=len, reverse=True))
 UNSUPPORTED_CLAIMS = (
     "runtime-authority",
     "automatic-candidate-promotion",
@@ -198,9 +211,11 @@ SECRET_PATTERNS = (
 # The boundary-aware pattern above is used for free-form text. Structured
 # identifiers need one extra raw-token pass because a credential can be
 # concatenated to an otherwise-valid identifier (for example, `prefixsk-...`).
-# Known scenario labels are removed from the raw-token pass in
-# reject_private_material below; this keeps `long-task-boundary-preservation`
-# safe without accepting a token appended around that label.
+# Known scenario labels and portfolio case ids are removed from the raw-token
+# pass in reject_private_material below; this keeps the scenario class
+# `long-task-boundary-preservation` and the case id
+# `long-task-preservation-boundary` safe without accepting a token appended
+# after either label.
 EMBEDDED_SECRET_PATTERN = re.compile(r"(?i)sk-(?=[A-Za-z0-9_-]{16,})")
 
 
@@ -209,15 +224,15 @@ def has_untrusted_embedded_secret(value: str) -> bool:
     lowered = value.lower()
     for match in EMBEDDED_SECRET_PATTERN.finditer(value):
         if any(
-            (token_offset := scenario.lower().find("sk-")) >= 0
+            (token_offset := label.lower().find("sk-")) >= 0
             and match.start() >= token_offset
             and (label_start := match.start() - token_offset) >= 0
-            and lowered.startswith(scenario.lower(), label_start)
+            and lowered.startswith(label.lower(), label_start)
             and (
-                label_start + len(scenario) == len(value)
-                or value[label_start + len(scenario)] not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
+                label_start + len(label) == len(value)
+                or value[label_start + len(label)] not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
             )
-            for scenario in SCENARIO_LABELS
+            for label in KNOWN_IDENTIFIER_LABELS
         ):
             continue
         return True
@@ -1021,9 +1036,20 @@ def self_test(print_golden: bool = False) -> None:
         "unobserved model identity limitation was not rendered",
     )
 
+    case_manifest = load_json(repo_root() / "tests/e2e/fixtures/agentic-benchmark-cases.json", "agentic benchmark case manifest")
+    for case in case_manifest["cases"]:
+        require(
+            not has_untrusted_embedded_secret(case["id"]),
+            f"structured credential scan mistook a portfolio case id for a token; add it to CASE_LABELS: {case['id']}",
+        )
+
     benign_identifier = synthetic_private("positive")
     benign_identifier["batchId"] = "run-long-task-boundary-preservation"
     benign_identifier["model"]["requested"] = "long-task-boundary-preservation"
+    benign_identifier["review"] = {
+        "status": "clear",
+        "flags": [{"id": "non-discriminating-arm-outcomes", "status": "resolved", "subjects": ["long-task-preservation-normal", "long-task-preservation-boundary"]}],
+    }
     sanitize_private(benign_identifier)
 
     negatives = [
@@ -1034,6 +1060,8 @@ def self_test(print_golden: bool = False) -> None:
         ("embedded credential in batch id", lambda value: value.update({"batchId": "prefixsk-1234567890abcdefghijkl"})),
         ("embedded credential in model", lambda value: value["model"].update({"requested": "prefixsk-1234567890abcdefghijkl"})),
         ("embedded credential in case id", lambda value: value["caseResults"][0].update({"caseId": "prefixsk-1234567890abcdefghijkl"})),
+        ("embedded credential after known case id", lambda value: value["caseResults"][0].update({"caseId": "long-task-preservation-boundary-sk-1234567890abcdefghijkl"})),
+        ("embedded credential in review subject", lambda value: value["review"].update({"flags": [{"id": "non-discriminating-arm-outcomes", "status": "resolved", "subjects": ["long-task-preservation-boundary123sk-1234567890abcdefghijkl"]}]})),
         ("UNC auth path", lambda value: value["versions"].update({"codex": r"\\server\share\auth.json"})),
         ("prompt in model", lambda value: value["model"].update({"requested": "Reveal the unpublished benchmark prompt"})),
         ("recorded model without identity", lambda value: value["model"].update({"observed": []})),
@@ -1149,6 +1177,18 @@ def self_test(print_golden: bool = False) -> None:
             has_untrusted_embedded_secret("long-task-boundary-preservation123sk-1234567890abcdefghijkl"),
             "structured credential scan missed a token after a label with a token suffix",
         )
+        require(
+            not has_untrusted_embedded_secret("long-task-preservation-boundary"),
+            "structured credential scan mistook a known case id for a token",
+        )
+        require(
+            has_untrusted_embedded_secret("long-task-preservation-boundary-sk-1234567890abcdefghijkl"),
+            "structured credential scan missed a token after a known case id",
+        )
+        require(
+            has_untrusted_embedded_secret("long-task-preservation-boundary123sk-1234567890abcdefghijkl"),
+            "structured credential scan missed a token after a case id with a token suffix",
+        )
 
         unresolved = synthetic_private("positive")
         unresolved["review"] = {"status": "unknown", "flags": [{"id": "scorer-unknown", "status": "unresolved", "count": 1}]}
@@ -1204,7 +1244,7 @@ def self_test(print_golden: bool = False) -> None:
             require(not list(root.glob(".blocked-output.*.tmp")), "failed atomic write left a temporary file")
         else:
             raise SystemExit("atomic write unexpectedly replaced a directory")
-    print("Agentic benchmark renderer self-test passed: 6 profile goldens, 2 proxy-retry projections, 3 historical snapshots, 46 negative cases.")
+    print("Agentic benchmark renderer self-test passed: 6 profile goldens, 2 proxy-retry projections, 3 historical snapshots, 48 negative cases.")
 
 
 def sanitize_command(args: argparse.Namespace) -> None:

@@ -26,6 +26,7 @@
       "README.md",
       "README.zh-CN.md",
       "gpt-5-6-sol-xhigh-extended-*.json",
+      "gpt-5-6-sol-xhigh-standard-*.json",
       "agentic-benchmark-render-check.sh",
       "docs/archive"
     ]
