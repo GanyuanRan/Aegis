@@ -1,5 +1,54 @@
 # Aegis Release Notes
 
+## v2.10.6 (2026-09-20)
+
+### Capability-preserving skill simplification
+
+- Rework `writing-skills` around one executable authoring path: establish the
+  reusable behavior gap and owner, record current behavior, design the minimum
+  instruction surface, make the smallest change, and validate the candidate
+  against comparable positive, negative, and pressure scenarios.
+- Reduce the main `writing-skills` body from 23,157 to 5,315 bytes and its
+  independent-evaluation reference from 12,552 to 2,801 bytes. The smaller
+  surfaces retain current-versus-candidate comparison, optional no-skill
+  ablation, conditional-reference reachability, retirement checks,
+  `needs-verification`, and the advisory completion boundary.
+- Simplify `dispatching-parallel-agents` from 7,351 to 3,886 bytes while making
+  the `2+` task threshold consistent and preserving independence, shared
+  mutable-state, context-inheritance, coordinator Git ownership, integrated
+  verification, and written-plan routing boundaries.
+
+### Retirement and invocation evidence
+
+- Retire eleven unreferenced historical pressure cases, copied vendor and
+  persuasion guidance, duplicated anti-pattern material, and unused Graphviz
+  resources. Repository scans found no remaining live filename references;
+  the canonical skill bodies and current workflow-quality contracts remain the
+  owners of the preserved behavior.
+- Fix the Codex skill-load transcript parser so bare paths printed by file
+  listings or `git status` are not treated as proof that a skill was loaded.
+  Actual `Get-Content`, `cat`, `sed`, and `type` reads remain recognized and
+  covered by parser regression tests.
+- Add workflow-quality matrix coverage, static contracts, and a natural
+  `writing-skills` trigger fixture for capability-preserving simplification and
+  two-task read-only delegation.
+
+### Verification and boundaries
+
+- Synchronize all eight declared package and plugin manifests at `2.10.6`; the
+  version audit reports no undeclared current-version references.
+- On Windows Git Bash, governance completion, Layer 2, Layer 3, representative
+  Codex natural and explicit smokes, OpenCode base compatibility, Codex plugin
+  sync, and 41 Layer 1 checks pass. The only local aggregate failure is the
+  documented platform boundary for the Linux-native offline Codex fixture on
+  Windows Python `AMD64`; exact-head Ubuntu CI remains required before tag and
+  release publication.
+- Independent review found no Critical or Important issues. These results
+  support preserved behavior for the tested scenarios; byte reduction is
+  maintenance evidence, not a benchmark performance or model-context claim.
+- Aegis remains `Aegis Method Pack (runtime-ready)` and does not grant an
+  authoritative `GateDecision`, `PolicySnapshot`, or completion authority.
+
 ## v2.10.5 (2026-09-16)
 
 ### Lower-steering progressive disclosure
