@@ -717,6 +717,42 @@ capability-preserving skill payloads. They are not benchmark performance
 results and do not claim lower latency, token usage, cost, or model-context
 occupancy.
 
+### 3.21a Skill Authoring And Ad-Hoc Delegation Quality
+
+Skill maintenance should reduce unnecessary model steering without weakening
+discovery, governance, or verification. Ad-hoc delegation should expose the
+real independence and shared-state boundary instead of relying on host-specific
+tool folklore.
+
+Pass criteria:
+
+- skill creation or editing starts from representative behavior evidence; a
+  new skill uses a no-skill control, while an existing skill uses its current
+  version and adds a no-skill ablation only when necessity is being tested
+- post-change evaluation reuses the same positive, negative, and pressure
+  scenarios; missing behavior evidence results in `needs-verification`, not a
+  deployment-readiness claim
+- skill descriptions remain concise and discriminating, and do not become a
+  workflow shortcut that makes the main body unnecessary
+- main skill bodies retain the executable default path, non-omittable safety or
+  governance constraints, and explicit triggers for conditional references
+- generic tutorials, persuasion tactics, repeated examples, historical session
+  narratives, and host-specific tool choreography do not become portable method
+  instructions unless current evidence proves they change a required decision
+- ad-hoc parallel dispatch requires two or more bounded, demonstrably
+  independent tasks with no sequential dependency or overlapping mutable
+  resource, and enough coordination benefit to justify delegation
+- related failures, unknown decomposition, and shared writes stay inline until
+  independence and disjoint ownership are demonstrated; written plans route to
+  `subagent-driven-development`
+- child context inheritance is chosen deliberately from the live host
+  capability and bounded to the task; isolated model context is never confused
+  with isolated filesystem or Git state
+- child results remain evidence or proposals; the coordinator owns Git
+  lifecycle, conflict review, synthesis, and integrated verification
+- byte or line reduction is maintenance evidence only, not proof of lower model
+  steering or preserved capability
+
 ### 3.22 Task-Level Git Lifecycle Quality
 
 Task-level Git behavior should leave users with verified, reversible history,

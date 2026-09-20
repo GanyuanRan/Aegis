@@ -1,0 +1,5 @@
+I need to simplify an existing reusable agent skill that has become repetitive
+and example-heavy. Please preserve its discovery triggers, governance stops,
+conditional references, and before/after behavior validation while reducing
+unnecessary model steering. This is a skill edit, not ordinary project
+documentation.

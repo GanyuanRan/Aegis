@@ -895,6 +895,34 @@ assert_contains "skills/subagent-driven-development/SKILL.md" "Inherit the paren
     "subagents inherit rather than force TDD"
 assert_contains "skills/writing-skills/SKILL.md" "loading.*test-driven-development" \
     "writing skills does not force-load the TDD skill"
+assert_contains "$baseline" "Skill Authoring And Ad-Hoc Delegation Quality" \
+    "workflow quality baseline governs skill authoring and ad-hoc delegation"
+assert_contains "$baseline" "existing skill uses its current" \
+    "skill authoring baseline distinguishes existing-skill behavior from no-skill ablation"
+assert_contains "$baseline" "byte or line reduction.*not proof" \
+    "skill slimming keeps capability ahead of size"
+assert_contains "skills/writing-skills/SKILL.md" "existing skill.*current version|current version.*existing skill" \
+    "writing skills preserves a current-version behavior baseline"
+assert_contains "skills/writing-skills/SKILL.md" "positive.*negative.*pressure|positive.*pressure.*negative" \
+    "writing skills preserves representative post-change behavior validation"
+assert_contains "skills/writing-skills/SKILL.md" "needs-verification" \
+    "writing skills stops short of deployment claims without behavior evidence"
+assert_contains "skills/writing-skills/SKILL.md" "direct reference|conditional reference" \
+    "writing skills keeps conditional reference triggers explicit"
+assert_not_contains "skills/writing-skills/SKILL.md" "TodoWrite|push to your fork|50-100x|200k\+|persuasion-principles|your human partner|~/.claude" \
+    "writing skills removes host-specific and persuasion-heavy choreography"
+assert_contains "skills/dispatching-parallel-agents/SKILL.md" "2\+|two or more" \
+    "parallel dispatch uses a consistent two-task threshold"
+assert_contains "skills/dispatching-parallel-agents/SKILL.md" "written plan.*subagent-driven-development|subagent-driven-development.*written plan" \
+    "parallel dispatch routes written plans to their owner"
+assert_contains "skills/dispatching-parallel-agents/SKILL.md" "context inheritance|inheritance mode" \
+    "parallel dispatch chooses bounded host context deliberately"
+assert_contains "skills/dispatching-parallel-agents/SKILL.md" "coordinator.*Git" \
+    "parallel dispatch keeps Git lifecycle with the coordinator"
+assert_contains "skills/dispatching-parallel-agents/SKILL.md" "completion authority" \
+    "parallel dispatch keeps child results advisory"
+assert_not_contains "skills/dispatching-parallel-agents/SKILL.md" "Task\(|never inherit|3\+ test files|Real Example from Session|2025-10-03" \
+    "parallel dispatch removes stale APIs, absolutes, and dated anecdotes"
 assert_contains "skills/systematic-debugging/SKILL.md" "Quick bug lane" \
     "systematic debugging defines quick bug lane"
 assert_contains "skills/systematic-debugging/SKILL.md" "Pre-Edit Complexity Check" \

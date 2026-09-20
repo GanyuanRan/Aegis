@@ -37,11 +37,6 @@ SKILL_PATH_RE = re.compile(
     re.IGNORECASE | re.VERBOSE,
 )
 
-SKILL_PATH_LINE_RE = re.compile(
-    r"""^skills[/\\](?P<skill>[A-Za-z0-9._-]+)[/\\]SKILL\.md\s*$""",
-    re.IGNORECASE,
-)
-
 FOREACH_RE = re.compile(
     r"""\bforeach\s*\([^)]*?\$(?P<item>[A-Za-z_][A-Za-z0-9_]*)
     \s+in\s+\$(?P<collection>[A-Za-z_][A-Za-z0-9_]*)\s*\)""",
@@ -135,10 +130,6 @@ def extract_skills_from_line(line: str) -> list[str]:
     cmd_prefix = CMD_COMMAND_PREFIX_RE.search(line)
     if cmd_prefix:
         return extract_skills_from_cmd_type(line[cmd_prefix.end() :])
-
-    path_match = SKILL_PATH_LINE_RE.search(line)
-    if path_match:
-        return [path_match.group("skill")]
 
     return []
 

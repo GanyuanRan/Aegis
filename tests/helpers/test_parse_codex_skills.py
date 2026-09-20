@@ -115,16 +115,13 @@ class ParseCodexSkillsTests(unittest.TestCase):
 
         self.assertEqual(list(MODULE.iter_loaded_skills(lines)), [])
 
-    def test_keeps_bare_skill_path_fallback(self) -> None:
+    def test_ignores_bare_skill_paths_from_file_listings(self) -> None:
         lines = [
             "skills/verification-before-completion/SKILL.md",
-            "skills/verification-before-completion/SKILL.md",
+            "skills/writing-skills/SKILL.md",
         ]
 
-        self.assertEqual(
-            list(MODULE.iter_loaded_skills(lines)),
-            ["verification-before-completion"],
-        )
+        self.assertEqual(list(MODULE.iter_loaded_skills(lines)), [])
 
     def test_ignores_indented_skill_paths_from_shell_listings(self) -> None:
         lines = [
@@ -132,10 +129,7 @@ class ParseCodexSkillsTests(unittest.TestCase):
             "skills/verification-before-completion/SKILL.md",
         ]
 
-        self.assertEqual(
-            list(MODULE.iter_loaded_skills(lines)),
-            ["verification-before-completion"],
-        )
+        self.assertEqual(list(MODULE.iter_loaded_skills(lines)), [])
 
     def test_ignores_nested_skill_paths_quoted_inside_transcript_reads(self) -> None:
         lines = [

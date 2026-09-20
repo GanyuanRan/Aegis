@@ -1150,6 +1150,28 @@
       "verificationSignal": "parent-none-direct-bounded-request-actual-handoff-durable-work-record-and-resume-readback"
     },
     {
+      "id": "skill-authoring-capability-preserving-slimming",
+      "prompt": "Slim an existing instruction-heavy skill without weakening its trigger behavior, governance stops, or verification contract. Reduce redundant instructions and examples rather than optimizing for bytes alone.",
+      "expectedPrimarySkill": "writing-skills",
+      "allowedSecondarySkills": ["anti-entropy-governance", "verification-before-completion"],
+      "mustNotDo": ["edit-before-current-behavior-baseline", "claim-capability-preserved-from-byte-reduction", "force-code-tdd-route", "retain-host-specific-persuasion-choreography"],
+      "expectedOutputShape": "current-behavior-baseline-minimum-skill-change-post-change-positive-negative-pressure-validation",
+      "workspacePolicy": "no-workspace-unless-the-skill-change-needs-a-resumable-handoff",
+      "expectedArtifacts": [],
+      "verificationSignal": "same-scenario-before-after-behavior-plus-trigger-and-reference-readback"
+    },
+    {
+      "id": "two-independent-read-only-investigations",
+      "prompt": "Investigate two unrelated modules in parallel. Both checks are read-only, have no shared mutable resource, and can return bounded evidence independently.",
+      "expectedPrimarySkill": "dispatching-parallel-agents",
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["require-three-tasks", "assume-context-can-never-be-inherited", "treat-child-result-as-completion", "parallelize-overlapping-writes"],
+      "expectedOutputShape": "independence-check-bounded-child-context-read-only-evidence-coordinator-synthesis",
+      "workspacePolicy": "no-workspace-for-bounded-read-only-investigations",
+      "expectedArtifacts": [],
+      "verificationSignal": "two-task-dispatch-with-live-host-context-choice-and-coordinator-integration-check"
+    },
+    {
       "id": "failed-verification-retry-convergence",
       "prompt": "The same long-task slice keeps failing verification. Keep a bounded resumable workspace without treating every failed run as a new slice or formal evidence.",
       "expectedPrimarySkill": "long-task-continuation",
