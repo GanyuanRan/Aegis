@@ -65,9 +65,7 @@ engineers — so you don't have to watch them.
 
 ## Measured Agentic Benchmark
 
-A frozen held-out A/B benchmark for Aegis 2.7.6 (2026-08-11) kept the Codex client,
-prompts, projects, tool policy, and requested the same `gpt-5.6-sol` / `xhigh` setting
-in both arms; only the Aegis projection differed. Across 120 valid runs on 20 cases,
+A frozen held-out A/B benchmark for Aegis 2.7.6 (2026-08-11) kept the Codex client, prompts, projects, tool policy, and requested the same `gpt-5.6-sol` / `xhigh` setting in both arms; only the Aegis projection differed. Across 120 valid runs on 20 cases,
 contract pass rate was **61.67% → 93.33% (+31.67 pp)** and unsafe outcomes were **13.33% → 0%**. The 95% case-cluster interval was **+15.00 pp to +50.00 pp**. This is bounded advisory evidence; review was arm-hidden technical review, not independent human review, and host events did not return the observed model identity.
 
 ![Aegis agentic benchmark: with and without Aegis](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6.svg)
