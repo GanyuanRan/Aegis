@@ -615,7 +615,14 @@ Held-out results aggregate by case. The extended profile must not treat its
 three repetitions as three independent tasks. Percentage-point deltas and
 confidence intervals must use a deterministic case-cluster method with its seed
 recorded. Mixed within-case outcomes, non-discriminating arm results and scorer
-unknowns require blinded review or remain explicitly unknown.
+unknowns require blinded review or remain explicitly unknown. For
+non-discriminating arm results in a `standard-held-out` advisory snapshot, a
+maintainer may explicitly accept a contributor's unblinded technical review
+instead. Its public report must mark
+the review `attested`, identify the method as `contributor-attested-unblinded`,
+and disclose that maintainers did not independently inspect raw attempt
+outputs. This exception does not count as arm-hidden or independent review,
+and must not be used to claim an arm-sensitive causal advantage.
 
 Resolved review flags do not rewrite frozen case outcomes. When an arm-hidden
 technical review identifies conservative deterministic response matching, the

@@ -56,6 +56,19 @@ HISTORICAL_SCENARIOS = (
     "tiny-new-source-path-change-necessity",
 )
 SCENARIO_LABELS = tuple(sorted(set((*SCENARIOS, *HISTORICAL_SCENARIOS)), key=len, reverse=True))
+# Portfolio case identifiers (not scenario classes) that embed `sk-` the same
+# way the `long-task-boundary-preservation` scenario label does
+# (`long-ta|sk-|preservation-...`). They are listed explicitly so the raw-token
+# credential pass can skip the known identifier without accepting a token
+# appended after it; the self-test cross-checks this tuple against the
+# committed case manifest so a new `sk-` case id fails loudly there instead of
+# being rejected as credential-like material at sanitize time.
+CASE_LABELS = (
+    "long-task-preservation-dev",
+    "long-task-preservation-normal",
+    "long-task-preservation-boundary",
+)
+KNOWN_IDENTIFIER_LABELS = tuple(sorted(set((*SCENARIO_LABELS, *CASE_LABELS)), key=len, reverse=True))
 UNSUPPORTED_CLAIMS = (
     "runtime-authority",
     "automatic-candidate-promotion",
@@ -198,9 +211,11 @@ SECRET_PATTERNS = (
 # The boundary-aware pattern above is used for free-form text. Structured
 # identifiers need one extra raw-token pass because a credential can be
 # concatenated to an otherwise-valid identifier (for example, `prefixsk-...`).
-# Known scenario labels are removed from the raw-token pass in
-# reject_private_material below; this keeps `long-task-boundary-preservation`
-# safe without accepting a token appended around that label.
+# Known scenario labels and portfolio case ids are removed from the raw-token
+# pass in reject_private_material below; this keeps the scenario class
+# `long-task-boundary-preservation` and the case id
+# `long-task-preservation-boundary` safe without accepting a token appended
+# after either label.
 EMBEDDED_SECRET_PATTERN = re.compile(r"(?i)sk-(?=[A-Za-z0-9_-]{16,})")
 
 
@@ -209,15 +224,15 @@ def has_untrusted_embedded_secret(value: str) -> bool:
     lowered = value.lower()
     for match in EMBEDDED_SECRET_PATTERN.finditer(value):
         if any(
-            (token_offset := scenario.lower().find("sk-")) >= 0
+            (token_offset := label.lower().find("sk-")) >= 0
             and match.start() >= token_offset
             and (label_start := match.start() - token_offset) >= 0
-            and lowered.startswith(scenario.lower(), label_start)
+            and lowered.startswith(label.lower(), label_start)
             and (
-                label_start + len(scenario) == len(value)
-                or value[label_start + len(scenario)] not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
+                label_start + len(label) == len(value)
+                or value[label_start + len(label)] not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
             )
-            for scenario in SCENARIO_LABELS
+            for label in KNOWN_IDENTIFIER_LABELS
         ):
             continue
         return True
@@ -572,7 +587,7 @@ def validate_common(report: dict[str, Any], expected_type: str) -> dict[str, Any
     require(attempts["passes"] == sum(item["contractPass"] for item in derived["records"]), "attempt pass count drifted from caseResults")
 
     review = report.get("review")
-    require(isinstance(review, dict) and set(review) == {"status", "flags"} and review.get("status") in {"clear", "unknown"} and isinstance(review.get("flags"), list), "review status and flags must be explicit")
+    require(isinstance(review, dict) and set(review) in ({"status", "flags"}, {"status", "flags", "method"}) and review.get("status") in {"clear", "unknown", "attested"} and isinstance(review.get("flags"), list), "review status and flags must be explicit")
     for index, flag in enumerate(review["flags"]):
         require(isinstance(flag, dict) and isinstance(flag.get("id"), str) and flag.get("status") in {"resolved", "unresolved"}, f"review.flags[{index}] is invalid")
         require(flag["id"] in {"mixed-within-case-results", "non-discriminating-arm-outcomes", "scorer-unknown"}, f"review.flags[{index}].id is unsupported")
@@ -587,7 +602,18 @@ def validate_common(report: dict[str, Any], expected_type: str) -> dict[str, Any
             require(type(flag[count_field]) is int and flag[count_field] > 0, f"review.flags[{index}].{count_field} must be a positive integer")
     unresolved = any(flag["status"] == "unresolved" for flag in review["flags"])
     require((review["status"] == "unknown") is unresolved, "review status must reflect unresolved flags")
-    require(review["status"] == "clear" and not unresolved, "public projection requires a clear review with no unresolved flags")
+    require(review["status"] in {"clear", "attested"} and not unresolved, "public projection requires a reviewed result with no unresolved flags")
+    if "method" in review:
+        require(
+            review["method"] == "contributor-attested-unblinded"
+            and review["status"] == "attested"
+            and report["profileId"] == "standard-held-out"
+            and bool(review["flags"])
+            and all(flag["id"] == "non-discriminating-arm-outcomes" for flag in review["flags"]),
+            "contributor-attested review is limited to resolved standard-held-out flags",
+        )
+    else:
+        require(review["status"] != "attested", "attested review must disclose its method")
     resource = report.get("resourceUse")
     require(isinstance(resource, dict) and set(resource) == {"tokens", "costUsd", "costStatus"}, "resourceUse fields drifted")
     require(isinstance(resource["tokens"], dict) and all(re.fullmatch(r"[a-z][a-z0-9_]{0,39}", key) is not None and type(value) is int and value >= 0 for key, value in resource["tokens"].items()), "resource token counts must use safe names and non-negative integers")
@@ -597,8 +623,21 @@ def validate_common(report: dict[str, Any], expected_type: str) -> dict[str, Any
     publication = report.get("publication")
     require(isinstance(publication, dict) and set(publication) == {"authorized", "eligible", "reason"} and type(publication.get("authorized")) is bool and type(publication.get("eligible")) is bool and isinstance(publication.get("reason"), str), "publication boundary must be explicit")
     require(publication["reason"] in {"separate-publication-authorization-required", "publication-approved", "synthetic-test-only"}, "publication reason is invalid")
-    require(not publication["eligible"] or (publication["authorized"] and review["status"] == "clear"), "eligible publication requires authorization and clear review")
+    require(not publication["eligible"] or (publication["authorized"] and review["status"] in {"clear", "attested"}), "eligible publication requires authorization and review")
+    if review.get("method") == "contributor-attested-unblinded":
+        require(publication["authorized"] and publication["eligible"], "contributor-attested advisory publication requires maintainer authorization")
     return derived
+
+
+def review_limitations(review: dict[str, Any]) -> list[str]:
+    if not review["flags"] or not all(flag["status"] == "resolved" for flag in review["flags"]):
+        return []
+    method_limitation = (
+        "contributor-attested-unblinded-review-not-independently-verified"
+        if review.get("method") == "contributor-attested-unblinded"
+        else "arm-hidden-technical-review-not-independent-human-review"
+    )
+    return ["deterministic-response-contracts-may-count-semantic-paraphrases-as-failures", method_limitation]
 
 
 def sanitize_private(report: dict[str, Any]) -> dict[str, Any]:
@@ -618,12 +657,9 @@ def sanitize_private(report: dict[str, Any]) -> dict[str, Any]:
         if isinstance(value.get("subjects"), list):
             flag["subjectCount"] = len(value["subjects"])
         flags.append(flag)
-    review_limitations = []
-    if flags and all(flag["status"] == "resolved" for flag in flags):
-        review_limitations = [
-            "deterministic-response-contracts-may-count-semantic-paraphrases-as-failures",
-            "arm-hidden-technical-review-not-independent-human-review",
-        ]
+    public_review = {"status": report["review"]["status"], "flags": flags}
+    if "method" in report["review"]:
+        public_review["method"] = report["review"]["method"]
     public = {
         "version": 1,
         "reportType": PUBLIC_REPORT_TYPE,
@@ -640,12 +676,12 @@ def sanitize_private(report: dict[str, Any]) -> dict[str, Any]:
         "perScenarioClass": derived["perScenarioClass"],
         "caseResults": derived["records"],
         "resourceUse": report["resourceUse"],
-        "review": {"status": report["review"]["status"], "flags": flags},
+        "review": public_review,
         "completeness": report["completeness"],
         "publication": report["publication"],
         "limitations": [
             *profile_contract(report)["limitations"],
-            *review_limitations,
+            *review_limitations(public_review),
             *(["observed-model-identity-unavailable-from-host-events"] if report["model"]["observedStatus"] == "unavailable-from-host-events" else []),
         ],
         "unsupportedClaims": list(UNSUPPORTED_CLAIMS),
@@ -662,16 +698,9 @@ def validate_public(report: dict[str, Any]) -> dict[str, Any]:
         "resourceUse", "review", "completeness", "publication", "limitations", "unsupportedClaims",
     }
     require(set(report) == expected_keys, "sanitized report fields drifted")
-    review_flags = report["review"]["flags"]
-    review_limitations = []
-    if review_flags and all(flag["status"] == "resolved" for flag in review_flags):
-        review_limitations = [
-            "deterministic-response-contracts-may-count-semantic-paraphrases-as-failures",
-            "arm-hidden-technical-review-not-independent-human-review",
-        ]
     expected_limitations = [
         *profile_contract(report)["limitations"],
-        *review_limitations,
+        *review_limitations(report["review"]),
         *(["observed-model-identity-unavailable-from-host-events"] if report["model"]["observedStatus"] == "unavailable-from-host-events" else []),
     ]
     require(report["limitations"] == expected_limitations, "profile limitations drifted")
@@ -696,6 +725,7 @@ def limitation_texts(report: dict[str, Any], language: str) -> list[str]:
             "not-universal-causal-promotion-runtime-or-completion-authority": "This does not establish universal quality, causal proof, candidate promotion, runtime authority, or completion authority.",
             "deterministic-response-contracts-may-count-semantic-paraphrases-as-failures": "Deterministic response contracts are conservative and may count semantically acceptable paraphrases as failures.",
             "arm-hidden-technical-review-not-independent-human-review": "Resolved flags received arm-hidden technical review, not independent human review.",
+            "contributor-attested-unblinded-review-not-independently-verified": "The contributor reviewed resolved flags with arm labels visible; maintainers did not independently inspect raw attempt outputs.",
             "observed-model-identity-unavailable-from-host-events": "The host did not emit observed model identity; the requested model and reasoning effort were frozen and preflight-validated.",
         },
         "zh": {
@@ -706,6 +736,7 @@ def limitation_texts(report: dict[str, Any], language: str) -> list[str]:
             "not-universal-causal-promotion-runtime-or-completion-authority": "这不构成普遍质量、因果证明、候选晋升、运行时权威或完成权威。",
             "deterministic-response-contracts-may-count-semantic-paraphrases-as-failures": "确定性响应合同较为保守，语义可接受的改写仍可能被计为失败。",
             "arm-hidden-technical-review-not-independent-human-review": "已解决的复核项经过 arm-hidden 技术复核，但并非独立人工评审。",
+            "contributor-attested-unblinded-review-not-independently-verified": "已解决的复核项由贡献者在可见分组标签的情况下复核；维护者未独立检查原始尝试输出。",
             "observed-model-identity-unavailable-from-host-events": "宿主事件未返回实际模型身份；报告仅记录已冻结并通过预检的请求模型与推理档位。",
         },
     }
@@ -779,7 +810,8 @@ def svg(report: dict[str, Any]) -> str:
     overall = derived["overall"]
     target_runs = report["design"]["targetRuns"]
     case_count = report["design"]["caseCount"]
-    width, height = 1280, 430
+    contributor_attested = report["review"].get("method") == "contributor-attested-unblinded"
+    width, height = 1280, 450 if contributor_attested else 430
     plot_x, plot_width = 390, 760
     colors = {"baseline-no-aegis": "#64748b", "aegis-auto": "#16a34a"}
     labels = {"baseline-no-aegis": "Without Aegis", "aegis-auto": "With Aegis"}
@@ -816,6 +848,8 @@ def svg(report: dict[str, Any]) -> str:
     unsafe_delta = overall["arms"]["aegis-auto"]["unsafeOutcomeRate"] - overall["arms"]["baseline-no-aegis"]["unsafeOutcomeRate"]
     lines.append(f'<text class="muted" x="40" y="356">Difference {delta(unsafe_delta)}</text>')
     lines.append(f'<text class="muted" x="40" y="402">Batch {html.escape(report["batchId"])} · {html.escape(report["model"]["requested"])} / {html.escape(report["model"]["reasoningEffort"])} · advisory only</text>')
+    if contributor_attested:
+        lines.append('<text class="muted" x="40" y="426">Contributor review was unblinded; raw outputs were not independently verified.</text>')
     lines.append('</svg>')
     return "\n".join(lines) + "\n"
 
@@ -1021,9 +1055,20 @@ def self_test(print_golden: bool = False) -> None:
         "unobserved model identity limitation was not rendered",
     )
 
+    case_manifest = load_json(repo_root() / "tests/e2e/fixtures/agentic-benchmark-cases.json", "agentic benchmark case manifest")
+    for case in case_manifest["cases"]:
+        require(
+            not has_untrusted_embedded_secret(case["id"]),
+            f"structured credential scan mistook a portfolio case id for a token; add it to CASE_LABELS: {case['id']}",
+        )
+
     benign_identifier = synthetic_private("positive")
     benign_identifier["batchId"] = "run-long-task-boundary-preservation"
     benign_identifier["model"]["requested"] = "long-task-boundary-preservation"
+    benign_identifier["review"] = {
+        "status": "clear",
+        "flags": [{"id": "non-discriminating-arm-outcomes", "status": "resolved", "subjects": ["long-task-preservation-normal", "long-task-preservation-boundary"]}],
+    }
     sanitize_private(benign_identifier)
 
     negatives = [
@@ -1034,6 +1079,8 @@ def self_test(print_golden: bool = False) -> None:
         ("embedded credential in batch id", lambda value: value.update({"batchId": "prefixsk-1234567890abcdefghijkl"})),
         ("embedded credential in model", lambda value: value["model"].update({"requested": "prefixsk-1234567890abcdefghijkl"})),
         ("embedded credential in case id", lambda value: value["caseResults"][0].update({"caseId": "prefixsk-1234567890abcdefghijkl"})),
+        ("embedded credential after known case id", lambda value: value["caseResults"][0].update({"caseId": "long-task-preservation-boundary-sk-1234567890abcdefghijkl"})),
+        ("embedded credential in review subject", lambda value: value["review"].update({"flags": [{"id": "non-discriminating-arm-outcomes", "status": "resolved", "subjects": ["long-task-preservation-boundary123sk-1234567890abcdefghijkl"]}]})),
         ("UNC auth path", lambda value: value["versions"].update({"codex": r"\\server\share\auth.json"})),
         ("prompt in model", lambda value: value["model"].update({"requested": "Reveal the unpublished benchmark prompt"})),
         ("recorded model without identity", lambda value: value["model"].update({"observed": []})),
@@ -1087,6 +1134,33 @@ def self_test(print_golden: bool = False) -> None:
         ],
         "resolved review limitations were not derived",
     )
+
+    attested = synthetic_private("positive", "standard-held-out")
+    attested["review"] = {
+        "status": "attested",
+        "method": "contributor-attested-unblinded",
+        "flags": [{"id": "non-discriminating-arm-outcomes", "status": "resolved", "subjects": [attested["caseResults"][0]["caseId"]]}],
+    }
+    attested["publication"] = {"authorized": True, "eligible": True, "reason": "publication-approved"}
+    attested_public = sanitize_private(attested)
+    require(
+        attested_public["limitations"][-1] == "contributor-attested-unblinded-review-not-independently-verified",
+        "attested review limitation was not derived",
+    )
+    require("maintainers did not independently inspect raw attempt outputs" in markdown(attested_public, "en"), "attested review disclosure was not rendered")
+    require("维护者未独立检查原始尝试输出" in markdown(attested_public, "zh"), "attested review Chinese disclosure was not rendered")
+    require("Contributor review was unblinded" in svg(attested_public), "attested review SVG disclosure was not rendered")
+    for label, mutation in (
+        ("missing method", lambda value: value["review"].pop("method")),
+        ("false arm-hidden limitation", lambda value: value["limitations"].__setitem__(-1, "arm-hidden-technical-review-not-independent-human-review")),
+    ):
+        candidate = json.loads(canonical_json(attested_public))
+        mutation(candidate)
+        try:
+            validate_public(candidate)
+        except SystemExit:
+            continue
+        raise SystemExit(f"attested review accepted {label}")
 
     for label, mutation in (
         ("profile", lambda value: value.update({"profileId": "standard-held-out"})),
@@ -1149,6 +1223,18 @@ def self_test(print_golden: bool = False) -> None:
             has_untrusted_embedded_secret("long-task-boundary-preservation123sk-1234567890abcdefghijkl"),
             "structured credential scan missed a token after a label with a token suffix",
         )
+        require(
+            not has_untrusted_embedded_secret("long-task-preservation-boundary"),
+            "structured credential scan mistook a known case id for a token",
+        )
+        require(
+            has_untrusted_embedded_secret("long-task-preservation-boundary-sk-1234567890abcdefghijkl"),
+            "structured credential scan missed a token after a known case id",
+        )
+        require(
+            has_untrusted_embedded_secret("long-task-preservation-boundary123sk-1234567890abcdefghijkl"),
+            "structured credential scan missed a token after a case id with a token suffix",
+        )
 
         unresolved = synthetic_private("positive")
         unresolved["review"] = {"status": "unknown", "flags": [{"id": "scorer-unknown", "status": "unresolved", "count": 1}]}
@@ -1204,7 +1290,7 @@ def self_test(print_golden: bool = False) -> None:
             require(not list(root.glob(".blocked-output.*.tmp")), "failed atomic write left a temporary file")
         else:
             raise SystemExit("atomic write unexpectedly replaced a directory")
-    print("Agentic benchmark renderer self-test passed: 6 profile goldens, 2 proxy-retry projections, 3 historical snapshots, 46 negative cases.")
+    print("Agentic benchmark renderer self-test passed: 6 profile goldens, 2 proxy-retry projections, 3 historical snapshots, 48 negative cases.")
 
 
 def sanitize_command(args: argparse.Namespace) -> None:
