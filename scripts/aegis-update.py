@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import locale
 import os
 import shutil
 import subprocess
@@ -365,7 +364,7 @@ def run_command(command: list[str], *, cwd: Path | None = None) -> subprocess.Co
         cwd=cwd,
         capture_output=True,
         text=True,
-        encoding=locale.getencoding(),
+        encoding="locale",
         errors="replace",
     )
     if result.returncode != 0:

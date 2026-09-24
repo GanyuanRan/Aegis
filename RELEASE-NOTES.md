@@ -1,5 +1,25 @@
 # Aegis Release Notes
 
+## v2.10.7 (2026-09-23)
+
+### Python 3.10 updater compatibility
+
+- Replace the Python 3.11-only `locale.getencoding()` call in
+  `scripts/aegis-update.py` with `encoding="locale"`, so subprocess output keeps
+  locale-based decoding on Python 3.10. The existing replacement behavior for
+  undecodable bytes remains in place.
+- Add an Ubuntu CI step that runs the updater test suite on Python 3.10. This
+  verifies the repository fix; the original user's Python 3.10.12 environment
+  still needs an update and a direct rerun.
+
+### Documentation and release scope
+
+- Restore compact benchmark placement in the English and Chinese root READMEs.
+  This release adds no new benchmark result or rescoring.
+- Synchronize the eight package and plugin manifest versions at `2.10.7`.
+  Aegis remains `Aegis Method Pack (runtime-ready)` without runtime or
+  completion authority.
+
 ## v2.10.6 (2026-09-20)
 
 ### Capability-preserving skill simplification
