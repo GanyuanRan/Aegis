@@ -126,8 +126,7 @@ try {
   const message = coordinator.injected[0];
   assert.equal(message.role, "user");
   assert.deepEqual(message.source, {
-    kind: "plugin",
-    plugin: "aegis",
+    kind: "plugin:aegis",
     form: "instructions",
   });
   assert.match(message.content[0].text, new RegExp(BOOTSTRAP_MARKER));

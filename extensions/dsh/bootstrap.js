@@ -74,8 +74,9 @@ export function createBootstrapMessage(createUserMessage, bootstrap) {
   return createUserMessage({
     content: [{ type: "text", text: bootstrap }],
     source: {
-      kind: "plugin",
-      plugin: "aegis",
+      // DSH session format v4 requires a producer-owned source kind; the bare
+      // "plugin" wrapper and its "plugin" field were retired in 0.1.7-rc.1.
+      kind: "plugin:aegis",
       form: "instructions",
     },
   });
