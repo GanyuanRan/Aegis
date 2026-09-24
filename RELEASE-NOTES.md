@@ -1,5 +1,40 @@
 # Aegis Release Notes
 
+## v2.10.8 (2026-09-24)
+
+### Benchmark publication and scoring
+
+- Publish the first matrix-v7 `standard-held-out` snapshot for Aegis 2.10.1:
+  44 valid outcomes across 22 cases, with one observation per case and arm.
+  This is advisory evidence, not a comparison of Aegis 2.10.7 or 2.10.8 against
+  previous releases. The contributor reviewed the flagged outcomes with arm
+  labels visible; the maintainer matched the attempt ledger to the frozen scores
+  but did not independently inspect raw outputs.
+- Fix the benchmark renderer's false credential alert on known
+  `long-task-preservation-*` case IDs while retaining detection of appended
+  credential tokens. Add the new bundle to deterministic rendering checks.
+- Accept `scoped`, `tightly scoped`, and `narrowly scoped` change rationale in
+  the benchmark event scorer. This applies to future batches; published frozen
+  scores were not recalculated.
+
+### DeepSeek Harness compatibility
+
+- Use the producer-owned `plugin:aegis` source kind for the session-start
+  bootstrap message. This addresses the retired `plugin` wrapper rejected by
+  DeepSeek Harness 0.1.7-rc.1 session format v4; the bootstrap content and
+  activation behavior remain the same. DeepSeek Harness remains a developer
+  preview without a maintainer-verified release-level live smoke verdict.
+
+### Release scope
+
+- Synchronize the eight package and plugin manifest versions at `2.10.8`.
+  This release changes benchmark evidence and tooling plus DeepSeek Harness
+  bootstrap source metadata, not installed skill or updater behavior. Aegis
+  remains `Aegis Method Pack (runtime-ready)` without runtime or completion
+  authority.
+- The user who reported the Python 3.10.12 updater error confirmed that the
+  v2.10.7 fix resolved it; no additional updater fix is included here.
+
 ## v2.10.7 (2026-09-23)
 
 ### Python 3.10 updater compatibility
@@ -9,8 +44,8 @@
   locale-based decoding on Python 3.10. The existing replacement behavior for
   undecodable bytes remains in place.
 - Add an Ubuntu CI step that runs the updater test suite on Python 3.10. This
-  verifies the repository fix; the original user's Python 3.10.12 environment
-  still needs an update and a direct rerun.
+  verifies the repository fix. The original user later confirmed that updating
+  on Python 3.10.12 resolved the reported error.
 
 ### Documentation and release scope
 
