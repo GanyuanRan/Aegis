@@ -17,12 +17,21 @@
   the benchmark event scorer. This applies to future batches; published frozen
   scores were not recalculated.
 
+### DeepSeek Harness compatibility
+
+- Use the producer-owned `plugin:aegis` source kind for the session-start
+  bootstrap message. This addresses the retired `plugin` wrapper rejected by
+  DeepSeek Harness 0.1.7-rc.1 session format v4; the bootstrap content and
+  activation behavior remain the same. DeepSeek Harness remains a developer
+  preview without a maintainer-verified release-level live smoke verdict.
+
 ### Release scope
 
 - Synchronize the eight package and plugin manifest versions at `2.10.8`.
-  This release changes benchmark evidence and tooling, not installed skill or
-  updater behavior. Aegis remains `Aegis Method Pack (runtime-ready)` without
-  runtime or completion authority.
+  This release changes benchmark evidence and tooling plus DeepSeek Harness
+  bootstrap source metadata, not installed skill or updater behavior. Aegis
+  remains `Aegis Method Pack (runtime-ready)` without runtime or completion
+  authority.
 - The user who reported the Python 3.10.12 updater error confirmed that the
   v2.10.7 fix resolved it; no additional updater fix is included here.
 
