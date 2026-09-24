@@ -70,14 +70,15 @@ def assistant_text(item: dict[str, Any]) -> str:
     return ""
 
 
-# A "minimum/minimal/smallest change|fix|edit|patch" phrase is genuine change
-# rationale only when the model is *committing* to the minimal change. Reject
-# quoted references and negation that governs the phrase, while allowing a
-# later explicit commitment after unrelated negation ("not risky, so I'll make
-# the minimum edit"). Word boundaries keep unrelated words (e.g. "resource
-# change") from matching "source change".
+# A "minimum/minimal/smallest/[tightly|narrowly] scoped change|fix|edit|patch"
+# phrase is genuine change rationale only when the model is *committing* to the
+# minimal change. Reject quoted references and negation that governs the phrase,
+# while allowing a later explicit commitment after unrelated negation ("not
+# risky, so I'll make the minimum edit"). Word boundaries keep unrelated words
+# (e.g. "resource change") from matching "source change".
 _MINIMUM_CHANGE_PHRASE = re.compile(
-    r"\b(?:minimum|minimal|smallest) (?:[\w-]+ ){0,2}(?:change|fix|edit|patch)\b"
+    r"\b(?:minimum|minimal|smallest|(?:tightly |narrowly )?scoped) "
+    r"(?:[\w-]+ ){0,2}(?:change|fix|edit|patch)\b"
 )
 _CLAUSE_BOUNDARY = re.compile(r"[.;!?]|,\s+(?:but|so|yet|however)\b")
 _MINIMUM_CHANGE_NEGATION_TOKEN = (

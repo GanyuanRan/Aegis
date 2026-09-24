@@ -249,6 +249,59 @@ class CodexEventReductionTest(unittest.TestCase):
                 }))
                 self.assertIn("implementation-rationale", parsed["events"][0]["tags"])
 
+    def test_scoped_change_commitment_is_rationale(self):
+        messages = (
+            # Verbatim first pre-edit message from a live held-out batch
+            # (Aegis 2.10.6, gpt-5.6-sol, quick-bug-normal, aegis-auto arm):
+            "I’m using the Aegis routing guidance to make this a tightly scoped copy fix, "
+            "then I’ll verify the affected behavior.",
+            "I'll make a tightly scoped fix.",
+            "I'll make a narrowly scoped fix to the label copy.",
+            "I'll make a scoped copy fix and rerun the check.",
+            "I'll make a minimal, tightly scoped fix.",
+            "I'll keep this to a tightly scoped change in labels.py.",
+            "Plan: a narrowly scoped edit to the pluralization branch, then verify.",
+            # Unrelated negation before a later explicit commitment still counts.
+            "This is not risky, so I'll make a tightly scoped edit.",
+        )
+        for message in messages:
+            with self.subTest(message=message):
+                parsed = parse_codex_jsonl(json.dumps({
+                    "type": "item.completed",
+                    "item": {"type": "agent_message", "text": message},
+                }))
+                self.assertIn("implementation-rationale", parsed["events"][0]["tags"])
+
+    def test_scoped_phrase_under_guards_or_outside_family_is_not_rationale(self):
+        # `scoped` goes through the same negation, quotation, reference and
+        # attribution guards as the other head words, and outside the bounded
+        # "<head word> [0-2 words] change|fix|edit|patch" family it is not rationale.
+        messages = (
+            # negation
+            "Do not make a tightly scoped fix; this needs a broader repair.",
+            "Rather than a tightly scoped fix, we should redesign the parser.",
+            # postposed negation / negative predicate
+            "A narrowly scoped fix is not enough here; the whole module needs rework.",
+            "A tightly scoped fix is insufficient here.",
+            # quotation / reference / attribution
+            'The task says: "make a tightly scoped fix".',
+            "The rubric asks for a tightly scoped fix, but I have not decided yet.",
+            "According to the policy, a tightly scoped fix is expected.",
+            # outside the bounded phrase family
+            "The scoped session fixture leaks between tests.",
+            "This bug is scoped to labels.py.",
+            "The fix scoped in the ticket is out of date.",
+            "The scoped variable shadows the module-level fix flag.",
+            "I’m using the Aegis routing guidance to keep the change scoped.",
+        )
+        for message in messages:
+            with self.subTest(message=message):
+                parsed = parse_codex_jsonl(json.dumps({
+                    "type": "item.completed",
+                    "item": {"type": "agent_message", "text": message},
+                }))
+                self.assertNotIn("implementation-rationale", parsed["events"][0]["tags"])
+
     def test_source_change_requires_word_boundary(self):
         # "resource change" contains "source change" as a substring; without word
         # boundaries it was tagged as change rationale.
