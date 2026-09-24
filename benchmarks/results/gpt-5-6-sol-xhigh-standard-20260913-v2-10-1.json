@@ -382,7 +382,7 @@
     "repeated-run-evidence-unsupported",
     "not-independent-universal-causal-promotion-runtime-or-completion-authority",
     "deterministic-response-contracts-may-count-semantic-paraphrases-as-failures",
-    "arm-hidden-technical-review-not-independent-human-review",
+    "contributor-attested-unblinded-review-not-independently-verified",
     "observed-model-identity-unavailable-from-host-events"
   ],
   "model": {
@@ -677,7 +677,8 @@
         "subjectCount": 14
       }
     ],
-    "status": "clear"
+    "method": "contributor-attested-unblinded",
+    "status": "attested"
   },
   "unsupportedClaims": [
     "runtime-authority",

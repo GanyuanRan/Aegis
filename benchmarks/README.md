@@ -74,21 +74,22 @@ not support repeated-run evidence, so this snapshot is advisory-only and is not
 comparable with the extended-held-out snapshot above; it does not replace that
 snapshot as the root README headline.
 
-Its single review flag (`non-discriminating-arm-outcomes`, 14 subjects) was
-resolved by technical review that used only arm-neutral facts: whether both
-arms produced the same outcomes for a case, and which contract check failed.
-Thirteen subjects are `sentinel` cases, whose role is regression guarding
-rather than arm discrimination, so both arms passing is the designed
-expectation. The remaining subject, `long-task-preservation-boundary`, is a
-`discriminator` case in which both arms failed the same deterministic response
-check: in both attempts the agent completed the migration, noticed during the
-work that the inherited handoff note had marked `scheduler.py` as migrated when
-it still imported the legacy loader, and said so in its progress messages, but
-neither final response restated that the handoff claim was wrong. That cell
-therefore measures the placement and wording conservatism of the response
-contract, not an undetected defect in either arm. The review was not blinded
-to arm labels, did not rewrite any frozen outcome, and is not independent human
-review.
+The contributor reviewed its single `non-discriminating-arm-outcomes` flag
+(14 subjects) with arm labels visible. The maintainer matched the supplied
+attempt ledger to the public batch identity and all 44 scored outcomes, then
+accepted the contributor's disposition for this advisory snapshot without
+independently inspecting raw attempt outputs. The report marks this review
+`attested`; it does not claim arm-hidden or independent review. The frozen
+outcomes are unchanged.
+
+The public results and frozen case roles show that thirteen subjects are
+`sentinel` cases in which both arms passed, as expected for regression guards.
+The remaining `long-task-preservation-boundary` subject is a `discriminator`
+case in which both arms failed. The contributor reports that both attempts
+completed the migration and noted an incorrect inherited handoff claim in
+progress messages, but neither final response restated that correction. The
+maintainer did not independently verify that explanation from raw outputs;
+the published contract-pass values remain the primary measurements.
 
 A second `standard-held-out` batch on the same frozen build was run as an
 advisory replication. It remains unpublished, and its private report was not

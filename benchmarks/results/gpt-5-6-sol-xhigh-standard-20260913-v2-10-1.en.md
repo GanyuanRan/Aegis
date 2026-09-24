@@ -9,7 +9,7 @@ Limitations:
 - Repeated-run evidence is unsupported: this profile has one observation per case.
 - This does not establish statistical independence, universal quality, causal proof, candidate promotion, runtime authority, or completion authority.
 - Deterministic response contracts are conservative and may count semantically acceptable paraphrases as failures.
-- Resolved flags received arm-hidden technical review, not independent human review.
+- The contributor reviewed resolved flags with arm labels visible; maintainers did not independently inspect raw attempt outputs.
 - The host did not emit observed model identity; the requested model and reasoning effort were frozen and preflight-validated.
 
 | Metric | Without Aegis | With Aegis | Difference |

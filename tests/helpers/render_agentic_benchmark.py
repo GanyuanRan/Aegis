@@ -587,7 +587,7 @@ def validate_common(report: dict[str, Any], expected_type: str) -> dict[str, Any
     require(attempts["passes"] == sum(item["contractPass"] for item in derived["records"]), "attempt pass count drifted from caseResults")
 
     review = report.get("review")
-    require(isinstance(review, dict) and set(review) == {"status", "flags"} and review.get("status") in {"clear", "unknown"} and isinstance(review.get("flags"), list), "review status and flags must be explicit")
+    require(isinstance(review, dict) and set(review) in ({"status", "flags"}, {"status", "flags", "method"}) and review.get("status") in {"clear", "unknown", "attested"} and isinstance(review.get("flags"), list), "review status and flags must be explicit")
     for index, flag in enumerate(review["flags"]):
         require(isinstance(flag, dict) and isinstance(flag.get("id"), str) and flag.get("status") in {"resolved", "unresolved"}, f"review.flags[{index}] is invalid")
         require(flag["id"] in {"mixed-within-case-results", "non-discriminating-arm-outcomes", "scorer-unknown"}, f"review.flags[{index}].id is unsupported")
@@ -602,7 +602,18 @@ def validate_common(report: dict[str, Any], expected_type: str) -> dict[str, Any
             require(type(flag[count_field]) is int and flag[count_field] > 0, f"review.flags[{index}].{count_field} must be a positive integer")
     unresolved = any(flag["status"] == "unresolved" for flag in review["flags"])
     require((review["status"] == "unknown") is unresolved, "review status must reflect unresolved flags")
-    require(review["status"] == "clear" and not unresolved, "public projection requires a clear review with no unresolved flags")
+    require(review["status"] in {"clear", "attested"} and not unresolved, "public projection requires a reviewed result with no unresolved flags")
+    if "method" in review:
+        require(
+            review["method"] == "contributor-attested-unblinded"
+            and review["status"] == "attested"
+            and report["profileId"] == "standard-held-out"
+            and bool(review["flags"])
+            and all(flag["id"] == "non-discriminating-arm-outcomes" for flag in review["flags"]),
+            "contributor-attested review is limited to resolved standard-held-out flags",
+        )
+    else:
+        require(review["status"] != "attested", "attested review must disclose its method")
     resource = report.get("resourceUse")
     require(isinstance(resource, dict) and set(resource) == {"tokens", "costUsd", "costStatus"}, "resourceUse fields drifted")
     require(isinstance(resource["tokens"], dict) and all(re.fullmatch(r"[a-z][a-z0-9_]{0,39}", key) is not None and type(value) is int and value >= 0 for key, value in resource["tokens"].items()), "resource token counts must use safe names and non-negative integers")
@@ -612,8 +623,21 @@ def validate_common(report: dict[str, Any], expected_type: str) -> dict[str, Any
     publication = report.get("publication")
     require(isinstance(publication, dict) and set(publication) == {"authorized", "eligible", "reason"} and type(publication.get("authorized")) is bool and type(publication.get("eligible")) is bool and isinstance(publication.get("reason"), str), "publication boundary must be explicit")
     require(publication["reason"] in {"separate-publication-authorization-required", "publication-approved", "synthetic-test-only"}, "publication reason is invalid")
-    require(not publication["eligible"] or (publication["authorized"] and review["status"] == "clear"), "eligible publication requires authorization and clear review")
+    require(not publication["eligible"] or (publication["authorized"] and review["status"] in {"clear", "attested"}), "eligible publication requires authorization and review")
+    if review.get("method") == "contributor-attested-unblinded":
+        require(publication["authorized"] and publication["eligible"], "contributor-attested advisory publication requires maintainer authorization")
     return derived
+
+
+def review_limitations(review: dict[str, Any]) -> list[str]:
+    if not review["flags"] or not all(flag["status"] == "resolved" for flag in review["flags"]):
+        return []
+    method_limitation = (
+        "contributor-attested-unblinded-review-not-independently-verified"
+        if review.get("method") == "contributor-attested-unblinded"
+        else "arm-hidden-technical-review-not-independent-human-review"
+    )
+    return ["deterministic-response-contracts-may-count-semantic-paraphrases-as-failures", method_limitation]
 
 
 def sanitize_private(report: dict[str, Any]) -> dict[str, Any]:
@@ -633,12 +657,9 @@ def sanitize_private(report: dict[str, Any]) -> dict[str, Any]:
         if isinstance(value.get("subjects"), list):
             flag["subjectCount"] = len(value["subjects"])
         flags.append(flag)
-    review_limitations = []
-    if flags and all(flag["status"] == "resolved" for flag in flags):
-        review_limitations = [
-            "deterministic-response-contracts-may-count-semantic-paraphrases-as-failures",
-            "arm-hidden-technical-review-not-independent-human-review",
-        ]
+    public_review = {"status": report["review"]["status"], "flags": flags}
+    if "method" in report["review"]:
+        public_review["method"] = report["review"]["method"]
     public = {
         "version": 1,
         "reportType": PUBLIC_REPORT_TYPE,
@@ -655,12 +676,12 @@ def sanitize_private(report: dict[str, Any]) -> dict[str, Any]:
         "perScenarioClass": derived["perScenarioClass"],
         "caseResults": derived["records"],
         "resourceUse": report["resourceUse"],
-        "review": {"status": report["review"]["status"], "flags": flags},
+        "review": public_review,
         "completeness": report["completeness"],
         "publication": report["publication"],
         "limitations": [
             *profile_contract(report)["limitations"],
-            *review_limitations,
+            *review_limitations(public_review),
             *(["observed-model-identity-unavailable-from-host-events"] if report["model"]["observedStatus"] == "unavailable-from-host-events" else []),
         ],
         "unsupportedClaims": list(UNSUPPORTED_CLAIMS),
@@ -677,16 +698,9 @@ def validate_public(report: dict[str, Any]) -> dict[str, Any]:
         "resourceUse", "review", "completeness", "publication", "limitations", "unsupportedClaims",
     }
     require(set(report) == expected_keys, "sanitized report fields drifted")
-    review_flags = report["review"]["flags"]
-    review_limitations = []
-    if review_flags and all(flag["status"] == "resolved" for flag in review_flags):
-        review_limitations = [
-            "deterministic-response-contracts-may-count-semantic-paraphrases-as-failures",
-            "arm-hidden-technical-review-not-independent-human-review",
-        ]
     expected_limitations = [
         *profile_contract(report)["limitations"],
-        *review_limitations,
+        *review_limitations(report["review"]),
         *(["observed-model-identity-unavailable-from-host-events"] if report["model"]["observedStatus"] == "unavailable-from-host-events" else []),
     ]
     require(report["limitations"] == expected_limitations, "profile limitations drifted")
@@ -711,6 +725,7 @@ def limitation_texts(report: dict[str, Any], language: str) -> list[str]:
             "not-universal-causal-promotion-runtime-or-completion-authority": "This does not establish universal quality, causal proof, candidate promotion, runtime authority, or completion authority.",
             "deterministic-response-contracts-may-count-semantic-paraphrases-as-failures": "Deterministic response contracts are conservative and may count semantically acceptable paraphrases as failures.",
             "arm-hidden-technical-review-not-independent-human-review": "Resolved flags received arm-hidden technical review, not independent human review.",
+            "contributor-attested-unblinded-review-not-independently-verified": "The contributor reviewed resolved flags with arm labels visible; maintainers did not independently inspect raw attempt outputs.",
             "observed-model-identity-unavailable-from-host-events": "The host did not emit observed model identity; the requested model and reasoning effort were frozen and preflight-validated.",
         },
         "zh": {
@@ -721,6 +736,7 @@ def limitation_texts(report: dict[str, Any], language: str) -> list[str]:
             "not-universal-causal-promotion-runtime-or-completion-authority": "这不构成普遍质量、因果证明、候选晋升、运行时权威或完成权威。",
             "deterministic-response-contracts-may-count-semantic-paraphrases-as-failures": "确定性响应合同较为保守，语义可接受的改写仍可能被计为失败。",
             "arm-hidden-technical-review-not-independent-human-review": "已解决的复核项经过 arm-hidden 技术复核，但并非独立人工评审。",
+            "contributor-attested-unblinded-review-not-independently-verified": "已解决的复核项由贡献者在可见分组标签的情况下复核；维护者未独立检查原始尝试输出。",
             "observed-model-identity-unavailable-from-host-events": "宿主事件未返回实际模型身份；报告仅记录已冻结并通过预检的请求模型与推理档位。",
         },
     }
@@ -794,7 +810,8 @@ def svg(report: dict[str, Any]) -> str:
     overall = derived["overall"]
     target_runs = report["design"]["targetRuns"]
     case_count = report["design"]["caseCount"]
-    width, height = 1280, 430
+    contributor_attested = report["review"].get("method") == "contributor-attested-unblinded"
+    width, height = 1280, 450 if contributor_attested else 430
     plot_x, plot_width = 390, 760
     colors = {"baseline-no-aegis": "#64748b", "aegis-auto": "#16a34a"}
     labels = {"baseline-no-aegis": "Without Aegis", "aegis-auto": "With Aegis"}
@@ -831,6 +848,8 @@ def svg(report: dict[str, Any]) -> str:
     unsafe_delta = overall["arms"]["aegis-auto"]["unsafeOutcomeRate"] - overall["arms"]["baseline-no-aegis"]["unsafeOutcomeRate"]
     lines.append(f'<text class="muted" x="40" y="356">Difference {delta(unsafe_delta)}</text>')
     lines.append(f'<text class="muted" x="40" y="402">Batch {html.escape(report["batchId"])} · {html.escape(report["model"]["requested"])} / {html.escape(report["model"]["reasoningEffort"])} · advisory only</text>')
+    if contributor_attested:
+        lines.append('<text class="muted" x="40" y="426">Contributor review was unblinded; raw outputs were not independently verified.</text>')
     lines.append('</svg>')
     return "\n".join(lines) + "\n"
 
@@ -1115,6 +1134,33 @@ def self_test(print_golden: bool = False) -> None:
         ],
         "resolved review limitations were not derived",
     )
+
+    attested = synthetic_private("positive", "standard-held-out")
+    attested["review"] = {
+        "status": "attested",
+        "method": "contributor-attested-unblinded",
+        "flags": [{"id": "non-discriminating-arm-outcomes", "status": "resolved", "subjects": [attested["caseResults"][0]["caseId"]]}],
+    }
+    attested["publication"] = {"authorized": True, "eligible": True, "reason": "publication-approved"}
+    attested_public = sanitize_private(attested)
+    require(
+        attested_public["limitations"][-1] == "contributor-attested-unblinded-review-not-independently-verified",
+        "attested review limitation was not derived",
+    )
+    require("maintainers did not independently inspect raw attempt outputs" in markdown(attested_public, "en"), "attested review disclosure was not rendered")
+    require("维护者未独立检查原始尝试输出" in markdown(attested_public, "zh"), "attested review Chinese disclosure was not rendered")
+    require("Contributor review was unblinded" in svg(attested_public), "attested review SVG disclosure was not rendered")
+    for label, mutation in (
+        ("missing method", lambda value: value["review"].pop("method")),
+        ("false arm-hidden limitation", lambda value: value["limitations"].__setitem__(-1, "arm-hidden-technical-review-not-independent-human-review")),
+    ):
+        candidate = json.loads(canonical_json(attested_public))
+        mutation(candidate)
+        try:
+            validate_public(candidate)
+        except SystemExit:
+            continue
+        raise SystemExit(f"attested review accepted {label}")
 
     for label, mutation in (
         ("profile", lambda value: value.update({"profileId": "standard-held-out"})),

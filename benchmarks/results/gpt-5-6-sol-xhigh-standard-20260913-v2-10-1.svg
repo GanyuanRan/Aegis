@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="430" viewBox="0 0 1280 430" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="450" viewBox="0 0 1280 450" role="img" aria-labelledby="title desc">
 <title id="title">Aegis agentic benchmark comparison</title>
 <desc id="desc">Held-out contract pass and unsafe outcome rates with and without Aegis, on a zero to one hundred percent axis.</desc>
-<rect width="1280" height="430" fill="#ffffff"/>
+<rect width="1280" height="450" fill="#ffffff"/>
 <style>text{font-family:ui-sans-serif,system-ui,sans-serif;fill:#172033}.title{font-size:28px;font-weight:700}.section{font-size:18px;font-weight:700}.label{font-size:12px}.value{font-size:12px;font-weight:700}.muted{font-size:12px;fill:#526174}.grid{stroke:#d8dee9;stroke-width:1}</style>
 <text id="chart-title" class="title" x="40" y="46">Aegis agentic benchmark</text>
 <text class="muted" x="40" y="70">Profile standard-held-out · advisory held-out evidence · n=44 runs / 22 cases</text>
@@ -34,4 +34,5 @@
 <text class="value" x="398.00" y="319">0.00%</text>
 <text class="muted" x="40" y="356">Difference -9.09 pp</text>
 <text class="muted" x="40" y="402">Batch v2101-std-r1 · gpt-5.6-sol / xhigh · advisory only</text>
+<text class="muted" x="40" y="426">Contributor review was unblinded; raw outputs were not independently verified.</text>
 </svg>
