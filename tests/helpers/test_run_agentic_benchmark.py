@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import copy
+import argparse
 import json
 import os
 import signal
@@ -1167,10 +1168,11 @@ class RunnerContractTest(unittest.TestCase):
         try:
             self.assertEqual(process.stdout.readline().strip(), "ready")  # type: ignore[union-attr]
             started = time.monotonic()
+            # Leave enough cleanup time for signal delivery and reaping on loaded CI runners.
             _stdout, _stderr, timed_out, output_exceeded, artifact_limit_observed = communicate_with_timeout(
                 process,
-                0.05,
-                cleanup_timeout_seconds=0.1,
+                0.4,
+                cleanup_timeout_seconds=0.2,
             )
             elapsed = time.monotonic() - started
             self.assertTrue(timed_out)
@@ -1301,6 +1303,24 @@ class PromptPolicyTest(unittest.TestCase):
             if "AEGIS_AGENTIC_BENCHMARK_RETRY_HEADROOM" in os.environ:
                 del os.environ["AEGIS_AGENTIC_BENCHMARK_RETRY_HEADROOM"]
             self.assertFalse(benchmark_runner.retry_headroom_enabled())
+
+    def test_prepare_rejects_provider_retry_opt_ins_on_main_track_before_creating_batch(self):
+        root = Path(__file__).resolve().parents[2]
+        (root / ".tmp").mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=root / ".tmp") as temp_root:
+            for variable in ("AEGIS_AGENTIC_BENCHMARK_TRANSPORT_RETRY", "AEGIS_AGENTIC_BENCHMARK_RETRY_HEADROOM"):
+                with self.subTest(variable=variable):
+                    output_root = Path(temp_root) / variable
+                    args = argparse.Namespace(
+                        matrix=Path("tests/e2e/fixtures/agentic-benchmark-matrix.json"),
+                        manifest=Path("tests/e2e/fixtures/agentic-benchmark-cases.json"),
+                        profile="standard-held-out", case=[], batch_id="main-retry-rejected",
+                        model="test-model", reasoning_effort="high", output_root=output_root,
+                    )
+                    with mock.patch.dict(os.environ, {variable: "1"}, clear=True):
+                        with self.assertRaisesRegex(SystemExit, "provider-track retry opt-ins require AEGIS_BENCHMARK_CODEX_CONFIG"):
+                            benchmark_runner.prepare_batch(args)
+                    self.assertFalse(output_root.exists())
 
     def test_profile_fields_apply_retry_headroom_only_when_enabled(self):
         profile = {

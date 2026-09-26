@@ -201,6 +201,10 @@ Anti-Entropy Declaration:
 - User Confirmation Required: no | yes
 ```
 
+For external-unknown code, fill `User Confirmation Required` with `yes` until
+the risk has been disclosed and a new scoped confirmation received. The
+original deletion request never satisfies this slot.
+
 If `User Confirmation Required: yes`, stop normal delete-first flow.
 Persistent-state or irreversible targets enter `Data Destruction Guard`;
 external-unknown code stays in the `Retirement Decision` hold below.

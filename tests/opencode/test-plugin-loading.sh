@@ -115,6 +115,39 @@ else
     exit 1
 fi
 
+# A copied mirror must refresh when only a supporting file changes.
+node --input-type=module <<'EOF'
+import fs from 'node:fs';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+const pluginPath = process.env.AEGIS_PLUGIN_FILE;
+const source = path.join(process.env.TEST_HOME, 'canonical-aegis', 'skills', 'using-aegis');
+const mirrorRoot = path.join(process.env.OPENCODE_CONFIG_DIR, 'skills');
+const target = path.join(mirrorRoot, 'using-aegis');
+const supportFile = 'copy-mode-freshness.txt';
+fs.writeFileSync(path.join(source, supportFile), 'before\n');
+fs.rmSync(mirrorRoot, { recursive: true, force: true });
+const originalSymlink = fs.symlinkSync;
+fs.symlinkSync = () => { throw new Error('copy mode test'); };
+try {
+  const { AegisPlugin } = await import(pathToFileURL(pluginPath).href);
+  const load = () => AegisPlugin({ client: {}, directory: path.dirname(pluginPath) });
+  await load();
+  if (fs.lstatSync(target).isSymbolicLink() || fs.readFileSync(path.join(target, supportFile), 'utf8') !== 'before\n') {
+    throw new Error('copy mirror was not created');
+  }
+  fs.writeFileSync(path.join(source, supportFile), 'after\n');
+  await load();
+  if (fs.readFileSync(path.join(target, supportFile), 'utf8') !== 'after\n') {
+    throw new Error('copy mirror kept a stale support file');
+  }
+  console.log('  [PASS] Copy-mode mirror refreshes support-file-only changes');
+} finally {
+  fs.symlinkSync = originalSymlink;
+}
+EOF
+
 # Test 8: Verify bootstrap contains the routing contract
 echo "Test 8: Checking bootstrap routing contract..."
 if grep -q 'ROUTING CONTRACT' "$AEGIS_PLUGIN_FILE" \

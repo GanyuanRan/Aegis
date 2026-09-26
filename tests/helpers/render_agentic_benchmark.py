@@ -643,10 +643,13 @@ def review_limitations(review: dict[str, Any]) -> list[str]:
 def sanitize_private(report: dict[str, Any]) -> dict[str, Any]:
     expected_keys = {
         "version", "reportType", "authorityBoundary", "batchId", "batchDigest", "profileId", "partition",
+        "transportRetry", "retryHeadroom",
         "versions", "model", "design", "attempts", "overall", "perScenarioClass", "caseResults",
         "resourceUse", "review", "completeness", "publication", "unsupportedClaims",
     }
     require(set(report) == expected_keys, "private report fields drifted")
+    require(type(report["transportRetry"]) is bool and type(report["retryHeadroom"]) is bool, "retry opt-ins must be explicit booleans")
+    require(not (report["transportRetry"] or report["retryHeadroom"]), "provider-track retry opt-ins cannot be published as standard held-out evidence")
     derived = validate_common(report, PRIVATE_REPORT_TYPE)
     flags = []
     for value in report["review"]["flags"]:
@@ -897,6 +900,8 @@ def synthetic_private(kind: str, profile_id: str = "extended-held-out") -> dict[
         "batchId": f"synthetic-{profile_id}-{kind}",
         "batchDigest": hashlib.sha256(f"batch-{profile_id}-{kind}".encode()).hexdigest(),
         "profileId": profile_id,
+        "transportRetry": False,
+        "retryHeadroom": False,
         "partition": "held-out",
         "versions": {"aegis": "2.5.3-test", "codex": "codex-cli 0.0.0-test", "bwrap": "bubblewrap 0.0.0-test"},
         "model": {"requested": "test-model", "reasoningEffort": "high", "observed": ["test-model"], "observedStatus": "recorded"},
@@ -1096,6 +1101,8 @@ def self_test(print_golden: bool = False) -> None:
         ("boolean invalid count", lambda value: value["attempts"].update({"invalid": False})),
         ("boolean remaining count", lambda value: value["attempts"].update({"remaining": False})),
         ("boolean invalid reason count", lambda value: value["attempts"].update({"total": 121, "invalid": 1, "invalidReasons": {"timeout": True}})),
+        ("transport retry opt-in", lambda value: value.update({"transportRetry": True})),
+        ("retry headroom opt-in", lambda value: value.update({"retryHeadroom": True})),
         ("infinite private cost", lambda value: value["resourceUse"].update({"costUsd": float("inf")})),
         ("NaN private cost", lambda value: value["resourceUse"].update({"costUsd": float("nan")})),
     ]
@@ -1290,7 +1297,7 @@ def self_test(print_golden: bool = False) -> None:
             require(not list(root.glob(".blocked-output.*.tmp")), "failed atomic write left a temporary file")
         else:
             raise SystemExit("atomic write unexpectedly replaced a directory")
-    print("Agentic benchmark renderer self-test passed: 6 profile goldens, 2 proxy-retry projections, 3 historical snapshots, 48 negative cases.")
+    print("Agentic benchmark renderer self-test passed: 6 profile goldens, 2 proxy-retry projections, 3 historical snapshots, 50 negative cases.")
 
 
 def sanitize_command(args: argparse.Namespace) -> None:

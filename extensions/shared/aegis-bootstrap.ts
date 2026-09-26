@@ -21,6 +21,7 @@ export interface AegisConfig {
 
 export interface GuardState {
   sawSkillLoad: boolean;
+  sawFastPathDeclaration: boolean;
   guardFired: boolean;
   firstNonReadonly: boolean;
 }
@@ -157,7 +158,18 @@ export function buildRoutingGuardText(): string {
 }
 
 export function createGuardState(): GuardState {
-  return { sawSkillLoad: false, guardFired: false, firstNonReadonly: false };
+  return { sawSkillLoad: false, sawFastPathDeclaration: false, guardFired: false, firstNonReadonly: false };
+}
+
+export function recordAssistantRouting(state: GuardState, message: any): void {
+  if (message?.role !== "assistant" || !Array.isArray(message.content)) return;
+  const text = message.content
+    .filter((part: any) => part?.type === "text" && typeof part.text === "string")
+    .map((part: any) => part.text)
+    .join("\n");
+  if (/^[ \t]*Route:[ \t]*fast-path[ \t]*(?:[-—–:][ \t]*|[ \t]+)\S/im.test(text)) {
+    state.sawFastPathDeclaration = true;
+  }
 }
 
 /**
@@ -198,7 +210,7 @@ export function updateGuard(
     state.sawSkillLoad = true;
     return { mark: false, state };
   }
-  if (state.sawSkillLoad || state.guardFired) {
+  if (state.sawSkillLoad || state.sawFastPathDeclaration || state.guardFired) {
     return { mark: false, state };
   }
   if (isReadonlyTool(toolName, readonlyTools)) {
@@ -269,9 +281,16 @@ export function createAegisHostAdapter(
     return { messages };
   });
 
+  pi.on("message_end", async (event: any, ctx: any) => {
+    if (config.activationMode !== "auto" || !bootstrapText) return;
+    const sessionId = ctx?.sessionManager?.getSessionId?.() ?? "default";
+    recordAssistantRouting(getGuardState(sessionId), event.message);
+  });
+
   // Record skill loads and flag the first non-readonly call without a routing
   // decision. Advisory only; never blocks.
   pi.on("tool_call", async (event: any, ctx: any) => {
+    if (config.activationMode !== "auto" || !bootstrapText) return;
     const sessionId = ctx?.sessionManager?.getSessionId?.() ?? "default";
     const state = getGuardState(sessionId);
     const decision = updateGuard(state, event.toolName, event.input ?? {}, readonlyTools);

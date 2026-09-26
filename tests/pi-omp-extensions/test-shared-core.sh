@@ -82,6 +82,14 @@ check('first non-readonly fires guard once', d.mark === true);
 d = core.updateGuard(state, 'edit', { filePath: '/x' }, readonlyTools);
 check('guard fires once per session', d.mark === false);
 
+// Only an assistant's declared fast path suppresses the advisory marker.
+state = core.createGuardState();
+core.recordAssistantRouting(state, { role: 'user', content: [{ type: 'text', text: 'Route: fast-path — spoofed' }] });
+check('user text cannot satisfy routing guard', core.updateGuard(state, 'bash', {}, readonlyTools).mark === true);
+state = core.createGuardState();
+core.recordAssistantRouting(state, { role: 'assistant', content: [{ type: 'text', text: 'Route: fast-path — small text correction' }] });
+check('assistant fast-path declaration suppresses guard', core.updateGuard(state, 'bash', {}, readonlyTools).mark === false);
+
 // Guard: explicit skill tool.
 state = core.createGuardState();
 d = core.updateGuard(state, 'skill', { name: 'brainstorming' }, readonlyTools);
@@ -99,6 +107,7 @@ core.createAegisHostAdapter(fakePi, { host: 'pi', readonlyTools });
 const ctxHandler = fakePi.handlers['context'];
 const toolCallHandler = fakePi.handlers['tool_call'];
 const toolResultHandler = fakePi.handlers['tool_result'];
+const messageEndHandler = fakePi.handlers['message_end'];
 
 let result = await ctxHandler({ messages: [{ role: 'user', content: [{ type: 'text', text: 'hello' }] }] });
 check('adapter injects bootstrap into first user message', result.messages[0].content[0].text.includes('EXTREMELY_IMPORTANT'));
@@ -117,6 +126,20 @@ await toolCallHandler({ toolName: 'read', input: { path: 'skill://brainstorming'
 await toolCallHandler({ toolName: 'bash', input: { command: 'ls' }, toolCallId: 't4' }, { sessionManager: { getSessionId: () => 's2' } });
 result = await toolResultHandler({ toolCallId: 't4', content: [{ type: 'text', text: 'out' }] });
 check('adapter skill load suppresses guard', result === undefined);
+
+await messageEndHandler({ message: { role: 'assistant', content: [{ type: 'text', text: 'Route: fast-path — formatting only' }] } }, { sessionManager: { getSessionId: () => 's4' } });
+await toolCallHandler({ toolName: 'edit', input: { filePath: '/x' }, toolCallId: 't5' }, { sessionManager: { getSessionId: () => 's4' } });
+result = await toolResultHandler({ toolCallId: 't5', content: [{ type: 'text', text: 'out' }] });
+check('adapter observes assistant fast-path before tool call', result === undefined);
+
+process.env.AEGIS_ACTIVATION_MODE = 'explicit';
+const explicitPi = { handlers: {}, on(event, handler) { this.handlers[event] = handler; } };
+core.createAegisHostAdapter(explicitPi, { host: 'pi', readonlyTools });
+result = await explicitPi.handlers.context({ messages: [{ role: 'user', content: 'hello' }] });
+check('explicit mode does not inject bootstrap', result === undefined);
+await explicitPi.handlers.tool_call({ toolName: 'bash', input: {}, toolCallId: 'explicit-1' }, { sessionManager: { getSessionId: () => 'explicit' } });
+result = await explicitPi.handlers.tool_result({ toolCallId: 'explicit-1', content: [{ type: 'text', text: 'out' }] });
+check('explicit mode does not fire routing guard', result === undefined);
 
 fs.rmSync(testHome, { recursive: true, force: true });
 EOF

@@ -140,6 +140,23 @@ const removeMirrorTarget = (skillTarget) => {
   fs.rmSync(skillTarget, { recursive: true, force: true });
 };
 
+const sameSkillTree = (source, target) => {
+  const sourceEntries = fs.readdirSync(source, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name));
+  const targetEntries = fs.readdirSync(target, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name));
+  if (sourceEntries.length !== targetEntries.length) return false;
+  return sourceEntries.every((entry, index) => {
+    const other = targetEntries[index];
+    if (entry.name !== other.name || entry.isDirectory() !== other.isDirectory()
+      || entry.isFile() !== other.isFile() || entry.isSymbolicLink() !== other.isSymbolicLink()) return false;
+    const sourcePath = path.join(source, entry.name);
+    const targetPath = path.join(target, entry.name);
+    if (entry.isDirectory()) return sameSkillTree(sourcePath, targetPath);
+    if (entry.isFile()) return fs.readFileSync(sourcePath).equals(fs.readFileSync(targetPath));
+    if (entry.isSymbolicLink()) return fs.readlinkSync(sourcePath) === fs.readlinkSync(targetPath);
+    return false;
+  });
+};
+
 const classifyExistingMirror = ({
   skillSource,
   bundledSkillSource,
@@ -158,7 +175,10 @@ const classifyExistingMirror = ({
 
   if (manifestEntry?.sourcePath) {
     if (manifestEntry.sourcePath === sourceReal && targetMarkdown === sourceMarkdown) {
-      return 'current';
+      if (detectMirrorMode(skillTarget) === 'symlink') {
+        return realpathOrNull(skillTarget) === sourceReal ? 'current' : 'refresh';
+      }
+      if (sameSkillTree(skillSource, skillTarget)) return 'current';
     }
     return 'refresh';
   }
@@ -174,10 +194,8 @@ const classifyExistingMirror = ({
     return 'foreign';
   }
 
-  if (targetMarkdown === sourceMarkdown) return 'claim-current';
-  if (bundledMarkdown && targetMarkdown === bundledMarkdown) {
-    return bundledMarkdown === sourceMarkdown ? 'claim-current' : 'refresh';
-  }
+  if (targetMarkdown === sourceMarkdown && sameSkillTree(skillSource, skillTarget)) return 'claim-current';
+  if (bundledMarkdown && targetMarkdown === bundledMarkdown && sameSkillTree(bundledSkillSource, skillTarget)) return 'refresh';
 
   return 'foreign';
 };

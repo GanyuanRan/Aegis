@@ -400,6 +400,9 @@ def verify_batch(batch: dict[str, Any], root: Path, output_root: Path) -> ProxyP
     for artifact in batch["harnessArtifacts"]:
         require(file_hash(root / artifact["path"]) == artifact["hash"], f"benchmark harness changed after prepare: {artifact['path']}")
     provider_meta = batch.get("providerConfig")
+    require(type(batch.get("transportRetry")) is bool and type(batch.get("retryHeadroom")) is bool, "frozen retry opt-ins are invalid")
+    require(batch["retryHeadroom"] == retry_headroom_enabled(), "retry headroom environment drifted from the frozen batch")
+    require(provider_meta is not None or not (batch["transportRetry"] or batch["retryHeadroom"]), "provider-track retry opt-ins require a frozen provider config")
     if provider_meta is None:
         require(
             provider_config_source() is None and model_catalog_source() is None,
@@ -459,6 +462,11 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
     require(profile is not None, f"unknown benchmark profile: {args.profile}")
     cases = select_profile_cases(manifest, profile, args.case)
     require(re.fullmatch(r"[a-z0-9][a-z0-9._-]{2,79}", args.batch_id) is not None, "batch-id has an invalid format")
+    provider_source = provider_config_source()
+    require(
+        provider_source is not None or not (transport_retry_enabled() or retry_headroom_enabled()),
+        "provider-track retry opt-ins require AEGIS_BENCHMARK_CODEX_CONFIG",
+    )
     model_policy = validate_model_policy({
         "requestedModel": args.model,
         "reasoningEffort": args.reasoning_effort,
@@ -471,7 +479,6 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
     snapshot = prepare_distribution_snapshot(root, output_root / "distribution-snapshot")
     frozen_contracts = output_root / "frozen-contracts"
     frozen_contracts.mkdir()
-    provider_source = provider_config_source()
     catalog_source = model_catalog_source()
     if provider_source is not None:
         require(catalog_source is not None, "AEGIS_BENCHMARK_MODEL_CATALOG is required when AEGIS_BENCHMARK_CODEX_CONFIG is set")
@@ -540,6 +547,7 @@ def prepare_batch(args: argparse.Namespace) -> dict[str, Any]:
             "noteText": NO_GIT_WRITE_PROMPT_NOTE if prompt_no_git_note_enabled() else None,
         },
         "transportRetry": transport_retry_enabled(),
+        "retryHeadroom": retry_headroom_enabled(),
         "matrixPath": relative_repo_path(root, matrix_path),
         "matrixHash": file_hash(matrix_path),
         "frozenMatrixPath": "frozen-contracts/matrix.json",
@@ -893,6 +901,8 @@ def aggregate(batch: dict[str, Any], ledger: dict[str, Any]) -> dict[str, Any]:
         "batchId": batch["batchId"],
         "batchDigest": batch["batchDigest"],
         "profileId": batch["profileId"],
+        "transportRetry": batch.get("transportRetry", False),
+        "retryHeadroom": batch.get("retryHeadroom", False),
         "partition": "development" if batch["datasetPartitions"] == ["development"] else "held-out",
         "versions": {
             "aegis": batch["distributionSnapshot"]["version"],

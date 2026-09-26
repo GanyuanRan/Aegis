@@ -556,6 +556,9 @@ whose frozen values are already larger keeps its own. Both values are
 frozen into the batch digest and `verify_batch` compares them against the same
 projection, so a provider track can absorb transient failures inside one batch
 instead of ending partial.
+Batch preparation rejects either retry opt-in when no provider config is set,
+before creating the batch. Both opt-ins are recorded in the private report;
+sanitization rejects a standard or extended snapshot with either enabled.
 
 ### Provider-track advisory outcome update
 
