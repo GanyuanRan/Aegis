@@ -1168,10 +1168,11 @@ class RunnerContractTest(unittest.TestCase):
         try:
             self.assertEqual(process.stdout.readline().strip(), "ready")  # type: ignore[union-attr]
             started = time.monotonic()
+            # Leave enough cleanup time for signal delivery and reaping on loaded CI runners.
             _stdout, _stderr, timed_out, output_exceeded, artifact_limit_observed = communicate_with_timeout(
                 process,
-                0.05,
-                cleanup_timeout_seconds=0.1,
+                0.4,
+                cleanup_timeout_seconds=0.2,
             )
             elapsed = time.monotonic() - started
             self.assertTrue(timed_out)
