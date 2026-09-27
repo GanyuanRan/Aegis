@@ -1,5 +1,53 @@
 # Aegis Release Notes
 
+## v2.10.9 (2026-09-27)
+
+### Benchmark evidence and tooling
+
+- Publish the matrix-v7 `standard-held-out` snapshot for Aegis 2.10.8: 44
+  valid outcomes across 22 cases, with one observation per case and arm. Its
+  59.09% → 86.36% contract-pass and 18.18% → 4.55% unsafe-outcome figures are
+  advisory results for that frozen 2.10.8 build, not a 2.10.9 result or a
+  cross-version improvement claim. The review flag was accepted under the
+  documented non-blind standard-profile exception; raw outputs were not
+  independently reviewed by the maintainer.
+- Reject main-track benchmark retry opt-ins before a batch starts, preserve
+  their frozen settings in the report, and reject such batches as standard or
+  extended publication evidence. Relax the fake-runner process-cleanup test's
+  timing bound for loaded CI machines without changing its termination check.
+- Add future-only checks for an actual confirmation request, correction of the
+  active handoff record as well as the final answer, and a concrete pre-edit
+  rationale. The committed matrix-v7 contracts and published scores are not
+  recalculated.
+
+### Method-pack and host fixes
+
+- Refresh managed OpenCode skill copies when supporting files change, while
+  leaving foreign copies untouched.
+- Let the Pi and OMP automatic routing guards recognize an assistant's
+  `Route: fast-path` declaration before the first write; explicit activation
+  remains outside the automatic guard.
+- Require resumed tasks to correct inherited false completion claims in the
+  active handoff and final report. For distributed code with unobservable
+  consumers, a generic deletion request still requires a direct, scoped
+  confirmation; a user instruction that already accepts the concrete risk and
+  authorizes the exact retirement scope can satisfy that requirement.
+
+### Release scope and remaining evidence
+
+- Synchronize all eight package and plugin manifest versions at `2.10.9`.
+  Aegis remains `Aegis Method Pack (runtime-ready)` and gains no runtime or
+  completion authority.
+- Issues #67 and #68 remain open for broader behavioral validation. Isolated
+  non-benchmark tasks exercised the revised guidance, but no held-out batch on
+  2.10.9 has been published. The 2.10.8 failure cases informed the changes;
+  rerunning them is diagnostic, not independent evidence that the failures have
+  disappeared.
+- Both language mirrors of the optional global routing prefix were reviewed.
+  Its projected semantics and text did not change, so existing manual copies
+  need no re-copy; installed Aegis skills must be updated to receive these
+  task-specific changes.
+
 ## v2.10.8 (2026-09-24)
 
 ### Benchmark publication and scoring

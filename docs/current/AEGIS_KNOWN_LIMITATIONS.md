@@ -894,6 +894,33 @@ request.
   must show the expected route after an unannounced work-type change and after
   host-proven compaction, with model, host version, and sample count reported
 
+### 2.30 Recent Benchmark Skill Changes Need Repeated Current-Build Evidence
+
+**Retained Item**
+- A current-build, repeated behavioral verdict for the inherited completion
+  claim and external-unknown retirement cases tracked in issues #67 and #68
+
+**Retention Reason**
+- The published 2.10.8 standard snapshot has one observation per case and arm.
+  The later skill revisions have isolated non-benchmark checks, but no published
+  held-out batch on the revised method pack. Its original failing cases also
+  informed the revisions and cannot serve as independent evidence of a new
+  version's performance or complete elimination of intermittent failures.
+- The quick-bug concrete-rationale tag is available only to future scoring
+  contracts; the published matrix-v7 contract remains frozen.
+
+**Observation Metric**
+- Exact-tag diagnostic rerun with per-case checks, changed paths, active
+  handoff state, final disclosure, model/host identity, and invalid attempts
+- Separately frozen repeated cases and review of flagged outcomes before any
+  claim of stable improvement
+
+**Retirement Trigger**
+- Repeated current-build evidence and independently prepared cases support a
+  scoped claim without changing frozen prompts or scoring after seeing results
+
+---
+
 ## 3. Default Reading Rule
 
 If a limitation appears simultaneously in README, host docs, or test descriptions, use this document as the current reading entry point.
