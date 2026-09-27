@@ -738,6 +738,8 @@ request.
   inactive while structural checks passed. The dual-event adapter has
   deterministic coverage, but fresh live activation on an installed profile
   is still required before a release-level routing claim.
+- The older `agent/session-start` subscription remains a host compatibility
+  exception: published DSH 0.1.5-rc.3 still declares that lifecycle event.
 - The bootstrap skips subagents and does not install a hard pre-tool guard:
 - DeepSeek Harness's native filesystem provider discovers direct child skill
   bundles from project `.dsh/skills`, project `.agents/skills`, configured
@@ -779,6 +781,9 @@ request.
   install/update, representative live triggering, session refresh, no duplicate
   exposure, and project workspace support. Until then it remains an explicit
   compatibility path, not a co-active fallback.
+- Retire the legacy lifecycle subscription only after the supported DSH version
+  floor excludes it and live installed-profile evidence confirms that
+  `agent/created` covers `startup`, `resume`, `clear`, and `compact`.
 
 ### 2.27 Six-Topology Diagnosis Assumes Acyclic Convergence On Discrete Mechanisms
 
