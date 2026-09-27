@@ -897,7 +897,7 @@ request.
 ### 2.30 Recent Benchmark Skill Changes Need Repeated Current-Build Evidence
 
 **Retained Item**
-- A current-build, repeated behavioral verdict for the inherited completion
+- A repeated, exact-tag end-to-end success verdict for the inherited completion
   claim and external-unknown retirement cases tracked in issues #67 and #68
 
 **Retention Reason**
@@ -906,6 +906,15 @@ request.
   held-out batch on the revised method pack. Its original failing cases also
   informed the revisions and cannot serve as independent evidence of a new
   version's performance or complete elimination of intermittent failures.
+- A [non-benchmark repeated readback for #67](https://github.com/GanyuanRan/Aegis/issues/67#issuecomment-5854204268)
+  used continuation and completion-verification skill files byte-identical to
+  v2.10.9. All nine candidate Aegis attempts recognized the false inherited
+  claim during work, while only one explicitly disclosed it in the final
+  answer. The continuation skill was opened in all six long-task variants and
+  none of the three stale-evidence variants; completion verification was
+  opened in all nine. This small, non-blind sample shows #67 remains observed,
+  not merely unmeasured. The maintainer has not independently reviewed the
+  private raw attempts.
 - The quick-bug concrete-rationale tag is available only to future scoring
   contracts; the published matrix-v7 contract remains frozen.
 
