@@ -28,11 +28,13 @@ function fakeCreateUserMessage(input) {
   return { id: "aegis-test-message", role: "user", ...input };
 }
 
-function fakeContext() {
+function fakeContext(ignoredEvents = []) {
   const handlers = new Map();
   return {
     handlers,
     on(name, handler) {
+      // DSH silently accepts subscriptions to event names it no longer emits.
+      if (ignoredEvents.includes(name)) return () => {};
       handlers.set(name, handler);
       return () => handlers.delete(name);
     },
@@ -162,6 +164,46 @@ try {
   await waitForDeferredDelivery();
   assert.equal(coordinator.injected.length, 3);
   assert.match(coordinator.injected[2].content[0].text, new RegExp(BOOTSTRAP_MARKER));
+
+  // DSH 0.1.7-rc.2 no longer emits agent/session-start. A structurally valid
+  // subscription to that old name must not hide a dead auto-entry path.
+  const modernCtx = fakeContext(["agent/session-start"]);
+  const disposeModern = installBootstrap(modernCtx, {
+    createUserMessage: fakeCreateUserMessage,
+    skillsRoot,
+    homeDir: tempRoot,
+  });
+  const modernLifecycle = modernCtx.handlers.get("agent/created");
+  assert.equal(typeof modernLifecycle, "function");
+  assert.equal(modernCtx.handlers.has("agent/session-start"), false);
+  const modernEvent = modernCtx.handlers.get("session/event");
+  const modernAgent = fakeAgent("modern-session");
+  for (const [index, source] of ["startup", "resume", "clear", "compact"].entries()) {
+    modernLifecycle({ agent: modernAgent, source });
+    modernEvent(modernAgent.session, { type: "user/message" });
+    assert.equal(modernAgent.injected.length, index);
+    modernEvent(modernAgent.session, { type: "assistant/message" });
+    await waitForDeferredDelivery();
+    assert.equal(modernAgent.injected.length, index + 1);
+  }
+  disposeModern();
+  assert.equal(modernCtx.handlers.has("agent/created"), false);
+
+  // Old preview hosts may emit both lifecycle names at startup. Both may arm
+  // one epoch, but one durable promotion must still deliver only once.
+  const dualCtx = fakeContext();
+  const disposeDual = installBootstrap(dualCtx, {
+    createUserMessage: fakeCreateUserMessage,
+    skillsRoot,
+    homeDir: tempRoot,
+  });
+  const dualAgent = fakeAgent("dual-session");
+  dualCtx.handlers.get("agent/created")({ agent: dualAgent });
+  dualCtx.handlers.get("agent/session-start")({ agent: dualAgent, source: "startup" });
+  dualCtx.handlers.get("session/event")(dualAgent.session, { type: "assistant/message" });
+  await waitForDeferredDelivery();
+  assert.equal(dualAgent.injected.length, 1);
+  disposeDual();
 
   // Other sessions' events never inject into this session, and sessions
   // never seen at session-start are ignored entirely.

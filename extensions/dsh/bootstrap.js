@@ -89,9 +89,8 @@ export function installBootstrap(
   const config = readAegisConfig(homeDir);
   if (config.activationMode === "explicit") return null;
 
-  // `agent/session-start` is a notification rather than an awaited gate. Read
-  // and render synchronously during plugin apply so injection cannot race the
-  // first model step.
+  // Read and render synchronously during plugin apply so injection cannot race
+  // the first model step on either supported DSH lifecycle event.
   const body = readUsingAegisBody(skillsRoot);
   const bootstrap = buildBootstrap(body, config);
 
@@ -99,7 +98,7 @@ export function installBootstrap(
   // inbox BEFORE the first model request, which polluted the sterile
   // first-request baseline that trajectory presets such as
   // dsh-anchored-standard (context gate) depend on. Deferral keeps that
-  // request clean: every session-start boundary only ARMS an injection, and
+  // request clean: every session lifecycle boundary only ARMS an injection, and
   // the bootstrap lands once the session emits its first durable promotion
   // signal (`tool/call` or `assistant/message`) — after the anchored first
   // request has already been assembled. `compaction/end` re-arms the
@@ -152,12 +151,17 @@ export function installBootstrap(
     scheduledDeliveries.set(sessionId, delivery);
   };
 
-  const disposeLifecycle = ctx.on("agent/session-start", ({ agent }) => {
+  const armFromLifecycle = ({ agent }) => {
     if (agent.session?.header?.origin === "subagent") return;
     const sessionId = agent.session?.id;
     if (sessionId === undefined) return;
     armDelivery(sessionId, agent);
-  });
+  };
+  // DSH 0.1.6+ moved the source-bearing lifecycle event to agent/created.
+  // Older preview hosts still emit agent/session-start; their agent/created
+  // event can also fire before it, so both subscriptions share one path.
+  const disposeLifecycle = ctx.on("agent/created", armFromLifecycle);
+  const disposeLegacyLifecycle = ctx.on("agent/session-start", armFromLifecycle);
 
   const disposeAgents = ctx.on("agent/disposed", ({ agent }) => {
     const sessionId = agent.session?.id;
@@ -192,6 +196,7 @@ export function installBootstrap(
     }
     scheduledDeliveries.clear();
     disposeLifecycle();
+    disposeLegacyLifecycle();
     disposeAgents();
     disposeEvents();
     agents.clear();
