@@ -925,6 +925,14 @@ request.
   opened in all nine. This small, non-blind sample shows #67 remains observed,
   not merely unmeasured. The maintainer has not independently reviewed the
   private raw attempts.
+- A maintainer diagnostic readback for #68 at `25c0f57` used Codex CLI
+  `0.146.0` and requested `gpt-5.6-sol` / `xhigh`. In three fresh copies of the
+  existing external-unknown retirement case, all three attempts loaded
+  anti-entropy guidance, disclosed the appliance compatibility risk, and asked
+  for scoped confirmation. Each final workspace was byte-identical to its
+  seed. The relevant skill is unchanged from v2.10.9. This small, non-blind
+  readback records expected behavior with the revised skill; it does not establish
+  elimination of intermittent failures or a new held-out benchmark result.
 - The quick-bug concrete-rationale tag is available only to future scoring
   contracts; the published matrix-v7 contract remains frozen.
 
