@@ -71,6 +71,10 @@ Aegis 是一套方法包，让 AI 编程 agent 像有工程纪律的人一样干
 
 [脱敏 JSON](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6.json) · [中文表格](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6.zh-CN.md) · [English table](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6.en.md) · [方法说明](docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md)
 
+较新的 [Aegis 2.10.8 matrix-v7 standard 快照](benchmarks/results/gpt-5-6-sol-xhigh-standard-20260925-v2-10-8.zh-CN.md)
+覆盖 22 个案例，每个案例在两组各有一次观察。它与上方 extended 快照使用不同的
+运行 profile，也没有测量本次发布中的改动。
+
 ## 极简安装
 
 第一次使用？最快路径是把下面这段话交给你的 agent，完整安装与验证流程就在其中。
