@@ -22,9 +22,10 @@ the root `package.json` through `dsh.bundle.patch`. The bundle contributes one
 Cordis row named `aegis-method-pack`; that row delegates discovery to Harness's
 native filesystem skill provider and points it at the installed package's
 canonical `skills/` tree. In `auto` activation mode it also listens to Harness's
-native `agent/session-start` lifecycle and defers a compact `using-aegis`
-routing bootstrap on `startup`, `resume`, `clear`, and `compact`: each boundary
-only arms the injection, which is delivered once after the session's first
+native `agent/created` lifecycle and the older `agent/session-start` event,
+then defers a compact `using-aegis` routing bootstrap on
+`startup`, `resume`, `clear`, and `compact`: each boundary only arms the
+injection, which is delivered once after the session's first
 durable promotion signal (`tool/call` or `assistant/message`), so the first
 model request of every gated epoch stays free of injected Aegis context. The
 bootstrap is prepared while the plugin is applied, so the delayed injection

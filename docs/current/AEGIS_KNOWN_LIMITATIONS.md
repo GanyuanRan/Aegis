@@ -729,10 +729,15 @@ request.
   through Harness's native filesystem provider. In `auto` mode it preloads the
   compact router text while applying the plugin and defers its injection to
   the session's first durable promotion signal (`tool/call` or
-  `assistant/message`) after each native `agent/session-start` boundary
-  (`startup`, `resume`, `clear`, `compact`), keeping the first model request
-  of every gated epoch free of injected context while avoiding a first-step
-  asynchronous read race.
+  `assistant/message`) after each native `agent/created` or legacy
+  `agent/session-start` boundary (`startup`, `resume`, `clear`, `compact`),
+  keeping the first model request of every gated epoch free of injected
+  context while avoiding a first-step asynchronous read race.
+- [Issue #75](https://github.com/GanyuanRan/Aegis/issues/75) reported that DSH
+  0.1.7-rc.2 no longer emitted `agent/session-start`, leaving auto-entry
+  inactive while structural checks passed. The dual-event adapter has
+  deterministic coverage, but fresh live activation on an installed profile
+  is still required before a release-level routing claim.
 - The bootstrap skips subagents and does not install a hard pre-tool guard:
 - DeepSeek Harness's native filesystem provider discovers direct child skill
   bundles from project `.dsh/skills`, project `.agents/skills`, configured

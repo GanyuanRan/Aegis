@@ -114,8 +114,10 @@ assert_contains "$dsh_adapter" 'installBootstrap' \
     "DSH adapter installs the lifecycle bootstrap"
 assert_contains "$dsh_adapter" '"skills", "agents"' \
     "DSH adapter waits for skill and agent services"
+assert_contains "$dsh_bootstrap" 'agent/created' \
+    "DSH bootstrap uses the current native lifecycle entry"
 assert_contains "$dsh_bootstrap" 'agent/session-start' \
-    "DSH bootstrap uses the native lifecycle entry"
+    "DSH bootstrap retains the older preview lifecycle entry"
 assert_contains "$dsh_bootstrap" 'agent\.inject' \
     "DSH bootstrap injects model-facing context through the native agent API"
 assert_contains "$dsh_bootstrap" 'origin === "subagent"' \
@@ -151,8 +153,10 @@ assert_contains "$guide" 'dsh\.bundle\.patch|dsh.bundle.patch' \
     "Harness guide documents the bundle identity"
 assert_contains "$guide" 'explicit compatibility mode|Explicit Direct-Child Compatibility' \
     "Harness guide demotes direct-child exposure to compatibility mode"
+assert_contains "$guide" 'agent/created' \
+    "Harness guide documents the current native lifecycle bootstrap"
 assert_contains "$guide" 'agent/session-start' \
-    "Harness guide documents native lifecycle bootstrap"
+    "Harness guide documents the older preview lifecycle bootstrap"
 assert_contains "$guide" 'startup.*resume.*clear.*compact' \
     "Harness guide documents every covered session-start source"
 assert_contains "$guide" '--compatibility-mode' \
