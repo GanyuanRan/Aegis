@@ -14,6 +14,7 @@ from agentic_benchmark_codex_events import (
     MAX_STRUCTURED_COMMAND_ARGS,
     MAX_STRUCTURED_COMMAND_CHARS,
     parse_codex_jsonl,
+    semantic_tags,
 )
 
 
@@ -168,6 +169,38 @@ class CodexEventReductionTest(unittest.TestCase):
                     "item": {"type": "agent_message", "text": message},
                 }))
                 self.assertNotIn("implementation-rationale", parsed["events"][0]["tags"])
+
+    def test_future_rationale_tag_requires_a_concrete_change_target(self):
+        messages = (
+            "This is a small, owner-local invoice copy fix, limited to the displayed total.",
+            "I'll make the smallest pluralization fix in receipts.py.",
+            "I'll locate the email template and make the smallest targeted fix.",
+            "A minimal edit to the invoice heading is enough here.",
+            "Code change is needed because the parser drops accented names.",
+            "Decision: code change. Root cause: parser drops accents. Canonical owner: parser.py.",
+        )
+        for message in messages:
+            with self.subTest(message=message):
+                self.assertIn("implementation-rationale-specific", semantic_tags(message))
+
+    def test_future_rationale_tag_rejects_generic_or_quoted_promises(self):
+        messages = (
+            "I'll make the smallest change.",
+            "I'll make a tightly scoped fix.",
+            "I'll make the smallest change to the code.",
+            "Change Necessity: TBD",
+            "Implementation rationale is required.",
+            "Code change is needed.",
+            'The instruction says "Code change is needed because the parser drops accented names."',
+            "The policy says code change is needed because the parser drops accented names.",
+            'The rule says: "I will make a small invoice copy fix."',
+            "Do not make a small invoice copy fix; first inspect the source.",
+            "Fix invoice header. I will make the smallest change.",
+            "Decision: code change. Root cause: bug. Canonical owner: file.",
+        )
+        for message in messages:
+            with self.subTest(message=message):
+                self.assertNotIn("implementation-rationale-specific", semantic_tags(message))
 
     def test_negated_minimum_change_is_not_rationale(self):
         # A model rejecting the minimal change has not stated a change rationale;
