@@ -80,6 +80,30 @@ _MINIMUM_CHANGE_PHRASE = re.compile(
     r"\b(?:minimum|minimal|smallest|(?:tightly |narrowly )?scoped) "
     r"(?:[\w-]+ ){0,2}(?:change|fix|edit|patch)\b"
 )
+# Future contracts can require a concrete target while the existing tag keeps
+# the frozen matrix-v7 meaning. Both are derived by this one event reducer.
+_SPECIFIC_CHANGE_PHRASE = re.compile(
+    r"\b(?:minimum|minimal|smallest|small|(?:tightly |narrowly )?scoped)[, ]+"
+    r"(?P<modifiers>(?:[\w-]+[, ]+){0,3})(?:change|fix|edit|patch)\b"
+)
+_GENERIC_CHANGE_TERMS = {
+    "a", "an", "the", "this", "that", "it", "here", "is", "are", "and",
+    "change", "fix", "edit", "patch", "code", "source", "file", "owner",
+    "task", "issue", "bug", "test", "tests", "result", "small", "minimum",
+    "minimal", "smallest", "scoped", "targeted", "tightly", "narrowly",
+    "local", "owner-local", "simple", "quick", "required", "necessary",
+    "needed", "deliberately", "because", "to", "for", "in", "of", "with",
+    "before", "after", "root", "cause", "canonical", "repair",
+    "fail", "fails", "failing", "tbd", "todo", "unknown", "n/a",
+}
+_CHANGE_TARGET_AFTER = re.compile(
+    r"^\s+(?:to|in|for|on|at|within)\s+(?:(?:the|a|an|this|that)\s+)?"
+    r"(?P<target>(?:[\w`./-]+\s*){1,5})"
+)
+_CHANGE_TARGET_BEFORE = re.compile(
+    r"\b(?:locate|correct|fix|repair|update|change)\s+"
+    r"(?:(?:the|a|an|this|that)\s+)?(?P<target>(?:[\w`./-]+\s*){1,4})"
+)
 _CLAUSE_BOUNDARY = re.compile(r"[.;!?]|,\s+(?:but|so|yet|however)\b")
 _MINIMUM_CHANGE_NEGATION_TOKEN = (
     r"(?:not(?!\s+only\b)|never|cannot|"
@@ -125,7 +149,24 @@ _QUOTED_SPAN = re.compile(
 )
 
 
-def _committed_minimum_change(normalized: str) -> bool:
+def _has_concrete_term(value: str) -> bool:
+    return any(
+        token.strip("`./-") not in _GENERIC_CHANGE_TERMS
+        for token in re.findall(r"[\w`./-]+", value)
+        if token.strip("`./-")
+    )
+
+
+def _has_change_target(before: str, match: re.Match[str], after: str) -> bool:
+    if _has_concrete_term(match.group("modifiers")):
+        return True
+    suffix = _CHANGE_TARGET_AFTER.match(after)
+    if suffix and _has_concrete_term(suffix.group("target")):
+        return True
+    return any(_has_concrete_term(candidate.group("target")) for candidate in _CHANGE_TARGET_BEFORE.finditer(before))
+
+
+def _committed_minimum_change(normalized: str, *, concrete: bool = False) -> bool:
     """True when a minimum-change phrase is the model committing to the minimal
     change, not a negated or quoted/reference mention."""
     boundaries = iter(_CLAUSE_BOUNDARY.finditer(normalized))
@@ -134,7 +175,8 @@ def _committed_minimum_change(normalized: str) -> bool:
     quotation = next(quotations, None)
     clause_start = 0
 
-    for match in _MINIMUM_CHANGE_PHRASE.finditer(normalized):
+    phrase = _SPECIFIC_CHANGE_PHRASE if concrete else _MINIMUM_CHANGE_PHRASE
+    for match in phrase.finditer(normalized):
         while boundary is not None and boundary.end() <= match.start():
             clause_start = boundary.end()
             boundary = next(boundaries, None)
@@ -173,6 +215,8 @@ def _committed_minimum_change(normalized: str) -> bool:
                 continue
         if _MINIMUM_CHANGE_ATTRIBUTION.search(before) and not commitments:
             continue
+        if concrete and not _has_change_target(before, match, after):
+            continue
         return True
     return False
 
@@ -209,6 +253,37 @@ def semantic_tags(text: str) -> list[str]:
         code_change_decision and rationale_claims >= 2 and not template_frame and not placeholder_claim
     ):
         tags.append("implementation-rationale")
+    concrete_code_reason = False
+    for match in re.finditer(
+        r"\b(?:code|source) change (?:is )?(?:needed|necessary)\s+"
+        r"(?:because|to|for)\s+(?P<detail>(?:[\w`./-]+\s*){1,8})",
+        normalized,
+    ):
+        if not _has_concrete_term(match.group("detail")):
+            continue
+        if any(quote.start() <= match.start() < quote.end() for quote in _QUOTED_SPAN.finditer(normalized)):
+            continue
+        clause_start = max(normalized.rfind(mark, 0, match.start()) for mark in ".;!?\n") + 1
+        if _MINIMUM_CHANGE_REFERENCE.search(normalized[clause_start:match.start()]):
+            continue
+        concrete_code_reason = True
+        break
+    structured_details = re.findall(
+        r"\b(?:root cause|canonical owner|(?:minimum|minimal) "
+        r"(?:repair|change|edit|patch|boundary))\s*(?::|is)\s*([^.;!?\n]{1,80})",
+        normalized,
+    )
+    concrete_structured_decision = bool(
+        code_change_decision and rationale_claims >= 2
+        and not template_frame and not placeholder_claim
+        and any(_has_concrete_term(detail) for detail in structured_details)
+    )
+    if (
+        _committed_minimum_change(normalized, concrete=True)
+        or concrete_code_reason
+        or concrete_structured_decision
+    ):
+        tags.append("implementation-rationale-specific")
     if re.search(r"dependenc|callers?|references?|usages?|fallback|retir", normalized):
         tags.append("dependency-check")
     return tags

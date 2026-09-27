@@ -62,7 +62,10 @@ Execution order:
 7. **External-Unknown Hold**: Proven distribution with unobservable consumers
    is neither dependency proof nor safe-deletion proof. Use the existing
    `confirmation-first` path, not permanent compatibility or a fourth path;
-   inventory read-only and require scoped post-disclosure confirmation before editing
+   inventory read-only. Before editing, require explicit user authorization for
+   the exact retirement scope that acknowledges the concrete external risk.
+   An informed instruction may already provide this authorization; otherwise
+   disclose the risk and request scoped confirmation
 8. **Verification**: The retired responsibility is no longer active; when its
    carrier was deleted, no lingering references remain
 
@@ -74,7 +77,9 @@ Execution order:
 - It is strictly forbidden to add new providers / fallbacks / prompt branches / adapters without a corresponding retirement plan
 - Redundant code, dead code, inactive fallbacks, and obsolete compatibility layers shall be deleted within the same slice by default unless a stronger external or persistent-state boundary blocks deletion
 - A `compat-exception` retention is permitted only under verified active dependency blockage and must be re-evaluated in the Pre-Delivery Review
-- Pre-disclosure delete requests do not confirm a later external-unknown risk
+- A generic deletion request made before the external-unknown risk is disclosed
+  does not confirm that risk. The user's own informed, scoped acceptance does
+  count; mere awareness of external use without acceptance does not
 - If deletion cannot be performed yet, the following must be recorded: `Retained Object`, `Retention Reason`, `Observation Metrics`, `Retirement Timing`
 - When adding a new canonical owner, prefer migrating old logic first, then downgrading the old logic to a compatibility layer
 
