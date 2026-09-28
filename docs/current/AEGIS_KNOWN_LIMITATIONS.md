@@ -933,6 +933,53 @@ request.
   opened in all nine. This small, non-blind sample shows #67 remains observed,
   not merely unmeasured. The maintainer has not independently reviewed the
   private raw attempts.
+- A later maintainer native-hook prototype on Codex CLI `0.146.0` with
+  `gpt-5.6-sol` / `xhigh` tested an explicitly selected advisory profile.
+  All twelve first-candidate model receipts reported reconciliation, but
+  independent semantic review accepted ten and rejected two as false positives:
+  current completion was mistaken for correcting an inherited record, and a
+  generic change list was mistaken for specific final disclosure. Original
+  fixture code tests passed independently. A subsequent policy clarification
+  still produced inconsistent decisions on a repeated ambiguous-record control.
+  A later evidence-isolation probe accepted that same ambiguous record twice
+  and rejected it once. Its strict per-claim oracle was stronger than the
+  original issue's meaning-based correction requirement, so those two accepts
+  are oracle disagreements rather than established semantic false positives.
+  Separate deterministic counterexamples show that a correctly placed correction
+  block can still be denied or re-scoped by surrounding prose. This non-blind
+  evidence also includes four scope controls: two explicit reassertions of the
+  false resume-time conclusion were rejected, and two explicit corrections
+  were accepted. Clear conflict recognition in these probes does not resolve
+  the ambiguity boundary. These earlier revisions did not meet their automatic-fix
+  acceptance gate; they do not resolve default skill-only #67 or change the
+  published benchmark score.
+- Four semantic measures were subsequently added to the continuation/completion
+  guidance and the optional candidate. Ten candidate reviewer controls matched
+  their scoped expectations. In an explicitly injected wrong-assessment native
+  trial, a typed dispute stopped a further correction request; both the previous
+  and revised versions preserved the correct facts. A separate three-bullet
+  skill-only task still omitted record correction and specific final disclosure
+  after loading the revised rules and recognizing the discrepancy. These checks
+  support the bounded dispute handling and preserve the skill-only limitation;
+  they do not establish stable end-to-end reconciliation or a new benchmark score.
+  A later scope clarification permits ordinary review disagreements resolved by
+  evidence to close normally; repeated explicit-skill tasks still observed the
+  stale-record/final omission. Single native profile observations covered the
+  four diagnostic scenarios, with an invalid reviewer-connection attempt kept
+  separately and replaced from fresh inputs. These observations span two skill
+  snapshots and do not replace repeated current-build acceptance.
+- A subsequent frozen current-build repetition ran S1–S4 three times each with
+  the same final skills and extension. Independent semantic review accepted all
+  twelve records/replies, including accurate-claim preservation and every S4
+  three-short-bullets constraint; original read-only fixture tests passed in all
+  attempts. The nine contradicted-record attempts each used one correction;
+  the three accurate-record controls used none. No attempt was invalid or
+  replaced. This meets that selected-case diagnostic gate while remaining
+  non-blind development evidence. Operator semantic review is still required;
+  default skill-only #67, independently prepared case coverage, other host/model
+  behavior and general automatic-fix reliability remain unresolved. Detailed
+  source identities and evidence qualifications are in
+  `tests/codex-reconciliation/README.md`.
 - A maintainer diagnostic readback for #68 at `25c0f57` used Codex CLI
   `0.146.0` and requested `gpt-5.6-sol` / `xhigh`. In three fresh copies of the
   existing external-unknown retirement case, all three attempts loaded

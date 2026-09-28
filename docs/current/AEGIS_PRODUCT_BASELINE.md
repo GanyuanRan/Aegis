@@ -61,6 +61,11 @@ This repository is responsible for the following four categories:
 - Plugin / marketplace / symlink or junction instructions
 - File organization compatible with host discovery mechanisms
 - Preserving installable properties for all AI coding tools that support plugins
+- Explicitly enabled host callbacks that apply method-layer checks through the
+  host's own lifecycle, without becoming a runtime or completion authority.
+  The optional Codex record-reconciliation profile is scoped to operator-selected
+  records and evidence; default skill-only behavior is unchanged. Its installation
+  and verification status is tracked in `docs/README.codex-reconciliation.md`.
 
 ### 3.3 Governance Projection Layer
 
@@ -107,6 +112,13 @@ The currently recommended overall product shape is:
 - `Aegis Host Adapters`
 
 This repository corresponds only to the first item.
+
+Optional method-layer host callbacks may be distributed here. Their private
+capture/review state belongs to the explicitly installed extension, outside the
+working project. It is bounded working evidence, not a governance archive, policy
+registry, or authoritative fact chain. The host owns execution and continuation;
+users retain acceptance decisions. This allowance does not include a runtime-core
+adapter or change the repository's product identity.
 
 This means:
 

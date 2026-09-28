@@ -1,5 +1,38 @@
 # Aegis Release Notes
 
+## Unreleased
+
+### Semantic correction and disagreement handling
+
+- Clarify subject, scope and resume-time state in continuation and completion
+  guidance; allow one accurate explanation to correct related claims.
+- Check record correction and final disclosure separately, including surrounding
+  text that denies, withdraws or re-scopes the correction.
+- In the optional Codex candidate, retain quoted disputes of the initial
+  assessment and stop further correction requests with `needs-verification`.
+  A dispute does not establish which interpretation is right.
+- Keep the observed skill-only omission explicit: the new wording alone still
+  missed record correction and final disclosure in a three-bullet diagnostic.
+
+### Optional Codex record reconciliation
+
+Experimental, opt-in and advisory: the current frozen S1–S4 diagnostic passed
+three fresh repetitions per case with independent semantic review. Earlier
+candidates produced false positives; operator review remains required.
+
+- Add an explicitly selected Codex profile that captures chosen inherited records
+  before work and checks their correction and specific final disclosure through
+  native hooks, with at most two corrective continuations.
+- Keep installed code and turn evidence outside the working project, bind profiles
+  to code/configuration fingerprints, and handle invalid state, incomplete capture,
+  bounded reviewer output, timeouts and cancellation without a success claim.
+- Document separate hook trust, model usage, single-task workspace scope and the
+  CLI JSON warning limitation. This optional intervention does not resolve the
+  default skill-only #67 limitation or change the published benchmark scores.
+- Preserve earlier failures and the distinction between selected-case diagnostic
+  acceptance and general automatic-fix reliability. Both global routing-prefix
+  language mirrors remain compatible; no manual re-copy is needed.
+
 ## v2.11.0 (2026-09-28)
 
 ### DeepSeek Harness lifecycle compatibility

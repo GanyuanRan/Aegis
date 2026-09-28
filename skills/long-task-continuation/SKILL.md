@@ -137,6 +137,13 @@ Resume in this order:
    Treat inherited completion claims as unverified until the worktree confirms
    them. Correct contradictions in the checkpoint, disclose them in the final
    report, and do not republish stale claims as current.
+   Preserve the claim's subject, scope and resume-time state; distinguish that
+   from later repair and from historical execution you cannot verify. One
+   accurate correction may cover related claims. The record must adopt it,
+   without elsewhere denying it or assigning it to another scope. A reviewer's
+   classification is contestable: if material disagreement remains unresolved
+   after checking evidence, retain `needs-verification` without forcing assent.
+   If evidence resolves it, retain the supported conclusion and verify normally.
 5. Compare the active slice against intent lock, scope fence, baseline lock,
    compatibility/retirement boundary, tests, reviews, and non-goals.
 6. Re-run the drift decision, then name the next smallest authorized action.

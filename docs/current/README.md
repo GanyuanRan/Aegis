@@ -20,6 +20,7 @@ This repository owns:
 
 - skills and workflow discipline
 - host-installable method-pack distribution
+- explicitly enabled advisory host callbacks within the product/runtime boundary
 - runtime-ready drafts, hints, and projections
 - public docs needed by users and contributors
 

@@ -297,6 +297,16 @@ true`, `"workspaceSupport": "available"`, and `"configStatus": "configured"`;
 also pass `--discovery-root <path>` when checking Codex's skill discovery
 directory.
 
+## Optional record reconciliation
+
+An experimental [record reconciliation profile](README.codex-reconciliation.md)
+targets selected inherited task records. It adds model calls and host hooks and
+requires independent trust. The current frozen S1–S4 diagnostic passed three
+repetitions per case with independent semantic review. Earlier candidates
+produced false positives, so operator review remains required. The default
+skill-only limitation in issue #67 remains. See its evidence and compatibility
+limits before evaluating it.
+
 ## Uninstalling
 
 ```bash

@@ -31,6 +31,11 @@ Therefore:
 - This repository can generate drafts, templates, checklists, and artifact conventions
 - This repository can require hosts to provide necessary missing information
 - This repository can output advisory, warning-style process guidance
+- An explicitly installed host callback may capture operator-selected evidence,
+  compare records and replies, and request bounded host continuations. The
+  optional Codex profile owns private, disposable turn state outside the project;
+  the host still owns execution. Its receipts express advisory consistency or
+  `needs-verification`, never evidence sufficiency or completion authority.
 - This repository can output an on-demand `Trace Digest` as advisory
   transparency over observed execution, evidence, rule effects, skill routing,
   verification, and host capability gaps
