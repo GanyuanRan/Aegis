@@ -85,7 +85,7 @@ def validate_dsh_bundle(root: Path) -> None:
         "@deepseek-ai/dsh-skill-filesystem",
     ):
         require(
-            package.get("peerDependencies", {}).get(peer) == "^0.1.0-rc.6",
+            package.get("peerDependencies", {}).get(peer) == ">=0.1.0-rc.6",
             f"DSH adapter must declare its {peer} peer contract",
         )
         require(

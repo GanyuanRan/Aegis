@@ -720,6 +720,21 @@ request.
 - DeepSeek Harness and the community DeepSeek-TUI remain separate host surfaces
 - Deterministic tests cover native lifecycle bootstrap wiring, but not live
   model routing quality in a fresh installed DSH profile
+- DSH peer ranges use `>=0.1.0-rc.6` as an installation admission floor,
+  including prereleases under the host's checker. This retires the stale
+  `^0.1.0-rc.6` ceiling that rejected DSH `0.2.0-rc.1` before loading Aegis.
+  Future versions are admitted by version number, not certified in advance;
+  actual host API changes can still require adapter updates. The three peers
+  remain optional so other hosts do not acquire a DSH runtime dependency.
+- Isolated Linux checks on DSH `0.1.7-rc.2` and `0.2.0-rc.1` exercised the
+  actual host compatibility checker, bundle install/configuration/removal,
+  and Web-profile startup with the fixed manifest, using both a local link
+  and an installed package tarball. The running host exposed
+  22 Aegis skill entries and loaded `using-aegis`, `systematic-debugging`, and
+  `verification-before-completion` through its native skill registry. These
+  are package admission and native loading checks, without a model request;
+  Windows desktop installation and live model routing remain unverified by
+  this repair.
 - The updater-managed direct-child install remains an explicit compatibility
   path rather than the default DSH installation
 

@@ -1,5 +1,17 @@
 # Aegis Release Notes
 
+## Unreleased
+
+### DeepSeek Harness installation compatibility
+
+- Replace the stale `^0.1.0-rc.6` DSH peer ceiling with a `>=0.1.0-rc.6`
+  admission floor. This fixes the manifest conflict reported when installing
+  Aegis 2.11.1 on DSH `0.2.0-rc.1`, and avoids repeating that conflict solely
+  because a later host changes its minor or major version number.
+- Retain all three optional host peers and the existing thin bundle. Future
+  version admission does not establish API compatibility or live routing.
+  Previously published tags retain their original manifests.
+
 ## v2.11.1 (2026-09-28)
 
 ### Semantic correction and disagreement handling

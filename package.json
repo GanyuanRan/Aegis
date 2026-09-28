@@ -30,9 +30,9 @@
     ]
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "^0.1.0-rc.6",
-    "@deepseek-ai/dsh-llm": "^0.1.0-rc.6",
-    "@deepseek-ai/dsh-skill-filesystem": "^0.1.0-rc.6"
+    "@deepseek-ai/dsh-agent": ">=0.1.0-rc.6",
+    "@deepseek-ai/dsh-llm": ">=0.1.0-rc.6",
+    "@deepseek-ai/dsh-skill-filesystem": ">=0.1.0-rc.6"
   },
   "peerDependenciesMeta": {
     "@deepseek-ai/dsh-agent": {

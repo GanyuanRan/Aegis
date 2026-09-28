@@ -239,15 +239,28 @@ python tests/helpers/test_aegis_update.py -k deepseek_harness
 
 The opt-in integration lane requires local `dsh` and `pnpm`. It creates an
 isolated temporary `DSH_HOME`, installs the current checkout into a Web profile,
-checks dependency/bundle reconciliation, dump-config composition and module
-loading, then removes the bundle:
+checks dependency/bundle reconciliation and dump-config composition, then
+removes the bundle:
 
 ```bash
 bash tests/deepseek-harness/run-tests.sh --integration
 ```
 
-These checks prove method-pack bundle installation, module loading, and
-deterministic lifecycle-entry wiring only. A fresh Standard-mode session must
+For an npm-installed DSH host exposing the compatibility checker, also run
+the version-admission regression against that host's actual app-boot module:
+
+```bash
+node tests/deepseek-harness/test-peer-compatibility.mjs <dsh-app-boot-root>/lib/index.js
+```
+
+It reproduces the old manifest's rejection on `0.2.0-rc.1`, checks the minimum
+version floor and current prereleases, and exercises synthetic future versions
+without claiming those versions have been run. It does not bypass DSH's
+checker or require a version exemption.
+
+These checks prove method-pack bundle installation, version admission, and
+deterministic lifecycle-entry wiring only. Dump-config and `--help` do not
+establish successful runtime plugin loading. A fresh Standard-mode session must
 still prove catalog discovery, native task-specific `skill` loading,
 representative routing versus `Route: fast-path`, false-positive behavior,
 session refresh, and update behavior before DeepSeek Harness receives a

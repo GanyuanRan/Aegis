@@ -48,7 +48,14 @@ support; it does not claim current release-level live routing evidence.
 
 ## Prerequisites
 
-Install a current DeepSeek Harness release and ensure `pnpm` is on `PATH`.
+The package declares DSH host peers with a `>=0.1.0-rc.6` admission floor and
+no upper version bound. DSH includes prereleases when checking these ranges,
+so a newer minor, major, or preview version is not rejected solely because
+its version number increased. This is an installation policy, not a promise
+that future host APIs remain compatible. See the compatibility matrix and
+known limitations for the evidence available for particular host versions.
+
+Install DeepSeek Harness at or above that floor and ensure `pnpm` is on `PATH`.
 Harness forwards `dsh plugin` operations to `pnpm`, so being able to start the
 Web UI through `npx` alone is not sufficient for profile-plugin management.
 
@@ -203,6 +210,12 @@ Aegis goal: Fix the auth refresh bug without rewriting the auth system.
 ```
 
 ## Updating
+
+Aegis `v2.11.1` was published with the old `^0.1.0-rc.6` peer range and can be
+rejected by DSH `0.2.0-rc.1` before plugin code is loaded. Select a
+revision containing the admission-range fix; retrying the same old tag does
+not change its manifest. Version exemptions are not required by the fixed
+manifest.
 
 Update Aegis through the plugin manager of each profile where it is installed:
 

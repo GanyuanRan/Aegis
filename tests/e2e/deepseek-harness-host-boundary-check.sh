@@ -78,7 +78,7 @@ for (const peer of [
   '@deepseek-ai/dsh-llm',
   '@deepseek-ai/dsh-skill-filesystem',
 ]) {
-  if (data.peerDependencies?.[peer] !== '^0.1.0-rc.6') {
+  if (data.peerDependencies?.[peer] !== '>=0.1.0-rc.6') {
     throw new Error(`unexpected peer contract for ${peer}`)
   }
   if (data.peerDependenciesMeta?.[peer]?.optional !== true) {

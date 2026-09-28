@@ -148,6 +148,11 @@ The current snapshot only states:
     signal (`tool/call` or `assistant/message`), so the first model request of
     every gated epoch stays free of injected context. This is advisory
     model-facing context, not a hard tool guard or runtime authority.
+    Package admission retains the three optional DSH host peers with a
+    `>=0.1.0-rc.6` floor and no speculative upper version bound. DSH evaluates
+    these ranges with prereleases included. Admission of a newer version is
+    not evidence of API compatibility or live routing; verified host versions
+    and remaining gaps belong in `AEGIS_KNOWN_LIMITATIONS.md`.
     Updater-managed direct-child skills under
     `$DSH_HOME/skills` (`~/.dsh/skills` by default), project `.dsh/skills`,
     shared `.agents/skills`, and custom skill directories remain explicit
