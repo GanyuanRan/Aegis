@@ -97,8 +97,9 @@ python tests/helpers/test_aegis_update.py -k deepseek_harness
 ```
 
 The integration lane is environment-bound when local `dsh` or `pnpm` is absent.
-It proves profile installation and module loading, not representative model
-routing or release-level host closeout.
+It proves profile installation and configuration composition. Dump-config and
+`--help` do not establish runtime plugin loading, representative model routing,
+or release-level host closeout; those need separate evidence.
 
 When Grok Build is installed locally, also capture `grok inspect --json` as an
 environment-bound discovery readback. Do not treat enumeration alone as a

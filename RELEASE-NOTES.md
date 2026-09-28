@@ -1,6 +1,6 @@
 # Aegis Release Notes
 
-## Unreleased
+## v2.11.2 (2026-09-29)
 
 ### DeepSeek Harness installation compatibility
 
@@ -11,6 +11,20 @@
 - Retain all three optional host peers and the existing thin bundle. Future
   version admission does not establish API compatibility or live routing.
   Previously published tags retain their original manifests.
+
+### Verification and upgrading
+
+- Add a regression that uses the host's native compatibility checker to
+  reproduce the old rejection, retain the minimum-version check, and admit
+  current prereleases and synthetic future version numbers.
+- Verify installation and native skill loading on DSH `0.1.7-rc.2` and
+  `0.2.0-rc.1` in isolated Linux profiles. Windows desktop installation and
+  live model routing remain outside that evidence.
+- Synchronize all eight package and plugin version fields at `2.11.2`.
+  Update through the existing host installation route; DSH users can now
+  select this release instead of the incompatible `v2.11.1` tag.
+- Clarify that configuration readback alone does not prove runtime plugin
+  loading. Skill behavior and published benchmark scores are unchanged.
 
 ## v2.11.1 (2026-09-28)
 
