@@ -1,6 +1,6 @@
 # Aegis Release Notes
 
-## Unreleased
+## v2.11.1 (2026-09-28)
 
 ### Semantic correction and disagreement handling
 
@@ -32,6 +32,14 @@ candidates produced false positives; operator review remains required.
 - Preserve earlier failures and the distinction between selected-case diagnostic
   acceptance and general automatic-fix reliability. Both global routing-prefix
   language mirrors remain compatible; no manual re-copy is needed.
+
+### Distribution and upgrading
+
+- Synchronize all eight package and plugin version fields at `2.11.1`.
+- Update through the existing host installation route. The optional Codex profile
+  requires separate installation and hook trust; it is not enabled by updating
+  the method pack. Reinstall a previously evaluated profile to select the current
+  code/configuration fingerprint, and review its new hook definitions.
 
 ## v2.11.0 (2026-09-28)
 

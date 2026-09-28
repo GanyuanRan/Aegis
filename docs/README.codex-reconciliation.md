@@ -1,7 +1,7 @@
 # Optional Codex record reconciliation
 
 Status: experimental opt-in advisory profile; current-build diagnostic gate passed.
-Operator review is required. This profile is not part of the published v2.11.0 release.
+Separate installation, hook trust and operator review are required.
 
 This optional Codex CLI profile checks inherited task records against selected
 before-work evidence, then checks whether the active records and final reply
