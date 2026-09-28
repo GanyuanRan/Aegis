@@ -1,5 +1,44 @@
 # Aegis Release Notes
 
+## v2.11.0 (2026-09-28)
+
+### DeepSeek Harness lifecycle compatibility
+
+- Fix automatic bootstrap arming on current DeepSeek Harness previews by
+  subscribing to `agent/created`. Retain `agent/session-start` for older
+  preview hosts, with duplicate-event coverage and cleanup of both
+  subscriptions. Injection still waits for the first durable promotion signal,
+  skips subagents, and respects explicit activation mode.
+- Expand lifecycle regression coverage for startup, resume, clear, compact,
+  duplicate notifications, pending-delivery cancellation, and teardown.
+- Align activation and release documentation with the two supported lifecycle
+  events. Record the contributor's bounded startup/resume readback on DSH
+  `0.1.7-rc.2`; it does not establish first-step routing attribution or full
+  live host coverage.
+
+### Benchmark evidence and known limitations
+
+- Record repeated native-skill evidence showing that #67 remains unresolved:
+  recognizing an inherited false claim during work does not reliably correct
+  the active record and disclose the specific error in the final answer.
+- Record three maintainer diagnostic attempts for #68 that requested scoped
+  confirmation and left the original workspaces unchanged. This small,
+  non-blind sample does not establish elimination of intermittent failures.
+- Keep the published matrix-v7 results attributed to Aegis 2.10.8. No new
+  held-out score is published, and the relevant Codex skills are unchanged from
+  2.10.9. The independent reconciliation experiment is outside this release.
+
+### Distribution and upgrading
+
+- Synchronize all eight package and plugin manifests at `2.11.0` so installed
+  builds can be distinguished from the earlier `2.10.9` tag.
+- DeepSeek Harness bundle users should update Aegis through their profile's
+  plugin manager and restart that profile before checking automatic entry.
+- Both language mirrors of the optional global routing prefix were reviewed;
+  their text and projected semantics are unchanged, so manual copies need no
+  re-copy. Aegis remains `Aegis Method Pack (runtime-ready)` with advisory
+  outputs and no runtime or completion authority.
+
 ## v2.10.9 (2026-09-27)
 
 ### Benchmark evidence and tooling

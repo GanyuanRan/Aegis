@@ -142,7 +142,8 @@ Confirm:
 - DeepSeek-TUI is still described as manual `SKILL.md` copy install, not a one-click GitHub installer for multi-skill repos
 - DeepSeek Harness is distinct from DeepSeek-TUI and remains a developer-preview
   structural target; its default install uses the thin Aegis `dsh.bundle` and
-  package-owned `skills/` tree plus native `agent/session-start` router
+  package-owned `skills/` tree plus native `agent/created` or legacy
+  `agent/session-start` router
   bootstrap; the bootstrap is deferred to the session's first durable
   promotion signal, skips subagents, honors explicit activation mode, and does
   not add a hard tool guard. Updater-managed direct-child links require

@@ -738,6 +738,14 @@ request.
   inactive while structural checks passed. The dual-event adapter has
   deterministic coverage, but fresh live activation on an installed profile
   is still required before a release-level routing claim.
+- A [contributor readback of the merged fix](https://github.com/GanyuanRan/Aegis/issues/75#issuecomment-5862159897)
+  at `25c0f57`, using DSH `0.1.7-rc.2` on Windows, reports one bootstrap
+  injection on startup and one on resume, subsequent model-context presence,
+  and a `systematic-debugging` skill load. This is bounded contributor-reported
+  evidence, not an independently reproduced release-level host verdict. The
+  first skill call preceded deferred injection, so first-step routing cannot
+  be attributed to the bootstrap. Clear and compact were structural-only;
+  live subagent behavior remains unverified.
 - The older `agent/session-start` subscription remains a host compatibility
   exception: published DSH 0.1.5-rc.3 still declares that lifecycle event.
 - The bootstrap skips subagents and does not install a hard pre-tool guard:
