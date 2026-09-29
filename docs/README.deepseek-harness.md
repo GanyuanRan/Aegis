@@ -182,6 +182,39 @@ A catalog entry and structural bootstrap test prove discovery and deterministic
 entry wiring, not live automatic-routing quality, complete workflow execution,
 or release-level host closeout.
 
+### Installed-Profile Lifecycle Readback
+
+Use a separate test profile/home with one Aegis bundle, `activation_mode = auto`,
+and no manual `AGENTS.md` bootstrap or direct-child Aegis exposure. Record the
+Aegis commit or bundle hash as well as its package version, the DSH version,
+and the selected profile. Agree on a model-call budget before live checks.
+
+For each boundary below, distinguish observations from a real installed host
+from deterministic checks using a host double:
+
+| Boundary | Expected observation |
+| --- | --- |
+| Fresh Standard-mode session | No injection while arming; one plugin-sourced bootstrap after the first durable promotion signal |
+| Resume, clear, compact (each separately) | One deferred injection for the new boundary, without duplicate delivery on subsequent turns |
+| Subagent | No Aegis lifecycle bootstrap injected into the subagent session |
+| Explicit activation, after profile restart | No bundle-owned bootstrap; native explicit skill loading remains available |
+
+Count injected messages by plugin provenance (`source.kind` beginning with
+`plugin:`), Aegis bootstrap identity, and session/boundary, rather than counting
+marker substrings. Model quotations and recalled text can repeat the marker
+without another injection. Check the model-facing messages for the first
+request; on DSH `0.1.7-rc.2`, `request/header` alone is not a per-request
+message list.
+
+The first route decision may precede deferred injection. Record event ordering
+and assess a task-specific native `skill` load or `Route: fast-path` on a step
+after delivery; do not attribute a preceding skill call to this bootstrap.
+Report unobserved boundaries explicitly. Retain raw sessions privately and
+share only sanitized source identity, boundary/injection counts, ordering,
+route outcomes, and errors. The current evidence and remaining gaps for
+[issue #75](https://github.com/GanyuanRan/Aegis/issues/75) live in
+[known limitations](current/AEGIS_KNOWN_LIMITATIONS.md#226-deepseek-harness-bundle-support-is-not-yet-fresh-host-closeout).
+
 ## Activation Mode
 
 In `auto` mode, the Aegis bundle defers a compact `using-aegis` bootstrap to the first

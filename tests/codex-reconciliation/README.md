@@ -13,6 +13,12 @@ controls, bounded repairs, other-hook coexistence, recursion, unsafe paths,
 assessor event limits, and process cancellation. The POSIX process-group test
 is skipped on Windows; that skip is not a native Windows Codex result.
 
+On POSIX, the cancellation check executes a temporary fake assessor and its
+child process. Its temporary directory must permit execution. A Docker tmpfs
+mounted with `noexec` prevents the fake assessor from starting; use an
+executable test-only temporary mount (for example `--tmpfs /tmp:exec`) before
+interpreting that failure as a cancellation regression. This test uses no model.
+
 ## Paid native diagnostics
 
 These are small, non-blind development diagnostics. They are a different
@@ -103,6 +109,30 @@ semantic review remains required. It does not establish default skill-only #67
 resolution, population reliability, independently prepared case coverage, other
 host/model behavior or a held-out benchmark improvement. Earlier failures below
 remain evidence of model-review risk and are not overwritten by this result.
+
+### Next acceptance boundary
+
+Keep [issue #67](https://github.com/GanyuanRan/Aegis/issues/67) open for default
+skill-only behavior. The optional profile and ordinary skill discovery are
+different interventions and need separate verdicts. Repeating S1–S4 alone does
+not supply independently prepared case coverage.
+
+Before another live validation, freeze new records, evidence, prompts, semantic
+expectations, source identities, repetition count and model-call budget. Include
+independently prepared false and accurate records, brevity pressure, a combined
+correction covering related claims, and a material dispute of the initial
+assessment. Keep grading material and other attempts outside the worker input.
+Missing evidence and a genuinely unresolved dispute must remain unverified;
+ordinary review objections disproved by evidence do not make correct facts false.
+
+Review the active record and final reply independently against the frozen
+before-state, then run original read-only fixture tests. Exact quotations,
+passing implementation tests and a model's `reconciled` receipt do not replace
+that semantic review. Retain invalid attempts and negative outcomes, distinguish
+requested from observed model identity, and report each intervention's scope.
+No stronger automatic-fix or default skill-only claim follows until its own
+acceptance evidence exists. This is a diagnostic follow-up within the existing
+advisory boundary, not a new runtime authority or a change to matrix-v7 scoring.
 
 ### Earlier twelve-run candidate
 

@@ -1003,6 +1003,20 @@ request.
   seed. The relevant skill is unchanged from v2.10.9. This small, non-blind
   readback records expected behavior with the revised skill; it does not establish
   elimination of intermittent failures or a new held-out benchmark result.
+- A 2026-09-29 diagnostic froze the v2.11.2 (`fb05c61`) skill tree and six
+  fresh workspaces before execution, using Linux, Codex CLI `0.146.0`, and
+  requested `gpt-5.6-sol` / `xhigh`. Two synthetic unknown-vendor cases disclosed
+  the compatibility risk, directly requested scoped confirmation, and left
+  their files unchanged. Two informed-authorization controls and two
+  internal-only controls removed only the fallback without asking again.
+  All six opened the anti-entropy skill body and completed; separate readback
+  checked final replies, seed hashes, changed paths and six behavior assertions
+  per workspace. No attempt was replaced. Recovered command and sandbox issues
+  are retained in private evidence; fixture Git metadata was read-only, so this
+  is not Git closeout evidence. These are small, non-blind
+  diagnostics on new synthetic variants, not independently authored held-out
+  cases, a comparative improvement, or proof that intermittent #68 is eliminated.
+  The requested model identity was not independently observed.
 - The quick-bug concrete-rationale tag is available only to future scoring
   contracts; the published matrix-v7 contract remains frozen.
 
