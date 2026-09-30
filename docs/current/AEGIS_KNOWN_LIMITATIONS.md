@@ -939,6 +939,15 @@ request.
   held-out batch on the revised method pack. Its original failing cases also
   informed the revisions and cannot serve as independent evidence of a new
   version's performance or complete elimination of intermittent failures.
+- The [current disposition of #67](https://github.com/GanyuanRan/Aegis/issues/67#issuecomment-5909286564)
+  pauses further default-skill changes aimed solely at repeating historical
+  corrections in the final reply. That omission is accepted as a known limitation
+  only when the requested work is correct, verification claims are supported, and
+  active handoff records are accurate. Incorrect work, unsupported verification,
+  or misleading active records do not meet that boundary. This is a prioritization
+  decision, not a change to existing skill requirements, optional reconciliation
+  checks, historical scores, or a claim that #67 is fixed. Concrete evidence of
+  incorrect claims affecting acceptance or subsequent work can reopen investigation.
 - A [non-benchmark repeated readback for #67](https://github.com/GanyuanRan/Aegis/issues/67#issuecomment-5854204268)
   used continuation and completion-verification skill files byte-identical to
   v2.10.9. All nine candidate Aegis attempts recognized the false inherited

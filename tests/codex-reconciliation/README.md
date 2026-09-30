@@ -110,14 +110,25 @@ resolution, population reliability, independently prepared case coverage, other
 host/model behavior or a held-out benchmark improvement. Earlier failures below
 remain evidence of model-review risk and are not overwritten by this result.
 
-### Next acceptance boundary
+### Current disposition and conditional follow-up
 
 Keep [issue #67](https://github.com/GanyuanRan/Aegis/issues/67) open for default
 skill-only behavior. The optional profile and ordinary skill discovery are
 different interventions and need separate verdicts. Repeating S1–S4 alone does
 not supply independently prepared case coverage.
 
-Before another live validation, freeze new records, evidence, prompts, semantic
+Further default-skill wording changes and live experiments aimed solely at
+repeating historical corrections in the final reply are paused. As explained in
+the [maintainer's disposition](https://github.com/GanyuanRan/Aegis/issues/67#issuecomment-5909286564),
+when the requested work is correct, verification claims are supported, and active
+handoff records are accurate, that final explanation omission is accepted as a
+known limitation. Incorrect work, unsupported verification, and misleading active
+records remain substantive gaps. This prioritization does not change the existing
+skill contract, this opt-in profile's stricter checks, or historical scores, and
+does not establish that #67 is fixed. Reopen targeted investigation for concrete
+evidence that incorrect claims affect acceptance or subsequent work.
+
+If another live validation is warranted and authorized, freeze new records, evidence, prompts, semantic
 expectations, source identities, repetition count and model-call budget. Include
 independently prepared false and accurate records, brevity pressure, a combined
 correction covering related claims, and a material dispute of the initial
