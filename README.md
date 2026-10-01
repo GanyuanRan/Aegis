@@ -57,6 +57,9 @@ engineers — so you don't have to watch them.
   with a retirement trigger — technical debt stops accumulating silently.
 - **Simple tasks stay simple.** Trivial requests stay on the fast path;
   ceremony only appears when the task genuinely needs it.
+- **UI/UX rules on demand.** [UI/UX governance](skills/ui-ux-governance/SKILL.md)
+  carries project design rules, lower user effort, and scoped experience evidence
+  through design, implementation, review, and verification.
 - **One method pack, every host.** The same discipline works across Codex,
   Claude Code, OpenCode, Kimi, and other skill-aware hosts.
 

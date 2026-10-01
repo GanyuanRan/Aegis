@@ -56,6 +56,8 @@ Aegis 是一套方法包，让 AI 编程 agent 像有工程纪律的人一样干
   移除，技术债不再悄悄累积。
 - **简单任务保持简单。** 平凡请求留在 fast-path，只有任务真正需要时才展开
   仪式。
+- **UI/UX 规则按需加载。** [UI/UX 治理](skills/ui-ux-governance/SKILL.md)把项目
+  设计依据、用户总负担和体验验证接入设计、实现、评审与交付。
 - **一套方法包，多宿主通用。** Codex、Claude Code、OpenCode、Kimi 等
   skill-aware 宿主体验一致。
 

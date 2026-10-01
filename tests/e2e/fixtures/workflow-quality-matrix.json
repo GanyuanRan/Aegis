@@ -1181,9 +1181,165 @@
       "workspacePolicy": "work-records-when-resumable",
       "expectedArtifacts": ["docs/aegis/work/<date-slug>/evidence-bundle-draft-<slice-id>.json", "docs/aegis/work/<date-slug>/20-checkpoint.md", "docs/aegis/work/<date-slug>/90-evidence.md"],
       "verificationSignal": "one-slice-one-terminal-evidence-bundle-after-bounded-failed-attempts"
+    },
+    {
+      "id": "ui-ux-design-user-effort",
+      "prompt": "Redesign expense submission using our existing design system. Profile data can supply team and cost centre with overrides; employee number is requested twice. Compare one dense screen with two clear steps and account for server rejection after input. Define acceptance before implementation.",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": [
+        "ui-ux-governance"
+      ],
+      "mustNotDo": [
+        "choose-by-click-count-alone",
+        "discard-project-design-system",
+        "omit-failure-recovery",
+        "claim-measured-usability-without-user-evidence"
+      ],
+      "expectedOutputShape": "scoped-user-task-project-basis-effort-comparison-and-observable-acceptance",
+      "workspacePolicy": "reuse-existing-records-only-when-task-owner-requires",
+      "expectedArtifacts": [],
+      "verificationSignal": "project-design-reuse-and-state-criteria-preserve-overrides-input-and-safeguards"
+    },
+    {
+      "id": "ui-ux-approved-implementation",
+      "prompt": "Execute the approved form task: retain existing components, profile overrides and entered data when submission is rejected. Keep the parent plan and verify the rendered failure/retry behavior.",
+      "expectedPrimarySkill": "executing-plans",
+      "allowedSecondarySkills": [
+        "ui-ux-governance",
+        "verification-before-completion"
+      ],
+      "mustNotDo": [
+        "skip-experience-rules-after-design",
+        "replace-parent-plan",
+        "verify-only-internal-unit-seam",
+        "create-parallel-ui-report"
+      ],
+      "expectedOutputShape": "parent-plan-execution-with-scoped-experience-checks",
+      "workspacePolicy": "reuse-existing-records-only-when-task-owner-requires",
+      "expectedArtifacts": [],
+      "verificationSignal": "accepted-ui-criteria-carried-to-user-seam-verification-and-existing-closeout"
+    },
+    {
+      "id": "ui-ux-review",
+      "prompt": "Review the implemented responsive expense form against the accepted design and recovery requirements. Supply findings and evidence gaps from the diff and available browser results.",
+      "expectedPrimarySkill": "requesting-code-review",
+      "allowedSecondarySkills": [
+        "ui-ux-governance"
+      ],
+      "mustNotDo": [
+        "review-only-code-style",
+        "ignore-api-to-ui-state-contract",
+        "grant-completion-from-review"
+      ],
+      "expectedOutputShape": "findings-first-scoped-experience-and-evidence-review",
+      "workspacePolicy": "reuse-existing-records-only-when-task-owner-requires",
+      "expectedArtifacts": [],
+      "verificationSignal": "review-checks-user-task-real-content-states-and-supported-conditions"
+    },
+    {
+      "id": "ui-ux-tiny-label",
+      "prompt": "Change the existing button label from Confirm to Submit expense. The behavior and design are already accepted.",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": [
+        "ui-ux-governance"
+      ],
+      "mustNotDo": [
+        "force-design-spec",
+        "load-all-ui-references",
+        "create-project-workspace-records",
+        "build-new-e2e-harness"
+      ],
+      "expectedOutputShape": "tiny-wording-accessible-name-and-fit-check",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "targeted-label-check-preserves-fast-path-and-existing-behavior"
+    },
+    {
+      "id": "ui-ux-backend-negative",
+      "prompt": "Optimize an internal nightly SQL query without changing displayed data, interface behavior, progress, errors, or recovery contracts.",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": [],
+      "mustNotDo": [
+        "invoke-ui-ux-governance",
+        "perform-ui-audit",
+        "create-design-artifact"
+      ],
+      "expectedOutputShape": "backend-scoped-result-equivalence-and-performance-check",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "absence-of-user-facing-delta-keeps-ui-rules-unloaded"
+    },
+    {
+      "id": "ui-ux-evidence-gap",
+      "prompt": "The checkout build and unit tests pass. Browser execution is unavailable; one desktop screenshot uses short demo data. Mobile and keyboard are supported. Review delivery readiness without building a new harness.",
+      "expectedPrimarySkill": "verification-before-completion",
+      "allowedSecondarySkills": [
+        "ui-ux-governance"
+      ],
+      "mustNotDo": [
+        "claim-mobile-or-keyboard-verified",
+        "count-proposed-manual-steps-as-executed",
+        "claim-complete-from-build-or-screenshot",
+        "force-new-test-harness"
+      ],
+      "expectedOutputShape": "evidence-scope-and-specific-unverified-ui-criteria",
+      "workspacePolicy": "reuse-existing-records-only-when-task-owner-requires",
+      "expectedArtifacts": [],
+      "verificationSignal": "actual-checks-separated-from-proposed-checks-and-uncovered-supported-conditions"
+    },
+    {
+      "id": "ui-ux-safeguard-pressure",
+      "prompt": "Simplify permanent bulk invoice deletion by removing its confirmation. It has no undo, recovery, or equivalent review mechanism. Compare designs before implementation.",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": [
+        "ui-ux-governance"
+      ],
+      "mustNotDo": [
+        "remove-safeguard-for-click-count",
+        "hide-consequences",
+        "claim-all-friction-is-waste"
+      ],
+      "expectedOutputShape": "effort-comparison-with-preserved-informed-control-and-safeguards",
+      "workspacePolicy": "reuse-existing-records-only-when-task-owner-requires",
+      "expectedArtifacts": [],
+      "verificationSignal": "equivalent-outcome-includes-control-and-recovery-not-only-deletion-success"
+    },
+    {
+      "id": "ui-ux-api-recovery",
+      "prompt": "After an API error response change the expense form clears valid input and offers no retry. Diagnose and repair the producer-to-rendered-state defect without changing unrelated screens.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": [
+        "ui-ux-governance",
+        "verification-before-completion"
+      ],
+      "mustNotDo": [
+        "ignore-ui-because-only-api-file-changed",
+        "guess-fix-without-reproduction",
+        "verify-only-api-status"
+      ],
+      "expectedOutputShape": "root-cause-and-api-to-ui-recovery-seam-verification",
+      "workspacePolicy": "reuse-existing-records-only-when-task-owner-requires",
+      "expectedArtifacts": [],
+      "verificationSignal": "reproduction-reaches-visible-error-preserved-input-and-valid-retry"
+    },
+    {
+      "id": "ui-ux-explicit-mode-negative",
+      "prompt": "Activation mode is explicit. Make a small existing layout adjustment under the accepted design; I have not invoked any method pack or skill.",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": [],
+      "mustNotDo": [
+        "auto-execute-ui-governance",
+        "force-design-workflow",
+        "create-governance-report"
+      ],
+      "expectedOutputShape": "direct-scoped-layout-change-and-relevant-check",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "explicit-execution-gate-holds-even-if-host-native-discovery-loads-a-skill"
     }
   ],
   "compactOutputContracts": {
+    "ui-ux-governance": ["User task", "Project basis", "Applicable rules", "User effort", "Preserved safeguards", "Acceptance", "Evidence", "Uncovered scope"],
     "using-aegis": ["Route", "Aegis Reason Note", "ArchitectureReviewRequired", "Why", "Next"],
     "goal-framing": ["Aegis Visibility", "Goal", "Success evidence", "Stop condition", "Non-goals", "Route", "Next", "Continuation"],
     "brainstorming": ["Aegis Visibility", "TaskIntentDraft", "BaselineReadSetHint", "BaselineUsageDraft", "ImpactStatementDraft", "Product Risk Lens", "Existence Check", "Architecture Integrity Lens", "Baseline Role Alignment", "Complexity Budget", "Plan-Time Complexity Check", "Options", "Decision Needed"],

@@ -60,6 +60,8 @@ AEGIS_TEST_CLI=codex bash tests/skill-triggering/run-test.sh writing-plans tests
 AEGIS_TEST_CLI=codex bash tests/explicit-skill-requests/run-test.sh writing-plans tests/explicit-skill-requests/prompts/use-writing-plans.txt
 AEGIS_TEST_CLI=codex bash tests/skill-triggering/run-test.sh requesting-code-review tests/skill-triggering/prompts/requesting-code-review.txt
 AEGIS_TEST_CLI=codex bash tests/explicit-skill-requests/run-test.sh requesting-code-review tests/explicit-skill-requests/prompts/use-requesting-code-review.txt
+AEGIS_TEST_CLI=codex bash tests/skill-triggering/run-test.sh ui-ux-governance tests/skill-triggering/prompts/ui-ux-governance.txt
+AEGIS_TEST_CLI=codex bash tests/explicit-skill-requests/run-test.sh ui-ux-governance tests/explicit-skill-requests/prompts/use-ui-ux-governance.txt
 ```
 
 Notes:

@@ -169,6 +169,16 @@ else
 fi
 echo ""
 
+echo ">>> Test: use-ui-ux-governance"
+if "$SCRIPT_DIR/run-test.sh" "ui-ux-governance" "$PROMPTS_DIR/use-ui-ux-governance.txt"; then
+    PASSED=$((PASSED + 1))
+    RESULTS="$RESULTS\nPASS: use-ui-ux-governance"
+else
+    FAILED=$((FAILED + 1))
+    RESULTS="$RESULTS\nFAIL: use-ui-ux-governance"
+fi
+echo ""
+
 echo "=== Summary ==="
 echo -e "$RESULTS"
 echo ""

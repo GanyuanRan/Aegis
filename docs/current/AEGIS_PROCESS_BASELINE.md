@@ -604,6 +604,33 @@ make the slot explicit before task decomposition, repair, or strict RED/GREEN.
 The slot stays advisory method-pack discipline; it does not grant runtime
 authority, authoritative `GateDecision`, or completion authority.
 
+### 3.0j UI/UX Governance
+
+`ui-ux-governance` owns portable experience rules for user-facing interfaces
+and interaction flows, including API changes that alter visible states or
+recovery. Compose it with the current task owner; it does not own design
+approval, implementation, review dispatch, or completion.
+
+For an equivalent user goal and accepted requirements, prefer the solution
+with less total user effort: understanding, decisions, input/navigation,
+waiting, and error recovery. Preserve accessibility, informed control, and
+necessary safeguards. Click count alone is insufficient evidence; removing
+protection or shifting effort to recovery does not satisfy this principle.
+
+Use the project's requirements, design system, accepted references, and
+supported users/devices as the basis. Select applicable visual, interaction,
+state, accessibility, responsive, and performance checks from the actual
+change. Tiny wording changes stay bounded; backend-only changes without
+user-facing effects do not trigger this skill. Respect `auto` / `explicit`
+activation semantics and load detailed references only when needed.
+
+Carry applicable requirements into existing design/plan acceptance, review
+findings, and verification evidence slots. Tests, screenshots, manual checks,
+and user research prove different scopes; missing browser/device or user
+evidence remains uncovered. No new score, artifact schema, framework, or host
+adapter is required. This is advisory method discipline, not authoritative
+`GateDecision`, `PolicySnapshot`, evidence sufficiency, or completion authority.
+
 ### 3.1 Ripple Signal Triage
 
 Ripple Signal Triage is the pre-change entry point for dependency-aware work.

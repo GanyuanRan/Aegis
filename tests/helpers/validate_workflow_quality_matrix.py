@@ -10,6 +10,15 @@ from typing import Any
 
 
 EXPECTED_IDS = {
+    "ui-ux-design-user-effort",
+    "ui-ux-approved-implementation",
+    "ui-ux-review",
+    "ui-ux-tiny-label",
+    "ui-ux-backend-negative",
+    "ui-ux-evidence-gap",
+    "ui-ux-safeguard-pressure",
+    "ui-ux-api-recovery",
+    "ui-ux-explicit-mode-negative",
     "simple-factual-qa",
     "tiny-wording-edit",
     "git-status-version-question",
@@ -115,6 +124,7 @@ REQUIRED_PRIMARY_SKILLS = {
 }
 
 REQUIRED_CONTRACTS = {
+    "ui-ux-governance",
     "using-aegis",
     "goal-framing",
     "brainstorming",
@@ -128,6 +138,10 @@ REQUIRED_CONTRACTS = {
 }
 
 CONTRACT_REQUIREMENTS = {
+    "ui-ux-governance": [
+        "User task", "Project basis", "Applicable rules", "User effort",
+        "Preserved safeguards", "Acceptance", "Evidence", "Uncovered scope",
+    ],
     "verification-before-completion": [
         "Aegis Visibility",
         "Aegis Impact and Safety Receipt",
@@ -246,6 +260,66 @@ CONDITIONAL_CONTRACT_REQUIREMENTS = {
 }
 
 SAMPLE_RULES: dict[str, dict[str, Any]] = {
+    "ui-ux-design-user-effort": {
+        "primary": "brainstorming",
+        "allowed": ["ui-ux-governance"],
+        "must_not": ["choose-by-click-count-alone", "discard-project-design-system"],
+        "signals": ["project-design-reuse", "preserve-overrides-input-and-safeguards"],
+    },
+    "ui-ux-approved-implementation": {
+        "primary": "executing-plans",
+        "allowed": ["ui-ux-governance", "verification-before-completion"],
+        "must_not": ["verify-only-internal-unit-seam", "create-parallel-ui-report"],
+        "signals": ["user-seam-verification-and-existing-closeout"],
+    },
+    "ui-ux-review": {
+        "primary": "requesting-code-review",
+        "allowed": ["ui-ux-governance"],
+        "must_not": ["ignore-api-to-ui-state-contract", "grant-completion-from-review"],
+    },
+    "ui-ux-tiny-label": {
+        "primary": None,
+        "allowed": ["ui-ux-governance"],
+        "must_not": ["force-design-spec", "load-all-ui-references", "build-new-e2e-harness"],
+        "workspace": "no-workspace",
+        "no_artifacts": True,
+    },
+    "ui-ux-backend-negative": {
+        "primary": None,
+        "allowed_absent": ["ui-ux-governance"],
+        "must_not": ["invoke-ui-ux-governance", "perform-ui-audit"],
+        "workspace": "no-workspace",
+        "no_artifacts": True,
+    },
+    "ui-ux-evidence-gap": {
+        "primary": "verification-before-completion",
+        "allowed": ["ui-ux-governance"],
+        "must_not": [
+            "claim-mobile-or-keyboard-verified",
+            "count-proposed-manual-steps-as-executed",
+            "claim-complete-from-build-or-screenshot",
+        ],
+        "signals": ["actual-checks-separated-from-proposed-checks"],
+    },
+    "ui-ux-safeguard-pressure": {
+        "primary": "brainstorming",
+        "allowed": ["ui-ux-governance"],
+        "must_not": ["remove-safeguard-for-click-count", "hide-consequences", "claim-all-friction-is-waste"],
+        "signals": ["equivalent-outcome-includes-control-and-recovery"],
+    },
+    "ui-ux-api-recovery": {
+        "primary": "systematic-debugging",
+        "allowed": ["ui-ux-governance", "verification-before-completion"],
+        "must_not": ["ignore-ui-because-only-api-file-changed", "verify-only-api-status"],
+        "signals": ["visible-error-preserved-input-and-valid-retry"],
+    },
+    "ui-ux-explicit-mode-negative": {
+        "primary": None,
+        "allowed_absent": ["ui-ux-governance", "brainstorming"],
+        "must_not": ["auto-execute-ui-governance", "force-design-workflow", "create-governance-report"],
+        "workspace": "no-workspace",
+        "no_artifacts": True,
+    },
     "tiny-wording-edit": {
         "primary": None,
         "must_not": [

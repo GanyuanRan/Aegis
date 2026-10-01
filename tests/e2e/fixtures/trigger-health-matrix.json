@@ -192,6 +192,75 @@
       "allowedSecondarySkills": ["using-aegis"],
       "mustNotDo": ["force-full-workflow", "load-doc-checklist-skill-by-host-match", "create-project-workspace-records"],
       "failureLayer": "false-positive"
+    },
+    {
+      "id": "ui-ux-design-user-effort",
+      "prompt": "Redesign expense submission using our existing design system. Profile data can supply team and cost centre with overrides; employee number is requested twice. Compare one dense screen with two clear steps and account for server rejection after input. Define acceptance before implementation.",
+      "expectedPrimarySkill": "brainstorming",
+      "allowedSecondarySkills": [
+        "ui-ux-governance"
+      ],
+      "mustNotDo": [
+        "choose-by-click-count-alone",
+        "discard-project-design-system",
+        "omit-failure-recovery",
+        "claim-measured-usability-without-user-evidence"
+      ],
+      "failureLayer": "routing-or-depth"
+    },
+    {
+      "id": "ui-ux-tiny-label",
+      "prompt": "Change the existing button label from Confirm to Submit expense. The behavior and design are already accepted.",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": [
+        "ui-ux-governance"
+      ],
+      "mustNotDo": [
+        "force-design-spec",
+        "load-all-ui-references",
+        "create-project-workspace-records",
+        "build-new-e2e-harness"
+      ],
+      "failureLayer": "routing-or-depth"
+    },
+    {
+      "id": "ui-ux-backend-negative",
+      "prompt": "Optimize an internal nightly SQL query without changing displayed data, interface behavior, progress, errors, or recovery contracts.",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": [],
+      "mustNotDo": [
+        "invoke-ui-ux-governance",
+        "perform-ui-audit",
+        "create-design-artifact"
+      ],
+      "failureLayer": "routing-or-depth"
+    },
+    {
+      "id": "ui-ux-api-recovery",
+      "prompt": "After an API error response change the expense form clears valid input and offers no retry. Diagnose and repair the producer-to-rendered-state defect without changing unrelated screens.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": [
+        "ui-ux-governance",
+        "verification-before-completion"
+      ],
+      "mustNotDo": [
+        "ignore-ui-because-only-api-file-changed",
+        "guess-fix-without-reproduction",
+        "verify-only-api-status"
+      ],
+      "failureLayer": "routing-or-depth"
+    },
+    {
+      "id": "ui-ux-explicit-mode-negative",
+      "prompt": "Activation mode is explicit. Make a small existing layout adjustment under the accepted design; I have not invoked any method pack or skill.",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": [],
+      "mustNotDo": [
+        "auto-execute-ui-governance",
+        "force-design-workflow",
+        "create-governance-report"
+      ],
+      "failureLayer": "routing-or-depth"
     }
   ],
   "failureReportFields": [

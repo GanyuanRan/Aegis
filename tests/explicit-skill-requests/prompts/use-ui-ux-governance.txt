@@ -1,0 +1,1 @@
+Use aegis:ui-ux-governance to review our checkout for delivery. Unit tests and the build pass, but the browser runner is unavailable and our only screenshot is desktop with short demo content. Mobile and keyboard use are supported requirements. State what the evidence proves, what remains unverified, and the smallest useful next checks. Do not implement or create a test harness.

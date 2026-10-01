@@ -12,6 +12,7 @@ if [ "$TEST_CLI" = "codex" ]; then
     # Codex currently provides the lightweight active Wave 1 + Wave 2 smoke matrix.
     SKILLS=(
         "brainstorming"
+        "ui-ux-governance"
         "communicating-concisely"
         "establishing-project-context"
         "systematic-debugging"
@@ -25,6 +26,7 @@ if [ "$TEST_CLI" = "codex" ]; then
 else
     SKILLS=(
         "brainstorming"
+        "ui-ux-governance"
         "communicating-concisely"
         "establishing-project-context"
         "systematic-debugging"

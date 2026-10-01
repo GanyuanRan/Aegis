@@ -1260,6 +1260,26 @@ This skill is composed by owning workflows such as `brainstorming`,
 `verification-before-completion`. It should not become a new global hot-path
 entry, and it never grants destructive execution authority.
 
+### 4.6b `ui-ux-governance` (composed)
+
+Purpose: apply shared experience rules throughout user-facing design, planning,
+implementation, review, and verification, including API-to-UI state changes.
+The existing task workflow remains primary. Pure backend work stays on its
+own route; tiny UI wording changes receive only relevant checks.
+
+Compact semantics, folded into the active workflow's existing output:
+
+- user task and project basis;
+- applicable rules and observable acceptance;
+- total user effort and preserved safeguards;
+- evidence, covered scope, and uncovered scope.
+
+Prefer lower understanding, decision, operation, waiting, and recovery effort
+under equivalent requirements and user control. Do not substitute click count,
+a visual grade, or a passing build for evidence. Read only the triggered
+sections of the experience and verification references. Preserve explicit-mode
+gates, project design authority, and a single completion report.
+
 ### 4.7 `long-task-continuation`
 
 Purpose:

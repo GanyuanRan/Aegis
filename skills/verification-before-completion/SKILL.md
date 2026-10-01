@@ -31,6 +31,10 @@ Destructive/irreversible work needs scoped permission; broad assent is not scope
 
 ## Required Evidence Slots
 
+For claims about a changed interface/interaction, compose `ui-ux-governance`
+and its relevant verification guidance. Carry actual results and uncovered
+user-facing criteria into the slots below; retain this single closeout owner.
+
 ```text
 - Evidence action / check performed:
 - Result / exit status:
