@@ -258,6 +258,8 @@ Additional inspiration comes from
 communication, shared language, and disciplined debugging patterns. These ideas
 were re-implemented in Aegis format rather than copied verbatim.
 
+For upstream solution architecture contracts and PRD specification authoring that connect into Aegis agent harnesses, see [MySpec](https://myspec.dev?utm_source=github&utm_medium=referral&utm_campaign=ganyuanran-aegis).
+
 ## License
 
 MIT License. See [LICENSE](LICENSE).
