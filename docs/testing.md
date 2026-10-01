@@ -69,7 +69,9 @@ Notes:
 - On Windows + bash/WSL, the helper defaults to `cmd.exe /c codex.cmd` so the smoke test uses the working Windows Codex CLI instead of any broken Linux-side install.
 - Codex smoke artifacts are written under repo-local `.tmp/aegis-tests/` so the Windows CLI can read the same files and working directories.
 - Override the executable with `CODEX_CMD=/path/to/codex` if needed.
-- The Codex smoke runner verifies skill loading by looking for `<skill>/SKILL.md` reads in the CLI transcript.
+- The Codex smoke runner records `<skill>/SKILL.md` read-command markers in the
+  CLI transcript. `PASS` alone does not prove a successful skill-body read;
+  confirm the raw command result and emitted body before claiming loading.
 - This is a minimal host-native smoke matrix for the currently approved Wave 1 + Wave 2 skills. It does not replace the deeper Claude transcript checks used elsewhere in this document.
 
 ### Codex TDD Route Smoke

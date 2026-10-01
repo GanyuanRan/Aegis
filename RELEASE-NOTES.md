@@ -1,5 +1,38 @@
 # Aegis Release Notes
 
+## v2.12.0 (2026-10-01)
+
+### UI/UX governance on demand
+
+- Add `ui-ux-governance`, a compositional rule skill for user-facing interfaces,
+  interaction flows, and API changes that affect visible states or recovery.
+- Prefer lower total user effort under equivalent goals and accepted
+  requirements: understanding, decisions, operations, waiting, and recovery.
+  Preserve accessibility, informed control, and necessary safeguards.
+- Load only applicable experience and verification sections. Reuse the
+  project's design system and accepted references; keep tiny wording changes
+  scoped and exclude backend changes with no user-facing effect.
+- Carry applicable criteria through design, planning, execution, debugging,
+  review, and verification. Existing workflows retain their decision and
+  completion roles; the former inline UI checklist points to the shared owner.
+
+### Evidence and upgrading
+
+- Add positive, lifecycle, API-recovery, tiny-change, backend-negative,
+  explicit-mode, missing-evidence, and safeguard-pressure scenario contracts,
+  plus natural and explicit Codex skill-loading smoke prompts.
+- Keep missing browser/device and usability evidence explicit. Bounded skill
+  observations and loading checks do not establish measured product usability
+  or a new benchmark score. Other hosts retain their documented evidence scope.
+- The offline benchmark policy fixture has a limited target mapping and fails
+  with Windows Python's `AMD64` identifier. Windows validation can run the
+  unchanged checks in an isolated Linux container; this verification path does
+  not change host installation requirements.
+- Synchronize all eight package/plugin version fields at `2.12.0`. Update via
+  the existing host installation route and restart or reload as that host
+  requires. Both manual global routing-prefix mirrors remain compatible;
+  no manual re-copy is needed for this release.
+
 ## v2.11.2 (2026-09-29)
 
 ### DeepSeek Harness installation compatibility

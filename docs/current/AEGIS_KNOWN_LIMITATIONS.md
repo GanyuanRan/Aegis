@@ -101,6 +101,9 @@ It only records limitations supported by current fresh evidence and does not spe
 - `env AEGIS_TEST_CLI=codex bash tests/explicit-skill-requests/run-test.sh brainstorming ...`
 - `env AEGIS_TEST_CLI=codex bash tests/skill-triggering/run-test.sh brainstorming ...`
 - Bridge and parser behavior of `tests/helpers/codex-cli.sh`
+- Read-command markers can satisfy the current trigger parser even when the
+  command fails. Confirm the raw result and emitted skill body before claiming
+  loading; runner `PASS` alone is insufficient.
 - Whether the same smoke reaches skill discovery with and without the failing
   Windows sandbox boundary
 
@@ -108,6 +111,9 @@ It only records limitations supported by current fresh evidence and does not spe
 - When representative Codex smoke under Git Bash passes stably within the
   current runner timeout window and the Windows sandbox can reliably spawn its
   configured shell
+- Retire the read-marker limitation only after the parser correlates command
+  outcomes and rejects failed reads in regression coverage; until then raw
+  readback remains required.
 
 ---
 
@@ -1038,6 +1044,50 @@ request.
 **Retirement Trigger**
 - Repeated current-build evidence and independently prepared cases support a
   scoped claim without changing frozen prompts or scoring after seeing results
+
+---
+
+### 2.31 UI/UX Rules Do Not Establish Product Usability
+
+**Retained Item**
+- Task-scoped `ui-ux-governance` rules and advisory experience judgments
+
+**Retention Reason**
+- Skill loading, scenario contracts, and bounded agent observations verify
+  method behavior, not measured usability of an implemented product
+- Browser/device, assistive-technology, realistic-content, and relevant user
+  evidence must come from the affected project and supported conditions
+
+**Observation Metric**
+- The skill's conditional verification reference, actual task checks, and
+  explicit separation of executed evidence from proposed checks
+
+**Retirement Trigger**
+- Project-specific evidence supports the exact experience claim; a method-pack
+  release alone does not retire this evidence boundary
+
+---
+
+### 2.32 Offline Benchmark Fixture Has a Limited Target Mapping
+
+**Retained Item**
+- The Linux target mapping in `tests/e2e/agentic-benchmark-check.sh`
+
+**Retention Reason**
+- The offline launcher/runtime fixture currently maps only Linux
+  `x86_64`/`aarch64`; Windows Python reports `AMD64` and fails that check
+- An isolated Linux container can execute the unchanged policy checks; this
+  is a test-environment limitation, not a Linux-only host-install requirement
+- Native macOS fixture execution was not checked; the target mapping alone
+  does not establish which macOS configurations can execute the fixture
+
+**Observation Metric**
+- Run the original aggregate check under Linux and distinguish its result
+  from native Windows host skill-loading evidence
+
+**Retirement Trigger**
+- A portable fixture with explicit Windows and macOS regression evidence
+  replaces the current Linux-only test mapping
 
 ---
 

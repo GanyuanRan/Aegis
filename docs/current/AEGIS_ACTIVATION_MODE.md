@@ -195,6 +195,7 @@ skill. To honor the user's explicit intent anyway, the method pack adds an
 - `brainstorming`
 - `writing-plans`
 - `verification-before-completion`
+- `ui-ux-governance`
 
 The gate says: when activation mode is `explicit` and the current request did
 not explicitly invoke Aegis or the loaded skill by name, the skill exits back
