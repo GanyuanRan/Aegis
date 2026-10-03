@@ -28,6 +28,20 @@ CMD_COMMAND_PREFIX_RE = re.compile(
     re.IGNORECASE,
 )
 
+RESULT_STATUS_RE = re.compile(
+    r"^\s*(?P<status>succeeded|exited\s+\d+)\s+in\b.*:\s*$",
+    re.IGNORECASE,
+)
+
+FRONTMATTER_NAME_RE = re.compile(
+    r'''^\s*name\s*:\s*["']?(?P<skill>[A-Za-z0-9._-]+)["']?\s*$''',
+    re.IGNORECASE,
+)
+
+FRONTMATTER_DESCRIPTION_RE = re.compile(r"^\s*description\s*:", re.IGNORECASE)
+
+RESULT_BOUNDARY_MARKERS = {"exec", "codex", "tokens used"}
+
 SKILL_PATH_RE = re.compile(
     r"""(?<![A-Za-z0-9._-])skills
     (?:[\\/]+[A-Za-z0-9._-]+)*
@@ -139,7 +153,7 @@ def extract_skill_from_line(line: str) -> str | None:
     return skills[0] if skills else None
 
 
-def iter_skill_load_events(lines: Iterable[str]) -> Iterator[tuple[int, str]]:
+def iter_skill_read_attempts(lines: Iterable[str]) -> Iterator[tuple[int, str]]:
     powershell_continuation = False
     for line_number, line in enumerate(lines, start=1):
         command_prefix = POWERSHELL_COMMAND_PREFIX_RE.search(line)
@@ -165,6 +179,84 @@ def iter_skill_load_events(lines: Iterable[str]) -> Iterator[tuple[int, str]]:
             skills = extract_skills_from_line(line)
 
         for skill in skills:
+            yield line_number, skill
+
+
+def extract_skill_names_from_result(lines: list[str]) -> list[str]:
+    """Return skill names proven by frontmatter in one successful exec result."""
+
+    skills: list[str] = []
+    index = 0
+    while index < len(lines):
+        if lines[index].strip() != "---":
+            index += 1
+            continue
+
+        closing = index + 1
+        while closing < len(lines) and lines[closing].strip() != "---":
+            closing += 1
+        if closing >= len(lines):
+            break
+
+        header = lines[index + 1 : closing]
+        name: str | None = None
+        has_description = False
+        for line in header:
+            match = FRONTMATTER_NAME_RE.match(line)
+            if match:
+                name = match.group("skill")
+            if FRONTMATTER_DESCRIPTION_RE.match(line):
+                has_description = True
+        if name and has_description:
+            skills.append(name)
+        index = closing + 1
+
+    return skills
+
+
+def iter_successful_skill_results(lines: list[str]) -> Iterator[tuple[int, str]]:
+    for index, line in enumerate(lines):
+        status = RESULT_STATUS_RE.match(line)
+        if not status or status.group("status").lower() != "succeeded":
+            continue
+
+        result_lines: list[str] = []
+        for candidate in lines[index + 1 :]:
+            if RESULT_STATUS_RE.match(candidate):
+                break
+            if candidate.strip() in RESULT_BOUNDARY_MARKERS:
+                break
+            result_lines.append(candidate)
+
+        for skill in extract_skill_names_from_result(result_lines):
+            yield index + 1, skill
+
+
+def iter_skill_load_events(lines: Iterable[str]) -> Iterator[tuple[int, str]]:
+    """Yield reads whose successful result proves the requested skill was loaded."""
+
+    materialized = list(lines)
+    attempts = [
+        (ordinal, line_number, skill)
+        for ordinal, (line_number, skill) in enumerate(
+            iter_skill_read_attempts(materialized)
+        )
+    ]
+    confirmed_attempts: set[int] = set()
+
+    for result_line, skill in iter_successful_skill_results(materialized):
+        candidates = [
+            attempt
+            for attempt in attempts
+            if attempt[0] not in confirmed_attempts
+            and attempt[1] < result_line
+            and attempt[2] == skill
+        ]
+        if candidates:
+            confirmed_attempts.add(candidates[-1][0])
+
+    for ordinal, line_number, skill in attempts:
+        if ordinal in confirmed_attempts:
             yield line_number, skill
 
 

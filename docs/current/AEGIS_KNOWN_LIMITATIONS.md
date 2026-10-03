@@ -101,9 +101,9 @@ It only records limitations supported by current fresh evidence and does not spe
 - `env AEGIS_TEST_CLI=codex bash tests/explicit-skill-requests/run-test.sh brainstorming ...`
 - `env AEGIS_TEST_CLI=codex bash tests/skill-triggering/run-test.sh brainstorming ...`
 - Bridge and parser behavior of `tests/helpers/codex-cli.sh`
-- Read-command markers can satisfy the current trigger parser even when the
-  command fails. Confirm the raw result and emitted skill body before claiming
-  loading; runner `PASS` alone is insufficient.
+- The trigger parser accepts a skill load only when a successful command result
+  reads back matching `name` and `description` frontmatter. Failed reads remain
+  negative regression cases rather than load evidence.
 - Whether the same smoke reaches skill discovery with and without the failing
   Windows sandbox boundary
 
@@ -111,9 +111,6 @@ It only records limitations supported by current fresh evidence and does not spe
 - When representative Codex smoke under Git Bash passes stably within the
   current runner timeout window and the Windows sandbox can reliably spawn its
   configured shell
-- Retire the read-marker limitation only after the parser correlates command
-  outcomes and rejects failed reads in regression coverage; until then raw
-  readback remains required.
 
 ---
 

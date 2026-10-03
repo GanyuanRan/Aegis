@@ -12,6 +12,21 @@ assert SPEC.loader is not None
 SPEC.loader.exec_module(MODULE)
 
 
+def successful_result(*skill_names: str) -> list[str]:
+    lines = [" succeeded in 1ms:"]
+    for skill_name in skill_names:
+        lines.extend(
+            [
+                "---",
+                f"name: {skill_name}",
+                'description: "Loaded skill fixture"',
+                "---",
+                f"# {skill_name}",
+            ]
+        )
+    return lines
+
+
 class ParseCodexSkillsTests(unittest.TestCase):
     def test_extracts_real_skill_load_commands(self) -> None:
         lines = [
@@ -22,6 +37,8 @@ class ParseCodexSkillsTests(unittest.TestCase):
             "\"Get-Content -Path 'skills/systematic-debugging/SKILL.md' -TotalCount 320\" "
             "in X:\\repo\\Aegis",
         ]
+        lines.extend(successful_result("using-aegis"))
+        lines.extend(successful_result("systematic-debugging"))
 
         self.assertEqual(
             list(MODULE.iter_loaded_skills(lines)),
@@ -37,6 +54,8 @@ class ParseCodexSkillsTests(unittest.TestCase):
             "\"Get-Content 'C:\\\\Users\\\\Example\\\\.codex\\\\skills\\\\aegis\\\\systematic-debugging\\\\SKILL.md' "
             "-Raw\" in X:\\repo\\Aegis",
         ]
+        lines.extend(successful_result("using-aegis"))
+        lines.extend(successful_result("systematic-debugging"))
 
         self.assertEqual(
             list(MODULE.iter_loaded_skills(lines)),
@@ -50,6 +69,7 @@ class ParseCodexSkillsTests(unittest.TestCase):
             "Get-Content -Raw 'C:\\\\Users\\\\Example\\\\.codex\\\\aegis\\\\skills\\\\brainstorming\\\\SKILL.md'\" "
             "in X:\\repo\\Aegis",
         ]
+        lines.extend(successful_result("using-aegis", "brainstorming"))
 
         self.assertEqual(
             list(MODULE.iter_loaded_skills(lines)),
@@ -65,6 +85,7 @@ class ParseCodexSkillsTests(unittest.TestCase):
             "in X:\\repo\\Aegis",
             "Get-Content -LiteralPath 'skills/systematic-debugging/SKILL.md' -Raw",
         ]
+        lines.extend(successful_result("using-aegis", "brainstorming"))
 
         self.assertEqual(
             list(MODULE.iter_loaded_skills(lines)),
@@ -98,6 +119,7 @@ class ParseCodexSkillsTests(unittest.TestCase):
             "foreach (\"'$f in $files) { Write-Output \"FILE: $f\"; "
             "Get-Content -LiteralPath $f -Raw }' in X:\\repo\\Aegis",
         ]
+        lines.extend(successful_result("using-aegis", "brainstorming"))
 
         self.assertEqual(
             list(MODULE.iter_loaded_skills(lines)),
@@ -159,6 +181,8 @@ class ParseCodexSkillsTests(unittest.TestCase):
             "\"Get-Content -Path 'X:/repo/Aegis/skills/systematic-debugging/SKILL.md' "
             "-TotalCount 260\" in X:\\repo\\Aegis",
         ]
+        lines.extend(successful_result("using-aegis"))
+        lines.extend(successful_result("systematic-debugging"))
 
         self.assertEqual(MODULE.first_skill_load_line(lines, "systematic-debugging"), 3)
 
@@ -168,6 +192,7 @@ class ParseCodexSkillsTests(unittest.TestCase):
             "\"Get-Content -Path 'X:/repo/Aegis/skills/long-task-continuation/SKILL.md' "
             "-TotalCount 260\" in X:\\repo\\Aegis",
         ]
+        lines.extend(successful_result("long-task-continuation"))
 
         self.assertEqual(
             list(MODULE.iter_loaded_skills(lines)),
@@ -181,6 +206,8 @@ class ParseCodexSkillsTests(unittest.TestCase):
             "/bin/bash -lc \"sed -n '1,300p' skills/brainstorming/SKILL.md && "
             "sed -n '301,700p' skills/brainstorming/SKILL.md\" in /repo",
         ]
+        lines.extend(successful_result("using-aegis"))
+        lines.extend(successful_result("brainstorming"))
 
         self.assertEqual(
             list(MODULE.iter_loaded_skills(lines)),
@@ -194,6 +221,7 @@ class ParseCodexSkillsTests(unittest.TestCase):
             '.agents\\skills\\using-aegis\\SKILL.md && type '
             '.agents\\skills\\brainstorming\\SKILL.md" in X:\\repo',
         ]
+        lines.extend(successful_result("using-aegis", "brainstorming"))
 
         self.assertEqual(
             list(MODULE.iter_loaded_skills(lines)),
@@ -219,6 +247,60 @@ class ParseCodexSkillsTests(unittest.TestCase):
         ]
 
         self.assertEqual(list(MODULE.iter_loaded_skills(lines)), [])
+
+    def test_rejects_failed_skill_reads(self) -> None:
+        lines = [
+            "exec",
+            "/bin/bash -lc 'cat /root/.agents/skills/aegis/ui-ux-governance/SKILL.md' in /work/project",
+            " exited 1 in 0ms:",
+            "bwrap: No permissions to create new namespace",
+            "exec",
+            "/bin/bash -lc 'cat /root/.agents/skills/aegis/using-aegis/SKILL.md' in /work/project",
+            " exited 1 in 0ms:",
+            "bwrap: No permissions to create new namespace",
+        ]
+
+        self.assertEqual(list(MODULE.iter_loaded_skills(lines)), [])
+
+    def test_matches_parallel_success_results_by_frontmatter(self) -> None:
+        lines = [
+            "exec",
+            "/bin/bash -lc 'cat /root/.agents/skills/aegis/using-aegis/SKILL.md' in /work/project",
+            "exec",
+            "/bin/bash -lc 'cat /root/.agents/skills/aegis/ui-ux-governance/SKILL.md' in /work/project",
+            *successful_result("ui-ux-governance"),
+            *successful_result("using-aegis"),
+        ]
+
+        self.assertEqual(
+            list(MODULE.iter_loaded_skills(lines)),
+            ["using-aegis", "ui-ux-governance"],
+        )
+        self.assertEqual(MODULE.first_skill_load_line(lines, "using-aegis"), 2)
+        self.assertEqual(MODULE.first_skill_load_line(lines, "ui-ux-governance"), 4)
+
+    def test_requires_matching_frontmatter_from_success_result(self) -> None:
+        lines = [
+            "exec",
+            "/bin/bash -lc 'cat /root/.agents/skills/aegis/brainstorming/SKILL.md' in /work/project",
+            *successful_result("using-aegis"),
+        ]
+
+        self.assertEqual(list(MODULE.iter_loaded_skills(lines)), [])
+
+    def test_successful_retry_uses_the_retry_command_line(self) -> None:
+        lines = [
+            "exec",
+            "/bin/bash -lc 'cat /root/.agents/skills/aegis/brainstorming/SKILL.md' in /work/project",
+            " exited 1 in 0ms:",
+            "read failed",
+            "exec",
+            "/bin/bash -lc 'cat /root/.agents/skills/aegis/brainstorming/SKILL.md' in /work/project",
+            *successful_result("brainstorming"),
+        ]
+
+        self.assertEqual(list(MODULE.iter_loaded_skills(lines)), ["brainstorming"])
+        self.assertEqual(MODULE.first_skill_load_line(lines, "brainstorming"), 6)
 
 
 if __name__ == "__main__":
