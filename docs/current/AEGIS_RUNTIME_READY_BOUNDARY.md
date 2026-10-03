@@ -4,7 +4,13 @@ Status: `Approved`
 
 ## 1. Document Scope
 
-This document defines the minimum boundary between the current `Aegis Method Pack` and the future `Aegis Runtime Core`.
+This document defines the minimum boundary between `Aegis Method Pack` and an
+independent runtime core. [Autoloom](https://github.com/GanyuanRan/Autoloom) is
+the Aegis team's product carrying this runtime-core direction into execution;
+see the [product relationship](AEGIS_PRODUCT_BASELINE.md#current-product-relationship-autoloom).
+The responsibilities reserved here for a runtime core are architectural
+requirements, not evidence that Autoloom's Alpha implements or verifies all of
+them. Autoloom owns its implementation and release evidence.
 
 This document is only responsible for answering the following questions:
 
@@ -349,7 +355,8 @@ Responsible for:
 
 ## 6. Current Operating Mode
 
-Before the runtime core is independently landed, this repository is only permitted to adopt:
+This method-pack repository continues to adopt, independently of Autoloom's
+release progress:
 
 > `Advisory-first, runtime-ready`
 

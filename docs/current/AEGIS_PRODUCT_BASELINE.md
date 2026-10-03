@@ -105,6 +105,26 @@ These capabilities are only permitted to exist in a future independent `Aegis Ru
 
 ## 5. Relationship With the Overall Aegis Roadmap
 
+### Current product relationship: Autoloom
+
+[Autoloom](https://github.com/GanyuanRan/Autoloom) is the Aegis team's independent
+AI coding desktop product, carrying the runtime-core direction into execution.
+It integrates Aegis's core governance methods into development. Its runtime
+implementation, release scope, downloads, and feedback belong to Autoloom.
+
+Aegis remains an independently usable, open-source method pack with multi-host
+support; using it does not require Autoloom. Autoloom currently offers a free
+Windows x64 Alpha client with user-selected model providers and separately
+billed model usage. Its client source code is not currently public. Consult
+Autoloom's repository and releases for current availability and verified scope.
+
+References in this document to the future runtime core describe the architectural direction
+and reserved responsibilities, not a claim that every responsibility is already
+implemented or verified in Autoloom. Aegis benchmark results are evidence about
+the measured method-pack configuration, not Autoloom performance evidence.
+
+### Architectural separation
+
 The currently recommended overall product shape is:
 
 - `Aegis Method Pack`

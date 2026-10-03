@@ -80,6 +80,19 @@ covers 22 cases with one observation per arm and case. It uses a different run
 profile from the extended snapshot above and does not measure the changes in
 this release.
 
+## Try Aegis Methods in a Coding Runtime
+
+[Autoloom](https://github.com/GanyuanRan/Autoloom) is our AI coding desktop
+client. It brings Aegis's change necessity analysis, complexity governance, and
+delivery review into development execution, helping you spend less time
+repeating instructions and inspect the evidence behind delivered changes.
+
+Currently available as a **Windows x64 Alpha**. The client is free; choose your
+model provider, which bills model usage separately.
+
+**[Explore Autoloom](https://github.com/GanyuanRan/Autoloom) ·
+[Download Alpha](https://github.com/GanyuanRan/Autoloom/releases)**
+
 ## Quick Install
 
 New here? The fastest start is one prompt to your agent — the full
@@ -248,6 +261,22 @@ Read:
 - Feedback and discussion: [GitHub Discussions](https://github.com/GanyuanRan/Aegis/discussions) · [Issues](https://github.com/GanyuanRan/Aegis/issues) · [LINUX DO](https://linux.do/t/topic/2108966/20) · [DEV.to](https://dev.to/_879c5a0279451d52e43c3/aegis-a-method-pack-for-more-reliable-ai-coding-agents-1gfm)
 - Extend Aegis: write your own skill with `aegis:writing-skills`; see the [Workflow Guide](docs/current/AEGIS_WORKFLOW_GUIDE.md).
 - Follow along: [RELEASE-NOTES.md](RELEASE-NOTES.md) · [Releases](https://github.com/GanyuanRan/Aegis/releases)
+
+## Aegis and Autoloom
+
+- **Aegis** is our open-source method pack for bringing engineering discipline
+  to your existing AI coding host. It remains independently usable with
+  multi-host support; Autoloom is not required.
+- **[Autoloom](https://github.com/GanyuanRan/Autoloom)** is our independent
+  desktop product for experiencing Aegis's core methods in the coding runtime.
+  Its client source code is not currently public. Its repository maintains
+  downloads, release scope, and feedback.
+
+Autoloom carries the runtime-core direction while Aegis retains its method-pack
+boundary. The benchmarks on this page measure Aegis, not Autoloom. See the
+[product relationship](docs/current/AEGIS_PRODUCT_BASELINE.md#current-product-relationship-autoloom)
+for the boundary, or bring a scoped task to Autoloom and
+[share your experience](https://github.com/GanyuanRan/Autoloom/issues).
 
 ## Relationship To Superpowers
 

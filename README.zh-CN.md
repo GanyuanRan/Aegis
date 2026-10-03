@@ -77,6 +77,18 @@ Aegis 是一套方法包，让 AI 编程 agent 像有工程纪律的人一样干
 覆盖 22 个案例，每个案例在两组各有一次观察。它与上方 extended 快照使用不同的
 运行 profile，也没有测量本次发布中的改动。
 
+## 体验 Aegis 方法在运行时中的应用
+
+[Autoloom](https://github.com/GanyuanRan/Autoloom) 是我们开发的 AI 编程桌面
+客户端，将 Aegis 的变更必要性分析、复杂度治理和交付审查融入开发执行，帮助
+你减少反复提醒，让变更有依据、交付有证据。
+
+当前提供 **Windows x64 Alpha**。客户端免费，自选模型，模型调用费用由供应商
+另行收取。
+
+**[了解 Autoloom](https://github.com/GanyuanRan/Autoloom) ·
+[下载 Alpha](https://github.com/GanyuanRan/Autoloom/releases)**
+
 ## 极简安装
 
 第一次使用？最快路径是把下面这段话交给你的 agent，完整安装与验证流程就在其中。
@@ -229,6 +241,20 @@ bash tests/e2e/layer1-fast-check.sh --host-profile none
 - 反馈与讨论：[GitHub Discussions](https://github.com/GanyuanRan/Aegis/discussions) · [Issues](https://github.com/GanyuanRan/Aegis/issues) · [LINUX DO](https://linux.do/t/topic/2108966/20) · [DEV.to](https://dev.to/_879c5a0279451d52e43c3/aegis-a-method-pack-for-more-reliable-ai-coding-agents-1gfm)
 - 扩展 Aegis：使用 aegis:writing-skills 写自己的 skill；参见[工作流指南](docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md)。
 - 关注发布：[RELEASE-NOTES.md](RELEASE-NOTES.md) · [Releases](https://github.com/GanyuanRan/Aegis/releases)
+
+## Aegis 与 Autoloom
+
+- **Aegis** 是我们的开源方法包，适合希望继续使用现有 AI 编程工具、引入工程
+  方法的用户。它保持独立使用和多宿主支持，不要求安装 Autoloom。
+- **[Autoloom](https://github.com/GanyuanRan/Autoloom)** 是我们的独立桌面产品，
+  适合希望在编程运行时中体验 Aegis 核心方法的用户。客户端源码暂未公开；
+  下载、版本能力与反馈由 Autoloom 仓库维护。
+
+Autoloom 承接 runtime core 方向，Aegis 保持方法包边界。本页 benchmark 衡量
+的是 Aegis，不代表 Autoloom 的性能证据。详细边界见
+[产品关系说明](docs/current/AEGIS_PRODUCT_BASELINE.md#current-product-relationship-autoloom)。
+也欢迎带一个范围明确的真实任务体验 Autoloom，并
+[分享使用反馈](https://github.com/GanyuanRan/Autoloom/issues)。
 
 ## 与 Superpowers 的关系
 

@@ -125,3 +125,14 @@
 - 独立 `Aegis Runtime Core` 已落地，且当前仓需要重新定义与其关系
 - 当前方法层与未来 core 的边界文档已无法覆盖真实需求
 - 产品目标从 method pack 演进为新的多仓或多进程形态，需要新的边界 ADR
+
+## 产品关系澄清：Autoloom
+
+Autoloom 已作为团队的独立 AI 编程桌面产品承接 runtime core 方向，将 Aegis
+的核心治理方法融入开发执行。本次据此重审产品关系，保留本 ADR 的分离决策：
+Aegis 继续负责可独立使用、多宿主分发的方法包；Autoloom 负责其运行时实现和
+发布证据。两者的关系见[产品基线](../current/AEGIS_PRODUCT_BASELINE.md#current-product-relationship-autoloom)。
+
+上文的“future runtime core”保留为原决策的路线背景，不表示该方向尚无独立
+产品，也不表示 Autoloom Alpha 已实现或验证全部预留的权威职责。Aegis 仓库
+不因 Autoloom 的发布而取得 runtime authority。
