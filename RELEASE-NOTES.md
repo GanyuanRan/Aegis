@@ -1,5 +1,42 @@
 # Aegis Release Notes
 
+## v2.12.1 (2026-10-03)
+
+### Codex skill-read evidence
+
+- Reject failed Codex `SKILL.md` reads instead of treating the attempted command
+  as proof that a skill loaded.
+- Require a successful command result containing matching skill `name` and
+  `description` frontmatter before reporting a load event. Preserve the
+  original read-command line for ordering checks, including retries.
+- Add regression coverage for failed reads, parallel completion order,
+  mismatched frontmatter, and failed-then-successful retries. Historical
+  successful Codex logs remain recognized.
+
+### Product relationship and distribution
+
+- Introduce Autoloom in the English and Chinese public entrypoints and clarify
+  that it is the independent product carrying the runtime-core direction into
+  execution. Aegis remains an independently usable open-source method pack and
+  does not acquire runtime or completion authority.
+- Synchronize all eight package and plugin version fields at `2.12.1`. Update
+  through the existing host installation route and restart or reload as that
+  host requires. The manual global routing-prefix semantics are unchanged, so
+  no manual re-copy is needed.
+- Keep issues #67, #68, and #75 open under their documented evidence limits.
+  They remain bounded follow-up or environment-specific verification work and
+  are not represented as resolved by this release.
+
+### Validation
+
+- `bash tests/e2e/run-all.sh --full --host-profile fast` passed in an isolated
+  Linux filesystem: Layer 1 passed 43/0, the governance completion contract
+  passed, and Layer 2 and Layer 3 each passed 6/0.
+- Both representative Codex smokes passed on Codex CLI 0.146.0 with successful
+  skill-read command results. The parser unit suite passed all 20 cases.
+- Version drift and undeclared-version audits passed with all eight package and
+  plugin fields at `2.12.1`.
+
 ## v2.12.0 (2026-10-01)
 
 ### UI/UX governance on demand
