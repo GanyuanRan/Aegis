@@ -1,5 +1,42 @@
 # Aegis Release Notes
 
+## v2.12.2 (unreleased)
+
+### npm distribution repair
+
+- Generate `aegis-method-pack` from the canonical `aegis` source instead of
+  maintaining a separate npm skill or adapter tree. Transform the npm name
+  and DSH package-qualified entry together; retain the current
+  `>=0.1.0-rc.6` optional host peers and lifecycle bootstrap.
+- Preserve Git and existing host-plugin identities. Mark the canonical
+  package private to prevent accidental publication under the Git name.
+  Keep all eight package/plugin version fields at `2.12.2`.
+- Add artifact regression checks and a tag publication workflow that installs
+  the exact tarball, publishes through configured npm trusted publishing,
+  verifies registry metadata/integrity, then creates the matching GitHub
+  release. Package-owner authorization remains an external prerequisite.
+- Document the stale npm `2.9.2` channel behind recurring DSH installation
+  reports. Publishing a GitHub release alone does not repair npm or prove
+  Plugin Hub selected the new artifact. Historical npm versions remain
+  immutable; new releases supersede them.
+
+### Validation and limits
+
+- npm artifact identity, full skill/adapter/helper parity, generic installation,
+  and canonical-source preservation passed on Windows and Linux.
+- DSH `0.2.0-rc.2` with pnpm `11.7.0` installed the local tarball in an
+  isolated Windows profile. Web-profile boot exposed all 23 Aegis skills and
+  loaded `using-aegis`, `systematic-debugging`, and
+  `verification-before-completion` through the native registry, without a
+  model request. Desktop startup and live model routing are not covered.
+- Host-neutral full checks, OpenCode compatibility, and Codex plugin sync
+  passed in an isolated Linux filesystem. The two representative Codex
+  smokes passed separately on the configured Windows host. The container's
+  `fast` profile cannot run those smokes without a configured Codex account.
+- This section records prepared source and local artifact evidence. npm
+  publication and synchronized release remain pending; do not install an
+  unpublished version or treat this section as a registry publication receipt.
+
 ## v2.12.1 (2026-10-03)
 
 ### Codex skill-read evidence

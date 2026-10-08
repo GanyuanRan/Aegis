@@ -28,6 +28,14 @@ jobs:
       - name: Validate artifact schema fixtures
         run: bash tests/e2e/artifact-schema-check.sh
 
+      - name: Setup Node for distribution checks
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Verify npm distribution artifact
+        run: node tests/deepseek-harness/test-npm-package.mjs
+
       - name: Validate method-pack boundary
         run: bash tests/e2e/boundary-compliance-check.sh
 

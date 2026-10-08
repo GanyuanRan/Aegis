@@ -35,6 +35,22 @@ tests/
 
 ## Running Tests
 
+### npm Distribution Artifact
+
+```bash
+node tests/deepseek-harness/test-npm-package.mjs
+npm run pack:npm -- --output .tmp/npm-release
+node tests/deepseek-harness/test-npm-package.mjs --artifact <tarball-path>
+```
+
+The first command builds an isolated npm view; the last validates the exact
+publication artifact. Checks cover the npm identity, optional host peers,
+package-qualified DSH entry, runtime/support-file parity, excluded local
+content, generic npm installation, and preservation of the canonical Git
+manifest and patch. Generic npm installation does not prove DSH loading;
+also install the same tarball into an isolated supported-host profile and
+verify its native skill catalog and representative skill-body reads.
+
 ### Integration Tests
 
 Integration tests execute real Claude Code sessions with actual skills:

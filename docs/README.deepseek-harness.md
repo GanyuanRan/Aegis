@@ -106,6 +106,31 @@ this public repository.
 This is repository/profile installation, not a claim that Aegis has an official
 DeepSeek marketplace listing.
 
+### npm Distribution
+
+The Git package identity is `aegis`. The npm distribution identity is
+`aegis-method-pack`; it is generated from the same release source, with the
+same skills, helpers, lifecycle adapter, and optional host peer ranges. Its
+generated bundle entry is `aegis-method-pack/extensions/dsh/index.js`.
+The row ID remains `aegis-method-pack` on both channels.
+
+Use an npm version whose publication is confirmed in the release notes:
+
+```bash
+dsh plugin --profile desktop add "aegis-method-pack@<release-version>"
+```
+
+Do not install the Git and npm identities together in one profile. For npm
+readback below, use `aegis-method-pack` in place of the Git dependency name
+`aegis` and its package-qualified entry. Both channels require exactly one
+enabled bundle, profile restart, and verification from the installed package.
+
+The old npm `2.9.2` artifact retains `^0.1.0-rc.6` peers and is rejected by
+DSH `0.2.0-rc.2`. GitHub release publication does not update that artifact.
+Marketplace searches can select this older npm package even when the Git
+source is current; check the actual installed version and source. Version
+admission does not establish live routing compatibility.
+
 ## Agent-Guided Quick Installation
 
 A user may give the following instruction directly to a DeepSeek Harness agent:
@@ -262,6 +287,15 @@ Repeat the command with `--profile headless` only when that profile also owns an
 Aegis installation. Restart the updated profile and repeat the native catalog,
 automatic-entry, and task-specific skill-load verification.
 
+For an npm-installed bundle, update its actual dependency instead:
+
+```bash
+dsh plugin --profile web add "aegis-method-pack@<confirmed-published-version>"
+```
+
+Keep the same channel and profile. Confirm the registry version before changing
+the dependency, then repeat the list/configuration/loading checks above.
+
 Do not use `scripts/aegis-update.py update --host deepseek-harness` for a
 bundle-managed installation. That updater command owns only the explicit
 direct-child compatibility mode.
@@ -280,11 +314,15 @@ The final dump must no longer contain `aegis-method-pack`. Removing the bundle
 does not authorize deleting `$DSH_HOME/skills`, `$DSH_AGENTS_HOME/skills`, or
 project skill directories; those locations may contain user-owned content.
 
+For an npm-installed bundle, use
+`dsh plugin --profile web remove aegis-method-pack` and perform the same readback.
+
 ## Explicit Direct-Child Compatibility Installation
 
 Use this mode only when the developer-preview bundle API is unavailable, local
 policy forbids third-party profile plugins, or `pnpm` cannot be provided to the
-DSH plugin manager. Ensure `aegis` is absent from the selected profile first.
+DSH plugin manager. Ensure both `aegis` and `aegis-method-pack` dependencies are
+absent from the selected profile first.
 
 Keep one local Aegis checkout as the canonical method-pack source and register a
 generated direct-child view in the native DSH user skill root.

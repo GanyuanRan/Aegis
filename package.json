@@ -1,6 +1,16 @@
 {
   "name": "aegis",
-  "version": "2.12.1",
+  "version": "2.12.2",
+  "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GanyuanRan/Aegis.git"
+  },
+  "scripts": {
+    "pack:npm": "node scripts/build-npm-package.mjs",
+    "test:npm-package": "node tests/deepseek-harness/test-npm-package.mjs"
+  },
   "type": "module",
   "main": ".opencode/plugins/aegis.js",
   "keywords": [

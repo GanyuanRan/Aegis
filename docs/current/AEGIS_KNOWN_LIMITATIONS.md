@@ -741,6 +741,23 @@ request.
 - The updater-managed direct-child install remains an explicit compatibility
   path rather than the default DSH installation
 
+- The public npm `aegis-method-pack@2.9.2` artifact still carries the old
+  `^0.1.0-rc.6` peers and a package entry qualified with the Git identity
+  `aegis`. [Issue #80](https://github.com/GanyuanRan/Aegis/issues/80#issuecomment-6041061249)
+  supplies an actual DSH `0.2.0-rc.2` admission rejection and a successful
+  pinned Git install. [Issue #81](https://github.com/GanyuanRan/Aegis/issues/81)
+  shows Plugin Hub `1.5.2` selecting that npm package again; its own full
+  failure log is still missing. A GitHub tag does not update npm. Repository
+  metadata matching in the marketplace is not package-owner verification.
+- An isolated Windows check on DSH `0.2.0-rc.2` and pnpm `11.7.0` installed
+  the generated `aegis-method-pack@2.12.2` tarball, composed its correct npm
+  entry, started the Web profile, discovered all 23 Aegis skills, and loaded
+  three representative bodies through the native skill registry. No model
+  request was made. This verifies local artifact installation and loading,
+  not public npm publication, Plugin Hub selection, Desktop startup, or
+  live lifecycle routing. Package-owner authentication and registry readback
+  remain required before claiming the registry channel is repaired.
+
 **Retention Reason**
 - The default DSH path is a thin package bundle declared through
   `dsh.bundle.patch`. It registers the canonical package-owned `skills/` tree
@@ -802,6 +819,10 @@ request.
   `Route: fast-path`, from exactly one canonical exposure
 
 **Retirement Trigger**
+- Supersede the stale npm channel only after an authorized publication of
+  the generated source view, registry manifest/integrity readback, installation
+  of that published version, and marketplace version/source readback. Retain
+  immutable historical npm versions; do not edit or unpublish them as a fix.
 - Re-evaluate the direct-child compatibility path after a stable DeepSeek
   Harness release and two consecutive Aegis releases have verified bundle
   install/update, representative live triggering, session refresh, no duplicate

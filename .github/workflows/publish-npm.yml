@@ -1,0 +1,108 @@
+name: Publish method pack
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: method-pack-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: npm-release
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Match stable tag to canonical version
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const manifest = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          assert.match(manifest.version, /^\d+\.\d+\.\d+$/, 'this workflow publishes stable releases');
+          assert.equal(process.env.GITHUB_REF_NAME, `v${manifest.version}`);
+          NODE
+      - name: Verify source
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes bubblewrap
+          bash tests/e2e/run-all.sh --full --host-profile none
+      - name: Build publication artifact
+        run: node scripts/build-npm-package.mjs --output .tmp/npm-release > .tmp-release-artifact.json
+      - name: Install and verify the publication artifact
+        run: |
+          artifact=$(node -p "JSON.parse(require('fs').readFileSync('.tmp-release-artifact.json')).path")
+          node tests/deepseek-harness/test-npm-package.mjs --artifact "$artifact"
+      - name: Enable npm trusted publishing support
+        run: npm install --global npm@11
+      - name: Publish the verified package
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          import { execFileSync } from 'node:child_process';
+          const artifact = JSON.parse(fs.readFileSync('.tmp-release-artifact.json'));
+          const latest = execFileSync('npm', ['view', artifact.name, 'version'], {encoding:'utf8'}).trim();
+          assert.match(latest, /^\d+\.\d+\.\d+$/, 'latest must be a stable version');
+          const current = latest.split('.').map(Number);
+          const target = artifact.version.split('.').map(Number);
+          const firstDifference = target.findIndex((value, index) => value !== current[index]);
+          assert.ok(firstDifference < 0 || target[firstDifference] > current[firstDifference],
+            `refusing to replace newer npm latest ${latest} with ${artifact.version}`);
+          try {
+            const published = JSON.parse(execFileSync('npm', ['view', `${artifact.name}@${artifact.version}`, '--json'], {encoding:'utf8', stdio:['ignore','pipe','pipe']}));
+            assert.equal(published.dist.integrity, artifact.integrity, 'an existing version must contain this exact artifact');
+          } catch (error) {
+            // Only a missing immutable version permits publishing. Network or
+            // authentication failures must not be treated as an absent version.
+            if (!String(error.stderr).includes('E404')) throw error;
+            execFileSync('npm', ['publish', artifact.path, '--tag', 'latest', '--access', 'public'], {stdio:'inherit'});
+          }
+          NODE
+      - name: Verify registry identity and integrity
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          import { execFileSync } from 'node:child_process';
+          const artifact = JSON.parse(fs.readFileSync('.tmp-release-artifact.json'));
+          const source = JSON.parse(fs.readFileSync('package.json'));
+          const published = JSON.parse(execFileSync('npm', ['view', `${artifact.name}@${artifact.version}`, '--json'], {encoding:'utf8'}));
+          assert.equal(published.name, artifact.name);
+          assert.equal(published.version, source.version);
+          assert.equal(published.dist.integrity, artifact.integrity);
+          assert.deepEqual(published.peerDependencies, source.peerDependencies);
+          assert.deepEqual(published.peerDependenciesMeta, source.peerDependenciesMeta);
+          const latest = execFileSync('npm', ['view', artifact.name, 'version'], {encoding:'utf8'}).trim();
+          assert.equal(latest, source.version);
+          NODE
+      - name: Publish matching GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const section = fs.readFileSync('RELEASE-NOTES.md','utf8').split(/^## /m)[1];
+          fs.writeFileSync('.tmp-release-notes.md', `## ${section}`);
+          NODE
+          artifact=$(node -p "JSON.parse(require('fs').readFileSync('.tmp-release-artifact.json')).path")
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$artifact" --clobber
+            gh release edit "$GITHUB_REF_NAME" --notes-file .tmp-release-notes.md
+          else
+            gh release create "$GITHUB_REF_NAME" "$artifact" --title "$GITHUB_REF_NAME" --notes-file .tmp-release-notes.md --verify-tag
+          fi

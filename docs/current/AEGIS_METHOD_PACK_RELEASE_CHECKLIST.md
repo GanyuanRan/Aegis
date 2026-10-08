@@ -234,6 +234,45 @@ bash tests/e2e/host-instruction-invariants-check.sh
 
 ## 7. Release Output Package
 
+### npm Artifact and Source Identity
+
+The canonical Git package remains `aegis`; `aegis-method-pack` is a generated
+npm distribution view of the same tagged source. Package metadata and the
+package-qualified DSH bundle entry are transformed together, without a second
+editable skill or adapter tree. Keep Git and npm release versions aligned.
+
+Before npm publication, build the artifact with
+`npm run pack:npm -- --output .tmp/npm-release`, then run
+`node tests/deepseek-harness/test-npm-package.mjs --artifact <tarball-path>`
+against that exact file. Without `--artifact`, the test builds an isolated
+artifact for source regression checks.
+Verify the actual tarball's manifest, optional DSH peers, entry references,
+support files, and license, then install it into an isolated DSH profile and
+verify actual plugin loading as well as configuration composition. Existing
+Git/plugin distribution checks still apply. Publish the verified tarball,
+not the canonical package directory.
+
+The tag publication workflow must verify the tag/version match before publishing
+and read the registry version, peer ranges, and tarball integrity back afterward.
+Public registry publication requires package-owner authorization. A GitHub
+release, a successful local pack, or a skipped host check does not establish
+that npm or marketplace installation is repaired; test the published package
+and the marketplace's actual selected version separately.
+
+For GitHub Actions publication, the npm package owner must configure a trusted
+publisher for `GanyuanRan/Aegis`, workflow `publish-npm.yml`, environment
+`npm-release`, with the allowed action for direct `npm publish` enabled.
+New trusted publisher configurations default to staging-only permission;
+see [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/).
+Configure that GitHub environment's reviewers as appropriate
+before pushing a release tag; repository write access alone does not grant
+npm ownership. The workflow uses npm trusted publishing rather than a stored
+npm token. A manual first publication must use the same verified tarball and
+perform the same registry readback before creating the matching GitHub release.
+The workflow publishes stable releases, serializes tags, and refuses to move
+`latest` below an already published newer version. Rerunning an existing version
+requires identical artifact integrity.
+
 A single method-pack release must include at minimum:
 
 1. Installable repository state
