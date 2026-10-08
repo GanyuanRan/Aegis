@@ -741,7 +741,7 @@ request.
 - The updater-managed direct-child install remains an explicit compatibility
   path rather than the default DSH installation
 
-- The public npm `aegis-method-pack@2.9.2` artifact still carries the old
+- The third-party npm `aegis-method-pack@2.9.2` artifact still carries the old
   `^0.1.0-rc.6` peers and a package entry qualified with the Git identity
   `aegis`. [Issue #80](https://github.com/GanyuanRan/Aegis/issues/80#issuecomment-6041061249)
   supplies an actual DSH `0.2.0-rc.2` admission rejection and a successful
@@ -749,14 +749,19 @@ request.
   shows Plugin Hub `1.5.2` selecting that npm package again; its own full
   failure log is still missing. A GitHub tag does not update npm. Repository
   metadata matching in the marketplace is not package-owner verification.
-- An isolated Windows check on DSH `0.2.0-rc.2` and pnpm `11.7.0` installed
-  the generated `aegis-method-pack@2.12.2` tarball, composed its correct npm
-  entry, started the Web profile, discovered all 23 Aegis skills, and loaded
-  three representative bodies through the native skill registry. No model
-  request was made. This verifies local artifact installation and loading,
-  not public npm publication, Plugin Hub selection, Desktop startup, or
-  live lifecycle routing. Package-owner authentication and registry readback
-  remain required before claiming the registry channel is repaired.
+  The publishing account `zzz-test` is not the Aegis team's account. Aegis
+  does not maintain an official npm registry channel, and no public evidence
+  establishes whether that publisher is associated with the marketplace.
+  [Plugin Hub issue #120](https://github.com/dshplugin/dsh-plugin-hub/issues/120)
+  tracks preserving the official Git source and pinned revision instead of
+  substituting a registry package found by repository metadata.
+- A fresh isolated Windows check on DSH `0.2.0-rc.2` and pnpm `11.7.0`
+  installed the canonical `aegis` source through a local repository link with
+  `private: true`, composed exactly one Aegis bundle, started the Web profile,
+  discovered 23 native Aegis skills, and read three representative skill bodies
+  from the canonical tree. The actual host admission checker also passed.
+  No model request was made. This covers source installation and native Web
+  loading, not marketplace selection, Desktop startup, or live model routing.
 
 **Retention Reason**
 - The default DSH path is a thin package bundle declared through
@@ -819,10 +824,11 @@ request.
   `Route: fast-path`, from exactly one canonical exposure
 
 **Retirement Trigger**
-- Supersede the stale npm channel only after an authorized publication of
-  the generated source view, registry manifest/integrity readback, installation
-  of that published version, and marketplace version/source readback. Retain
-  immutable historical npm versions; do not edit or unpublish them as a fix.
+- Close the marketplace source-selection limitation only after the actual
+  selected Git source, pinned revision, and installed version are verified
+  and the affected reporter confirms successful profile installation. A new
+  GitHub release alone does not close it. Retain third-party historical npm
+  artifacts; taking ownership or unpublishing them is not part of this repair.
 - Re-evaluate the direct-child compatibility path after a stable DeepSeek
   Harness release and two consecutive Aegis releases have verified bundle
   install/update, representative live triggering, session refresh, no duplicate

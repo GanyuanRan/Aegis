@@ -7,10 +7,6 @@
     "type": "git",
     "url": "git+https://github.com/GanyuanRan/Aegis.git"
   },
-  "scripts": {
-    "pack:npm": "node scripts/build-npm-package.mjs",
-    "test:npm-package": "node tests/deepseek-harness/test-npm-package.mjs"
-  },
   "type": "module",
   "main": ".opencode/plugins/aegis.js",
   "keywords": [

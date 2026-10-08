@@ -148,11 +148,13 @@ The current snapshot only states:
     signal (`tool/call` or `assistant/message`), so the first model request of
     every gated epoch stays free of injected context. This is advisory
     model-facing context, not a hard tool guard or runtime authority.
-    The canonical Git package identity is `aegis`; the generated npm view is
-    `aegis-method-pack`, with the same row ID and a package-qualified entry
-    matching its own dependency name. Both are projections of one source,
-    and only one channel may be active in a profile. Registry publication and
-    exact-build host verification remain separate release evidence.
+    The official installation source is this Git repository, whose package
+    identity is `aegis`. The Cordis row ID `aegis-method-pack` does not declare
+    an npm distribution. The public npm package of that name is published by
+    an external account; Aegis does not maintain an official npm registry
+    channel. Marketplace repository metadata must not override the selected
+    Git source or its pinned revision. Keep exactly one Aegis exposure per
+    profile and verify the actual installed source and version.
     Package admission retains the three optional DSH host peers with a
     `>=0.1.0-rc.6` floor and no speculative upper version bound. DSH evaluates
     these ranges with prereleases included. Admission of a newer version is

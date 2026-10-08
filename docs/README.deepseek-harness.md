@@ -106,30 +106,31 @@ this public repository.
 This is repository/profile installation, not a claim that Aegis has an official
 DeepSeek marketplace listing.
 
-### npm Distribution
+### Official Source and Third-Party npm Packages
 
-The Git package identity is `aegis`. The npm distribution identity is
-`aegis-method-pack`; it is generated from the same release source, with the
-same skills, helpers, lifecycle adapter, and optional host peer ranges. Its
-generated bundle entry is `aegis-method-pack/extensions/dsh/index.js`.
-The row ID remains `aegis-method-pack` on both channels.
+Aegis officially supports the Git installation above. Aegis does not maintain
+an official npm registry channel. The public npm `aegis-method-pack` package
+is published by an external account, not the Aegis team. Its repository or
+author metadata does not establish official publication. The bundle's Cordis
+row ID `aegis-method-pack` is a plugin identifier, not a registry package name.
 
-Use an npm version whose publication is confirmed in the release notes:
+The third-party npm `2.9.2` artifact retains `^0.1.0-rc.6` peers and is rejected
+by DSH `0.2.0-rc.2`. Marketplace repository searches can select that stale
+artifact even when the Git source is current. Preserve the explicit Git URL
+and any pinned tag; check the actual selected source and installed version.
+The source-selection problem is tracked in
+[Plugin Hub issue #120](https://github.com/dshplugin/dsh-plugin-hub/issues/120).
+A GitHub release does not update a third-party registry artifact or repair the
+marketplace's source selection. Version admission also does not establish live
+routing compatibility.
 
-```bash
-dsh plugin --profile desktop add "aegis-method-pack@<release-version>"
-```
-
-Do not install the Git and npm identities together in one profile. For npm
-readback below, use `aegis-method-pack` in place of the Git dependency name
-`aegis` and its package-qualified entry. Both channels require exactly one
-enabled bundle, profile restart, and verification from the installed package.
-
-The old npm `2.9.2` artifact retains `^0.1.0-rc.6` peers and is rejected by
-DSH `0.2.0-rc.2`. GitHub release publication does not update that artifact.
-Marketplace searches can select this older npm package even when the Git
-source is current; check the actual installed version and source. Version
-admission does not establish live routing compatibility.
+If a previous marketplace attempt installed `aegis-method-pack`, first inspect
+the intended profile with `dsh plugin --profile web list --depth 0`. Remove
+that dependency only if it is present, using
+`dsh plugin --profile web remove aegis-method-pack`, then install the Git source
+above and repeat the bundle verification below. Replace `web` with the actual
+profile name. A rejected install may have left no dependency to remove. Keep
+exactly one Aegis bundle and do not delete user or project skill directories.
 
 ## Agent-Guided Quick Installation
 
@@ -287,15 +288,6 @@ Repeat the command with `--profile headless` only when that profile also owns an
 Aegis installation. Restart the updated profile and repeat the native catalog,
 automatic-entry, and task-specific skill-load verification.
 
-For an npm-installed bundle, update its actual dependency instead:
-
-```bash
-dsh plugin --profile web add "aegis-method-pack@<confirmed-published-version>"
-```
-
-Keep the same channel and profile. Confirm the registry version before changing
-the dependency, then repeat the list/configuration/loading checks above.
-
 Do not use `scripts/aegis-update.py update --host deepseek-harness` for a
 bundle-managed installation. That updater command owns only the explicit
 direct-child compatibility mode.
@@ -313,9 +305,6 @@ dsh --profile web --dump-config
 The final dump must no longer contain `aegis-method-pack`. Removing the bundle
 does not authorize deleting `$DSH_HOME/skills`, `$DSH_AGENTS_HOME/skills`, or
 project skill directories; those locations may contain user-owned content.
-
-For an npm-installed bundle, use
-`dsh plugin --profile web remove aegis-method-pack` and perform the same readback.
 
 ## Explicit Direct-Child Compatibility Installation
 

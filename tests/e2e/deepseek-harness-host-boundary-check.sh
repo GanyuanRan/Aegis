@@ -67,6 +67,9 @@ dsh_suite="tests/deepseek-harness/run-tests.sh"
 node <<'NODE'
 const fs = require('node:fs')
 const data = JSON.parse(fs.readFileSync('package.json', 'utf8'))
+if (data.name !== 'aegis' || data.private !== true) {
+  throw new Error('official Git package must keep its aegis identity and npm publication guard')
+}
 if (data.dsh?.bundle?.patch !== './extensions/dsh/cordis.patch.yml') {
   throw new Error('unexpected dsh.bundle.patch')
 }

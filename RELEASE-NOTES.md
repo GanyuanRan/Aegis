@@ -1,41 +1,38 @@
 # Aegis Release Notes
 
-## v2.12.2 (unreleased)
+## v2.12.2 (2026-10-08)
 
-### npm distribution repair
+### Official installation source
 
-- Generate `aegis-method-pack` from the canonical `aegis` source instead of
-  maintaining a separate npm skill or adapter tree. Transform the npm name
-  and DSH package-qualified entry together; retain the current
-  `>=0.1.0-rc.6` optional host peers and lifecycle bootstrap.
-- Preserve Git and existing host-plugin identities. Mark the canonical
-  package private to prevent accidental publication under the Git name.
-  Keep all eight package/plugin version fields at `2.12.2`.
-- Add artifact regression checks and a tag publication workflow that installs
-  the exact tarball, publishes through configured npm trusted publishing,
-  verifies registry metadata/integrity, then creates the matching GitHub
-  release. Package-owner authorization remains an external prerequisite.
-- Document the stale npm `2.9.2` channel behind recurring DSH installation
-  reports. Publishing a GitHub release alone does not repair npm or prove
-  Plugin Hub selected the new artifact. Historical npm versions remain
-  immutable; new releases supersede them.
+- Clarify that DSH installs Aegis from the official Git repository, with
+  dependency name `aegis` and stable Cordis row ID `aegis-method-pack`.
+  The row ID does not identify an official npm registry distribution.
+- Document that the public npm `aegis-method-pack` package is published by
+  an external account. Its stale `2.9.2` artifact is separate from official
+  Git releases and retains the old peer ceiling. Marketplace installation
+  must preserve the requested Git source and pinned revision.
+- Keep `private: true` on the canonical manifest to prevent accidental npm
+  publication and add a guard to the existing DSH boundary check. Git and
+  existing host plugin installations retain their identities and current
+  optional `>=0.1.0-rc.6` peers.
+- Retire the proposed npm builder, artifact test, publication workflow, and
+  npm installation instructions. No official npm registry channel is being
+  introduced. Existing third-party registry artifacts are unchanged.
 
 ### Validation and limits
 
-- npm artifact identity, full skill/adapter/helper parity, generic installation,
-  and canonical-source preservation passed on Windows and Linux.
-- DSH `0.2.0-rc.2` with pnpm `11.7.0` installed the local tarball in an
-  isolated Windows profile. Web-profile boot exposed all 23 Aegis skills and
-  loaded `using-aegis`, `systematic-debugging`, and
-  `verification-before-completion` through the native registry, without a
-  model request. Desktop startup and live model routing are not covered.
-- Host-neutral full checks, OpenCode compatibility, and Codex plugin sync
-  passed in an isolated Linux filesystem. The two representative Codex
-  smokes passed separately on the configured Windows host. The container's
-  `fast` profile cannot run those smokes without a configured Codex account.
-- This section records prepared source and local artifact evidence. npm
-  publication and synchronized release remain pending; do not install an
-  unpublished version or treat this section as a registry publication receipt.
+- The full release check (`bash tests/e2e/run-all.sh --full --host-profile fast`)
+  passed in an isolated Linux filesystem, including both representative Codex
+  smokes, OpenCode base compatibility, and Codex plugin sync. The DSH
+  deterministic suite and four DSH updater tests also passed.
+- DSH `0.2.0-rc.2` with pnpm `11.7.0` installed the canonical source into an
+  isolated Windows Web profile with the private manifest guard. Actual profile
+  boot exposed 23 Aegis skills and loaded three representative canonical skill
+  bodies. The native host admission matrix passed without an exemption.
+  These checks made no DSH model request and do not cover Desktop startup.
+- Plugin Hub source selection remains tracked in upstream issue #120;
+  Aegis issue #81 still needs reporter confirmation. A GitHub release alone
+  does not resolve either marketplace selection or live DSH model routing.
 
 ## v2.12.1 (2026-10-03)
 
