@@ -155,6 +155,12 @@ The current snapshot only states:
     channel. Marketplace repository metadata must not override the selected
     Git source or its pinned revision. Keep exactly one Aegis exposure per
     profile and verify the actual installed source and version.
+    Profile management is host-owned: the CLI manages Web and Headless,
+    while DSH `0.2.0-rc.2` reserves `desktop` for the Electron application.
+    Desktop installation, update, removal, and inspection use the application's
+    plugin manager; CLI commands must not be projected onto that profile.
+    A reporter-confirmed Desktop install and visible plugin do not establish
+    the installed source/version or native skill loading.
     Package admission retains the three optional DSH host peers with a
     `>=0.1.0-rc.6` floor and no speculative upper version bound. DSH evaluates
     these ranges with prereleases included. Admission of a newer version is

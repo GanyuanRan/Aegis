@@ -155,6 +155,11 @@ Confirm:
 - The GitHub `dsh-plugin` topic is added only after the public default revision
   contains the bundle and a fresh package/profile install has passed; the topic
   means ecosystem discoverability, not an official DeepSeek marketplace listing
+- DSH install guidance distinguishes CLI-managed Web/Headless profiles from
+  the Electron-owned Desktop profile. Do not instruct Desktop users to run
+  CLI plugin commands or install into Web as a substitute. App-managed
+  installation needs actual source/ref/version readback; plugin visibility
+  alone does not prove native skill loading or marketplace source preservation
 - Trae is still described as manual `.trae/skills` / `~/.trae/skills` install, and the `.agents/skills/` optional capability is not written as the canonical chain
 - GitHub Copilot is still described through prefixed
   `.github/skills/aegis-<skill-name>/SKILL.md`,

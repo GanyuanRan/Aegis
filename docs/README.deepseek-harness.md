@@ -55,11 +55,13 @@ its version number increased. This is an installation policy, not a promise
 that future host APIs remain compatible. See the compatibility matrix and
 known limitations for the evidence available for particular host versions.
 
-Install DeepSeek Harness at or above that floor and ensure `pnpm` is on `PATH`.
-Harness forwards `dsh plugin` operations to `pnpm`, so being able to start the
-Web UI through `npx` alone is not sufficient for profile-plugin management.
+Install DeepSeek Harness at or above that floor. For CLI-managed profiles,
+ensure `pnpm` is on `PATH`. Harness forwards `dsh plugin` operations to `pnpm`,
+so being able to start the Web UI through `npx` alone is not sufficient for
+CLI profile-plugin management. Electron Desktop uses its application's
+runtime and plugin manager.
 
-Verify both commands before installing Aegis:
+Verify both commands before a CLI-managed installation:
 
 ```bash
 dsh --version
@@ -75,7 +77,8 @@ npx @deepseek-ai/dsh --version
 
 ## Default Bundle Installation
 
-Install Aegis into every DSH profile that should expose it. For the Web profile:
+Install Aegis through the manager that owns the intended profile. The following
+terminal commands apply to CLI-managed Web and Headless profiles. For Web:
 
 ```bash
 dsh plugin --profile web add "git+https://github.com/GanyuanRan/Aegis.git"
@@ -106,6 +109,33 @@ this public repository.
 This is repository/profile installation, not a claim that Aegis has an official
 DeepSeek marketplace listing.
 
+### Desktop (Electron)
+
+DSH `0.2.0-rc.2` reserves the `desktop` profile for the Electron application.
+Terminal plugin commands for that profile fail with
+`profile "desktop" is managed exclusively by the Electron application`.
+Use the desktop application's plugin manager for installation, inspection,
+update, and removal. Do not substitute `web`: it is a different profile and
+does not make the plugin active in Desktop.
+
+When the application's own installer supports an explicit Git target, select
+the official repository and a fixed release, for example:
+
+```text
+git+https://github.com/GanyuanRan/Aegis.git#v2.12.2
+```
+
+Read back the actual dependency name, source/ref, installed package version,
+and bundle through the application or its profile manifest. Do not assume a
+community marketplace's catalog button or custom Git input preserves the
+requested target; see the source-selection limitation below. Do not edit the
+Electron-managed profile to bypass its manager.
+
+[Issue #81](https://github.com/GanyuanRan/Aegis/issues/81#issuecomment-6072156389)
+reports successful installation and a visible plugin through the desktop
+application's manager. Its installed source/version and native skill loading
+were not reported, so it is bounded installation-recovery evidence.
+
 ### Official Source and Third-Party npm Packages
 
 Aegis officially supports the Git installation above. Aegis does not maintain
@@ -118,8 +148,14 @@ The third-party npm `2.9.2` artifact retains `^0.1.0-rc.6` peers and is rejected
 by DSH `0.2.0-rc.2`. Marketplace repository searches can select that stale
 artifact even when the Git source is current. Preserve the explicit Git URL
 and any pinned tag; check the actual selected source and installed version.
-The source-selection problem is tracked in
-[Plugin Hub issue #120](https://github.com/dshplugin/dsh-plugin-hub/issues/120).
+In [Plugin Hub issue #120](https://github.com/dshplugin/dsh-plugin-hub/issues/120#issuecomment-6060567215),
+the maintainer retained npm-first resolution and closed the report as a known
+limitation. Hub `v1.6.0` improves profile-specific hints and pnpm diagnostics;
+it does not remove this source substitution. Its repository-install path also
+normalizes Git URLs to a repository identity and rebuilds an unpinned URL
+before npm lookup. This source-level finding is not a live Desktop GUI test.
+The fixed-ref follow-up is
+[Plugin Hub issue #130](https://github.com/dshplugin/dsh-plugin-hub/issues/130).
 A GitHub release does not update a third-party registry artifact or repair the
 marketplace's source selection. Version admission also does not establish live
 routing compatibility.
@@ -128,8 +164,10 @@ If a previous marketplace attempt installed `aegis-method-pack`, first inspect
 the intended profile with `dsh plugin --profile web list --depth 0`. Remove
 that dependency only if it is present, using
 `dsh plugin --profile web remove aegis-method-pack`, then install the Git source
-above and repeat the bundle verification below. Replace `web` with the actual
-profile name. A rejected install may have left no dependency to remove. Keep
+above and repeat the bundle verification below. Use the corresponding CLI
+profile name only for CLI-managed profiles. For Desktop, perform dependency
+inspection and removal through the application's manager. A rejected install
+may have left no dependency to remove. Keep
 exactly one Aegis bundle and do not delete user or project skill directories.
 
 ## Agent-Guided Quick Installation
@@ -138,12 +176,17 @@ A user may give the following instruction directly to a DeepSeek Harness agent:
 
 ```text
 Install Aegis Method Pack into my current official DeepSeek Harness (`dsh`)
-profile through `dsh plugin --profile <profile> add "git+https://github.com/GanyuanRan/Aegis.git"`.
+profile. First identify the profile's owner. For CLI-managed Web/Headless, use
+`dsh plugin --profile <profile> add "git+https://github.com/GanyuanRan/Aegis.git"`.
+For Electron Desktop, use the application's plugin manager; do not run CLI
+commands for desktop or substitute web. Verify the actual source/ref/version.
 Treat this native profile plugin as the default even when I asked for a minimal
 or global install. Do not silently substitute a direct-child installation; use
 that only if the plugin manager is unavailable and I explicitly approve
-compatibility mode. Confirm pnpm is available, verify the profile manifest and
-dump-config readback, then ask me to restart that profile. In the fresh session,
+compatibility mode. For CLI-managed profiles, confirm pnpm is available and
+verify the profile manifest and dump-config. For Desktop, inspect the same
+bundle through the application or its manifest. Then ask me to restart that
+profile. In the fresh session,
 verify the native Aegis lifecycle bootstrap and a representative task-specific
 `skill` load. Do not also install Aegis under .dsh/skills, .agents/skills, or
 another custom skill root. Do not modify my project.
@@ -154,6 +197,12 @@ success does not retroactively route the session that performed the install
 through Aegis.
 
 ## Bundle Verification
+
+The CLI examples below apply to Web. For Electron Desktop, inspect the
+corresponding dependency and bundle through the application's manager or its
+profile manifest, then restart Desktop and verify native skill discovery and
+loading there. CLI configuration dumps and Web skill discovery do not verify
+the Desktop profile.
 
 First verify that the selected profile owns the installed package:
 
@@ -270,6 +319,10 @@ Aegis goal: Fix the auth refresh bug without rewriting the auth system.
 
 ## Updating
 
+For Electron Desktop, update through the application's plugin manager and
+inspect the actual source/ref/version there. The terminal examples in this
+section apply to CLI-managed profiles.
+
 Aegis `v2.11.1` was published with the old `^0.1.0-rc.6` peer range and can be
 rejected by DSH `0.2.0-rc.1` before plugin code is loaded. Select a
 revision containing the admission-range fix; retrying the same old tag does
@@ -293,6 +346,9 @@ bundle-managed installation. That updater command owns only the explicit
 direct-child compatibility mode.
 
 ## Uninstalling the Bundle
+
+For Electron Desktop, remove the intended bundle through the application's
+plugin manager. The terminal example below applies to Web.
 
 Remove Aegis only from the intended profile:
 

@@ -747,14 +747,35 @@ request.
   supplies an actual DSH `0.2.0-rc.2` admission rejection and a successful
   pinned Git install. [Issue #81](https://github.com/GanyuanRan/Aegis/issues/81)
   shows Plugin Hub `1.5.2` selecting that npm package again; its own full
-  failure log is still missing. A GitHub tag does not update npm. Repository
+  failure log is still missing. [Issue #83](https://github.com/GanyuanRan/Aegis/issues/83)
+  records another Desktop npm attempt without the underlying error log.
+  A GitHub tag does not update npm. Repository
   metadata matching in the marketplace is not package-owner verification.
   The publishing account `zzz-test` is not the Aegis team's account. Aegis
-  does not maintain an official npm registry channel, and no public evidence
-  establishes whether that publisher is associated with the marketplace.
+  does not maintain an official npm registry channel. The marketplace
+  maintainer states that `zzz-test` is not an account they operate and that
+  they have no coordinated publication record; the publisher's identity
+  remains unknown.
   [Plugin Hub issue #120](https://github.com/dshplugin/dsh-plugin-hub/issues/120)
-  tracks preserving the official Git source and pinned revision instead of
-  substituting a registry package found by repository metadata.
+  was closed as a documented limitation, with npm-first resolution retained.
+  In Hub `v1.6.0`, the repository-install code normalizes Git URLs to a
+  repository identity, rebuilds a URL without its ref, then performs npm
+  reverse lookup. Profile-specific hints and pnpm diagnostic improvements in
+  that release do not establish source/ref preservation. This is a source-level
+  finding, not a fresh end-to-end GUI/HTTP reproduction. A replay of the tagged
+  normalizers and npm selector, using a published-registry metadata fixture,
+  discarded both a tag and a commit SHA before selecting the matching npm
+  package. [Plugin Hub issue #130](https://github.com/dshplugin/dsh-plugin-hub/issues/130)
+  requests preservation of explicitly pinned targets without changing unpinned
+  repository/catalog defaults.
+- DSH `0.2.0-rc.2` rejects terminal management of the Electron-owned `desktop`
+  profile. Install, inspect, update, and remove plugins through the desktop
+  application's manager; CLI examples apply to CLI-managed profiles.
+  [The #81 reporter](https://github.com/GanyuanRan/Aegis/issues/81#issuecomment-6072156389)
+  confirmed that terminal installation was rejected but the application's
+  plugin manager installed successfully and displayed the plugin. This closes
+  that reporter's installation-failure scope only. Actual installed source,
+  ref, version, skill-body loading, and live model routing were not supplied.
 - A fresh isolated Windows check on DSH `0.2.0-rc.2` and pnpm `11.7.0`
   installed the canonical `aegis` source through a local repository link with
   `private: true`, composed exactly one Aegis bundle, started the Web profile,
