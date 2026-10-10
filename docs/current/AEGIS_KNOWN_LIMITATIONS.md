@@ -244,6 +244,31 @@ discovery-root structural readback through `aegis-doctor.py`. This remains
 method-pack-side structural verification only; host restart/reload may still be
 required before the running host loads the refreshed content.
 
+For `copy-skills`, the installation registry records copied-file digests and
+their source/discovery-root/name-prefix scope. Only unchanged files recorded
+in that scope may be replaced or retired; a directory name, prefix, or
+`SKILL.md` alone is not ownership evidence. Unknown files and local changes
+are preserved. A conflicting destination stops synchronization with the path
+and recovery guidance before planned writes or retirement. Use a separate
+discovery root or reconcile the conflicting file before retrying.
+
+Legacy copies without a registry inventory can adopt files identical to the
+current source. Differing same-name files require reconciliation; unidentified
+stale copies remain until ownership can be established. Re-registration keeps
+the inventory only for the same scope. Successful copy synchronization saves
+its inventory independently of subsequent doctor verification, so a failed
+doctor does not erase ownership evidence. This is local copy provenance,
+not host-load proof or runtime authority.
+
+Copied source names must be unambiguous under Unicode normalization and case
+folding so one distribution works on case-insensitive discovery volumes too.
+This portable-name check only rejects source collisions; it never grants
+ownership of a destination. On platforms whose path normalization does not
+match the volume's case behavior, a case-only rename combined with a content
+change may require reconciliation. Back up and move the conflicting file
+outside the discovery root, or choose a separate discovery root, then retry. Do not
+infer ownership merely from a matching case-folded name or inode.
+
 When `~/.config/aegis/config.toml` declares `method_pack_root`, the shared
 updater now prefers that canonical root for new host registration defaults.
 Multiple registered hosts may therefore share one method-pack checkout while

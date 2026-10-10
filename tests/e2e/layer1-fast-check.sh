@@ -135,6 +135,9 @@ run_check "host adapter smoke" bash "$SCRIPT_DIR/host-adapter-smoke-check.sh"
 run_check "goal framing policy" bash "$SCRIPT_DIR/goal-framing-check.sh"
 run_check "first-principles review policy" bash "$SCRIPT_DIR/first-principles-review-check.sh"
 run_check "debugging patch-shape gate policy" bash "$SCRIPT_DIR/debugging-patch-shape-gate-check.sh"
+run_check "polluter diagnostic behavior" "${PYTHON_CMD[@]}" tests/helpers/test_find_polluter.py
+run_check "debugging executable examples (Node.js 22.13+)" node --test tests/systematic-debugging/test-examples.mjs
+run_check "copy ownership behavior" "${PYTHON_CMD[@]}" tests/helpers/test_aegis_copy.py
 run_check "long-task continuation scenario fixtures" bash "$SCRIPT_DIR/long-task-continuation-check.sh"
 run_check "context budget guardrails" bash "$SCRIPT_DIR/context-budget-check.sh"
 run_check "activation mode guardrails" bash "$SCRIPT_DIR/activation-mode-check.sh"

@@ -25,6 +25,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes bubblewrap
 
+      - name: Setup Node for executable skill examples
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
       - name: Validate artifact schema fixtures
         run: bash tests/e2e/artifact-schema-check.sh
 
@@ -47,4 +52,4 @@ jobs:
           python-version: "3.10"
 
       - name: Check updater on Python 3.10
-        run: python -m unittest tests.helpers.test_aegis_update
+        run: python -m unittest tests.helpers.test_aegis_update tests.helpers.test_aegis_copy

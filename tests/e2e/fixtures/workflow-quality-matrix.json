@@ -711,7 +711,7 @@
     },
     {
       "id": "topology-conjunctive-cluster-collapses-to-spec-gap",
-      "prompt": "Two fixes were each necessary but neither alone removes the symptom: a missing contract family and a projection layer reading the wrong source. Decide the causal topology before claiming a root cause.",
+      "prompt": "A symptom appears only when a contract family is missing AND a projection reads the wrong source; removing either condition stops it. Investigation identifies a shared workflow specification gap that generates both defects. Classify the incident conditions and the deeper cause before choosing repair scope.",
       "expectedPrimarySkill": "systematic-debugging",
       "allowedSecondarySkills": ["first-principles-review", "verification-before-completion"],
       "mustNotDo": ["skip-layer-stop-card", "skip-anti-disguise-check", "collapse-to-cluster-without-shared-cause-proof", "stop-at-symptom-layer-as-root"],
@@ -726,9 +726,9 @@
         "checkedPath": "L1 Symptom -> L2 Logic -> L3 System -> L4 Architecture -> L5 Cross-system Contract -> L6 Platform -> L7 Spec Gap",
         "evidenceForStop": "two necessary members (missing conversion family + projection source-of-truth) share a deeper L7 cause: whole-file artifact generation was never defined as a first-class workflow with a completeness obligation; anti-disguise check collapses the conjunctive cluster to single-root-multi-symptom",
         "excludedLayers": ["L2 Logic", "L3 System", "L4 Architecture", "L5 Cross-system Contract", "L6 Platform"],
-        "falsifier": "one of the two members alone fully removes the symptom without addressing the spec gap",
-        "userInterventionPoint": "intervene if the two members do not actually share a deeper cause, making this a true conjunctive cluster requiring both fixes",
-        "nextAction": "address the L7 spec gap as the root and repair both ripple paths in the same change"
+        "falsifier": "the workflow specification already defines and enforces both obligations, so the claimed gap cannot generate these defects",
+        "userInterventionPoint": "intervene if shared-cause evidence fails; retain conjunctive classification and select the smallest valid repair instead of assuming both members must change",
+        "nextAction": "address the evidenced L7 spec gap; justify each ripple repair by its correctness obligation, not by AND causality alone"
       }
     },
     {

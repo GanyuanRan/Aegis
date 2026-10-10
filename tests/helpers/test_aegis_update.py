@@ -9,6 +9,7 @@ from unittest.mock import patch
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 
 def load_module(name: str, relative_path: str):
@@ -81,7 +82,7 @@ class AegisUpdateRegistryTests(unittest.TestCase):
                 update.select_installations(data, host="codex", all_hosts=False)[0][
                     "methodPackRoot"
                 ],
-                codex_root.as_posix(),
+                codex_root.resolve().as_posix(),
             )
 
     def test_register_installation_records_discovery_shape(self):
@@ -286,7 +287,7 @@ class AegisUpdateRegistryTests(unittest.TestCase):
         self.assertIn("--discovery-name-prefix", command)
         self.assertIn("aegis-", command)
 
-    def test_sync_skills_prunes_stale_aegis_skill_directories_for_copy_mode(self):
+    def test_sync_skills_preserves_untracked_skill_directories_for_copy_mode(self):
         with tempfile.TemporaryDirectory(prefix="aegis-update-copy-") as tmp:
             method_pack_root = Path(tmp) / "method-pack"
             source_skills = method_pack_root / "skills"
@@ -313,7 +314,7 @@ class AegisUpdateRegistryTests(unittest.TestCase):
 
             update.sync_skills(entry)
 
-            self.assertFalse(stale_skill.exists())
+            self.assertEqual((stale_skill / "SKILL.md").read_text(), "# stale\n")
             for skill in update.COPY_DISCOVERY_KEY_SKILLS:
                 self.assertTrue((discovery_root / skill / "SKILL.md").is_file())
 

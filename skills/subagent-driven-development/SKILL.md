@@ -54,6 +54,7 @@ passing full conversation history. Include:
 - known facts and unknowns
 - non-goals
 - expected output and verification
+- recorded TDD Mode, Route, authority, and selecting workflow/owner
 - must-read excerpts
 - unsafe assumptions
 
@@ -169,7 +170,11 @@ and reads back `HEAD`, the committed file list, and remaining task delta.
 - **aegis:finishing-a-development-branch** - Conditional integration/cleanup for a task-created branch or worktree
 
 **Subagents should use:**
-- Inherit the parent TDD decision. With `off`, do not auto-load `aegis:test-driven-development` or force RED / GREEN; use the task's proportional verification. Load it only for `TDD Route: strict` or an explicit user/project TDD request.
+- Validate and consume the parent TDD decision; return a missing or invalid
+  `auto` decision to its selecting owner before source edits. With `off`, do
+  not auto-load `aegis:test-driven-development` or force RED / GREEN; use
+  proportional verification. Load it only for `TDD Route: strict` or an
+  explicit user/project TDD request.
 
 **Alternative workflow:**
 - **aegis:executing-plans** - Use for parallel session instead of same-session execution

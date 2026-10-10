@@ -891,8 +891,9 @@ assert_contains "skills/executing-plans/SKILL.md" "TDD Route Guard" \
 assert_contains_all "skills/executing-plans/SKILL.md" \
     "executing plans keeps strict step markers behind explicit authority" \
     "Decision: strict" "Write failing test" "Verify RED" "GREEN" "REFACTOR"
-assert_contains "skills/subagent-driven-development/SKILL.md" "Inherit the parent TDD decision" \
-    "subagents inherit rather than force TDD"
+assert_contains_all "skills/subagent-driven-development/SKILL.md" \
+    "subagents validate and consume the parent route before edits" \
+    "Validate and consume the parent TDD decision" "auto.*decision to its selecting owner before source edits"
 assert_contains "skills/writing-skills/SKILL.md" "loading.*test-driven-development" \
     "writing skills does not force-load the TDD skill"
 assert_contains "$baseline" "Skill Authoring And Ad-Hoc Delegation Quality" \
@@ -1056,8 +1057,9 @@ assert_section_contains_all "$baseline" '### 3.12 Micro-Slice Artifact Budget' \
 assert_section_contains_all "skills/long-task-continuation/SKILL.md" \
     '## When To Use' '## Required Artifacts' \
     "long-task continuation has one durable-record selection rule" \
-    "medium\\+" "actually crosses sessions" "needs handoff" "resumable state" \
-    "possible-compaction" "do not force" "durable records by themselves"
+    "within this continuation workflow" "medium/high work, or" "work of any complexity" \
+    "actually crosses" "needs handoff" "resumable state" "possible-compaction" \
+    "do not force" "durable records for low-complexity work by themselves"
 assert_section_contains_all "skills/long-task-continuation/SKILL.md" \
     '## Per-Slice Protocol' '## Resume Protocol' \
     "long-task continuation updates helper sidecars only for an existing work record" \

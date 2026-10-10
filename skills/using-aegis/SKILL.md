@@ -34,9 +34,9 @@ otherwise proceed normally.
    never creates a branch/worktree.
 7. At the first substantive user-visible stage say why Aegis is shaping
    non-tiny work; do not wait for the user to ask. structured trace is only for audit/debug/release/long-task review/asked and does not route (`Trace Digest`).
-8. Workspace support is lazy; use configured Aegis workspace support only when
-   records are needed. Q&A/status writes no project files; tiny work writes no
-   workspace docs unless its owner requires a durable record.
+8. Workspace support is lazy; use configured Aegis workspace support as needed.
+   Q&A/status writes no files except authorized baseline bootstrap before
+   code-changing advice; tiny work writes records only when required.
 9. Tool/log/memory/search outputs are evidence candidates, not prompt payloads:
    summary first; large input index->window->excerpt. Bound history/session/
    transcript/log reads by scope/time/lines.

@@ -10,12 +10,13 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import shutil
 import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
+
+from aegis_copy import CopySyncError, copy_scope, sync_copy
 
 
 SCHEMA_VERSION = 1
@@ -314,6 +315,16 @@ def register_installation(
     installations = data["installations"]
     for index, existing in enumerate(installations):
         if existing.get("id") == item_id:
+            inventory = existing.get("copyInventory")
+            if (
+                sync_mode == "copy-skills"
+                and effective_discovery_root
+                and isinstance(inventory, dict)
+                and inventory.get("scope") == copy_scope(
+                    root, Path(entry["discoveryRoot"]), name_prefix
+                )
+            ):
+                entry["copyInventory"] = inventory
             installations[index] = entry
             break
     else:
@@ -536,32 +547,14 @@ def sync_skills(entry: dict[str, Any]) -> str:
     if not discovery_root:
         raise UpdateError("copy-skills sync requires discoveryRoot")
 
-    source = Path(entry["methodPackRoot"]) / "skills"
     target = Path(discovery_root)
-    if not source.is_dir():
-        raise UpdateError(f"Source skills directory is missing: {source}")
-    target.mkdir(parents=True, exist_ok=True)
-    expected_skill_names = {
-        discovery_skill_dir_name(child.name, name_prefix)
-        for child in source.iterdir()
-        if child.is_dir() and (child / "SKILL.md").is_file()
-    }
-    for child in target.iterdir():
-        should_prune = child.name not in expected_skill_names
-        if name_prefix and not child.name.startswith(name_prefix):
-            should_prune = False
-        if child.is_dir() and should_prune and (child / "SKILL.md").is_file():
-            shutil.rmtree(child)
-    for child in source.iterdir():
-        if child.is_dir() and (child / "SKILL.md").is_file():
-            destination = target / discovery_skill_dir_name(child.name, name_prefix)
-        else:
-            destination = target / child.name
-        if child.is_dir():
-            shutil.copytree(child, destination, dirs_exist_ok=True)
-        elif child.is_file():
-            shutil.copy2(child, destination)
-    verify_copy_discovery_root(entry)
+    try:
+        entry["copyInventory"] = sync_copy(
+            Path(entry["methodPackRoot"]), target, name_prefix,
+            entry.get("copyInventory"), COPY_DISCOVERY_KEY_SKILLS,
+        )
+    except (CopySyncError, OSError) as exc:
+        raise UpdateError(str(exc)) from exc
     return f"copied skills into {target.as_posix()}"
 
 
@@ -590,20 +583,6 @@ def doctor_discovery_name_prefix(entry: dict[str, Any]) -> str | None:
         return None
     prefix = entry_discovery_name_prefix(entry, shape)
     return prefix or None
-
-
-def verify_copy_discovery_root(entry: dict[str, Any]) -> None:
-    if entry.get("syncMode") != "copy-skills":
-        return
-    discovery_root = entry_discovery_root(entry)
-    if not discovery_root:
-        raise UpdateError("copy-skills sync requires discoveryRoot")
-    root = Path(discovery_root)
-    prefix = entry_discovery_name_prefix(entry)
-    for skill in COPY_DISCOVERY_KEY_SKILLS:
-        skill_md = root / discovery_skill_dir_name(skill, prefix) / "SKILL.md"
-        if not skill_md.is_file():
-            raise UpdateError(f"copied discovery root is missing {skill}/SKILL.md: {root}")
 
 
 def run_doctor(entry: dict[str, Any], *, config_path: Path | None) -> dict[str, Any]:
@@ -720,6 +699,7 @@ def finalize_host_update(
     dry_run: bool,
     verify: bool,
     shared_root_reused: bool = False,
+    on_sync: Callable[[dict[str, Any]], None] | None = None,
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "id": entry.get("id"),
@@ -748,6 +728,8 @@ def finalize_host_update(
         return result
 
     sync_result = sync_skills(entry)
+    if on_sync:
+        on_sync(entry)
     doctor_result = run_doctor(entry, config_path=config_path) if verify else None
     result["sync"] = sync_result
     result["verified"] = doctor_result is not None
@@ -764,6 +746,7 @@ def update_installation(
     stash: bool = False,
     force: bool = False,
     verify: bool = True,
+    on_sync: Callable[[dict[str, Any]], None] | None = None,
 ) -> dict[str, Any]:
     root_result = update_method_pack_checkout(
         entry,
@@ -777,7 +760,20 @@ def update_installation(
         config_path=config_path,
         dry_run=dry_run,
         verify=verify,
+        on_sync=on_sync,
     )
+
+
+def persist_copy_inventory(
+    registry_path: Path, data: dict[str, Any], entry: dict[str, Any]
+) -> None:
+    if entry.get("syncMode") != "copy-skills" or "copyInventory" not in entry:
+        return
+    for registered in data["installations"]:
+        if registered.get("id") == entry.get("id"):
+            registered["copyInventory"] = entry["copyInventory"]
+            save_registry(registry_path, data)
+            return
 
 
 def update_registered_installations(
@@ -795,6 +791,10 @@ def update_registered_installations(
     by_id = {item.get("id"): item for item in data["installations"]}
     shared_root_updates: dict[str, dict[str, Any]] = {}
     shared_root_refs: dict[str, str] = {}
+
+    def on_sync(entry: dict[str, Any]) -> None:
+        persist_copy_inventory(registry_path, data, entry)
+
     for entry in selected:
         root_key = entry.get("methodPackRoot")
         tracked_ref = entry.get("trackedRef", "main")
@@ -817,6 +817,7 @@ def update_registered_installations(
                 dry_run=dry_run,
                 verify=verify,
                 shared_root_reused=True,
+                on_sync=on_sync,
             )
         else:
             result = update_installation(
@@ -826,6 +827,7 @@ def update_registered_installations(
                 stash=stash,
                 force=force,
                 verify=verify,
+                on_sync=on_sync,
             )
             if reuse_shared_root and root_key is not None and result.get("status") != "skipped":
                 shared_root_updates[root_key] = {
@@ -978,6 +980,8 @@ def command_register(args: argparse.Namespace) -> Any:
         return entry
 
     sync_result = sync_skills(entry)
+    registry_path = Path(args.registry).expanduser()
+    persist_copy_inventory(registry_path, load_registry(registry_path), entry)
     doctor_result = run_doctor(
         entry,
         config_path=Path(args.config).expanduser() if args.config else None,

@@ -290,6 +290,17 @@ Notes:
 
 ### Phase 5 E2E Verification
 
+Layer 1 includes isolated behavioral checks for copied-skill ownership and the
+polluter diagnostic, plus execution of the TypeScript debugging examples.
+The examples require Node.js 22.13+ for native TypeScript stripping; no npm
+dependencies or model credentials are needed for these checks. Run them alone:
+
+```bash
+python tests/helpers/test_aegis_copy.py
+python tests/helpers/test_find_polluter.py
+node --test tests/systematic-debugging/test-examples.mjs
+```
+
 The current Phase 5 E2E work adds a new `tests/e2e/` owner path:
 
 ```bash

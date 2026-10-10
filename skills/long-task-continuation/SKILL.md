@@ -26,12 +26,13 @@ benefit from it. Do not force it onto a short answer or one-command check.
 
 Choose exactly one state carrier:
 
-- use a durable `work/` record for medium+ work that actually crosses sessions,
-  needs handoff, or requires resumable state;
+- within this continuation workflow, use a durable `work/` record for
+  medium/high work, or for work of any complexity that actually crosses
+  sessions, needs handoff, or requires resumable state;
 - otherwise keep one inline checkpoint.
 
 Multi-step, todo-driven, possible-compaction, and subagent use do not force
-durable records by themselves. Do not create both carriers or a record per
+durable records for low-complexity work by themselves. Do not create both carriers or a record per
 slice.
 
 ## Required Artifacts

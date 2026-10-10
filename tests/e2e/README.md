@@ -51,7 +51,11 @@ Layer 1 host profiles:
 
 - `fast` (default): representative Codex natural + explicit smoke, OpenCode base suite, plugin sync
 - `matrix`: full Codex matrices plus OpenCode base suite and plugin sync
-- `none`: static boundary + schema checks only
+- `none`: host-independent contracts and local behavioral checks; no live host smoke
+
+Layer 1 requires Node.js 22.13+ for the executable TypeScript debugging
+examples, alongside Python and Bash. Copy ownership and polluter regressions
+use isolated temporary fixtures and do not update installed skills.
 
 Supporting bootstrap assets:
 
