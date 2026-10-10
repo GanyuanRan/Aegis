@@ -1,5 +1,59 @@
 # Aegis Release Notes
 
+## v2.12.3 (2026-10-11)
+
+### Safer copied-skill updates
+
+- Replace name-based pruning with scoped file ownership recorded in the
+  existing installation registry. Preserve unrelated skills, private files,
+  user additions, and local modifications in shared discovery directories.
+- Check collisions before changing the discovery view, replace files
+  atomically, and save copy provenance before doctor verification so a failed
+  verification can be retried safely. Retire only unchanged, tracked files.
+- Reject ambiguous Unicode/case mappings and prevent copies through links or
+  overlapping source/destination trees. Identical legacy copies can be adopted;
+  unknown stale copies and conflicting local files require reconciliation.
+
+### Clearer workflow decisions
+
+- Correct conjunctive-cause reasoning: necessary incident conditions are not
+  automatically defective components that all need changing.
+- Keep incomplete subagent work in `NEEDS_CONTEXT` or `BLOCKED`, and validate
+  inherited TDD routes before implementation. Preserve existing code and user
+  edits when a newly written strict-TDD test already passes.
+- Align continuation records with the approved medium/high or actual-handoff
+  rule, document trusted managed-detached closeout, and distinguish ordinary
+  read-only questions from authorized baseline bootstrap.
+- Clarify host instruction priority and live tool-schema adaptation. XML tags
+  organize instructions without granting additional authority.
+
+### More reliable diagnostics
+
+- Make the polluter helper distinguish observed pollution, no observed pollution,
+  and inconclusive runs. Handle empty matches, unavailable runners, pre-existing
+  pollution, failing invocations, and filenames containing spaces.
+- Propagate polling callback failures as Promise rejections and correct the
+  temporary-directory example's descendant checks, including linked paths.
+- Add executable regressions and Windows/Linux coverage. Node.js 22.13+ is
+  required for the TypeScript example tests, not for installing Aegis skills.
+
+### Upgrading and limits
+
+- **Existing `copy-skills` installations:** refresh the canonical method-pack
+  checkout through its Git or plugin installation route **before starting the
+  updated updater process**. Do not use an older copy-mode updater for this
+  first upgrade: its already-loaded synchronization code can still prune
+  unrelated discovery entries even after it fetches the new checkout.
+- A case-only rename combined with changed contents may require preserving the
+  conflicting file in a backup outside the discovery root or choosing a separate
+  root. Native macOS and all-host live loading remain outside the verified scope.
+- Update through the existing host installation route and restart/reload as
+  required. Both manual global routing-prefix mirrors remain compatible;
+  no manual re-copy is needed. Aegis remains a Method Pack, without new runtime
+  authority or an official npm publication channel.
+- Include the DSH Desktop installation-owner clarification and corrected badge
+  links landed since v2.12.2; existing host compatibility limits remain explicit.
+
 ## v2.12.2 (2026-10-08)
 
 ### Official installation source
