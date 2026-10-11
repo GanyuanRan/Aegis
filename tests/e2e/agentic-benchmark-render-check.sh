@@ -165,6 +165,7 @@ bundle_bases=(
     "benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6"
     "benchmarks/results/gpt-5-6-sol-xhigh-standard-20260913-v2-10-1"
     "benchmarks/results/gpt-5-6-sol-xhigh-standard-20260925-v2-10-8"
+    "benchmarks/results/gpt-5-6-sol-xhigh-standard-20261011-v2-13-0"
 )
 bundle_ok=true
 for bundle_base in "${bundle_bases[@]}"; do
