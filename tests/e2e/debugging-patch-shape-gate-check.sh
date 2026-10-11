@@ -209,26 +209,38 @@ assert_contains "$debugging_advanced" "D9.*Quick Exit Proof.*complete" \
 assert_not_contains "$debugging_advanced" "independent-compound.*necessity-tested" \
     "independent compound does not inherit conjunctive necessity wording"
 
-assert_contains "$process_baseline" "keyword, phrase, regex, negation-word list" \
-    "process baseline defines patch-shape ripple signals"
-assert_contains "$process_baseline" "downstream logic re-parses raw text|re-infers action/state" \
-    "process baseline defines downstream re-inference signal"
-assert_contains "$process_baseline" "PatchShape.*CanonicalOwner.*UpwardDrillSignal.*Decision" \
-    "process baseline requires patch-shape triage output"
-assert_contains "$process_baseline" "locally green verification does not erase triage state" \
-    "process baseline preserves triage state after local verification"
-assert_contains "$process_baseline" "new carrier name alone does not prove a new direction" \
-    "process baseline prevents carrier-name disguise"
-assert_contains "$process_baseline" "Minimal Necessary Change means the smallest sufficient change" \
-    "process baseline defines minimal necessary change as sufficient repair"
+assert_contains "skills/systematic-debugging/SKILL.md" 'keyword, phrase, regex, negation-word list' \
+    'debugging owner defines patch-shape ripple signals'
+assert_contains "skills/systematic-debugging/SKILL.md" 'downstream logic re-parses raw text|re-infers action/state' \
+    'debugging owner detects downstream reinference'
+assert_contains "skills/systematic-debugging/SKILL.md" '^PatchShape:' \
+    'debugging triage records patch shape'
+assert_contains "skills/systematic-debugging/SKILL.md" '^CanonicalOwner:' \
+    'debugging triage records canonical owner'
+assert_contains "skills/systematic-debugging/SKILL.md" '^UpwardDrillSignal:' \
+    'debugging triage records upward drill signal'
+assert_contains "skills/systematic-debugging/SKILL.md" '^Decision: fix owner' \
+    'debugging triage records repair decision'
+assert_contains "skills/systematic-debugging/SKILL.md" 'locally green test does not erase triage' \
+    'debugging owner retains triage after local verification'
+assert_contains "skills/systematic-debugging/SKILL.md" 'renamed carrier is not a new direction' \
+    'debugging owner prevents carrier-name disguise'
+assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" 'Minimal Necessary Change means the' \
+    'process baseline defines minimal necessary change'
+assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" 'smallest sufficient change at the correct owner and abstraction layer' \
+    'minimal repair remains sufficient and owner-correct'
 assert_contains "$process_baseline" "correct owner and abstraction layer" \
     "process baseline ties minimality to owner and abstraction layer"
-assert_contains "$process_baseline" "Diagnosis must drill upward layer by layer" \
-    "process baseline uses upward drilling wording"
-assert_contains "$process_baseline" "DeeperCause.*not a self-judged yes/no stop" \
-    "process baseline replaces self-judged deeper-cause closure"
-assert_contains "$process_baseline" "green local intervention proves effectiveness.*not that the" \
-    "process baseline distinguishes local effectiveness from recurrence closure"
+assert_contains "skills/systematic-debugging/SKILL.md" 'drill upward through diagnostic layers' \
+    'debugging owner uses upward drilling'
+assert_contains "skills/systematic-debugging/root-cause-claim-contract.md" 'self-judged, non-falsifiable claim' \
+    'causal-proof owner rejects self-judged root closure'
+assert_contains "skills/systematic-debugging/root-cause-claim-contract.md" 'falsifiable checks an agent must satisfy' \
+    'causal-proof owner requires falsifiable evidence'
+assert_contains "skills/systematic-debugging/root-cause-claim-contract.md" 'A locally effective intervention proves that the selected point is' \
+    'causal-proof owner limits local effectiveness claims'
+assert_contains "skills/systematic-debugging/root-cause-claim-contract.md" 'does not prove that the point is the recurrence generator' \
+    'local effectiveness does not prove recurrence closure'
 assert_contains "$workflow_baseline" "Deeper Cause Challenge" \
     "workflow baseline requires the deeper-cause challenge"
 assert_contains "$workflow_baseline" "Quick Exit Proof" \

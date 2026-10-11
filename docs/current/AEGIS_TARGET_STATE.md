@@ -47,6 +47,7 @@ When this repository reaches its target state, it should simultaneously satisfy 
    - Multi-host installation skeleton
    - Plugin / marketplace / repo-install distribution capability
 3. It builds in `Aegis` qualities:
+   - Outcome-first task delivery under the [shared principles](AEGIS_PROCESS_BASELINE.md#2-outcome-principles), evaluated through actual user outcomes and cross-task reliability
    - Evidence-driven working style
    - Architecture-first impact analysis
    - TLREF / DIVE / Reflection / QA

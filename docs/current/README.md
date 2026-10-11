@@ -2,38 +2,33 @@
 
 Status: `Approved`
 
-## 1. Purpose
+## 1. Purpose and Reading Route
 
-This directory contains the public current baseline for `Aegis Method Pack`.
+This directory is the public current baseline for `Aegis Method Pack`.
+Use it as a decision index, not a default reading bundle.
 
-It is intentionally small. Internal implementation records, migration plans,
-private smoke notes, cutover checklists, and local-only audit trails do not
-belong in this public current surface.
+For non-trivial work, read the authority order below and ADR-0001, then select
+the smallest relevant row in §4. Read its heading/section first; expand for
+affected dependencies, contradictory authority, or missing evidence. Reuse
+already-read, still-current context. Do not recursively open every link.
+
+For choices about scope, user outcomes, stable repair, or completion, read
+[Outcome Principles](AEGIS_PROCESS_BASELINE.md#2-outcome-principles).
+For procedure/output details, load the active skill, not every workflow.
+Baseline rules are not replaced by this index; an unresolved gap stays explicit.
 
 ## 2. Repository Boundary
 
-The current repository is:
-
-> `Aegis Method Pack (runtime-ready)`
-
-This repository owns:
-
-- skills and workflow discipline
-- host-installable method-pack distribution
-- explicitly enabled advisory host callbacks within the product/runtime boundary
-- runtime-ready drafts, hints, and projections
-- public docs needed by users and contributors
-
-This repository does not own:
-
-- authoritative runtime core
-- authoritative `GateDecision`
-- authoritative `PolicySnapshot`
-- final `completion authority`
+The repository is `Aegis Method Pack (runtime-ready)`. It owns skills,
+workflow discipline, host-installable distribution, explicitly enabled advisory
+host callbacks, runtime-ready drafts/hints/projections, and public docs.
+It does not own an authoritative runtime core, `GateDecision`,
+`PolicySnapshot`, or final `completion authority`.
 
 ## 3. Authority Order
 
-When public docs conflict, use this order:
+When public docs conflict, use this order (the user's current explicit
+instruction takes precedence as defined by `AGENTS.md`):
 
 1. `AGENTS.md`
 2. `docs/current/README.md`
@@ -42,151 +37,64 @@ When public docs conflict, use this order:
 5. host-specific docs such as `docs/README.codex.md`,
    `docs/README.opencode.md`, `docs/README.claude-code.md`,
    `docs/README.cc-gui.md`, `docs/README.codebuddy.md`,
-   `docs/README.deepseek-tui.md`,
-   `docs/README.deepseek-harness.md`,
-   `docs/README.trae.md`, `docs/README.copilot.md`,
-   `docs/README.qoder.md`, `docs/README.kimi-code.md`,
-   `docs/README.pi.md`,
+   `docs/README.deepseek-tui.md`, `docs/README.deepseek-harness.md`,
+   `docs/README.trae.md`, `docs/README.copilot.md`, `docs/README.qoder.md`,
+   `docs/README.kimi-code.md`, `docs/README.pi.md`,
    `docs/README.openclaw.md`, `docs/README.hermes-agent.md`,
-   `docs/README.zcode.md`, `docs/README.grok-build.md`,
-   `docs/README.omp.md`
+   `docs/README.zcode.md`, `docs/README.grok-build.md`, `docs/README.omp.md`
 6. tests and fixtures
 
-## 4. Public Current Baseline
+## 4. Task-to-Owner Map
 
-The public current set is:
+These are the public current documents and their distinct responsibilities.
+Choose by the decision being made; guides explain usage, while normative
+semantics remain at their named owner.
 
-- `docs/current/AEGIS_TARGET_STATE.md`
-- `docs/current/AEGIS_PRODUCT_BASELINE.md`
-- `docs/current/AEGIS_PROCESS_BASELINE.md`
-- `docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md`
-- `docs/current/AEGIS_FAST_TRACK_PLAYBOOK.md`
-- `docs/current/AEGIS_FAST_TRACK_PLAYBOOK_ZH.md`
-- `docs/current/AEGIS_WORKFLOW_GUIDE.md`
-- `docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md`
-- `docs/current/AEGIS_ACTIVATION_MODE.md`
-- `docs/current/AEGIS_TDD_MODE.md`
-- `docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md`
-- `docs/current/AEGIS_RULE_LAYERING.md`
-- `docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md`
-- `docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md`
-- `docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md`
-- `docs/current/AEGIS_DEFERRED_LEDGER.md`
-- `docs/current/AEGIS_MINIMALITY_REFERENCE.md`
-- `docs/current/AEGIS_DUAL_TRACK_GOVERNANCE.md`
-- `docs/current/AEGIS_ADR_AUTO_BACKFILL.md`
-- `docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md`
-- `docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md`
-- `docs/current/AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md`
-- `docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md`
-- `docs/current/AEGIS_KNOWN_LIMITATIONS.md`
-- `docs/adr/ADR-0001-aegis-method-pack-is-not-runtime-core.md`
-- `docs/adr/ADR-0002-kimi-native-plugin-is-the-automatic-entry.md`
-- `docs/adr/ADR-0003-current-branch-first-git-lifecycle.md`
+| Task / decision | Current owner and bounded starting point |
+| --- | --- |
+| Project purpose and long-term direction | `docs/current/AEGIS_TARGET_STATE.md`: target state and non-goals. |
+| Product scope / owned surfaces | `docs/current/AEGIS_PRODUCT_BASELINE.md`: relevant product boundary; ADR-0001 below. |
+| Goal tradeoff, execution cycle, requirement/design alignment | `docs/current/AEGIS_PROCESS_BASELINE.md`: §2 outcomes, §3 execution, §4 baseline roles, §5 architecture review; §6 conditional specialist map. |
+| Workflow acceptance or context budget | `docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md`: §2 criteria, §3 operational owners, §4 budgets, §5 evaluation. |
+| Complexity growth / closure | `docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md`: relevant planning, pre-edit or completion stage. |
+| Quick-start usage | `docs/current/AEGIS_FAST_TRACK_PLAYBOOK.md` or `docs/current/AEGIS_FAST_TRACK_PLAYBOOK_ZH.md`: user's language and relevant entry phrase. |
+| Workflow explanation | `docs/current/AEGIS_WORKFLOW_GUIDE.md` or `docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md`: relevant stage; not additional rule owners. |
+| Activation auto/explicit | `docs/current/AEGIS_ACTIVATION_MODE.md`: mode semantics and selected host. |
+| TDD off/auto/explicit strict | `docs/current/AEGIS_TDD_MODE.md`: route authority and verification. |
+| External output or context injection | `docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md`: relevant intake/source policy. |
+| Portable versus host/repo rules | `docs/current/AEGIS_RULE_LAYERING.md`: ownership and projections. |
+| Installed skill fails to trigger / overtriggers | `docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md`: classify failed layer, then its diagnostic section. |
+| Agentic behavior or performance claims | `docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md`: evidence/claim scope and selected evaluation lane. |
+| Deferred follow-up / retirement marker | `docs/current/AEGIS_DEFERRED_LEDGER.md`: marker convention. |
+| Proposing a new owner, skill, artifact, adapter, fallback or metric | `docs/current/AEGIS_MINIMALITY_REFERENCE.md`: pre-addition check. |
+| Repair plus retirement / source-of-truth cleanup | `docs/current/AEGIS_DUAL_TRACK_GOVERNANCE.md`: repair/retirement and authorization boundary. |
+| Executed architecture decision / baseline sync | `docs/current/AEGIS_ADR_AUTO_BACKFILL.md`: triggers and current-state sync. |
+| Draft/hint/projection structure | `docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md`: relevant artifact only. |
+| Runtime-ready versus runtime authority | `docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md`: relevant boundary. |
+| Release or supported-host readiness | `docs/current/AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md`: applicable gates; `docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md`: selected host and evidence scope. |
+| Known limitation / retained compatibility | `docs/current/AEGIS_KNOWN_LIMITATIONS.md`: search headings for the affected surface; do not load the whole catalogue by default. |
+| Fundamental product boundary | `docs/adr/ADR-0001-aegis-method-pack-is-not-runtime-core.md`. |
+| Kimi automatic entry | `docs/adr/ADR-0002-kimi-native-plugin-is-the-automatic-entry.md`. |
+| Branch/worktree/commit/integration lifecycle | `docs/adr/ADR-0003-current-branch-first-git-lifecycle.md`: relevant lifecycle section. |
 
-## 5. Document Roles
+## 5. Ownership and Update Rule
 
-`AEGIS_TARGET_STATE.md`
-: One-page summary of what this repository is trying to become.
+Shared principles and baseline-role vocabulary belong to Process; acceptance
+criteria and payload budgets belong to Workflow Quality; specialist semantics
+belong to their named current doc; procedures and output contracts belong to
+skills. The entry is a portable short projection for routing and tradeoffs,
+including installs that copy skills without current docs.
 
-`AEGIS_PRODUCT_BASELINE.md`
-: Product boundary, owned surfaces, and non-goals.
-
-`AEGIS_PROCESS_BASELINE.md`
-: Method-layer workflow baseline, evidence discipline, and shared method
-  terminology such as `Design Defect` / `Implementation Drift`.
-
-`AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md`
-: Shared current baseline for complexity governance across source, test,
-  plan/decision, and process artifacts.
-
-`AEGIS_FAST_TRACK_PLAYBOOK.md`
-: English user-facing quick-start guide for natural entry phrases, capability
-  selection, mode controls, boundaries, and deeper reading.
-
-`AEGIS_FAST_TRACK_PLAYBOOK_ZH.md`
-: Chinese user-facing quick-start guide for natural entry phrases, capability
-  selection, mode controls, boundaries, and deeper reading.
-
-`AEGIS_WORKFLOW_GUIDE.md`
-: English workflow guide for users and contributors. It explains the current
-  Aegis workflow without adding runtime authority.
-
-`AEGIS_WORKFLOW_GUIDE_ZH.md`
-: Chinese workflow guide for users and contributors. It explains the current
-  Aegis workflow without adding runtime authority.
-
-`AEGIS_ACTIVATION_MODE.md`
-: `auto` and `explicit` activation mode semantics.
-
-`AEGIS_TDD_MODE.md`
-: `auto` and `off` TDD mode semantics for automatic test-first routing.
-
-`AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md`
-: Bounded context intake, evidence indexing, and log/output hygiene.
-
-`AEGIS_RULE_LAYERING.md`
-: Method, host, and repo rule layering.
-
-`AEGIS_TRIGGER_HEALTH_BASELINE.md`
-: Trigger-chain diagnosis for "installed but not reliably invoking the right
-skill", including install, discovery, activation, routing, execution-depth, and
-false-positive layers.
-
-`AEGIS_WORKFLOW_QUALITY_BASELINE.md`
-: Quality baseline for high-frequency workflows, compact output contracts,
-  representative samples, fast-path cheapness, evidence freshness, artifact
-  stability, workspace laziness, and authority boundary.
-
-`AEGIS_AGENTIC_BENCHMARK_BASELINE.md`
-: Public baseline for measuring Aegis in representative agentic tasks without
-  turning benchmark output into runtime authority or generic savings claims.
-
-`AEGIS_DEFERRED_LEDGER.md`
-: Lightweight marker convention for searchable deferred follow-up and
-  retirement work.
-
-`AEGIS_MINIMALITY_REFERENCE.md`
-: Aegis-specific "check before adding" reference for skills, artifacts,
-  adapters, fallbacks, and benchmark metrics.
-
-`AEGIS_DUAL_TRACK_GOVERNANCE.md`
-: Repair track plus retirement track governance.
-
-`AEGIS_ADR_AUTO_BACKFILL.md`
-: Completion-time ADR backfill from work, plan, spec, and verification
-  evidence, including ADR/baseline sync rules.
-
-`AEGIS_ARTIFACT_SCHEMA_BASELINE.md`
-: Minimum runtime-ready artifact shapes.
-
-`AEGIS_RUNTIME_READY_BOUNDARY.md`
-: What the method pack may output, and what only a future runtime core may decide.
-
-`AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md`
-: Minimum release gate and verification readback.
-
-`AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md`
-: Current host compatibility snapshot and evidence boundary.
-
-`AEGIS_KNOWN_LIMITATIONS.md`
-: Current limitations and retained compatibility boundaries.
+When public behavior, installation, release gates, runtime-ready artifacts, or
+authority boundaries change, update the smallest current owner before the
+implementation. Rebind existing readers/tests when moving responsibility.
+Do not preserve a stale duplicate merely to satisfy a literal-location check,
+or weaken an invariant to make a shorter document pass.
 
 ## 6. Local Archive Rule
 
-`docs/archive/` is local-only and ignored by git.
-
-Use it for implementation history, internal migration records, private staging
-notes, and old cutover material that should not ship as part of the public
-repository.
-
-Do not reference `docs/archive/` from public README files, host install docs, or
-release instructions.
-
-## 7. Update Rule
-
-When a change affects public behavior, host installation, release gates,
-runtime-ready artifacts, or the method-pack/runtime-core boundary, update the
-smallest relevant current doc before changing implementation.
-
-If a document is only useful as process evidence, keep it out of `docs/current`.
+`docs/archive/` is local-only and ignored by git. Implementation history,
+private smoke notes, migration plans and session evidence belong there, not
+in the public current surface. Do not reference it from public README files,
+host install docs or release instructions. Process evidence alone is not a
+new current authority document.

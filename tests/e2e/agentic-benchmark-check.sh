@@ -439,8 +439,8 @@ fi
 
 assert_contains "$current_index" "AEGIS_AGENTIC_BENCHMARK_BASELINE.md" \
     "current docs index lists agentic benchmark baseline"
-assert_contains "$workflow_quality" "agentic benchmark" \
-    "workflow quality baseline references agentic benchmark"
+assert_contains "$workflow_quality" "AEGIS_AGENTIC_BENCHMARK_BASELINE.md" \
+    "workflow quality baseline references the canonical agentic benchmark owner"
 assert_contains "$baseline" "baseline-no-aegis" \
     "benchmark baseline defines no-Aegis arm"
 assert_contains "$baseline" "aegis-auto" \

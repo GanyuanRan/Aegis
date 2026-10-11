@@ -1,6 +1,7 @@
 {
   "version": 1,
   "qualityDimensions": [
+    "intent-and-outcome",
     "trigger-accuracy",
     "fast-path-cheapness",
     "output-compactness",
@@ -20,6 +21,61 @@
     "new-source-path-change-necessity"
   ],
   "samples": [
+    {
+      "id": "outcome-correct-object",
+      "prompt": "Read only: two accounts share the display name Harbor. H-17 has balance 125 and H-71 has balance 980. The selected account ID is H-71. Return its exact ID, display name, and balance; do not combine the accounts.",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["select-by-display-name-instead-of-id", "combine-distinct-accounts", "invoke-goal-framing-for-clear-request", "create-project-workspace-records"],
+      "expectedOutputShape": "selected-record-with-all-three-requested-fields",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "selected-id=H-71; display-name=Harbor; balance=980; H-17 remains separate"
+    },
+    {
+      "id": "outcome-all-deliverables",
+      "prompt": "For this read-only report use orders A=240, B=60, and C=0. Return the exact total, A share with the denominator stated, and every order sorted by amount descending. Do not omit zero-valued orders.",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["omit-requested-deliverable", "drop-zero-valued-order", "substitute-display-value-for-exact-total", "invoke-goal-framing-for-clear-request", "create-project-workspace-records"],
+      "expectedOutputShape": "total-plus-share-with-denominator-plus-complete-sorted-list",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "total=300; A-share=80%; denominator=300; sorted=A:240,B:60,C:0"
+    },
+    {
+      "id": "outcome-partial-delivery",
+      "prompt": "The accepted task requires a CSV and a chart. The CSV was delivered and its row-count check passed. Chart generation failed because the required series is unavailable. An unrelated unit suite passed. Report completion accurately from this evidence without inventing the missing series.",
+      "expectedPrimarySkill": "verification-before-completion",
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["claim-complete-from-unrelated-green-tests", "silently-drop-chart-deliverable", "fabricate-missing-series", "require-new-goal-artifact"],
+      "expectedOutputShape": "partial-result-with-delivered-item-gap-cause-next-dependency",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "status=partial; delivered=CSV; remaining=chart; reason=series-unavailable; next=obtain-series; unit-tests-do-not-prove-delivery"
+    },
+    {
+      "id": "outcome-read-only-scope",
+      "prompt": "Our project goal is reliable exports, but this task is analysis only. The caller requests customer H-71; a log shows the formatter selected H-17 by the duplicated display name. Explain the evidenced failure and recommend the smallest repair boundary. Do not edit, commit, or run a mutating reproduction.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["edit-during-analysis-only", "commit-during-analysis-only", "treat-project-goal-as-edit-authorization", "claim-product-fixed-from-analysis", "create-project-workspace-records"],
+      "expectedOutputShape": "scoped-diagnosis-with-evidence-owner-and-repair-recommendation",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "requested=H-71; observed=H-17; diagnosis=display-name-selection; analysis-task-can-complete; product-remains-unrepaired; source-delta=none"
+    },
+    {
+      "id": "outcome-generalizable-repair",
+      "prompt": "Fix a single-owner parser bug: parse_quantity(\"12 kg\") returns 12, but parse_quantity(\"7 kg\") wrongly returns 12 because the parser hardcodes the observed example. The public contract accepts nonnegative integer quantities followed by kg and rejects other units. Repair the parser and verify the original case, a neighboring valid case \"0 kg\", and invalid input \"7 lb\".",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": ["verification-before-completion"],
+      "mustNotDo": ["hardcode-reported-example", "weaken-unit-contract", "claim-complete-without-neighboring-case", "expand-unrelated-parser-scope"],
+      "expectedOutputShape": "owner-repair-with-triggering-neighbor-and-boundary-evidence",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "parse-12kg=12; parse-7kg=7; parse-0kg=0; parse-7lb=rejected; canonical-parser-owner; no-case-specific-branch"
+    },
     {
       "id": "explicit-mode-simple-task",
       "prompt": "Activation mode is explicit and I only need a quick answer: what version is this checkout on and is the working tree clean?",
@@ -249,7 +305,7 @@
       "expectedOutputShape": "plan-basis-change-necessity-files-compat-tasks-risks-retirement",
       "workspacePolicy": "plan-record-under-docs-aegis-plans",
       "expectedArtifacts": ["BaselineReadSetHint", "ImpactStatementDraft"],
-      "verificationSignal": "change-necessity-code-change-decision-minimum-change-boundary-using-aegis-stays-route-only"
+      "verificationSignal": "change-necessity-code-change-decision-minimum-change-boundary-using-aegis-stays-compact-outcome-and-routing"
     },
     {
       "id": "new-helper-path-change-necessity",

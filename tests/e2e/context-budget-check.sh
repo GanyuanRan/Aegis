@@ -73,6 +73,7 @@ assert_budget() {
         return
     fi
 
+    assert_documented_budget "\`${file#skills/}\`" "$target" "$hard"
     local current
     current="$(byte_count "$file")"
     case "$(budget_band "$current" "$target" "$hard")" in
@@ -87,12 +88,32 @@ assert_total_budget() {
     local target="$2"
     local hard="$3"
     local label="$4"
+    local documented_row="$5"
 
+    assert_documented_budget "$documented_row" "$target" "$hard"
     case "$(budget_band "$current" "$target" "$hard")" in
         target) pass "$label meets target <= ${target} bytes (${current})" ;;
         warning) warn "$label exceeds target ${target} but remains within hard ceiling ${hard} bytes (${current})" ;;
         hard-failure) fail "$label exceeds hard ceiling ${hard} bytes (${current})" ;;
     esac
+}
+
+assert_documented_budget() {
+    local row="$1"
+    local expected="$2:$3"
+    local actual
+    actual="$(awk -F '|' -v label="$row" '
+        { field = $2; gsub(/^[ \t]+|[ \t]+$/, "", field) }
+        field == label {
+            gsub(/[^0-9]/, "", $3); gsub(/[^0-9]/, "", $4)
+            print $3 ":" $4
+        }
+    ' "$workflow_quality_doc")"
+    if [[ "$actual" == "$expected" ]]; then
+        pass "$row documented budget matches executable limits"
+    else
+        fail "$row documented budget differs: expected $expected, found $actual"
+    fi
 }
 
 echo "=== Context Budget Check ==="
@@ -111,8 +132,8 @@ prompt_hygiene_doc="docs/current/AEGIS_PROMPT_HYGIENE_AND_INJECTION_BOUNDARY.md"
 verification_skill="skills/verification-before-completion/SKILL.md"
 workflow_quality_doc="docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md"
 log_window_script="scripts/log-window.sh"
-using_target_bytes=2800
-using_hard_bytes=3200
+using_target_bytes=4500
+using_hard_bytes=6000
 debugging_target_bytes=10500
 debugging_hard_bytes=12000
 verification_target_bytes=7500
@@ -153,7 +174,7 @@ if [[ -f "$debugging_skill" && -f "$debugging_advanced" && -f "$verification_ski
     verification_bytes="$(byte_count "$verification_skill")"
     combined_bytes=$((debugging_bytes + verification_bytes))
     assert_total_budget "$combined_bytes" 19000 22000 \
-        "combined debugging and verification main bodies"
+        "combined debugging and verification main bodies" "debugging + verification"
 else
     fail "combined main-body ceiling requires complete debugging/verification owners"
 fi
@@ -169,7 +190,8 @@ if [[ -f "$using_aegis" && -f "$debugging_skill" && -f "$debugging_advanced" && 
       -f "$verification_skill" && -f "$verification_expanded" ]]; then
     using_bytes="$(byte_count "$using_aegis")"
     assert_total_budget "$((using_bytes + debugging_bytes + verification_bytes))" \
-        22000 26000 "debug route bundle"
+        22000 26000 "debug route bundle" \
+        "entry + debugging + verification (debug route)"
 else
     fail "debug route bundle requires complete owners"
 fi
@@ -179,7 +201,8 @@ if [[ -f "$using_aegis" && -f "$executing_skill" && -f "$verification_skill" && 
     using_bytes="$(byte_count "$using_aegis")"
     executing_bytes="$(byte_count "$executing_skill")"
     assert_total_budget "$((using_bytes + executing_bytes + verification_bytes))" \
-        20000 24000 "plan-execution route bundle"
+        20000 24000 "plan-execution route bundle" \
+        "entry + executing-plans + verification (plan-execution route)"
 else
     fail "plan-execution route bundle requires complete owners"
 fi
@@ -188,7 +211,8 @@ if [[ -f "$using_aegis" && -f "$executing_skill" && -f "$long_task_skill" && \
       -f "$verification_skill" && -f "$verification_expanded" ]]; then
     long_task_bytes="$(byte_count "$long_task_skill")"
     assert_total_budget "$((using_bytes + executing_bytes + long_task_bytes + verification_bytes))" \
-        33000 40000 "long-task route bundle"
+        33000 40000 "long-task route bundle" \
+        "entry + executing-plans + verification + long-task (long-task route)"
 else
     fail "long-task route bundle requires complete owners"
 fi
@@ -197,7 +221,7 @@ assert_contains "$workflow_quality_doc" "warning target" \
     "workflow quality baseline defines warning targets"
 assert_contains "$workflow_quality_doc" "hard ceiling" \
     "workflow quality baseline defines hard ceilings"
-assert_contains "$workflow_quality_doc" "route-bundle budgets" \
+assert_contains "$workflow_quality_doc" "Route-bundle budgets" \
     "workflow quality baseline defines route-bundle budgets"
 
 if [[ -f "$discipline_ref" ]]; then

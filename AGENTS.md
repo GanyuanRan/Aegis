@@ -46,7 +46,18 @@ For non-trivial work, read these first:
 
 1. `docs/current/README.md`
 2. `docs/adr/ADR-0001-aegis-method-pack-is-not-runtime-core.md`
-3. the smallest task-relevant `docs/current/*.md`
+3. the task-to-owner row in `docs/current/README.md`, then only the relevant
+   section of its `docs/current/*.md` owner
+
+For tradeoffs about scope, repair, or completion, use the Outcome Principles
+in `docs/current/AEGIS_PROCESS_BASELINE.md` §2. Understand the authorized need,
+complete the task within business constraints, and deliver a usable, verifiable
+result. Engineering checks support that outcome; they do not replace delivery.
+
+The index is navigation, not a requirement to read every baseline. Use headings
+or bounded excerpts, reuse still-current context, and expand only for affected
+dependencies, contradictions, or missing evidence. Procedure details belong to
+the active skill; quality acceptance belongs to the workflow-quality baseline.
 
 Add these when relevant:
 

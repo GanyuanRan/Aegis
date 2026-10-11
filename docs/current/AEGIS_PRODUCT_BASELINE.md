@@ -27,6 +27,12 @@ The formal product definition of this repository is:
 
 > `Aegis Method Pack (runtime-ready)`
 
+Its purpose is reliable delivery of authorized user tasks within business
+constraints. The [Outcome Principles](AEGIS_PROCESS_BASELINE.md#2-outcome-principles)
+govern tradeoffs between current delivery and long-term project reliability.
+Skills, architecture checks, and runtime-ready artifacts support that purpose;
+their presence alone is not evidence that users' tasks succeed.
+
 The strengths this repository inherits from `superpowers` are:
 
 - Skills distribution model
