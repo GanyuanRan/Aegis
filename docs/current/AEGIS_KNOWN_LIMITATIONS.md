@@ -1175,4 +1175,6 @@ The core requirements for current limitation management are:
 2. Do not write limitations as permanent defects
 3. Do not add fallbacks without retirement plans in order to mask limitations
 
-For the 7-dimension operational definitions and defect/drift judgment criteria for architecture review, see `AEGIS_PROCESS_BASELINE.md` §15-§17.
+For defect/drift judgment and the seven architecture review dimensions, read
+`AEGIS_PROCESS_BASELINE.md` §4–§5. Use only the limitation relevant to the current
+task; this catalogue is not a default full read.

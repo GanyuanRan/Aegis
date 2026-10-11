@@ -53,20 +53,24 @@ verification_skill="skills/verification-before-completion/SKILL.md"
 limitations_doc="docs/current/AEGIS_KNOWN_LIMITATIONS.md"
 compat_doc="docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md"
 
-assert_contains "$process_doc" "Project Baseline Bootstrap" \
-    "process baseline defines project baseline bootstrap"
-assert_contains "$process_doc" "bounded repo scan|index-first" \
-    "process baseline requires bounded index-first scan"
-assert_contains "$process_doc" "content is too sparse|too sparse" \
-    "process baseline defines sparse-project no-op"
-assert_contains "$process_doc" "Workspace Shell|Task Work Record" \
-    "process baseline separates workspace shell from task work records"
-assert_contains "$process_doc" "Spec Brief|design spec" \
-    "process baseline separates spec brief from design spec"
+assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" 'skills/using-aegis/references/skill-discipline.md' \
+    'process baseline points to the bootstrap/workspace owner'
+assert_contains "skills/using-aegis/references/skill-discipline.md" 'Project Baseline Bootstrap' \
+    'discipline owner defines baseline bootstrap'
+assert_contains "skills/using-aegis/references/skill-discipline.md" 'bounded repo scan' \
+    'discipline owner requires a bounded baseline scan'
+assert_contains "skills/using-aegis/references/skill-discipline.md" 'too sparse' \
+    'discipline owner preserves sparse-project no-op'
+assert_contains "skills/using-aegis/references/skill-discipline.md" 'Workspace Shell' \
+    'discipline owner distinguishes workspace shell'
+assert_contains "skills/using-aegis/references/skill-discipline.md" 'Task Work Record' \
+    'discipline owner distinguishes task records'
+assert_contains "skills/using-aegis/references/skill-discipline.md" 'Spec Brief vs Design Spec' \
+    'discipline owner separates conditional spec depth'
 assert_contains "$process_doc" "Lazy Workspace Support|lazy" \
     "process baseline defines lazy workspace support"
-assert_contains "$process_doc" "normal Q&A|simple explanation|version.*status" \
-    "process baseline lists no-workspace fast paths"
+assert_contains "skills/using-aegis/references/skill-discipline.md" 'normal Q&A|simple explanation|version/status' \
+    'discipline owner lists no-workspace fast paths'
 
 assert_contains "$using_skill" "Active codebase question|what next" \
     "using-aegis hot path includes project baseline bootstrap trigger"

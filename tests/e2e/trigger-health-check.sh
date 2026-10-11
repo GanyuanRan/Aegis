@@ -77,20 +77,20 @@ assert_contains "$current_index" "AEGIS_TRIGGER_HEALTH_BASELINE.md" \
     "current docs index lists trigger health baseline"
 assert_contains "$process_doc" "Trigger Health" \
     "process baseline defines trigger health"
-assert_contains "$process_doc" "install and version visibility" \
-    "process baseline starts trigger diagnosis at install/discovery/activation"
-assert_contains "$process_doc" "host skill discovery" \
-    "process baseline includes discovery in trigger diagnosis"
-assert_contains "$process_doc" "activation mode and bootstrap entry" \
-    "process baseline includes activation in trigger diagnosis"
-assert_contains "$process_doc" "context pressure and re-entry" \
-    "process baseline includes context-pressure re-entry in trigger diagnosis"
-assert_contains "$process_doc" 'Keep `using-aegis` compact and route-only' \
-    "process baseline keeps using-aegis compact"
-assert_contains "$process_doc" "skill descriptions trigger-oriented" \
-    "process baseline keeps skill descriptions trigger-oriented"
-assert_contains "$process_doc" "trigger-health fixtures" \
-    "process baseline requires fixtures before broadening trigger wording"
+assert_contains "docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md" 'install and version visibility' \
+    'trigger owner starts diagnosis at installation'
+assert_contains "docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md" 'host skill discovery' \
+    'trigger owner covers discovery'
+assert_contains "docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md" 'activation mode and bootstrap entry' \
+    'trigger owner covers activation'
+assert_contains "docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md" 'context pressure and re-entry' \
+    'trigger owner covers context re-entry'
+assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" 'Keep the entry compact; repair the failed layer' \
+    'process baseline delegates failed-layer repair'
+assert_contains "docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md" 'skill descriptions trigger-oriented' \
+    'trigger owner keeps descriptions trigger-oriented'
+assert_contains "docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md" 'trigger-health fixtures' \
+    'trigger owner requires fixtures before broadening wording'
 
 assert_contains "$baseline" "install and version visibility" \
     "baseline includes install/version layer"
@@ -128,8 +128,10 @@ assert_contains "$baseline" "false positive over-triggering" \
     "baseline includes false-positive layer"
 assert_contains "$baseline" "do not first add more keywords" \
     "baseline rejects keyword stuffing as first fix"
-assert_contains "$baseline" 'Keep `using-aegis` compact and route-only' \
-    "baseline preserves compact router owner"
+assert_contains "docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md" 'short outcome-principle projection plus routing' \
+    'trigger owner permits the bounded outcome projection'
+assert_contains "docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md" 'universal.*goal-framing|goal-framing.*route' \
+    'trigger owner prevents universal goal framing'
 assert_contains "$baseline" "Failure Report Shape" \
     "baseline defines failure report shape"
 

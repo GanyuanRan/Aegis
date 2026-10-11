@@ -27,6 +27,10 @@ The formal product definition of this repository is:
 
 > `Aegis Method Pack (runtime-ready)`
 
+Its purpose is to help agents reliably deliver authorized user tasks. Shared
+decision principles belong to the
+[Process Baseline](AEGIS_PROCESS_BASELINE.md#2-outcome-principles).
+
 The strengths this repository inherits from `superpowers` are:
 
 - Skills distribution model

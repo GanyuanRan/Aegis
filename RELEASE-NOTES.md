@@ -1,5 +1,51 @@
 # Aegis Release Notes
 
+## v2.13.0 (2026-10-11)
+
+### Task outcomes guide decisions
+
+- Define three shared principles inside the process baseline: preserve intent
+  and boundaries, distinguish task and project goals, and deliver a complete,
+  usable result supported by evidence. Their abstraction does not grant higher
+  instruction priority or override concrete acceptance criteria.
+- Carry the relevant checks into entry routing, design, planning, debugging,
+  delegation, continuation, review, and completion. Preserve the requested
+  object, authorized scope, actions, and deliverables across each stage.
+- Separate successful internal steps from completed user delivery. Keep missing
+  data and blocked actions visible, distinguish task completion from product
+  capability acceptance, and reject hardcoded single-case repairs.
+
+### Focused baselines with clear ownership
+
+- Reduce the two main baselines from 2,734 to 467 lines, about 74% fewer UTF-8
+  bytes. The current-doc index routes readers to the relevant owner and section
+  instead of making the whole baseline tree a default reading bundle.
+- Define shared principles once in the process baseline. Keep engineering rules
+  in execution guidance, observable acceptance criteria in the quality baseline,
+  and operational actions and output contracts in their skills.
+- Preserve necessary entry summaries for skill-copy installations. Raise the
+  entry warning target to 4,500 bytes and hard ceiling to 6,000 bytes; the current
+  entry uses 3,805 bytes. Other skill and route-bundle limits are unchanged.
+- Check canonical owners and references instead of duplicated paragraphs. Add
+  representative outcome cases to the workflow matrix, now containing 110 samples.
+
+### Upgrading and evidence limits
+
+- Synchronize all eight package and plugin version fields at `2.13.0`. Update
+  through the existing Git or host plugin installation route, then restart or
+  reload the host as required. Both manual global routing-prefix mirrors remain
+  compatible; no manual re-copy is needed. When upgrading a `copy-skills`
+  installation from before v2.12.3, follow the updater precaution in v2.12.3 below.
+- Five paired native Codex scenarios passed on the previous and skill-changing
+  candidate versions, covering selected-result reporting with an unseen variant,
+  read-only diagnosis, partial-data delivery, a tiny rename, and focused baseline
+  retrieval. Those runs predate the final documentation ownership refinement;
+  they do not establish general behavioral or performance improvements.
+- Byte reductions describe maintained documentation, not measured model
+  attention, latency, token cost, or cross-host reliability. Existing host
+  compatibility limits remain explicit. Aegis remains a Method Pack with no
+  new runtime authority, universal goal-framing step, or official npm channel.
+
 ## v2.12.3 (2026-10-11)
 
 ### Safer copied-skill updates

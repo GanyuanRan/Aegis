@@ -131,6 +131,10 @@ exists, the state is `needs-verification` or `partial`.
 Resume in this order:
 
 1. Read original intent, parent plan/goal, latest checkpoint and resume hint.
+   Reconcile current user instructions: continuation, amendment, pause, or
+   replacement. Preserve outstanding deliverables; update authorized scope
+   before treating a valid amendment as drift. Internal milestones are not
+   substitutes for the user's delivered result.
 2. Re-read required baseline refs and relevant active `CONTEXT.md` language.
 3. Read the `Execution Readiness View` when present.
 4. Compare checkpoint branch/HEAD, completed commits, evidence refs, and claims

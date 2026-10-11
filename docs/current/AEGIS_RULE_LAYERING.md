@@ -20,6 +20,7 @@ This document is only responsible for answering the following questions:
 
 Rules suitable for entry into the `Aegis Method Pack` core include:
 
+- Outcome principles from `AEGIS_PROCESS_BASELINE.md` §2
 - TLREF
 - DIVE
 - Reflection
@@ -66,9 +67,13 @@ These rules should not be automatically elevated to cross-host general methodolo
 
 ## 3. Current Owners And Manual Projections
 
-The current portable routing owner is `skills/using-aegis/SKILL.md`. Detailed
-workflow behavior remains owned by the task-specific skills and approved
-current docs. Activation and TDD mode semantics are owned by
+The current portable entry owner is `skills/using-aegis/SKILL.md`: a short
+outcome-principle projection plus routing, including skill-copy installations
+that do not carry `docs/current/`. Process owns the shared principles; quality
+owns acceptance criteria; task skills own procedures and output contracts.
+Entry is not a second workflow owner. Read the current-doc index by decision,
+then the relevant section; do not recursively load all linked baselines.
+Activation and TDD mode semantics are owned by
 `AEGIS_ACTIVATION_MODE.md` and `AEGIS_TDD_MODE.md` respectively.
 
 The root `GLOBAL_USER_RULES_TEMPLATE.md` and
@@ -89,9 +94,9 @@ Projection maintenance follows these rules:
 
 - Keep one functional routing-prefix profile with aligned English and Chinese
   mirrors; do not reintroduce Lite / Advanced capability tiers.
-- Keep detailed workflow governance owned by `skills/using-aegis/SKILL.md`,
-  task-specific skills, and approved current docs instead of projecting it into
-  global user rules.
+- Keep portable entry guidance in `skills/using-aegis/SKILL.md` and detailed
+  workflow governance in task-specific skills and their current-doc owners,
+  rather than projecting them into global user rules.
 - The former `GLOBAL_USER_RULES_LITE*` files are retired duplicate profiles.
   Existing manual copies should replace only their old Aegis Lite / Advanced
   blocks with the unified prefix; unrelated pre-existing global rules remain
@@ -112,4 +117,8 @@ Any subsequent rule addition must first answer:
 2. Does it depend on specific tool capabilities
 3. Does it only serve current repository contributions
 
-Only the first category is permitted to enter the method-pack core.
+Only the first category is permitted to enter the method-pack core. Define a
+principle once at its canonical owner. Other surfaces carry only a necessary
+summary, stage-specific action, or acceptance criterion; they do not independently
+redefine it. Test that readers can find conditional detail. Entry summaries must
+remain usable in skill-copy installs without requiring the current-doc tree.

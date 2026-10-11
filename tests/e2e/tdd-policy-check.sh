@@ -170,8 +170,10 @@ assert_contains "$tdd_skill" "hotfix|emergency|urgent" \
     "TDD defines emergency hotfix regression follow-up"
 assert_contains "$tdd_skill" "manual verification|manual steps" \
     "TDD defines manual verification when automation is blocked"
-assert_contains "$process_baseline" "Ripple Signal Triage" \
-    "process baseline defines Ripple Signal Triage"
+assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" 'triage ripple signals' \
+    'process baseline retains pre-edit ripple triage'
+assert_contains "skills/systematic-debugging/SKILL.md" 'Patch-Shape Triage' \
+    'debugging owner defines precise patch-shape triage'
 assert_contains "$systematic_debugging_skill" "Before fixing, run Patch-Shape Triage and Ripple Signal Triage" \
     "systematic debugging triggers patch-shape and ripple triage before risky fixes"
 assert_contains "$systematic_debugging_skill" "not a RED gate or a prerequisite for production edits" \
@@ -212,12 +214,12 @@ assert_contains "$executing_plans_skill" "Do not infer.*strict.*during execution
     "plan execution returns missing strict authority to review"
 assert_contains "$executing_plans_skill" "missing record may be repaired only as" \
     "plan execution maps an off-mode omission only to skipped"
-assert_contains "$process_baseline" "TDD is the implementation discipline.*not the first entry" \
-    "process baseline states TDD is the implementation discipline, not the first entrypoint"
+assert_contains "skills/using-aegis/references/skill-discipline.md" 'TDD is the implementation discipline for approved atomic tasks, not the first' \
+    'discipline owner keeps TDD after the task workflow'
 assert_contains "$process_baseline" "TDD Mode" \
     "process baseline documents TDD Mode"
-assert_contains "$process_baseline" "TDD Mode controls test-first discipline, not completion evidence" \
-    "process baseline separates TDD mode from completion evidence"
+assert_contains "skills/using-aegis/references/skill-discipline.md" 'discipline, not completion evidence' \
+    'TDD mode does not weaken completion evidence'
 assert_contains "scripts/aegis-doctor.py" "Aegis TDD mode:" \
     "doctor projects TDD mode into Codex AGENTS.md"
 assert_contains "scripts/aegis-doctor.py" "Missing explicit TDD wording is never" \

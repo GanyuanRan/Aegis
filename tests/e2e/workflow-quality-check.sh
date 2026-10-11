@@ -59,6 +59,10 @@ assert_section_contains_all() {
     shift 4
 
     local section pattern
+    if ! grep -Fxq "$start_line" "$file" || ! grep -Fxq "$end_line" "$file"; then
+        fail "$label (section boundary missing)"
+        return
+    fi
     section="$(awk -v start="$start_line" -v end="$end_line" '
         $0 == start { capture = 1; next }
         capture && $0 == end { exit }
@@ -186,12 +190,12 @@ assert_contains "$process_doc" "TDD Mode" \
     "process baseline references TDD mode"
 assert_contains "$process_doc" "Complexity Delta" \
     "process baseline defines completion-time complexity delta"
-assert_contains "$process_doc" "Plan-Time Complexity Check" \
-    "process baseline defines plan-time complexity check"
-assert_contains "$process_doc" "Pre-Edit Complexity Check" \
-    "process baseline defines pre-edit complexity check"
-assert_contains "$process_doc" "Complexity Governance Suggestion" \
-    "process baseline defines post-change complexity governance suggestion"
+assert_contains "docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md" 'Plan-Time Complexity Check' \
+    "canonical owner defines plan-time complexity check"
+assert_contains "docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md" 'Pre-Edit Complexity Check' \
+    "canonical owner defines pre-edit complexity check"
+assert_contains "docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md" 'Complexity Governance Suggestion' \
+    "canonical owner defines post-change complexity governance suggestion"
 assert_contains "$process_doc" "AEGIS_COMPLEXITY_GOVERNANCE_BASELINE" \
     "process baseline points to complexity governance baseline"
 assert_contains "$trigger_doc" "workflow-quality" \
@@ -304,10 +308,10 @@ assert_contains "$tdd_mode_doc" 'aegis-doctor\.py tdd-mode off' \
 assert_contains "$tdd_mode_doc" 'aegis-doctor\.py tdd-mode auto' \
     "TDD mode doc documents doctor auto command"
 
-assert_contains "$baseline" "Plan-Time Complexity Check" \
-    "workflow quality baseline includes plan-time complexity check"
-assert_contains "$baseline" "Existence Check" \
-    "workflow quality baseline includes pre-addition existence check"
+assert_contains "docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md" 'Plan-Time Complexity Check' \
+    "canonical owner includes plan-time complexity check"
+assert_contains "docs/current/AEGIS_MINIMALITY_REFERENCE.md" 'Existence Check' \
+    "canonical owner includes pre-addition existence check"
 assert_contains "$process_doc" "Pre-Addition Minimality" \
     "process baseline defines pre-addition minimality"
 assert_contains "$process_doc" "AEGIS_MINIMALITY_REFERENCE" \
@@ -316,18 +320,18 @@ assert_contains "$baseline" "TDD Route" \
     "workflow quality baseline includes TDD route"
 assert_contains "$baseline" "default.*off|off.*default" \
     "workflow quality baseline defines default off TDD mode"
-assert_contains "$baseline" "auto.*strict.*light.*skipped|strict.*light.*skipped" \
-    "workflow quality baseline includes auto TDD routing"
-assert_contains "$baseline" "off.*verification-before-completion|verification-before-completion.*off" \
-    "workflow quality baseline keeps completion verification on when TDD mode is off"
-assert_contains "$baseline" "Pre-Edit Complexity Check" \
-    "workflow quality baseline includes pre-edit complexity check"
-assert_contains "$baseline" "Pre-Edit Owner-Fit Decision" \
-    "workflow quality baseline includes pre-edit owner-fit decision"
-assert_contains "$baseline" "Complexity Governance Suggestion" \
-    "workflow quality baseline includes complexity governance suggestion"
-assert_contains "$baseline" "AEGIS_COMPLEXITY_GOVERNANCE_BASELINE" \
-    "workflow quality baseline points to complexity governance baseline"
+assert_contains "docs/current/AEGIS_TDD_MODE.md" 'auto.*strict.*light.*skipped|strict.*light.*skipped' \
+    "canonical owner includes auto TDD routing"
+assert_contains "docs/current/AEGIS_TDD_MODE.md" 'off.*verification-before-completion|verification-before-completion.*off' \
+    "canonical owner keeps completion verification on when TDD mode is off"
+assert_contains "docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md" 'Pre-Edit Complexity Check' \
+    "canonical owner includes pre-edit complexity check"
+assert_contains "docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md" 'Pre-Edit Owner-Fit Decision' \
+    "canonical owner includes pre-edit owner-fit decision"
+assert_contains "docs/current/AEGIS_COMPLEXITY_GOVERNANCE_BASELINE.md" 'Complexity Governance Suggestion' \
+    "canonical owner includes complexity governance suggestion"
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" 'Complexity Governance' \
+    "canonical owner points to complexity governance baseline"
 assert_contains "docs/current/AEGIS_WORKFLOW_GUIDE.md" "Final Output Ordering" \
     "English workflow guide frames final output as ordering"
 assert_contains "docs/current/AEGIS_WORKFLOW_GUIDE.md" "ordering principle, not a mandatory top-level template" \
@@ -336,142 +340,148 @@ assert_contains "docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md" "最终输出排序" \
     "Chinese workflow guide frames final output as ordering"
 assert_contains "docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md" "信息排序原则，不是强制顶层模板" \
     "Chinese workflow guide does not make facts-inferences-conclusions a rigid template"
-assert_contains "$process_doc" "Facts.*Inferences.*Conclusions.*information-ordering principle|information-ordering principle.*Facts.*Inferences.*Conclusions" \
-    "process baseline frames facts-inferences-conclusions as ordering principle"
-assert_contains "$process_doc" "mandatory top-level response template" \
-    "process baseline does not make facts-inferences-conclusions a rigid template"
-assert_contains "$process_doc" "Final Output Semantic Slots / Attention Anchors" \
-    "process baseline names final output semantic slots and attention anchors"
-assert_contains "$process_doc" "findings-first" \
-    "process baseline preserves workflow-owned final output structures"
-assert_contains "$baseline" "attention anchor" \
-    "workflow quality baseline treats required output content as attention anchors"
-assert_contains "$baseline" "stealing structural ownership from the active workflow" \
-    "workflow quality baseline preserves active workflow output ownership"
-assert_contains "$baseline" "Retirement Closure" \
-    "workflow quality baseline includes retirement closure"
-assert_contains "$baseline" "Anti-Entropy Declaration" \
-    "workflow quality baseline includes anti-entropy declaration"
-assert_contains "$baseline" "Data Destruction Guard" \
-    "workflow quality baseline includes data destruction guard"
-assert_contains "$baseline" "Layer Stop Card" \
-    "workflow quality baseline includes layer stop card"
-assert_contains "$baseline" "User Intervention Point" \
-    "workflow quality baseline exposes user intervention point"
-assert_contains "$baseline" "Product Risk Lens" \
-    "workflow quality baseline includes product risk lens"
-assert_contains "$baseline" "Plan Pressure Test" \
-    "workflow quality baseline includes plan pressure test"
-assert_contains "$baseline" "Architecture Integrity Lens" \
-    "workflow quality baseline includes architecture integrity lens"
-assert_contains "$baseline" "Planless Slice Lane" \
-    "workflow quality baseline includes planless slice lane"
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" 'Facts.*Inferences.*Conclusions is an information-ordering principle' \
+    "quality baseline frames facts-inferences-conclusions as ordering principle"
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" 'Semantic Slots, not rigid English headings' \
+    "quality baseline does not make facts-inferences-conclusions a rigid template"
+assert_section_contains_all "docs/current/AEGIS_PROCESS_BASELINE.md" \
+    '## 3. Execution Cycle' '## 4. Baseline Roles and Alignment' \
+    "process execution delegates communication criteria to the quality baseline" \
+    'AEGIS_WORKFLOW_QUALITY_BASELINE\.md'
+assert_contains "skills/requesting-code-review/SKILL.md" 'findings-first' \
+    "review skill preserves its workflow-owned final output structure"
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" 'Required content is a set of Semantic Slots' \
+    "canonical owner treats required output content as attention anchors"
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" 'Skills own operational decisions and output contracts' \
+    "canonical owner preserves active workflow output ownership"
+assert_contains "skills/verification-before-completion/expanded-closeout.md" 'Retirement Closure' \
+    "canonical owner includes retirement closure"
+assert_contains "skills/anti-entropy-governance/SKILL.md" 'Anti-Entropy Declaration' \
+    "canonical owner includes anti-entropy declaration"
+assert_contains "skills/anti-entropy-governance/SKILL.md" 'Data Destruction Guard' \
+    "canonical owner includes data destruction guard"
+assert_contains "skills/systematic-debugging/SKILL.md" 'Layer Stop Card' \
+    "canonical owner includes layer stop card"
+assert_contains "skills/systematic-debugging/advanced-debugging-governance.md" 'User Intervention Point' \
+    "canonical owner exposes user intervention point"
+assert_contains "skills/brainstorming/SKILL.md" 'Product Risk Lens' \
+    "canonical owner includes product risk lens"
+assert_contains "skills/writing-plans/SKILL.md" 'Plan Pressure Test' \
+    "canonical owner includes plan pressure test"
+assert_contains "skills/brainstorming/SKILL.md" 'Architecture Integrity Lens' \
+    "canonical owner includes architecture integrity lens"
+assert_contains "skills/writing-plans/SKILL.md" 'Planless Slice Lane' \
+    "canonical owner includes planless slice lane"
 assert_contains "$baseline" "Slice Card" \
     "workflow quality baseline includes slice card"
-assert_contains "$process_doc" "without a parent" \
+assert_contains "skills/writing-plans/SKILL.md" 'without a parent' \
     "process baseline supports direct bounded planless slices without a parent"
-assert_contains "$baseline" "none — direct bounded request" \
-    "workflow quality baseline defines the no-parent slice card anchor"
+assert_contains "skills/writing-plans/SKILL.md" 'none — direct bounded request' \
+    "canonical owner defines the no-parent slice card anchor"
 assert_contains "$matrix" '"id": "no-parent-planless-continuation"' \
     "workflow quality matrix covers no-parent planless continuation"
 assert_contains "$matrix" '"id": "low-complexity-no-parent-handoff-durable"' \
     "workflow quality matrix covers the durable no-parent handoff branch"
-assert_contains "$baseline" "one parent spec.*one parent plan|one parent plan.*one parent spec" \
-    "workflow quality baseline defines artifact budget"
-assert_contains "$baseline" "Findings First" \
-    "workflow quality baseline includes findings-first review lens"
-assert_contains "$baseline" "Readiness Summary" \
-    "workflow quality baseline includes readiness summary"
-assert_contains "$baseline" "Execution Readiness View" \
-    "workflow quality baseline includes execution readiness view"
-assert_contains "$baseline" "gate-passed.*completion-granted.*authoritatively-safe|completion-granted.*gate-passed.*authoritatively-safe" \
-    "workflow quality baseline forbids authoritative execution readiness language"
+assert_contains "skills/writing-plans/SKILL.md" 'Do not save a new plan' \
+    "canonical owner defines artifact budget"
+assert_contains "skills/requesting-code-review/SKILL.md" 'Findings First' \
+    "canonical owner includes findings-first review lens"
+assert_contains "skills/verification-before-completion/expanded-closeout.md" 'Readiness Summary' \
+    "canonical owner includes readiness summary"
+assert_contains "skills/writing-plans/SKILL.md" 'Execution Readiness View' \
+    "canonical owner includes execution readiness view"
+assert_contains "skills/long-task-continuation/SKILL.md" 'gate-passed.*completion-granted.*authoritatively-safe|completion-granted.*gate-passed.*authoritatively-safe' \
+    "canonical owner forbids authoritative execution readiness language"
 assert_contains "docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md" "Execution Readiness View" \
     "runtime-ready boundary defines execution readiness view"
 assert_contains "docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md" "not a new JSON.*artifact type|not a new.*artifact type" \
     "artifact schema baseline keeps execution readiness view out of schema artifacts"
 assert_not_contains "docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md" "ExecutionContractDraft" \
     "artifact schema baseline does not add an execution contract artifact"
-assert_contains "$baseline" "Retro / Memory Filter" \
-    "workflow quality baseline includes retro memory filter"
-assert_contains "$baseline" "role persona.*review lens|review lens.*role persona" \
-    "workflow quality baseline keeps role personas out of strong-opinion lenses"
+assert_contains "skills/recording-architecture-decisions/SKILL.md" 'Retro / Memory Filter' \
+    "canonical owner includes retro memory filter"
+assert_contains "skills/brainstorming/SKILL.md" 'review lens, not persona' \
+    "canonical owner keeps role personas out of strong-opinion lenses"
 assert_contains "$baseline" "Baseline Role Alignment" \
     "workflow quality baseline includes baseline role alignment"
-assert_contains "$baseline" "Baseline Alignment" \
-    "workflow quality baseline includes baseline alignment compact output"
-assert_contains "$baseline" "Product / Requirement Baseline" \
-    "workflow quality baseline names product requirement baseline role"
-assert_contains "$baseline" "Architecture / Runtime Boundary Baseline" \
-    "workflow quality baseline names architecture runtime boundary baseline role"
-assert_contains "$baseline" "Design Defect" \
-    "workflow quality baseline includes design defect term"
-assert_contains "$baseline" "Implementation Drift" \
-    "workflow quality baseline includes implementation drift term"
-assert_contains "$baseline" "scope: requirements | architecture | both" \
-    "workflow quality baseline includes defect drift scope taxonomy"
+assert_contains "skills/verification-before-completion/expanded-closeout.md" 'Baseline Alignment' \
+    "canonical owner includes baseline alignment compact output"
+assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" 'Product / Requirement Baseline' \
+    "canonical owner names product requirement baseline role"
+assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" 'Architecture / Runtime Boundary Baseline' \
+    "canonical owner names architecture runtime boundary baseline role"
+assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" 'Design Defect' \
+    "canonical owner includes design defect term"
+assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" 'Implementation Drift' \
+    "canonical owner includes implementation drift term"
+assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" 'scope: requirements | architecture | both' \
+    "canonical owner includes defect drift scope taxonomy"
 assert_contains "$baseline" "Aegis Invocation Visibility" \
     "workflow quality baseline includes Aegis invocation visibility"
-assert_contains "$baseline" "Aegis Visibility Non-Omission Rule" \
-    "workflow quality baseline defines non-omittable Aegis visibility"
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" 'Non-trivial loaded-skill work.*first substantive stage.*closeout' \
+    "canonical owner defines non-omittable Aegis visibility"
 assert_contains "$baseline" "Aegis Reason Note" \
     "workflow quality baseline defines natural Aegis reason note"
 assert_contains "$baseline" "Aegis Visibility" \
     "workflow quality baseline defines owner-workflow Aegis visibility slot"
-assert_contains "$baseline" "why Aegis is shaping" \
-    "workflow quality baseline explains why Aegis is shaping the task"
-assert_contains "$baseline" "first substantive.*Aegis Visibility|Aegis Visibility.*first substantive" \
-    "workflow quality baseline requires entry visibility at first substantive stage"
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" 'Aegis Reason Note.*natural Aegis Visibility sentence explaining its contribution' \
+    "canonical owner explains why Aegis is shaping the task"
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" 'first substantive stage includes' \
+    "canonical owner requires entry visibility at first substantive stage"
 assert_contains "$baseline" "Aegis Impact and Safety Receipt" \
     "workflow quality baseline defines unified impact and safety receipt"
-assert_contains "$baseline" "key judgment.*avoided misfix.*boundary held|avoided misfix.*baseline alignment.*complexity control" \
-    "workflow quality baseline defines impact and safety receipt fields"
+assert_contains_all "skills/verification-before-completion/SKILL.md" \
+    'verification owner keeps impact and safety receipt fields' \
+    'Key judgment' 'Avoided misfix' 'Boundary held' 'Baseline alignment' 'Complexity control'
 assert_contains "$baseline" "single completion closeout" \
     "workflow quality baseline keeps verification as the completion closeout aggregator"
-assert_contains "$baseline" "Readiness Summary.*Trace Digest.*Goal Closure|Trace Digest.*Goal Closure.*ADR Backfill Check" \
-    "workflow quality baseline names adjacent completion structures"
-assert_contains "$baseline" "must not replace the unified receipt|competing final report owners" \
-    "workflow quality baseline prevents adjacent structures from replacing the receipt"
-assert_contains "$baseline" "not a new hot-path routing rule|must not make.*using-aegis.*heavier" \
-    "workflow quality baseline keeps receipt owner contract out of the hot path"
-assert_contains "$baseline" "concise.*not.*drop.*safety fields|reasons to drop the safety fields" \
-    "workflow quality baseline forbids dropping receipt safety fields for concision"
-assert_contains "$baseline" "user asks.*recovery path.*not a substitute|recovery path.*not a substitute" \
-    "workflow quality baseline treats after-the-fact explanation as recovery only"
-assert_contains "$baseline" "structured trace.*audit.*debug.*release.*long-task review.*user request|audit.*debug.*release.*long-task review.*user request.*structured trace" \
-    "workflow quality baseline reserves structured trace for audit or requested cases"
+assert_contains_all "skills/verification-before-completion/expanded-closeout.md" \
+    'expanded verification owner keeps adjacent completion structures' \
+    'Readiness Summary' 'Trace Digest' 'Goal Closure' 'ADR Backfill Check'
+assert_contains "skills/verification-before-completion/SKILL.md" 'must not replace it or become a competing final report owner' \
+    "canonical owner prevents adjacent structures from replacing the receipt"
+assert_contains "skills/verification-before-completion/SKILL.md" 'Aggregation is output conformance, not a routing trigger' \
+    "canonical owner keeps receipt owner contract out of the hot path"
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" 'does not erase required safety semantics' \
+    "canonical owner forbids dropping receipt safety fields for concision"
+assert_contains "skills/verification-before-completion/SKILL.md" 'If entry visibility was omitted, recover and name the decision/evidence gap' \
+    "canonical owner treats after-the-fact explanation as recovery only"
+assert_contains "skills/verification-before-completion/expanded-closeout.md" 'explicit audit/debug/release/long-task review or user request' \
+    "canonical owner reserves structured trace for audit or requested cases"
 assert_contains "$baseline" "Trace Digest" \
     "workflow quality baseline defines on-demand trace digest"
-assert_contains "$baseline" "execution trace.*evidence chain.*retrieval chain|evidence chain.*retrieval chain.*rule effects" \
-    "workflow quality baseline covers execution, evidence, retrieval, and rule-effect trace"
-assert_contains "$baseline" "measured.*observed.*inferred.*declared.*unknown" \
-    "workflow quality baseline labels trace confidence and truth source"
+assert_contains_all "skills/verification-before-completion/expanded-closeout.md" \
+    'trace owner covers execution, evidence, retrieval and rule effects' \
+    'execution and evidence chain' 'retrieval chain' 'rules and effects'
+assert_contains_all "skills/verification-before-completion/expanded-closeout.md" \
+    'trace owner distinguishes source confidence' \
+    'measured' 'observed' 'inferred' 'declared' 'unknown'
 assert_contains "$baseline" "Trace Capability Matrix" \
     "workflow quality baseline defines host trace capability matrix"
-assert_contains "$baseline" "redaction" \
-    "workflow quality baseline requires trace redaction"
+assert_contains "skills/verification-before-completion/expanded-closeout.md" 'redaction' \
+    "canonical owner requires trace redaction"
 assert_contains "$baseline" "do not expose.*chain-of-thought|raw internal reasoning" \
     "workflow quality baseline forbids raw chain-of-thought exposure"
-assert_contains "$baseline" "Trace Overhead Budget" \
-    "workflow quality baseline defines trace overhead budget"
+assert_contains "skills/verification-before-completion/SKILL.md" 'Aggregation is output conformance, not a routing trigger' \
+    "canonical owner defines trace overhead budget"
 assert_not_contains "$baseline" "Invocation: <skill-name> \| fast-path \| none" \
     "workflow quality baseline avoids invocation tuple as default user-facing shape"
 assert_not_contains "$baseline" "Aegis Usage Trace: used skills, stage handoffs" \
     "workflow quality baseline avoids stiff default usage trace"
-assert_contains "$baseline" "not runtime authority|not.*runtime gate" \
-    "workflow quality baseline keeps invocation visibility advisory"
-assert_contains "$process_doc" "Strong-Opinion Review Lenses" \
-    "process baseline references strong-opinion review lenses"
-assert_contains "$process_doc" "Architecture Integrity Lens" \
-    "process baseline references architecture integrity lens"
-assert_contains "$process_doc" "Micro-Slice Artifact Budget" \
-    "process baseline references micro-slice artifact budget"
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" 'Trace and receipts remain advisory' \
+    "canonical owner keeps invocation visibility advisory"
+assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" 'brainstorming.*first-principles-review' \
+    "owner preserves strong-opinion review lenses"
+assert_contains "skills/brainstorming/SKILL.md" 'Architecture Integrity Lens' \
+    "owner preserves architecture integrity lens"
+assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" 'parent-owned micro-slice reuses its plan/spec' \
+    "owner preserves micro-slice artifact budget"
 assert_contains "$process_doc" "Baseline Role Alignment" \
     "process baseline defines baseline role alignment"
-assert_contains "$process_doc" "preserving externally observable behavior and published contracts" \
+assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" 'Preserve published behavior/contracts by default, not every internal old path' \
     "process baseline narrows backward compatibility to external behavior"
-assert_contains "$process_doc" "persistent-state" \
-    "process baseline defines persistent-state confirmation-first boundary"
+assert_contains "skills/anti-entropy-governance/SKILL.md" 'persistent-state' \
+    "canonical owner defines persistent-state confirmation-first boundary"
 if [[ -f "skills/anti-entropy-governance/SKILL.md" ]]; then
     pass "anti-entropy governance skill exists"
 else
@@ -487,10 +497,12 @@ assert_contains "$process_doc" "Implementation Drift" \
     "process baseline defines implementation drift"
 assert_contains "$process_doc" "scope: requirements | architecture | both" \
     "process baseline defines defect drift scope taxonomy"
-assert_contains "$process_doc" "Architecture Defect.*architecture-scoped.*Design Defect|architecture-scoped.*Design Defect.*Architecture Defect" \
-    "process baseline keeps architecture defect compatibility alias"
-assert_contains "$process_doc" "Architecture Drift.*architecture-scoped.*Implementation Drift|architecture-scoped.*Implementation Drift.*Architecture Drift" \
-    "process baseline keeps architecture drift compatibility alias"
+assert_contains_all "docs/current/AEGIS_PROCESS_BASELINE.md" \
+    'process baseline preserves architecture defect compatibility alias' \
+    'Architecture Defect' 'architecture-scoped Design Defect'
+assert_contains_all "docs/current/AEGIS_PROCESS_BASELINE.md" \
+    'process baseline preserves architecture drift compatibility alias' \
+    'Architecture Drift' 'architecture-scoped Design Defect and Implementation Drift'
 assert_contains "$complexity_baseline" "Complexity Budget" \
     "complexity baseline defines complexity budget"
 assert_contains "$complexity_baseline" "Complexity Closure" \
@@ -517,13 +529,13 @@ assert_contains "$complexity_baseline" "maintained test source file" \
     "complexity baseline governs maintained test source files"
 assert_contains "$complexity_baseline" "Retired branches/fallbacks/adapters" \
     "complexity baseline ties complexity delta to retirement"
-assert_contains "$process_doc" "dual-baseline.*bootstrap template|Do not regress to a flat repo-inventory checklist" \
+assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" 'For the first baseline, use the dual-role bootstrap from brainstorming' \
     "process baseline distinguishes bootstrap baselines from flat repo inventory"
-assert_contains "$process_doc" "Aegis Reason Note" \
-    "process baseline references natural Aegis reason note"
-assert_contains "$process_doc" "non-trivial loaded-skill visibility" \
+assert_contains "skills/using-aegis/SKILL.md" 'Aegis Reason Note' \
+    "owner preserves natural Aegis reason note"
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" 'Non-trivial loaded-skill work.*first substantive stage.*closeout' \
     "process baseline protects loaded-skill visibility from compression"
-assert_contains "$process_doc" "structured trace.*audit.*debug.*release.*long-task review.*user request|audit.*debug.*release.*long-task review.*user request.*structured trace" \
+assert_contains "skills/verification-before-completion/expanded-closeout.md" 'explicit audit/debug/release/long-task review or user request' \
     "process baseline reserves structured trace for audit or requested cases"
 
 for skill in \
@@ -536,7 +548,7 @@ for skill in \
     "verification-before-completion" \
     "recording-architecture-decisions" \
     "long-task-continuation"; do
-    assert_contains "$baseline" "\`$skill\`" "baseline defines compact contract for $skill"
+    assert_contains "$baseline" "skills/$skill/SKILL.md" "quality owner map points to $skill operational contract"
 done
 
 assert_contains "skills/using-aegis/SKILL.md" "Route: fast-path" \
@@ -563,8 +575,9 @@ assert_contains "skills/using-aegis/SKILL.md" "ArchitectureReviewRequired" \
     "using-aegis marks architecture review required signal"
 assert_contains_all "skills/using-aegis/SKILL.md" \
     "using-aegis preserves authority fast path and passive context semantics" \
-    "README/ADR/rules/baseline, else" 'CONTEXT-MAP\.md' 'CONTEXT\.md' \
-    "passively use relevant"
+    "authority index and relevant" "README/ADR/rule/baseline sections" \
+    "bounded index-first scan" 'CONTEXT-MAP\.md' 'CONTEXT\.md' \
+    "passively use relevant" "recursively read all linked docs"
 assert_contains "skills/using-aegis/SKILL.md" "literal/explanatory uses do not" \
     "using-aegis excludes explanatory grilling mentions"
 
@@ -896,11 +909,11 @@ assert_contains_all "skills/subagent-driven-development/SKILL.md" \
     "Validate and consume the parent TDD decision" "auto.*decision to its selecting owner before source edits"
 assert_contains "skills/writing-skills/SKILL.md" "loading.*test-driven-development" \
     "writing skills does not force-load the TDD skill"
-assert_contains "$baseline" "Skill Authoring And Ad-Hoc Delegation Quality" \
-    "workflow quality baseline governs skill authoring and ad-hoc delegation"
-assert_contains "$baseline" "existing skill uses its current" \
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" 'Skill authoring / ad-hoc delegation' \
+    "canonical owner governs skill authoring and ad-hoc delegation"
+assert_contains "skills/writing-skills/SKILL.md" 'existing skill.*current|current version' \
     "skill authoring baseline distinguishes existing-skill behavior from no-skill ablation"
-assert_contains "$baseline" "byte or line reduction.*not proof" \
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" 'Byte/line reduction alone proves neither preserved capability' \
     "skill slimming keeps capability ahead of size"
 assert_contains "skills/writing-skills/SKILL.md" "existing skill.*current version|current version.*existing skill" \
     "writing skills preserves a current-version behavior baseline"
@@ -940,8 +953,10 @@ assert_contains "skills/systematic-debugging/SKILL.md" "explicit decision token"
     "systematic debugging quick bug lane requires explicit code-change decision"
 assert_contains "skills/systematic-debugging/SKILL.md" "Decision: code-change" \
     "systematic debugging quick bug lane names code-change decision token"
-assert_contains "$baseline" "explicit decision token.*Decision: code-change" \
-    "workflow quality baseline requires explicit quick bug decision token"
+assert_section_contains_all "skills/systematic-debugging/SKILL.md" \
+    '## Quick bug lane' '## Diagnose before repair' \
+    "debugging quick lane requires a pre-edit explicit decision" \
+    'Change Necessity before source edits' 'explicit decision token' 'Decision: code-change'
 assert_contains "skills/systematic-debugging/SKILL.md" "AEGIS_MINIMALITY_REFERENCE" \
     "systematic debugging points to minimality reference"
 assert_contains "skills/systematic-debugging/SKILL.md" "Layer Stop Card" \
@@ -1028,32 +1043,27 @@ assert_section_contains_all "skills/long-task-continuation/SKILL.md" \
     'When durable architecture decisions are in scope, these work records are the' \
     "long-task continuation supports direct bounded no-parent slices" \
     "no-parent" "none — direct bounded request" "direct bounded request" "inline checkpoint"
-assert_section_contains_all "$process_doc" '### 3.0h Micro-Slice Artifact Budget' \
-    '### 3.0i Change Necessity Before Source Edits' \
-    "process baseline preserves the parent-owned planless lane boundary" \
-    "existing plan/spec owns the current micro-slice" "bounded parent task" \
-    "parent scope or" "acceptance" "possible compaction" "do not force one"
-assert_section_contains_all "$process_doc" \
-    '### 12.3 Workspace Shell and Task Work Record' \
-    '### 12.4 Spec Brief and Design Spec' \
-    "process baseline scopes the long-task durable-record selector" \
-    "Task Work Record is a durable process trail" "For long-task continuation" \
-    "medium/high work" "actually crosses sessions" "needs handoff" \
-    "resumable state"
-assert_section_contains_all "$process_doc" '### 12.5 Complexity Routing' \
-    '### 12.6 Workspace Integrity Checks' \
-    "process baseline keeps low and medium routing consistent" \
-    'no `work/` by default' \
-    'medium long-task continuation creates `work/`'
+assert_section_contains_all "skills/writing-plans/SKILL.md" '## Planless Slice Lane' \
+    '## Plan And Task Quality' \
+    'planning owner preserves parent scope and acceptance in the planless lane' \
+    'bounded task from that parent' 'parent scope or acceptance mismatch' 'parent plan/spec'
+assert_section_contains_all "docs/current/AEGIS_PROCESS_BASELINE.md" '### Workspace and Task Continuity' \
+    '## 4. Baseline Roles and Alignment' \
+    'process baseline keeps one durable-record selector' \
+    'Long-task continuation needs a durable work' 'medium/high work' 'actual cross-session execution' 'required handoff' 'required resumable state' 'or subagent use alone do not force files'
+assert_section_contains_all "skills/long-task-continuation/SKILL.md" '## When To Use' \
+    '## Required Artifacts' \
+    'continuation owner distinguishes inline low work from durable medium work' \
+    'inline checkpoint' 'medium/high work' 'actually crosses' 'handoff' 'resumable state'
 assert_not_contains "$process_doc" 'Low-complexity tasks \(no `work/`' \
     "process baseline does not make low-complexity work records impossible"
 assert_not_contains "$process_doc" \
     'Task Work Record is created only for medium/high|Low-complexity tasks skip `work/`' \
     "process baseline retires competing durable-record selectors"
-assert_section_contains_all "$baseline" '### 3.12 Micro-Slice Artifact Budget' \
-    '### 3.13 Diagnostic Stop Transparency' \
-    "workflow quality baseline escalates parent scope or acceptance mismatch" \
-    "parent scope or" "acceptance"
+assert_section_contains_all "skills/writing-plans/SKILL.md" '## Planless Slice Lane' \
+    '## Plan And Task Quality' \
+    'planning owner escalates parent scope or acceptance mismatch' \
+    'parent scope or acceptance mismatch' 'parent plan/spec'
 assert_section_contains_all "skills/long-task-continuation/SKILL.md" \
     '## When To Use' '## Required Artifacts' \
     "long-task continuation has one durable-record selection rule" \
@@ -1134,8 +1144,10 @@ assert_contains "$verification_skill" "broad assent.*not scoped permission" \
 assert_contains "$verification_skill" \
     "After fresh verification.*local commit|local task commit follows fresh verification" \
     "verification keeps verify-before-commit ordering explicit"
-assert_contains "$verification_skill" "scope covered by fresh evidence" \
-    "verification keeps completion evidence scope unambiguous"
+assert_contains_all "$verification_skill" \
+    "verification ties completion to fresh evidence and authorized acceptance scope" \
+    "run a fresh falsifying" "current authorized request" \
+    "all requested actions/conditions/deliverables" "A slice cannot close the whole task"
 assert_contains "$verification_skill" "Key judgment" \
     "verification skill reports key judgment in the unified receipt"
 assert_contains "$verification_skill" "Avoided misfix" \
@@ -1281,8 +1293,9 @@ assert_contains "$verification_expanded" "retirement trigger" \
     "verification skill requires retirement trigger"
 assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" "Requirement Ready Check" \
     "process baseline defines requirement ready check"
-assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "Requirement acceptance boundary" \
-    "workflow quality baseline distinguishes requirement acceptance boundary"
+assert_contains_all "skills/verification-before-completion/SKILL.md" \
+    'verification owner distinguishes task completion from accepted requirements' \
+    'Task/slice completion' 'not accepted requirement satisfaction' 'Requirement accepted.*needs baseline criteria or authorized risk acceptance'
 assert_contains "skills/anti-entropy-governance/SKILL.md" "confirmation-first" \
     "anti-entropy skill defines confirmation-first path"
 assert_contains "skills/anti-entropy-governance/SKILL.md" "Data Destruction Guard" \
@@ -1399,18 +1412,18 @@ assert_contains "skills/using-aegis/SKILL.md" "owner workflow.*Change Necessity"
     "using-aegis delegates change necessity to owner workflows"
 assert_contains "skills/using-aegis/SKILL.md" "Bug, failure, regression, or unexpected behavior routes to.*systematic-debugging" \
     "using-aegis routes bug fast path to systematic-debugging"
-assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "does not stop at a.*using-aegis.*fast path.*systematic-debugging|using-aegis.*fast path.*systematic-debugging" \
-    "workflow quality baseline keeps bug repairs out of using-aegis-only fast path"
+assert_contains "skills/using-aegis/SKILL.md" 'Bug, failure, regression, or unexpected behavior routes to.*systematic-debugging' \
+    "canonical owner keeps bug repairs out of using-aegis-only fast path"
 assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "Change Necessity Before Source Edits" \
     "workflow quality baseline defines change necessity before source edits"
-assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "behavioral.*not.*prompt|prompt.*names.*Existence Check" \
-    "workflow quality baseline treats addition checks as behavior-triggered"
-assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "natural code-necessity|Code necessity check" \
-    "workflow quality baseline requires natural code necessity readback"
-assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "any new source-code path" \
-    "workflow quality baseline applies change necessity to any new source-code path"
-assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "tiny helper|small guard" \
-    "workflow quality baseline rejects tiny-helper or small-guard exemptions"
+assert_contains "skills/systematic-debugging/SKILL.md" 'behavior-triggered, not prompt-triggered' \
+    "canonical owner treats addition checks as behavior-triggered"
+assert_contains "skills/writing-plans/SKILL.md" 'naturally why no-change/docs/config is insufficient' \
+    "canonical owner requires natural code necessity readback"
+assert_contains "skills/systematic-debugging/SKILL.md" 'any new source-code path' \
+    "canonical owner applies change necessity to any new source-code path"
+assert_contains "skills/writing-plans/SKILL.md" 'tiny helper, guard, branch, fallback, adapter, or owner is not' \
+    "canonical owner rejects tiny-helper or small-guard exemptions"
 assert_contains "docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md" "Trace Digest" \
     "agentic benchmark baseline covers trace digest quality"
 assert_contains "docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md" "skill-call-stability|trace-digest-coverage|rule-effect-attribution" \
@@ -1439,9 +1452,9 @@ assert_contains "skills/executing-plans/SKILL.md" "systematic-debugging.*before 
     "executing plans keeps direction judgment in systematic debugging"
 assert_contains "skills/executing-plans/SKILL.md" "root stays on the normal plan path" \
     "executing plans preserves the independent-root quick path"
-assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "locally green patch-shape state remains bounded" \
+assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" 'Retained patch-shape state reuses checkpoints, not new schema fields' \
     "workflow quality reuses existing checkpoint artifacts"
-assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" "carrier naming alone cannot reset the direction" \
+assert_contains "skills/systematic-debugging/SKILL.md" 'renamed carrier is not a new direction' \
     "workflow quality compares repair direction semantically"
 
 assert_contains "skills/using-aegis/SKILL.md" "TaskStartSnapshot" \
@@ -1511,10 +1524,9 @@ assert_contains_all "skills/using-aegis/references/codex-tools.md" \
     "Codex mapping distinguishes managed chats from shell worktrees" \
     "Codex Desktop Managed Worktrees" "external Git worktree does not rebind" \
     "Worktree.*Handoff" "follow the live tool schema" "fail closed"
-assert_contains_all "$process_doc" \
-    "process baseline owns the managed-host binding postcondition" \
-    "task/chat-bound" "managed workspace semantics" "trusted task workspace" \
-    "default command.*cwd" "command-level.*workdir" "not task-binding evidence"
+assert_contains_all "skills/using-git-worktrees/SKILL.md" \
+    'worktree owner enforces managed-host binding postcondition' \
+    'task/chat-bound' 'managed workspace semantics' 'trusted task workspace' 'default command.*cwd' 'command-level.*workdir' 'proves only part of that'
 assert_contains_all "docs/adr/ADR-0003-current-branch-first-git-lifecycle.md" \
     "ADR amendment records host-bound worktree policy" \
     "2026-08-27 修订" "联合后置条件" "fail closed" \
@@ -1562,23 +1574,19 @@ assert_contains_all "skills/verification-before-completion/SKILL.md" \
     "completion keeps every integration and handoff stop signal explicit" \
     "commit, push, PR, merge, tag, publish, release, or handoff" \
     "retained old logic lacks a retention reason and retirement trigger"
-assert_contains_all "$baseline" \
-    "workflow quality uses capability-first two-tier context budgets" \
-    "warning target" "hard ceiling" "route-bundle budgets" \
-    "required semantic slots, routes"
-assert_contains_all "$baseline" \
-    "progressive disclosure optimizes model steering before byte count" \
-    "instruction and example" "byte count.*secondary|secondary.*byte count" \
-    "positive.*negative.*route" "governance.*stop"
-assert_contains_all "$baseline" \
-    "writing-plans baseline separates default semantics from triggered expansions" \
-    "Default core" "Triggered expansions" "silent unless" \
-    "Ripple Signal Triage"
-assert_contains_all "$baseline" \
-    "writing-plans baseline keeps ordinary readiness natural and expanded readiness conditional" \
-    "ordinary medium/high handoff" "Intent Lock.*Scope Fence.*Baseline" \
-    "Use the expanded" "Execution Readiness View.*only"
-if tr '\n' ' ' < "$baseline" | grep -qE 'Execution Readiness View[^.]*medium/high'; then
+assert_contains_all "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" \
+    'workflow quality preserves capability-first two-tier context budgets' \
+    'warning target' 'hard ceiling' 'Route-bundle budgets' 'Capability gates pass before size gates' 'Preserve positive/negative routing' 'stop signals'
+assert_contains_all "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" \
+    'progressive disclosure optimizes useful steering before size' \
+    'Optimize useful steering first' 'duplicated explanations' 'repeated examples' 'Byte/line reduction alone proves neither preserved capability' 'positive/negative routing' 'stop signals'
+assert_contains_all "skills/writing-plans/SKILL.md" \
+    'planning owner separates default semantics from conditional expansion' \
+    'Compact output contract' 'natural plan content' 'silent unless' 'Ripple Signal Triage'
+assert_contains_all "skills/writing-plans/SKILL.md" \
+    'planning owner keeps ordinary readiness natural and expanded readiness conditional' \
+    'ordinary medium/high handoff' 'Intent Lock.*Scope Fence.*Baseline Lock' 'expanded.*Execution Readiness View.*only' 'auditable handoff triggers'
+if tr '\n' ' ' < "skills/writing-plans/SKILL.md" | grep -qE 'Execution Readiness View[^.]*medium/high'; then
     fail "writing-plans baseline does not trigger expanded readiness from generic medium/high sizing"
 else
     pass "writing-plans baseline does not trigger expanded readiness from generic medium/high sizing"
@@ -1588,6 +1596,65 @@ assert_contains_all "skills/using-aegis/references/codex-tools.md" \
     "using-git-worktrees.*Step 0" "finishing-a-development-branch.*Step 1"
 assert_contains "skills/using-aegis/references/codex-tools.md" "only default Git mutation owner" \
     "Codex mapping keeps spawned agents out of Git lifecycle mutation"
+
+assert_contains_all "$process_doc" \
+    "process outcome principles preserve intent and bounded complete delivery" \
+    "object, scope, requested actions, conditions" "deliverables" \
+    "Project ambition never overrides" "never label partial or failed work complete"
+assert_contains_all "skills/using-aegis/SKILL.md" \
+    "entry projects outcome principles without universal goal framing" \
+    "requested object, scope, actions, conditions, and deliverables" \
+    "business constraints" "partial work is not complete" "universal goal-framing route"
+assert_contains_all "skills/writing-plans/SKILL.md" \
+    "planning carries requested outcomes through final delivery" \
+    "requested user outcomes" "final delivery step" "unmet needs and dependencies"
+assert_contains_all "skills/systematic-debugging/SKILL.md" \
+    "debugging verifies the correct object and a neighboring case" \
+    "failed outcome on the correct object" "through final delivery" "relevant neighboring case"
+assert_contains_all "skills/verification-before-completion/SKILL.md" \
+    "verification reconciles every deliverable before claiming completion" \
+    "correct object, all requested actions/conditions/deliverables" \
+    "actual usable delivery" "Report remaining work and cause explicitly"
+assert_contains_all "skills/long-task-continuation/SKILL.md" \
+    "continuation preserves outstanding intent through later instructions" \
+    "replacement" "Preserve outstanding deliverables" "user's delivered result"
+
+# Navigation proof is separate from the operational predicates above. Check
+# actual destinations so shortening a baseline cannot strand a named owner.
+if "${PYTHON_CMD[@]}" - <<'PY'
+import re
+from pathlib import Path
+
+root = Path.cwd()
+quality = root / "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md"
+text = quality.read_text(encoding="utf-8")
+owner_rows = text.split("| Workflow |", 1)[1].split("\n\n", 1)[0]
+for row in owner_rows.splitlines():
+    current_skill = None
+    for ref in re.findall(r"`([^`]+\.md)`", row):
+        if ref.startswith("skills/"):
+            target = root / ref
+            current_skill = target.parent
+        else:
+            assert current_skill, f"reference has no workflow owner: {ref}"
+            target = current_skill / ref
+        assert target.is_file(), f"missing workflow owner/reference: {target}"
+
+for doc in (quality, root / "docs/current/AEGIS_PROCESS_BASELINE.md"):
+    for ref in re.findall(r"\]\(([^)]+\.md(?:#[^)]+)?)\)", doc.read_text(encoding="utf-8")):
+        path, _, fragment = ref.partition("#")
+        target = doc.parent / path
+        assert target.is_file(), f"missing baseline owner: {ref}"
+        if fragment:
+            headings = re.findall(r"^#+ (.+)$", target.read_text(encoding="utf-8"), re.M)
+            anchors = {re.sub(r"[^\w -]", "", heading.lower()).replace(" ", "-") for heading in headings}
+            assert fragment in anchors, f"missing baseline section: {ref}"
+PY
+then
+    pass "baseline read maps resolve to existing operational owners and sections"
+else
+    fail "baseline read maps resolve to existing operational owners and sections"
+fi
 
 "${PYTHON_CMD[@]}" tests/helpers/validate_workflow_quality_matrix.py "$matrix"
 if (( failures > 0 )); then

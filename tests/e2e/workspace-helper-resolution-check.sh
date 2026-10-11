@@ -101,10 +101,15 @@ for file in \
     skills/long-task-continuation/SKILL.md \
     skills/verification-before-completion/expanded-closeout.md \
     docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md \
-    docs/current/AEGIS_PROCESS_BASELINE.md; do
+    skills/using-aegis/references/skill-discipline.md; do
     assert_contains "$file" "<aegis-workspace-helper>" "$file uses installed-helper placeholder"
     assert_not_contains "$file" "scripts/aegis-workspace.py" "$file does not imply target-project helper ownership"
 done
+
+assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" 'helpers belong to the installed method pack' \
+    'process baseline keeps installed-helper ownership'
+assert_not_contains "docs/current/AEGIS_PROCESS_BASELINE.md" "scripts/aegis-workspace.py" \
+    "process baseline does not imply target-project helper ownership"
 
 if (( failures > 0 )); then
     echo ""

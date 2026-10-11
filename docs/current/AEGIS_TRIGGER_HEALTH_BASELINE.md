@@ -278,7 +278,9 @@ guide and update the family wording later if needed.
 The stable path is not to make every entry point louder. It is to keep each
 owner narrow:
 
-1. Keep `using-aegis` compact and route-only.
+1. Keep `using-aegis` compact: a short outcome-principle projection plus routing.
+   Detailed workflows remain with their task owners; the anchor does not add
+   a universal goal-framing route or artifact requirement.
 2. Keep skill descriptions trigger-oriented; do not summarize workflow in
    descriptions.
 3. Keep detailed rules inside the owning skill body.

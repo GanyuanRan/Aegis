@@ -53,7 +53,9 @@ passing full conversation history. Include:
 - relevant baseline refs and files
 - known facts and unknowns
 - non-goals
-- expected output and verification
+- expected output and verification, including the user's object, actions,
+  conditions and deliverables relevant to this slice; distinguish child
+  evidence from the coordinator's whole-task delivery responsibility
 - recorded TDD Mode, Route, authority, and selecting workflow/owner
 - must-read excerpts
 - unsafe assumptions

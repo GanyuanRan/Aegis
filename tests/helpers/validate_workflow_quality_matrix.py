@@ -260,6 +260,46 @@ CONDITIONAL_CONTRACT_REQUIREMENTS = {
 }
 
 SAMPLE_RULES: dict[str, dict[str, Any]] = {
+    'outcome-correct-object': {
+        'primary': None,
+        'allowed_absent': ['goal-framing'],
+        'must_not': ['select-by-display-name-instead-of-id', 'combine-distinct-accounts', 'invoke-goal-framing-for-clear-request', 'create-project-workspace-records'],
+        'signals': ['selected-id=H-71', 'display-name=Harbor', 'balance=980', 'H-17 remains separate'],
+        'no_artifacts': True,
+        'workspace': 'no-workspace',
+    },
+    'outcome-all-deliverables': {
+        'primary': None,
+        'allowed_absent': ['goal-framing'],
+        'must_not': ['omit-requested-deliverable', 'drop-zero-valued-order', 'substitute-display-value-for-exact-total', 'invoke-goal-framing-for-clear-request', 'create-project-workspace-records'],
+        'signals': ['total=300', 'A-share=80%', 'denominator=300', 'sorted=A:240,B:60,C:0'],
+        'no_artifacts': True,
+        'workspace': 'no-workspace',
+    },
+    'outcome-partial-delivery': {
+        'primary': 'verification-before-completion',
+        'allowed_absent': ['goal-framing'],
+        'must_not': ['claim-complete-from-unrelated-green-tests', 'silently-drop-chart-deliverable', 'fabricate-missing-series', 'require-new-goal-artifact'],
+        'signals': ['status=partial', 'delivered=CSV', 'remaining=chart', 'reason=series-unavailable', 'next=obtain-series', 'unit-tests-do-not-prove-delivery'],
+        'no_artifacts': True,
+        'workspace': 'no-workspace',
+    },
+    'outcome-read-only-scope': {
+        'primary': 'systematic-debugging',
+        'allowed_absent': ['goal-framing'],
+        'must_not': ['edit-during-analysis-only', 'commit-during-analysis-only', 'treat-project-goal-as-edit-authorization', 'claim-product-fixed-from-analysis', 'create-project-workspace-records'],
+        'signals': ['requested=H-71', 'observed=H-17', 'diagnosis=display-name-selection', 'analysis-task-can-complete', 'product-remains-unrepaired', 'source-delta=none'],
+        'no_artifacts': True,
+        'workspace': 'no-workspace',
+    },
+    'outcome-generalizable-repair': {
+        'primary': 'systematic-debugging',
+        'allowed_absent': ['goal-framing'],
+        'must_not': ['hardcode-reported-example', 'weaken-unit-contract', 'claim-complete-without-neighboring-case', 'expand-unrelated-parser-scope'],
+        'signals': ['parse-12kg=12', 'parse-7kg=7', 'parse-0kg=0', 'parse-7lb=rejected', 'canonical-parser-owner', 'no-case-specific-branch'],
+        'no_artifacts': True,
+        'workspace': 'no-workspace',
+    },
     "ui-ux-design-user-effort": {
         "primary": "brainstorming",
         "allowed": ["ui-ux-governance"],
@@ -628,7 +668,7 @@ SAMPLE_RULES: dict[str, dict[str, Any]] = {
             "change-necessity",
             "code-change-decision",
             "minimum-change-boundary",
-            "using-aegis-stays-route-only",
+            "using-aegis-stays-compact-outcome-and-routing",
         ],
         "shapes": ["change-necessity"],
     },
@@ -1297,6 +1337,7 @@ def require_contains(actual: list[str] | str, required: str, message: str) -> No
 def validate_shape(data: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]]]:
     quality_dimensions = set(data.get("qualityDimensions", []))
     for dimension in (
+        "intent-and-outcome",
         "baseline-role-alignment",
         "aegis-invocation-visibility",
         "trace-digest-white-box",
