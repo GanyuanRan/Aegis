@@ -21,58 +21,31 @@ skill. The authority order in `docs/current/README.md` remains unchanged.
 > reliably within authorization and business constraints, and deliver a complete,
 > usable result that satisfies the need and can be verified.
 
-These principles govern choices, not a new checklist, artifact, approval step,
-universal `goal-framing` invocation, or expansion of scope.
+These are the baseline's shared decision principles. Their abstraction does
+not raise their instruction priority or authorize rewriting concrete acceptance
+criteria. They add no checklist, artifact, approval step, universal
+`goal-framing` invocation, or expansion of scope.
 
-1. **Preserve intent.** Resolve the object, scope, requested actions, conditions,
-   and deliverables from the conversation. A later instruction may continue,
-   adjust, pause, or replace a task; do not silently discard outstanding work.
-   Clarify material ambiguity before dependent action, while continuing
-   independent authorized work. A clear bounded request needs no new approval.
+1. **Preserve intent and boundaries.** Resolve the object, scope, requested actions, conditions,
+   and deliverables from the conversation. A later request may continue, amend,
+   pause, or replace the task; preserve work not cancelled or superseded. Use
+   trustworthy facts; respect authorization, business rules, non-goals,
+   compatibility, and user control. Clarify material ambiguity before dependent
+   action while continuing independent authorized work. A clear authorized
+   request needs no extra approval. Keep unsupported requests visible as unmet needs.
 2. **Distinguish goal levels.** The source goal above explains purpose. Project
    goals define supported capabilities, durable constraints, and reliability
    across tasks. The current user task defines this turn's authorized delivery.
    Engineering goals support both. Project ambition never overrides a user's
    current scope, such as "analysis only"; one successful case never proves
    project-wide reliability.
-3. **Respect real boundaries.** Use trustworthy facts and obey authorization,
-   business rules, accepted non-goals, compatibility, and user control. Preserve
-   unsupported requests as identified unmet needs; explain the limit instead of
-   silently dropping an action. Existing implementation or test limitations are
-   not automatically business restrictions. Correct a defective design through
-   its owner; do not disguise it as something the user must accept.
-4. **Prefer sufficient, durable repair.** Minimal Necessary Change means the
-   smallest sufficient change at the correct owner and abstraction layer.
-   Fix the problem class with proportional neighboring-case verification.
-   Neither fewest changed lines nor a hardcoded case-specific success justifies
-   fallback growth, duplicate owners, or unrelated redesign.
-5. **Deliver and substantiate the result.** Judge completion against the user's
+3. **Deliver and substantiate the result.** Judge completion against the user's
    requested outcome. Code execution, parsing, green tests, and architecture
    alignment are evidence with a scope; tests that exercise the real acceptance
    criteria can directly support acceptance. Intermediate success alone cannot
    replace delivery. Distinguish current task/slice completion from product
    capability acceptance. When incomplete, report delivered results, remaining
    work, reason, and next dependency; never label partial or failed work complete.
-
-Evidence must distinguish facts, inferences, and unknowns. User-facing prose
-follows the user's current language; preserve commands, identifiers, and stable
-enums. Lead with the useful result and supporting evidence. Active workflows
-own the output surface; these principles do not require repeated philosophy.
-
-### Preservation and Retirement
-
-Before changing semantics, identify evidence-backed behavior to preserve, the
-highest-risk counterexample, and material uninspected surfaces. Give each known
-anchor/reference a disposition: preserve, rebind to its canonical owner, retire
-with reason, or reject because of a conflict. Recheck accepted constraints
-against the original goal at existing design, plan, and completion checkpoints.
-Unknown relationships remain unknown; this is not exhaustive lineage proof.
-
-Preserve published behavior/contracts by default, not every internal old path.
-Retire an invalid responsibility without assuming its carrier has no legitimate
-remaining role. Delete a carrier only when no legitimate role remains, subject
-to the existing scoped authorization boundary. Repair and retirement stay
-explicit; see `AEGIS_DUAL_TRACK_GOVERNANCE.md`.
 
 ## 3. Execution Cycle
 
@@ -113,7 +86,29 @@ QA covers Remove/Restore, actual Complexity Delta for non-trivial code changes,
 rollback boundaries, confidence, and reusable evidence. The verification skill
 aggregates one closeout, including applicable architecture findings and
 ADR/baseline sync. Output depth is proportional; do not append every skill's
-template. Detailed quality criteria live in `AEGIS_WORKFLOW_QUALITY_BASELINE.md`.
+template. Distinguish facts, inferences, and unknowns. Communication and quality
+criteria belong to `AEGIS_WORKFLOW_QUALITY_BASELINE.md`.
+
+### Stable Change
+
+Minimal Necessary Change means the smallest sufficient change at the correct owner and abstraction layer.
+Fix the problem class with proportional neighboring-case verification.
+Neither fewest changed lines nor a hardcoded case-specific success justifies
+fallback growth, duplicate owners, or unrelated redesign. Use
+`AEGIS_MINIMALITY_REFERENCE.md` before proposing an additional surface.
+
+### Preservation and Retirement
+
+Before changing semantics, identify evidence-backed behavior to preserve, the
+highest-risk counterexample, and material uninspected surfaces. Give each known
+anchor/reference a disposition: preserve, rebind to its canonical owner, retire
+with reason, or reject because of a conflict. Recheck accepted constraints
+against the original goal at existing design, plan, and completion checkpoints.
+Unknown relationships remain unknown; this is not exhaustive lineage proof.
+
+Preserve published behavior/contracts by default, not every internal old path.
+For responsibility-scoped retirement and its authorization boundary, use
+`AEGIS_DUAL_TRACK_GOVERNANCE.md` §3.2; keep repair and retirement explicit.
 
 ### Test Failure Iron Law
 
@@ -183,6 +178,10 @@ while project-wide acceptance remains unproven; missing durable documents alone
 do not invalidate explicit task authorization.
 
 ### Design Defect and Implementation Drift
+
+Existing implementation or test limitations are not automatically business
+restrictions. Resolve a suspected mismatch against the confirmed requirements
+and architecture roles before choosing the wrong-party correction below.
 
 - `Design Defect`: a confirmed error, gap, contradiction, or wrong abstraction
   in the requirement/design/baseline itself. Examples include contradicting

@@ -341,13 +341,15 @@ assert_contains "docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md" "最终输出排序" \
 assert_contains "docs/current/AEGIS_WORKFLOW_GUIDE_ZH.md" "信息排序原则，不是强制顶层模板" \
     "Chinese workflow guide does not make facts-inferences-conclusions a rigid template"
 assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" 'Facts.*Inferences.*Conclusions is an information-ordering principle' \
-    "process baseline frames facts-inferences-conclusions as ordering principle"
+    "quality baseline frames facts-inferences-conclusions as ordering principle"
 assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" 'Semantic Slots, not rigid English headings' \
-    "process baseline does not make facts-inferences-conclusions a rigid template"
-assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" 'own the output surface' \
-    "process baseline names final output semantic slots and attention anchors"
+    "quality baseline does not make facts-inferences-conclusions a rigid template"
+assert_section_contains_all "docs/current/AEGIS_PROCESS_BASELINE.md" \
+    '## 3. Execution Cycle' '## 4. Baseline Roles and Alignment' \
+    "process execution delegates communication criteria to the quality baseline" \
+    'criteria belong to .AEGIS_WORKFLOW_QUALITY_BASELINE.md.'
 assert_contains "skills/requesting-code-review/SKILL.md" 'findings-first' \
-    "process baseline preserves workflow-owned final output structures"
+    "review skill preserves its workflow-owned final output structure"
 assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" 'Required content is a set of Semantic Slots' \
     "canonical owner treats required output content as attention anchors"
 assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" 'Skills own operational decisions and output contracts' \

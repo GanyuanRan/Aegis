@@ -50,9 +50,7 @@ For non-trivial work, read these first:
    section of its `docs/current/*.md` owner
 
 For tradeoffs about scope, repair, or completion, use the Outcome Principles
-in `docs/current/AEGIS_PROCESS_BASELINE.md` §2. Understand the authorized need,
-complete the task within business constraints, and deliver a usable, verifiable
-result. Engineering checks support that outcome; they do not replace delivery.
+in `docs/current/AEGIS_PROCESS_BASELINE.md` §2.
 
 The index is navigation, not a requirement to read every baseline. Use headings
 or bounded excerpts, reuse still-current context, and expand only for affected

@@ -10,15 +10,6 @@ shared outcome principles. Skills own operational decisions and output contracts
 specialist baselines own their domain semantics. Read the relevant criterion and
 owner, not all workflows.
 
-A useful workflow accurately understands the authorized request, acts within
-business constraints, and delivers the requested complete, usable, verifiable
-result. Evaluate actual decisions and artifacts against that request.
-Engineering checks count to the extent that they prove its acceptance criteria;
-passing unrelated tests, parsing, or executing a tool cannot replace delivery.
-A completed analysis task can be successful while the analyzed product remains
-broken. Conversely, successful internal steps do not make an undelivered user
-task complete.
-
 This is advisory method-pack quality, not an authoritative runtime core,
 `GateDecision`, `PolicySnapshot`, final evidence sufficiency, or completion
 authority. Quality samples and helper checks do not grant those powers.
@@ -30,7 +21,7 @@ not a new mandatory report. Procedures/templates remain at the named owner.
 
 | Dimension | Acceptance criterion | Detailed owner |
 | --- | --- | --- |
-| Intent and Outcome | Object, scope, actions, conditions, and all deliverables survive routing, planning, handoff, and closeout; no silent requirement loss or extra unauthorized action. Task success and project capability acceptance remain distinct. | Process §2; task owner; verification. |
+| Intent and Outcome | Observed actions and delivered artifacts satisfy each agreed criterion or expose an explicit gap. Apply the Task and Product Acceptance cases below. | Process §2 defines the principles; verification owns closeout. |
 | Trigger Accuracy | Explicit requests load the available named skill; evidence-driven routes find design, approved planning, debugging, verification, long-task and ADR owners without unrelated invocations. | Trigger Health; using-aegis; named skill descriptions. |
 | Fast-Path Cheapness | Simple Q&A/status/tiny edits use bounded evidence and no needless plan/spec/work files. Complexity/risk, not installation or skill presence, selects ceremony. | using-aegis; skill-discipline. |
 | Output Compactness | Depth is proportional to risk and uncovered scope. No full ceremony merely because Aegis is installed. | Active skill; verification closeout. |
@@ -56,24 +47,20 @@ not a new mandatory report. Procedures/templates remain at the named owner.
 
 ### Task and Product Acceptance
 
-Before calling the user task complete, reconcile each requested outcome with
-delivered evidence or an explicit remaining gap. Do not require product-wide
-verification for a scoped explanation, review, or local repair. Do not report
-product/requirement acceptance from a slice's green checks without criteria
-that cover that broader claim.
+Evaluate Process §2 through the applicable cases below. Use actual actions,
+artifacts, and answers; the operational check belongs to the verification skill's
+[Completion Boundary](../../skills/verification-before-completion/SKILL.md#completion-boundary).
 
-Representative checks should include:
+| Case | Observable acceptance evidence |
+| --- | --- |
+| Single requested object among alternatives | The selected identity is correct; results from other objects are neither substituted nor combined. |
+| Multiple deliverables | Every agreed action and output field is delivered, including counts/denominators and exact/display values when required. |
+| Missing data or blocked action | The answer separates delivered results from gaps, explains the cause and next dependency, and invents no facts or success. |
+| Repair beyond one example | A relevant neighboring case exercises the same owner and requirement; the fix does not hardcode the reported example. |
+| Analysis-only or bounded task | Filesystem/actions respect the requested scope. Diagnosis can complete while the product remains unrepaired; any broader acceptance claim has evidence covering that scope. |
 
-- the correct selected object among plausible alternatives;
-- all requested actions and output fields, including counts/denominators and
-  exact versus display representations when the task requires them;
-- unavailable facts, failed steps, permissions and business constraints;
-- a neighboring valid case that detects hardcoded single-case success;
-- explicit "analysis only" or other scope limits despite broader project goals.
-
-These are scenario dimensions, not a fixed report format for all products.
-When an outcome cannot be delivered, retain the unmet requirement and explain
-what is known, what is missing, why, and the next dependency.
+These are evaluation cases, not a fixed report format or a requirement to verify
+an entire product for a scoped task.
 
 ## 3. Output and Operational Ownership
 

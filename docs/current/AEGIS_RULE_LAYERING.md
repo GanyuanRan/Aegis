@@ -117,7 +117,8 @@ Any subsequent rule addition must first answer:
 2. Does it depend on specific tool capabilities
 3. Does it only serve current repository contributions
 
-Only the first category is permitted to enter the method-pack core. Before
-adding text, choose its single canonical owner and the smallest necessary
-projection. Test that readers can find conditional detail; do not copy entire
-contracts between entry, baselines, skills, and host prefixes.
+Only the first category is permitted to enter the method-pack core. Define a
+principle once at its canonical owner. Other surfaces carry only a necessary
+summary, stage-specific action, or acceptance criterion; they do not independently
+redefine it. Test that readers can find conditional detail. Entry summaries must
+remain usable in skill-copy installs without requiring the current-doc tree.
