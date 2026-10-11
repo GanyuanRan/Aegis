@@ -347,7 +347,7 @@ assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" 'Semantic Slot
 assert_section_contains_all "docs/current/AEGIS_PROCESS_BASELINE.md" \
     '## 3. Execution Cycle' '## 4. Baseline Roles and Alignment' \
     "process execution delegates communication criteria to the quality baseline" \
-    'criteria belong to .AEGIS_WORKFLOW_QUALITY_BASELINE.md.'
+    'AEGIS_WORKFLOW_QUALITY_BASELINE\.md'
 assert_contains "skills/requesting-code-review/SKILL.md" 'findings-first' \
     "review skill preserves its workflow-owned final output structure"
 assert_contains "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md" 'Required content is a set of Semantic Slots' \
