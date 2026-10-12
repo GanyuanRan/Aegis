@@ -150,12 +150,15 @@ artifact even when the Git source is current. Preserve the explicit Git URL
 and any pinned tag; check the actual selected source and installed version.
 In [Plugin Hub issue #120](https://github.com/dshplugin/dsh-plugin-hub/issues/120#issuecomment-6060567215),
 the maintainer retained npm-first resolution and closed the report as a known
-limitation. Hub `v1.6.0` improves profile-specific hints and pnpm diagnostics;
-it does not remove this source substitution. Its repository-install path also
-normalizes Git URLs to a repository identity and rebuilds an unpinned URL
-before npm lookup. This source-level finding is not a live Desktop GUI test.
-The fixed-ref follow-up is
-[Plugin Hub issue #130](https://github.com/dshplugin/dsh-plugin-hub/issues/130).
+limitation. That resolution order still applies to unpinned catalog and
+repository targets. Its repository-install path also normalizes Git URLs to a
+repository identity and rebuilds an unpinned URL before npm lookup. This
+source-level finding is not a live Desktop GUI test. The narrower fixed-ref
+follow-up, [Plugin Hub issue #130](https://github.com/dshplugin/dsh-plugin-hub/issues/130),
+was confirmed by the maintainer as a genuine bug and resolved in Hub `v1.6.1`:
+an explicitly pinned `#<ref>` is now installed exactly as pinned instead of
+being replaced by the repository's default package, so keep the pinned form
+when the manager accepts a Git target.
 A GitHub release does not update a third-party registry artifact or repair the
 marketplace's source selection. Version admission also does not establish live
 routing compatibility.
