@@ -167,10 +167,46 @@ else
     fail "root READMEs keep bounded evidence before early install, with details and runtime after it"
 fi
 
-if rg -Fq 'requested the same' README.md && rg -Fq '请求相同的' README.zh-CN.md; then
-    pass "full benchmark retains the same-request comparison boundary"
+if "${PYTHON_CMD[@]}" - <<'PY'
+from pathlib import Path
+
+
+def in_benchmark_section(text, heading, phrase):
+    lines = text.splitlines()
+    starts = [i for i, line in enumerate(lines) if line == heading]
+    if len(starts) != 1:
+        return False
+    start = starts[0] + 1
+    end = next((i for i in range(start, len(lines)) if lines[i].startswith("## ")), len(lines))
+    return phrase in "\n".join(lines[start:end])
+
+
+configs = (
+    ("README.md", "## Measured Agentic Benchmark", "requested the same"),
+    ("README.zh-CN.md", "## 实测 Agentic Benchmark", "请求相同的"),
+)
+negative_count = 0
+for name, heading, phrase in configs:
+    text = Path(name).read_text(encoding="utf-8")
+    assert in_benchmark_section(text, heading, phrase), f"missing comparison qualification: {name}"
+    without_phrase = text.replace(phrase, "")
+    variants = {
+        "missing qualification": without_phrase,
+        "qualification before benchmark": phrase + "\n" + without_phrase,
+        "qualification after benchmark": without_phrase + "\n" + phrase,
+        "qualification in another section": text.replace(phrase, "\n## Another section\n" + phrase),
+        "missing benchmark heading": text.replace(heading, "## Missing benchmark"),
+        "duplicate benchmark heading": text + "\n" + heading,
+    }
+    for label, variant in variants.items():
+        assert not in_benchmark_section(variant, heading, phrase), f"negative control accepted: {name}: {label}"
+        negative_count += 1
+print(f"  [PASS] benchmark comparison section negative controls: {negative_count}")
+PY
+then
+    pass "full benchmark section retains the same-request comparison boundary"
 else
-    fail "full benchmark retains the same-request comparison boundary"
+    fail "full benchmark section retains the same-request comparison boundary"
 fi
 
 if rg -n 'sanitized_report|SANITIZED_REPORT_TYPE|render-input|subparsers\.add_parser\("sanitize"' tests/helpers/run_agentic_benchmark.py >/dev/null; then
