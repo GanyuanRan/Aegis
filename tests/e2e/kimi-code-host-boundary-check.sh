@@ -189,7 +189,7 @@ assert_contains "$activation_check" "docs/README.kimi-code.md" \
 
 assert_contains "$fast_track" "native activation and automatic-entry checks" \
     "English quick-install prompt requires native activation proof"
-assert_contains "$fast_track_zh" "原生活化与自动入口验证" \
+assert_contains "$fast_track_zh" "原生激活与自动入口验证" \
     "Chinese quick-install prompt requires native activation proof"
 assert_contains "$trigger_health" "Kimi.*hook-bootstrap|hook-bootstrap.*Kimi" \
     "trigger health maps Kimi auto to hook bootstrap"

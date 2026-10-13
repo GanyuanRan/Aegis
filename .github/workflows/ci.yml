@@ -20,10 +20,10 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install benchmark sandbox dependency
+      - name: Install benchmark verification dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install --yes bubblewrap
+          sudo apt-get install --yes bubblewrap ripgrep
 
       - name: Setup Node for executable skill examples
         uses: actions/setup-node@v4
@@ -41,6 +41,9 @@ jobs:
 
       - name: Run Codex plugin sync regression
         run: bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh
+
+      - name: Validate benchmark rendering and README installation flow
+        run: bash tests/e2e/agentic-benchmark-render-check.sh
 
       - name: Run Phase 5 static aggregate
         # Live Codex host smoke requires a configured Codex CLI; keep default CI host-neutral.

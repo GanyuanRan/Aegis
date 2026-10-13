@@ -783,16 +783,18 @@ request.
   remains unknown.
   [Plugin Hub issue #120](https://github.com/dshplugin/dsh-plugin-hub/issues/120)
   was closed as a documented limitation, with npm-first resolution retained.
-  In Hub `v1.6.0`, the repository-install code normalizes Git URLs to a
-  repository identity, rebuilds a URL without its ref, then performs npm
-  reverse lookup. Profile-specific hints and pnpm diagnostic improvements in
-  that release do not establish source/ref preservation. This is a source-level
-  finding, not a fresh end-to-end GUI/HTTP reproduction. A replay of the tagged
-  normalizers and npm selector, using a published-registry metadata fixture,
-  discarded both a tag and a commit SHA before selecting the matching npm
-  package. [Plugin Hub issue #130](https://github.com/dshplugin/dsh-plugin-hub/issues/130)
-  requests preservation of explicitly pinned targets without changing unpinned
-  repository/catalog defaults.
+  In Hub `v1.6.0`, the repository-install code normalized Git URLs to a
+  repository identity, rebuilt a URL without its ref, then performed npm
+  reverse lookup. This was a source-level finding, not a fresh end-to-end
+  GUI/HTTP reproduction; a replay of the tagged normalizers and npm selector,
+  using a published-registry metadata fixture, discarded both a tag and a
+  commit SHA before selecting the matching npm package.
+  [Plugin Hub issue #130](https://github.com/dshplugin/dsh-plugin-hub/issues/130)
+  was confirmed by the maintainer as a genuine bug and resolved in Hub
+  `v1.6.1`, which preserves an explicit `#<ref>` instead of replacing it with
+  the repository's default package. Unpinned repository and catalog targets
+  retain the npm-first resolution recorded above, so this does not remove the
+  source-substitution limitation for marketplace catalog entries.
 - DSH `0.2.0-rc.2` rejects terminal management of the Electron-owned `desktop`
   profile. Install, inspect, update, and remove plugins through the desktop
   application's manager; CLI examples apply to CLI-managed profiles.
