@@ -9,14 +9,14 @@
 /skills/ @GanyuanRan
 /agents/ @GanyuanRan
 /commands/ @GanyuanRan
-/hooks/ @GanyuanRan
+/hooks/ @GanyuanRan @ryanchou1994
 
 # Distribution and host integration
 /.claude-plugin/ @GanyuanRan
 /.codex-plugin/ @GanyuanRan
 /.cursor-plugin/ @GanyuanRan
 /.opencode/ @GanyuanRan
-/scripts/ @GanyuanRan
+/scripts/ @GanyuanRan @ryanchou1994
 
 # Tests
-/tests/ @GanyuanRan
+/tests/ @GanyuanRan @ryanchou1994
