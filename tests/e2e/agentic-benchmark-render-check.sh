@@ -98,20 +98,115 @@ else
     fail "SVG uses a zero-based scale and only two overall metric panels"
 fi
 
-en_quick_line="$(rg -n '^## Quick Install$' README.md | cut -d: -f1 || true)"
-zh_quick_line="$(rg -n '^## 极简安装$' README.zh-CN.md | cut -d: -f1 || true)"
-if [[ -n "$en_quick_line" && -n "$zh_quick_line" \
-    && "$en_quick_line" -le 75 && "$zh_quick_line" -le 75 ]] \
-    && rg -Fq 'pass rate **61.67% → 93.33%' README.md \
-    && rg -Fq 'unsafe outcomes **13.33% → 0%**' README.md \
-    && rg -Fq '**61.67% → 93.33%**' README.zh-CN.md \
-    && rg -Fq '不安全结果 **13.33% → 0%**' README.zh-CN.md \
-    && rg -Fq 'requested the same' README.md \
-    && rg -Fq '请求相同的' README.zh-CN.md \
-    && ! rg -q 'ambiguous-feature-shaping|Contract pass rate by scenario class|场景类别' README.md README.zh-CN.md; then
-    pass "root READMEs keep a compact two-metric benchmark before quick install"
+if "${PYTHON_CMD[@]}" - <<'PY'
+from pathlib import Path
+
+# Keep the 75-line entry budget; test the reader flow rather than requiring
+# the full benchmark or an independent runtime's promotion before installation.
+def valid_layout(text, quick, detail, runtime, metrics, boundary, link):
+    lines = text.splitlines()
+    def position(heading):
+        hits = [i for i, line in enumerate(lines) if line == heading]
+        return hits[0] if len(hits) == 1 else None
+    q, d, r = (position(h) for h in (quick, detail, runtime))
+    if q is None or d is None or r is None or q + 1 > 75 or not q < d < r:
+        return False
+    prefix = "\n".join(lines[:q])
+    return (
+        all(term in prefix for term in (*metrics, *boundary, link))
+        and "benchmarks/results/" not in prefix
+        and not any(term in text for term in (
+            "ambiguous-feature-shaping", "Contract pass rate by scenario class", "场景类别"
+        ))
+    )
+
+configs = (
+    ("README.md", "## Quick Install", "## Measured Agentic Benchmark",
+     "## Try Aegis Methods in a Coding Runtime",
+     ("pass rate **61.67% → 93.33%", "unsafe outcomes **13.33% → 0%**"),
+     ("Aegis 2.7.6", "2026-08-11", "bounded advisory evidence",
+      "not a measurement of this release", "completion authority"),
+     "[the full benchmark and its limitations](#measured-agentic-benchmark)"),
+    ("README.zh-CN.md", "## 极简安装", "## 实测 Agentic Benchmark",
+     "## 体验 Aegis 方法在运行时中的应用",
+     ("**61.67% → 93.33%**", "不安全结果 **13.33% → 0%**"),
+     ("Aegis 2.7.6", "2026-08-11", "有界建议性证据",
+      "不是对本次发布的测量", "不构成普遍质量或完成权威声明"),
+     "[完整基准与证据限制](#实测-agentic-benchmark)"),
+)
+negative_count = 0
+for name, *config in configs:
+    text = Path(name).read_text(encoding="utf-8")
+    assert valid_layout(text, *config), f"invalid reader flow: {name}"
+    quick, detail, runtime, metrics, boundary, link = config
+    prefix, rest = text.split(quick, 1)
+    # Each malformed variant must fail the same validator used for real files.
+    variants = {
+        "late installation": "\n" * 75 + text,
+        "missing installation": text.replace(quick, "## Missing install"),
+        "duplicate installation": text + "\n" + quick,
+        "summary after installation": quick + rest + prefix,
+        "details before installation": detail + "\n" + text.replace(detail, ""),
+        "runtime before installation": runtime + "\n" + text.replace(runtime, ""),
+        "missing details": text.replace(detail, "## Missing details"),
+        "full chart before installation": "![chart](benchmarks/results/result.svg)\n" + text,
+        "scenario table": text + "\nContract pass rate by scenario class\n",
+        "missing evidence link": text.replace(link, ""),
+    }
+    for i, term in enumerate((*metrics, *boundary)):
+        variants[f"missing summary fact {i}"] = prefix.replace(term, "") + quick + rest
+    for label, variant in variants.items():
+        assert not valid_layout(variant, *config), f"negative control accepted: {name}: {label}"
+        negative_count += 1
+    print(f"  [PASS] {name}: quick install at line {len(prefix.splitlines()) + 1}")
+print(f"  [PASS] README layout negative controls: {negative_count}")
+PY
+then
+    pass "root READMEs keep bounded evidence before early install, with details and runtime after it"
 else
-    fail "root READMEs keep a compact two-metric benchmark before quick install"
+    fail "root READMEs keep bounded evidence before early install, with details and runtime after it"
+fi
+
+if "${PYTHON_CMD[@]}" - <<'PY'
+from pathlib import Path
+
+
+def in_benchmark_section(text, heading, phrase):
+    lines = text.splitlines()
+    starts = [i for i, line in enumerate(lines) if line == heading]
+    if len(starts) != 1:
+        return False
+    start = starts[0] + 1
+    end = next((i for i in range(start, len(lines)) if lines[i].startswith("## ")), len(lines))
+    return phrase in "\n".join(lines[start:end])
+
+
+configs = (
+    ("README.md", "## Measured Agentic Benchmark", "requested the same"),
+    ("README.zh-CN.md", "## 实测 Agentic Benchmark", "请求相同的"),
+)
+negative_count = 0
+for name, heading, phrase in configs:
+    text = Path(name).read_text(encoding="utf-8")
+    assert in_benchmark_section(text, heading, phrase), f"missing comparison qualification: {name}"
+    without_phrase = text.replace(phrase, "")
+    variants = {
+        "missing qualification": without_phrase,
+        "qualification before benchmark": phrase + "\n" + without_phrase,
+        "qualification after benchmark": without_phrase + "\n" + phrase,
+        "qualification in another section": text.replace(phrase, "\n## Another section\n" + phrase),
+        "missing benchmark heading": text.replace(heading, "## Missing benchmark"),
+        "duplicate benchmark heading": text + "\n" + heading,
+    }
+    for label, variant in variants.items():
+        assert not in_benchmark_section(variant, heading, phrase), f"negative control accepted: {name}: {label}"
+        negative_count += 1
+print(f"  [PASS] benchmark comparison section negative controls: {negative_count}")
+PY
+then
+    pass "full benchmark section retains the same-request comparison boundary"
+else
+    fail "full benchmark section retains the same-request comparison boundary"
 fi
 
 if rg -n 'sanitized_report|SANITIZED_REPORT_TYPE|render-input|subparsers\.add_parser\("sanitize"' tests/helpers/run_agentic_benchmark.py >/dev/null; then

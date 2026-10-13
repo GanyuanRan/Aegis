@@ -114,7 +114,7 @@ assert_contains "docs/current/AEGIS_KNOWN_LIMITATIONS.md" "discovery shape|disco
     "known limitations records updater discovery-shape structural verification"
 assert_contains "docs/current/AEGIS_FAST_TRACK_PLAYBOOK.md" "native activation and automatic-entry checks" \
     "English universal prompt requires native activation verification"
-assert_contains "docs/current/AEGIS_FAST_TRACK_PLAYBOOK_ZH.md" "原生活化与自动入口验证" \
+assert_contains "docs/current/AEGIS_FAST_TRACK_PLAYBOOK_ZH.md" "原生激活与自动入口验证" \
     "Chinese universal prompt requires native activation verification"
 for file in \
     "README.md" \
