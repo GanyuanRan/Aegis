@@ -372,17 +372,30 @@ request.
   plugin discovery for skills and agents from installed plugin directories
   exists, and the public `1.0.8` changelog also says custom skills and system
   slash commands reload dynamically on conversation switch or `/add-dir`.
-- Those signals make `Antigravity CLI` the best next closeout target, but the
-  stable local install / discovery contract for this Aegis method pack still
-  needs current release verification before Aegis can claim host closeout.
+- Those signals made `Antigravity CLI` the best next closeout target. Fresh
+  maintainer evidence on `2026-10-17` (Windows, `agy 1.4.0`) now records the
+  official install (`agy --version` -> `1.4.0`), unauthenticated
+  `agy plugin list --json`, a verified scratch-plugin lifecycle with
+  full-directory copy staging under `~/.gemini/config/plugins/`, and
+  updater-managed direct-child exposure at `~/.gemini/antigravity-cli/skills`
+  (one link per skill; register/update-time doctor readback
+  `discoveryShapeStatus: current`). Signed-in live model routing and host-side
+  skill enumeration remain unverified: Google sign-in is interactive, and a
+  signed-in account can still be rejected by Antigravity's own eligibility
+  check before any model turn (observed as `Eligibility check failed: Your
+  current account is not eligible for Antigravity`; model listing alone does
+  not prove a runnable session). Host closeout is therefore still not
+  claimable; the remaining gap is narrowed to the runnable-session live half.
 
 **Observation Metric**
 - `docs/README.antigravity.md`
 - `bash tests/e2e/antigravity-host-boundary-check.sh`
 - `bash tests/antigravity/run-tests.sh`
 - `bash tests/antigravity/run-tests.sh --integration`
-- Future Antigravity CLI install smoke that proves skill discovery, restart or
-  reload behavior, and
+- `cd <aegis-method-pack-root> && python scripts/aegis-update.py register --host antigravity-cli --sync-mode junction --discovery-root ~/.gemini/antigravity-cli/skills --discovery-shape direct-child --json`
+  readback: direct-child sync summary plus doctor `discoveryShapeStatus: current`
+- A signed-in Antigravity CLI session that proves skill discovery, restart or
+  reload behavior, representative routing, and
   `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
 
 **Retirement Trigger**
@@ -793,8 +806,24 @@ request.
   was confirmed by the maintainer as a genuine bug and resolved in Hub
   `v1.6.1`, which preserves an explicit `#<ref>` instead of replacing it with
   the repository's default package. Unpinned repository and catalog targets
-  retain the npm-first resolution recorded above, so this does not remove the
-  source-substitution limitation for marketplace catalog entries.
+  retained the npm-first resolution recorded above through Hub `v1.6.5`, so
+  that did not remove the source-substitution limitation for marketplace
+  catalog entries in that line.
+- Hub `v2.0.0` (2026-10-16) is a breaking release whose notes state that the
+  GitHub-source and DSH-command install channels are removed: the catalog lists
+  only plugins published to npm, and custom install accepts an npm package name
+  only, directing Git-repository installation to the DSH command in a terminal.
+  At tag `v2.0.0`, `src/server/http/routes.ts` no longer references
+  `resolveNpmPackage` or `isDshNpmPackageForRepo`, so the
+  repository-to-npm substitution path is absent from that version's routing.
+  The npm-resolution module still exists in the repository, and no live catalog
+  page or Desktop flow was read back, so catalog behavior remains unverified.
+  For Aegis the resulting limitation is discovery rather than substitution:
+  with no npm publication, Aegis is expected to be absent from the marketplace
+  list and detail pages, leaving the documented Git installation as the
+  supported route. Hub `v1.6.6` separately stopped attributing non-plugin
+  installation failures to plugin repositories
+  ([Plugin Hub issue #178](https://github.com/dshplugin/dsh-plugin-hub/issues/178)).
 - DSH `0.2.0-rc.2` rejects terminal management of the Electron-owned `desktop`
   profile. Install, inspect, update, and remove plugins through the desktop
   application's manager; CLI examples apply to CLI-managed profiles.
@@ -872,11 +901,15 @@ request.
   `Route: fast-path`, from exactly one canonical exposure
 
 **Retirement Trigger**
-- Close the marketplace source-selection limitation only after the actual
-  selected Git source, pinned revision, and installed version are verified
-  and the affected reporter confirms successful profile installation. A new
-  GitHub release alone does not close it. Retain third-party historical npm
-  artifacts; taking ownership or unpublishing them is not part of this repair.
+- Retire the marketplace source-selection limitation only after a live readback
+  confirms the actual selected source and installed version for the route users
+  are told to take, and the affected reporter confirms successful profile
+  installation. Since Hub `v2.0.0` removed the Git-source install channel, the
+  remaining marketplace limitation is discovery of a Git-only plugin rather
+  than source substitution; close it once the live catalog and the documented
+  terminal Git route agree. A new GitHub release alone does not close it.
+  Retain third-party historical npm artifacts; taking ownership or unpublishing
+  them is not part of this repair.
 - Re-evaluate the direct-child compatibility path after a stable DeepSeek
   Harness release and two consecutive Aegis releases have verified bundle
   install/update, representative live triggering, session refresh, no duplicate
