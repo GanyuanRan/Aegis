@@ -128,7 +128,7 @@ git+https://github.com/GanyuanRan/Aegis.git#v2.12.2
 Read back the actual dependency name, source/ref, installed package version,
 and bundle through the application or its profile manifest. Do not assume a
 community marketplace's catalog button or custom Git input preserves the
-requested target; see the source-selection limitation below. Do not edit the
+requested target; see the marketplace channel changes below. Do not edit the
 Electron-managed profile to bypass its manager.
 
 [Issue #81](https://github.com/GanyuanRan/Aegis/issues/81#issuecomment-6072156389)
@@ -145,23 +145,35 @@ author metadata does not establish official publication. The bundle's Cordis
 row ID `aegis-method-pack` is a plugin identifier, not a registry package name.
 
 The third-party npm `2.9.2` artifact retains `^0.1.0-rc.6` peers and is rejected
-by DSH `0.2.0-rc.2`. Marketplace repository searches can select that stale
-artifact even when the Git source is current. Preserve the explicit Git URL
-and any pinned tag; check the actual selected source and installed version.
-In [Plugin Hub issue #120](https://github.com/dshplugin/dsh-plugin-hub/issues/120#issuecomment-6060567215),
+by DSH `0.2.0-rc.2`. Through Hub `v1.6.5`, marketplace repository searches could
+select that stale artifact even when the Git source was current. Preserve the
+explicit Git URL and any pinned tag; check the actual selected source and
+installed version. A GitHub release does not update a third-party registry
+artifact. Version admission also does not establish live routing compatibility.
+
+Hub `v2.0.0` (2026-10-16) is a breaking release that removes the GitHub-source
+and DSH-command install channels: the catalog now lists only plugins published
+to npm, and custom install accepts an npm package name only. Its release notes
+direct Git-repository installation to the DSH command in a terminal, which is
+the route documented above. At tag `v2.0.0`, `src/server/http/routes.ts` no
+longer references `resolveNpmPackage` or `isDshNpmPackageForRepo`, so the
+repository-to-npm substitution this guide previously warned about is gone from
+that path. The consequence for Aegis is discovery, not substitution: because
+Aegis has no npm publication, expect it to be absent from the marketplace list
+and detail pages rather than offered through a catalog entry. We have not
+verified the live catalog pages, and the npm-resolution module still exists in
+the repository, so treat the catalog state as unverified until read back in the
+marketplace you actually use.
+
+Historical follow-ups remain on record. In
+[Plugin Hub issue #120](https://github.com/dshplugin/dsh-plugin-hub/issues/120#issuecomment-6060567215),
 the maintainer retained npm-first resolution and closed the report as a known
-limitation. That resolution order still applies to unpinned catalog and
-repository targets. Its repository-install path also normalizes Git URLs to a
-repository identity and rebuilds an unpinned URL before npm lookup. This
-source-level finding is not a live Desktop GUI test. The narrower fixed-ref
-follow-up, [Plugin Hub issue #130](https://github.com/dshplugin/dsh-plugin-hub/issues/130),
-was confirmed by the maintainer as a genuine bug and resolved in Hub `v1.6.1`:
-an explicitly pinned `#<ref>` is now installed exactly as pinned instead of
-being replaced by the repository's default package, so keep the pinned form
-when the manager accepts a Git target.
-A GitHub release does not update a third-party registry artifact or repair the
-marketplace's source selection. Version admission also does not establish live
-routing compatibility.
+limitation. The narrower fixed-ref report,
+[Plugin Hub issue #130](https://github.com/dshplugin/dsh-plugin-hub/issues/130),
+was confirmed by the maintainer as a genuine bug and resolved in Hub `v1.6.1`,
+which preserves an explicit `#<ref>`. Hub `v1.6.6` then stopped attributing
+non-plugin installation failures to plugin repositories, as recorded in
+[Plugin Hub issue #178](https://github.com/dshplugin/dsh-plugin-hub/issues/178).
 
 If a previous marketplace attempt installed `aegis-method-pack`, first inspect
 the intended profile with `dsh plugin --profile web list --depth 0`. Remove
