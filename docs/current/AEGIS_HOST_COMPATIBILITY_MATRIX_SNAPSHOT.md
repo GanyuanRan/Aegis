@@ -22,7 +22,7 @@ It does not answer:
 ## 2. Snapshot Date
 
 The current snapshot is based on fresh evidence and current docs landed as of
-`2026-08-27`.
+`2026-10-17`.
 
 ---
 
@@ -57,7 +57,7 @@ warning visibility and diagnostic limits are owned by that guide and
 | `Grok Build` | Native Agent Skills, `AGENTS.md`, extra `[skills] paths`, and Claude-compatible plugin discovery support structural install; no current release-level fresh smoke verdict | `docs/README.grok-build.md` established; updater-managed direct-child exposure defaults to `$GROK_HOME/skills/` (`~/.grok/skills/` by default), while config-path and Claude-plugin discovery remain alternatives that must not be enabled as duplicate Aegis owners; local `grok inspect --json` evidence confirms enumeration but not clean-install or live-trigger closeout |
 | `Cursor` | Has `.cursor/INSTALL.md` install guide; no current release-level fresh smoke verdict | Structural goal established; not yet entered the current host regression slice |
 | `Windsurf` | Has `.windsurf/INSTALL.md` install guide; no current release-level fresh smoke verdict | Structural goal established; not yet entered the current host regression slice |
-| `Antigravity CLI` | Active closeout target; no current release-level fresh smoke verdict | Google positions Antigravity CLI as the successor terminal surface with the `agy` executable, plugin/skills management, migration import from Gemini CLI, and documented plugin discovery for skills and agents from installed plugin directories in the public `1.0.1` changelog; the public `1.0.8` changelog also adds dynamic custom-skill discovery improvements. Aegis now has a dedicated `tests/antigravity/run-tests.sh` lane, but the method-pack install / discovery contract still needs fresh local verification |
+| `Antigravity CLI` | Active closeout target; installation and structural discovery verified; live Aegis skill loading, task routing, and session refresh remain pending verification | Local Windows evidence (`agy 1.4.0`, 2026-10-17) covers installation, plugin lifecycle, direct-child exposure and doctor state; plugin discovery for skills and agents is a host contract, not live Aegis routing proof. Local sessions were eligibility-blocked. See `docs/README.antigravity.md`, `tests/antigravity/*`, and `docs/testing.md`. |
 | `Antigravity IDE` | Structural target retained; no current release-level fresh smoke verdict | Google positions Antigravity IDE as an editor surface with global or workspace-specific Skills, MCPs, and JSON Hooks; this shape is not the active closeout slice and still needs fresh verification |
 | `Antigravity App` | Structural target retained; no current release-level fresh smoke verdict | Google Antigravity 2.x app / project platform can carry Aegis method-pack projections, but this shape is not the active closeout slice and no live host closeout has been run |
 | `Pi CLI` | Agent Skills and Pi package surface supports method-pack exposure; no current release-level fresh smoke verdict | Pi documents skill discovery from `~/.pi/agent/skills/`, `~/.agents/skills/`, `.pi/skills/`, package `skills/` directories or `pi.skills` entries, and `pi install git:github.com/GanyuanRan/Aegis` package installs; Aegis now ships a Pi extension (`pi.extensions` manifest entry) that injects the compact using-aegis hot path and a routing guard through Pi's `context`/`message_end`/`tool_call`/`tool_result` events; Aegis still needs current release live smoke before claiming host closeout |
@@ -113,8 +113,8 @@ The current snapshot only states:
 7. `GitHub Copilot` can expose Aegis through `.github/skills/aegis-<skill-name>/SKILL.md`, `.github/copilot-instructions.md`, `.github/hooks/*.json`, and `AGENTS.md`; the prefixed repository skill view is a generated compatibility exposure over the canonical `skills/<skill-name>/SKILL.md` tree, and support remains structural until a fresh Copilot install and agent smoke proves it for the current release
 8. `Qoder` can expose Aegis through `~/.qoder/skills/`, `.qoder/skills/`, `.qoder/rules/`, and `AGENTS.md`, but support remains structural until a fresh Qoder install smoke proves it for the current release
 9. `Cursor` and `Windsurf` have structured install guides but have not yet entered release-level fresh smoke
-10. `Antigravity CLI` is now the active Google-host closeout target, but still lacks release-level fresh smoke evidence
-11. `Antigravity IDE` and `Antigravity App` remain structural target surfaces rather than the active closeout slice
+10. `Antigravity CLI` has verified installation and structural discovery evidence; live Aegis skill loading, task routing, and session refresh remain pending verification
+11. `Antigravity IDE` and `Antigravity App` remain structural targets and need their own fresh host evidence
 12. `Gemini CLI` support is retired; this does not upgrade Antigravity CLI, IDE,
     or App beyond their separately evidenced current status
 13. `Pi CLI` can expose Aegis through `pi install git:github.com/GanyuanRan/Aegis`, Pi package `skills/` / `pi.skills` discovery, `~/.pi/agent/skills/`, `~/.agents/skills/`, or `.pi/skills/`, but support remains structural until a fresh Pi install smoke proves it for the current release

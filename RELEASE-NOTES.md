@@ -1,5 +1,52 @@
 # Aegis Release Notes
 
+## v2.13.1 (2026-10-18)
+
+### English
+
+- Keep Antigravity CLI live Aegis skill loading, task routing, and session
+  refresh explicitly pending verification across the READMEs, host guide,
+  compatibility matrix, known limitations, and skill reference. Installation,
+  plugin lifecycle, and structural discovery evidence do not establish live
+  task execution; retain the local account-eligibility blocker.
+- Document the structurally verified `agy 1.4.0` installation and the shared
+  updater's direct-child skill links. Keep the method-pack checkout canonical
+  and enable only one Aegis exposure route per host installation.
+- Strengthen Antigravity registration tests with isolated configuration,
+  per-skill link resolution, and doctor state checks. Add a shared host
+  closeout recipe that distinguishes structural checks from live routing.
+- Include the changes landed since v2.13.0: restore early README installation
+  guidance, check benchmark rendering and comparison boundaries in CI, publish
+  the v2.13.0 standard benchmark snapshot, and update security contacts and
+  code ownership. The snapshot is scoped evidence, not a new performance claim.
+- Update DeepSeek Harness guidance for Hub v2.0.0's marketplace channel change.
+  Keep the documented Git installation route and the distinction between
+  official Git releases and third-party npm artifacts; live marketplace and
+  Desktop behavior remain subject to the published limitations.
+- Synchronize all eight package/plugin versions at `2.13.1`. Upgrade through
+  the existing Git or host plugin route and restart/reload as required. The
+  manual global routing prefixes remain compatible and need no re-copy.
+
+### 中文
+
+- 在中英文 README、宿主指南、兼容矩阵、已知限制和 skill 参考中，统一将
+  Antigravity CLI 的真机 Aegis skill 加载、任务路由及会话刷新标为待验证。
+  安装、插件生命周期和结构性发现证据不能替代实际任务执行验证；保留本机
+  账号资格检查阻塞的记录。
+- 明确 `agy 1.4.0` 已有结构性验证的安装方式，以及共享 updater 为每个 skill
+  创建直接链接的路径。方法包 checkout 保持唯一来源，同一宿主安装只启用
+  一种 Aegis 暴露方式。
+- 加强 Antigravity 注册测试，使用隔离配置，逐项核对 skill 链接和 doctor
+  状态；增加通用宿主验收流程，区分结构检查与真实任务路由验证。
+- 纳入 v2.13.0 后已合并的改动：恢复 README 靠前的安装说明，将 benchmark
+  渲染和比较边界检查接入 CI，发布 v2.13.0 标准 benchmark 快照，并更新安全
+  联系方式及代码负责人。该快照仅提供限定范围的证据，不构成新的性能承诺。
+- 更新 DeepSeek Harness 对 Hub v2.0.0 市场分发渠道变化的说明，保留文档中的
+  Git 安装路径，区分官方 Git 发布与第三方 npm 制品；市场和 Desktop 的真实
+  行为仍受已记录限制约束。
+- 同步八处 package/plugin 版本号至 `2.13.1`。沿用现有 Git 或宿主插件方式
+  升级，并按宿主要求重启或重新加载；手工全局路由前缀兼容，无需重新复制。
+
 ## v2.13.0 (2026-10-11)
 
 ### Task outcomes guide decisions
