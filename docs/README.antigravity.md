@@ -27,7 +27,12 @@ Current Aegis status by shape:
 
 - `Antigravity CLI`
   - active closeout target
-  - no current release-level fresh smoke verdict yet
+  - fresh local Windows evidence (`agy 1.4.0`, 2026-10-17) now covers the
+    official install, plugin-surface lifecycle, updater-managed direct-child
+    skill exposure, and update dry-run planning
+  - live Aegis skill loading, representative task routing, and session refresh
+    remain pending verification; the local Windows session was blocked by
+    Antigravity's account eligibility check (environment-bound)
 - `Antigravity IDE`
   - structural target surface retained
   - not the active closeout slice
@@ -49,10 +54,30 @@ closeout:
   reload dynamically on conversation switch or `/add-dir`
 
 Aegis treats those facts as host-contract evidence that `Antigravity CLI` is
-worth closing out next. They are **not** yet treated as proof that this
-repository has a verified Antigravity install/discovery path for the current
-method pack, and they do **not** yet count as release-level live smoke
-evidence for Aegis.
+worth closing out next. Fresh local Aegis evidence (2026-10-17, Windows,
+`agy 1.4.0`) now verifies the install, plugin surface, and updater-managed
+direct-child exposure path on a real machine:
+
+- the official PowerShell installer completed and `agy --version` reported
+  `1.4.0`
+- `agy plugin list --json` returned a machine-readable array without sign-in
+- a scratch-plugin lifecycle verified `agy plugin install <local-path>`,
+  `agy plugin list --json`, disable/enable, and uninstall; install copies the
+  whole source directory and stages it under
+  `~/.gemini/config/plugins/<plugin-name>/`
+- registering `antigravity-cli` with `--sync-mode junction
+  --discovery-root ~/.gemini/antigravity-cli/skills --discovery-shape
+  direct-child` created one link per Aegis skill, and the register-time
+  doctor readback reported `discoveryShapeStatus: current`
+- `aegis-update.py update --host antigravity-cli --dry-run --json` planned the
+  fetch/merge/verify steps for the registered checkout
+
+Live Aegis verification remains pending. The local Windows session was
+rejected by Antigravity's own account eligibility check before any model turn.
+That check is host/account-side behavior rather than an Aegis install property.
+A runnable signed-in CLI alone does not prove that Aegis skills are discovered,
+loaded, routed correctly, or refreshed across sessions. The structural
+readbacks above are **not** release-level live smoke evidence for Aegis.
 
 ## Retired Gemini CLI Boundary
 
@@ -72,14 +97,7 @@ install and discovery path still requires its own fresh closeout evidence.
 
 ## Recommended Complete Installation
 
-Until Aegis records a fresh local Antigravity CLI install smoke, use the manual
-complete install path:
-
-1. Keep a local Aegis checkout for workspace helper support.
-2. Install or expose the `skills/` directories using Antigravity's Skills or
-   plugin configuration UI / slash commands.
-3. Restart or reload the relevant Antigravity surface.
-4. Run Aegis complete-install verification from the checkout root.
+Keep a local Aegis checkout for workspace helper support:
 
 ```bash
 git clone https://github.com/GanyuanRan/Aegis.git ~/aegis
@@ -98,9 +116,44 @@ body. Any Antigravity-visible skill directories or plugin payloads should be
 treated as generated or host-managed views into the same `method_pack_root`,
 not as second editable copies.
 
-The current official Antigravity docs are useful as host references here, but
-they do not automatically make one Aegis installation path canonical. For
-example, the docs now show:
+### Antigravity CLI: updater-managed direct-child exposure
+
+For `Antigravity CLI`, the locally verified structural path is the shared
+updater's direct-child exposure under the CLI's global skills root:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-update.py register \
+  --host antigravity-cli \
+  --sync-mode junction \
+  --discovery-root ~/.gemini/antigravity-cli/skills \
+  --discovery-shape direct-child \
+  --reload-hint "restart or reload Antigravity CLI"
+python scripts/aegis-update.py update --host antigravity-cli --json
+```
+
+Registration creates one link per Aegis skill under
+`~/.gemini/antigravity-cli/skills/`, refreshes them at update time, and runs
+the doctor discovery readback. Restart or reload the CLI afterward, and treat
+the exposure as structurally verified when:
+
+```bash
+cd <aegis-method-pack-root>
+python scripts/aegis-doctor.py --discovery-root ~/.gemini/antigravity-cli/skills
+```
+
+reports `discoveryShapeStatus: current`. The method-pack `skills/` tree stays
+canonical; the CLI-visible entries are generated links rather than a second
+editable owner.
+
+### Other Antigravity shapes or manual exposure
+
+For `Antigravity IDE`, the `Antigravity App`, or a manual CLI setup, install
+or expose the `skills/` directories using the host's Skills or plugin
+configuration UI / slash commands, then restart or reload the surface.
+
+The current official Antigravity docs are useful as host references here. For
+example, the docs show:
 
 ```bash
 agy plugin list
@@ -108,17 +161,29 @@ agy plugin install /path/to/local/plugin
 agy plugin import gemini
 ```
 
-Those commands prove the host has a documented plugin and migration surface.
-They do **not** yet prove which Aegis repository path or manifest shape should
-be written as the verified Antigravity install contract for this method pack.
+Those commands document the host plugin and migration surface. They do not by
+themselves define the Aegis install contract: the locally verified Aegis
+exposure path is the updater-managed direct-child root above, while a
+repository-root Antigravity plugin manifest remains an explicit open decision
+rather than a current Aegis distribution surface.
 
-If Antigravity exposes a separate skill discovery directory in the current
-release you are using, also verify that directory:
+### Plugin installation (alternative)
 
-```bash
-cd <aegis-method-pack-root>
-python scripts/aegis-doctor.py --discovery-root <antigravity-skill-discovery-root>
-```
+Antigravity plugins require a `plugin.json` manifest (`name` plus optional
+`description`, schema `additionalProperties: false`) at the plugin directory
+root, with optional `skills/<skill-name>/SKILL.md` components. The local
+plugin lifecycle was verified on `agy 1.4.0`:
+
+- `agy plugin install <local-path>` copies the whole source directory and
+  stages it under `~/.gemini/config/plugins/<plugin-name>/`
+- `agy plugin list --json` reports the staged path and bundled skill names
+  without sign-in
+- disable, enable, and uninstall each updated or removed the staged copy
+
+Treat a plugin installation as a host-managed copy. Do not enable it beside
+the direct-child exposure above; two active Aegis exposure routes can produce
+duplicate skill names with different freshness. GitHub URL installs follow the
+same plugin contract but were not locally verified in this closeout.
 
 ## Shape-Specific Notes
 
@@ -196,17 +261,27 @@ After installing or updating Aegis in any Antigravity shape:
 4. Do not run the doctor command from the target project directory. From the
    Aegis method-pack root, run
    `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`.
-5. If a separate skill discovery directory exists, run
-   `python scripts/aegis-doctor.py --discovery-root <path>`.
+5. For the CLI direct-child exposure, run
+   `python scripts/aegis-doctor.py --discovery-root ~/.gemini/antigravity-cli/skills`
+   and expect `discoveryShapeStatus: current`.
 
 Expected result:
 
 - Antigravity can see skills such as `using-aegis`, `brainstorming`, and
   `systematic-debugging`.
-- Antigravity can load the relevant skill on demand.
+- The CLI direct-child exposure resolves every visible skill into the
+  canonical `skills/` tree.
+- Antigravity can load the relevant skill on demand inside a signed-in session.
 - The local Aegis checkout remains available for workspace support.
 - The host does not present Aegis as a full runtime platform, authoritative
   `GateDecision`, or final completion authority.
+
+Live closeout boundary: steps 2-3 require a runnable session — working
+sign-in or a valid API key, plus an account that passes Antigravity's own
+eligibility check. Live Aegis skill loading, representative task routing, and
+restart/reload behavior remain pending verification; the local Windows session
+was eligibility-blocked. Record these steps in an actually runnable session
+instead of inferring routing from structural readbacks or sign-in alone.
 
 ## Current Aegis Verification Lane
 
@@ -246,27 +321,29 @@ Antigravity, Codex, OpenCode, and other hosts can share one Aegis body:
 cd <aegis-method-pack-root>
 python scripts/aegis-update.py register \
   --host antigravity-cli \
-  --sync-mode repo-only \
+  --sync-mode junction \
+  --discovery-root ~/.gemini/antigravity-cli/skills \
+  --discovery-shape direct-child \
   --reload-hint "restart or reload Antigravity CLI"
 python scripts/aegis-update.py update --host antigravity-cli --json
 ```
 
-The current recommended updater semantics stay:
+The current recommended updater semantics are:
 
-- `syncMode = repo-only`
-- `discoveryShape = host-managed`
+- `syncMode = junction` (link-based direct-child exposure; non-Windows
+  platforms use symlinks for the same shape)
+- `discoveryShape = direct-child`
 
 Reason:
 
-- the official Antigravity docs now prove that a plugin surface exists
-- they do **not** yet prove which Aegis repository layout or manifest should be
-  treated as the verified staged-plugin contract for this method pack
-- until that contract is verified, Aegis should keep one canonical checkout and
-  avoid pretending it already owns an Antigravity-managed plugin cache layout
-
-If the verified Antigravity release you use exposes a separate skill discovery
-directory, register that host-specific exposure shape instead of editing a
-second checkout.
+- the direct-child exposure was locally verified on `agy 1.4.0`: links are
+  created at register time and the doctor readback reports
+  `discoveryShapeStatus: current`
+- `update --host antigravity-cli` refreshes and re-verifies the links, so the
+  host stays a generated view of the canonical `skills/` tree instead of a
+  second editable copy
+- the CLI plugin surface remains an alternative host-managed copy; keep
+  exactly one Aegis exposure route active per installation
 
 ## Official Antigravity References
 

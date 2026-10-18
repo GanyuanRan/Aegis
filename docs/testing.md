@@ -161,11 +161,25 @@ Notes:
 
 - The base suite validates the current Antigravity doc/contract surface and the
   host-scoped updater registration/readback shape without requiring a runnable
-  `agy` CLI on the machine.
+  `agy` CLI on the machine. It also registers a temporary direct-child
+  exposure (`--sync-mode junction --discovery-shape direct-child`), then checks
+  that every exposed skill directory resolves into the canonical `skills/`
+  tree and that the register-time doctor readback reports
+  `discoveryShapeStatus: current`.
 - The integration suite is intentionally environment-bound and currently uses
   two gates:
   - CLI runnable probe: `agy --version`
   - CLI plugin surface probe: `agy plugin list`
+- Fresh local evidence (`agy 1.4.0`, Windows, 2026-10-17) shows `agy plugin
+  list --json` runs unauthenticated and the plugin lifecycle
+  (install/list/disable/enable/uninstall) works from a local plugin directory;
+  a staged plugin is a full directory copy under
+  `~/.gemini/config/plugins/<plugin-name>/`. Live Aegis skill loading, task
+  routing, and session refresh remain pending verification. The local Windows
+  session was blocked by Antigravity's account eligibility check, an
+  environment-bound condition rather than an Aegis regression. The integration
+  probe checks CLI/plugin availability and doctor state; it does not execute a
+  model turn or prove those live behaviors.
 - If `agy` is not on `PATH`, the suite skips with an explicit CLI blocker.
 - If the CLI exists but the plugin surface cannot be exercised because of local
   auth/runtime/profile conditions, the suite skips with an explicit environment

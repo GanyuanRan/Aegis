@@ -353,13 +353,15 @@ request.
 
 ---
 
-### 2.15 Antigravity CLI Is The Active Closeout Target, But Fresh Host Closeout Is Still Pending
+### 2.15 Antigravity CLI Structural Install Is Verified; Live Host Validation Is Pending
 
 **Retained Item**
-- `Antigravity CLI` is the active Google-host closeout target, but still has no
-  fresh Aegis host closeout verdict
-- `Antigravity CLI` remains the active closeout target inside the current
-  Google-host slice
+- `Antigravity CLI` is the active closeout target for the current Google-host
+  slice; installation and structural discovery are verified, while live Aegis
+  skill loading, task routing, and session refresh remain pending verification
+- The local Windows closeout machine's own signed-in session remained blocked
+  by Antigravity's account eligibility check; that check is host/account-side
+  behavior rather than an Aegis install property
 - `Antigravity IDE` and `Antigravity App` remain structural target surfaces,
   not release-level fresh smoke verdicts
 
@@ -372,20 +374,19 @@ request.
   plugin discovery for skills and agents from installed plugin directories
   exists, and the public `1.0.8` changelog also says custom skills and system
   slash commands reload dynamically on conversation switch or `/add-dir`.
-- Those signals made `Antigravity CLI` the best next closeout target. Fresh
-  maintainer evidence on `2026-10-17` (Windows, `agy 1.4.0`) now records the
+- Fresh maintainer evidence on `2026-10-17` (Windows, `agy 1.4.0`) records the
   official install (`agy --version` -> `1.4.0`), unauthenticated
   `agy plugin list --json`, a verified scratch-plugin lifecycle with
-  full-directory copy staging under `~/.gemini/config/plugins/`, and
+  full-directory copy staging under `~/.gemini/config/plugins/`,
   updater-managed direct-child exposure at `~/.gemini/antigravity-cli/skills`
   (one link per skill; register/update-time doctor readback
-  `discoveryShapeStatus: current`). Signed-in live model routing and host-side
-  skill enumeration remain unverified: Google sign-in is interactive, and a
-  signed-in account can still be rejected by Antigravity's own eligibility
-  check before any model turn (observed as `Eligibility check failed: Your
-  current account is not eligible for Antigravity`; model listing alone does
-  not prove a runnable session). Host closeout is therefore still not
-  claimable; the remaining gap is narrowed to the runnable-session live half.
+  `discoveryShapeStatus: current`), and update dry-run planning.
+- A runnable signed-in session alone does not prove Aegis skill discovery,
+  loading, representative task routing, or restart/reload behavior. Those live
+  checks remain pending. Local Windows sessions were rejected before any model
+  turn with `Eligibility check failed: Your current account is not eligible
+  for Antigravity`; retain this blocker as environment-bound rather than a
+  method-pack boundary defect.
 
 **Observation Metric**
 - `docs/README.antigravity.md`
@@ -394,16 +395,17 @@ request.
 - `bash tests/antigravity/run-tests.sh --integration`
 - `cd <aegis-method-pack-root> && python scripts/aegis-update.py register --host antigravity-cli --sync-mode junction --discovery-root ~/.gemini/antigravity-cli/skills --discovery-shape direct-child --json`
   readback: direct-child sync summary plus doctor `discoveryShapeStatus: current`
-- A signed-in Antigravity CLI session that proves skill discovery, restart or
-  reload behavior, representative routing, and
+- A runnable Antigravity CLI session that records Aegis skill discovery,
+  actual skill loading, representative task routing, restart/reload behavior,
+  and
   `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
 
 **Retirement Trigger**
-- When `Antigravity CLI` has a verified install/update path that proves both
-  skill discovery and project workspace support without turning Aegis into an
-  authoritative runtime core
-- `Antigravity IDE` and `Antigravity App` should retire or reclassify through
-  their own fresh evidence slices rather than piggybacking on CLI proof
+- When fresh live evidence verifies Aegis skill loading, representative task
+  routing, and restart/reload behavior for the documented CLI installation
+- When `Antigravity IDE` and `Antigravity App` close out through their own
+  fresh evidence slices rather than piggybacking on CLI proof
+- When the closeout machine's local eligibility blocker no longer reproduces
 
 ---
 

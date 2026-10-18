@@ -79,6 +79,14 @@ bash tests/antigravity/run-tests.sh
 bash tests/antigravity/run-tests.sh --integration
 ```
 
+The base lane also registers a temporary direct-child exposure and verifies
+link resolution plus the doctor readback. A fresh local Windows closeout
+(2026-10-17, `agy 1.4.0`) covered the official install, the plugin lifecycle,
+direct-child exposure, and update dry-run planning. Live Aegis skill loading,
+task routing, and session refresh remain pending verification; the local Windows
+session was eligibility-blocked. Neither the base lane nor the current CLI
+surface integration probe establishes those live behaviors.
+
 If this release explicitly includes Grok Build host-surface changes, supplement
 with:
 
@@ -107,6 +115,35 @@ clean-install or live-trigger closeout.
 
 If the current machine's default `bash` points to the WSL launcher rather than a usable Git Bash, or if known smoke latency still exists under Git Bash,
 record it in `AEGIS_KNOWN_LIMITATIONS.md`; do not misdiagnose environment and latency blockers as method-pack boundary regressions.
+
+### Host Closeout Recipe
+
+Use this recipe when a host moves from structural support toward a fresh
+closeout verdict. It standardizes the evidence steps and the classification;
+it does not grant runtime authority.
+
+1. Preconditions: the host guide exists, a `tests/<host>/` lane exists, and the
+   guide names one canonical Aegis exposure path.
+2. Fresh install: install or update the host CLI from its official source on a
+   real machine; record the version and install path.
+3. Non-mutating probe: capture the host's machine-readable readback before
+   Aegis exposure (for example `agy plugin list --json`).
+4. Exposure: register the documented path through the shared updater when the
+   host consumes a discovery root (`--sync-mode junction --discovery-shape
+   direct-child`), then record the register-time sync summary and the doctor
+   `discoveryShapeStatus`.
+5. Update path: capture
+   `python scripts/aegis-update.py update --host <host> --dry-run --json` or an
+   equivalent bounded update readback.
+6. Live half: in a signed-in or otherwise runnable host, ask the host to list
+   Aegis skills and run one representative routing smoke; record raw output.
+7. Classify honestly: `fresh verdict | structural-only | environment-blocked`,
+   and write the earned status back to
+   `AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md`,
+   `AEGIS_KNOWN_LIMITATIONS.md`, and the host guide. Never upgrade structural
+   or enumeration-only evidence into a live-routing verdict.
+8. Evidence hygiene: keep raw readbacks in the local archive; keep the public
+   docs to summarized, machine-independent facts.
 
 ---
 
@@ -177,9 +214,10 @@ Confirm:
   explicit compatibility installation, while `~/.agents/skills/` is only a
   shared fallback; the plugin and either direct-child route must not be active
   together
-- Antigravity CLI is described as the current active closeout target, while
-  Antigravity IDE and Antigravity App remain structural target surfaces until
-  they have separate fresh evidence
+- Antigravity CLI records installation and structural discovery evidence while
+  live Aegis skill loading, task routing, and session refresh remain pending
+  verification; preserve the local eligibility blocker as environment-bound.
+  Antigravity IDE and Antigravity App require their own fresh evidence
 - `docs/testing.md` names `tests/antigravity/run-tests.sh` and its
   `--integration` lane as the current Antigravity CLI verification entrypoints
 - CC GUI is described as a structural JetBrains IDEA plugin layer target,
