@@ -185,6 +185,16 @@ general win. Distinguish measured, observed, inferred and untested findings.
 If a change burdens simple work without improving an implicated sample,
 revise or reject it.
 
+Task-fidelity cases use the six dimensions and three methods in
+[Process](AEGIS_PROCESS_BASELINE.md#task-fidelity-framework). Pair evidenced
+distortion with a valid authorized transformation or correction, including
+reviewer-added requirements and task/slice delivery claims. Reuse the existing
+matrix and stage owners; no separate fidelity score or model request is needed.
+Compare complete-task usage, elapsed time, extra reads/reviews, retries and
+rework with the same current-version cases. Prompt size and unchanged request
+counts alone establish neither savings nor acceptable reasoning cost. Logical
+cost analysis supports design choices; observed benefits remain scoped to runs.
+
 Ad-hoc parallel work requires demonstrable independence, disjoint mutation
 ownership, and a coordination benefit. Related failures or unclear decomposition
 stay inline; written plans use the planned-execution owner. Bound child context
