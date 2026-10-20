@@ -11,8 +11,9 @@ without checklist/ceremony; otherwise continue.
 
 # Execute
 
-Before success claim: classify destructive permission; run a fresh falsifying
-check; read its complete result/scope; select L0/L1/L2. Downgrade for partial,
+Before success claim: classify destructive permission; read sufficient current
+evidence and run a fresh falsifying check when it is missing or invalidated;
+read the complete result/scope; select L0/L1/L2. Downgrade for partial,
 stale, failing, or narrower evidence; never claim complete then verify later.
 
 This Method Pack grants no authoritative `GateDecision`, `PolicySnapshot`,
@@ -62,6 +63,18 @@ Readback proves no complete graph, referential integrity, or authoritative linea
 Check omissions and unsupported additions within authorized transformations;
 reuse sufficient evidence without exhaustive traces or a separate report.
 
+Match the conclusion to the exact property, objects and conditions checked.
+Carry forward known counterexamples that change the result: verify their
+resolution or qualify the conclusion. Parsing success does not establish required
+fields or semantic accuracy; a tool's success label does not dismiss its material
+warnings. Supplied or omitted settings do not establish effective behavior, and
+changed conditions limit causal comparisons. Use deterministic checks for
+measurable requirements. Attribute supplied observations to their source; do not
+claim to have executed a check unless you did. These checks belong to the existing
+review, not a new model call, mandatory report or additional acceptance requirement.
+A finished investigation may deliver a negative or qualified finding; distinguish
+completion of the investigation from acceptance of the investigated result.
+
 ## Inherited-Claim Closeout
 
 When evidence contradicts a resumed claim, independently check the active
@@ -105,6 +118,8 @@ used-skills list or `Aegis Contribution Note` cannot substitute.
 
 For tiny low-risk work, one natural sentence can name check/result, uncovered
 scope/risk, and confidence.
+Simple read-only summaries of sufficient current evidence use this short form;
+identify supplied evidence without inventing a new execution or extra report.
 
 ## L1 Default Receipt
 
