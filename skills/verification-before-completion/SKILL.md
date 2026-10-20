@@ -59,6 +59,9 @@ retired with reason; or rejected for conflict. Leave unresolved references in un
 lower confidence, and do not re-infer them.
 Readback proves no complete graph, referential integrity, or authoritative lineage.
 
+Check omissions and unsupported additions within authorized transformations;
+reuse sufficient evidence without exhaustive traces or a separate report.
+
 ## Inherited-Claim Closeout
 
 When evidence contradicts a resumed claim, independently check the active

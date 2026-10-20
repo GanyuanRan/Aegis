@@ -1601,6 +1601,17 @@ assert_contains_all "$process_doc" \
     "process outcome principles preserve intent and bounded complete delivery" \
     "object, scope, requested actions, conditions" "deliverables" \
     "Project ambition never overrides" "never label partial or failed work complete"
+assert_contains_all "$process_doc" \
+    "task fidelity preserves authorized transformations with bounded review" \
+    "Task Fidelity Framework" "Goal fidelity" "Semantic fidelity" \
+    "Evidence and uncertainty fidelity" "Authority and responsibility alignment" \
+    "Execution and delivery truthfulness" "Effective, behavior-preserving repair" \
+    "Bidirectional review" "Cross-stage tracing" "Paired counterexamples" \
+    "not proof of root cause" "no exhaustive lineage" "compulsory reports"
+assert_contains_all "skills/using-aegis/SKILL.md" \
+    "portable entry carries fidelity without a new workflow" \
+    "omissions and unsupported additions" "Authorized summaries" \
+    "existing checkpoints" "no extra approval" "exhaustive trace"
 assert_contains_all "skills/using-aegis/SKILL.md" \
     "entry projects outcome principles without universal goal framing" \
     "requested object, scope, actions, conditions, and deliverables" \

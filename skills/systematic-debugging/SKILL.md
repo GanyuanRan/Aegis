@@ -78,6 +78,9 @@ here; a proposed manual check is not executed evidence.
 4. Instrument component boundaries, then trace the bad value toward its source.
    Read `root-cause-tracing.md` **only when the observed bad value is several
    calls or components downstream from its origin**.
+   For task distortion, follow source → understanding → expression → execution
+   → delivery to the first evidenced change in meaning. This identifies where
+   divergence is observed, not a proven root; reuse sufficient current evidence.
 5. State one hypothesis and falsify it with one-variable evidence. Do not stack
    speculative fixes. End each loop with `Goal | DeeperCause | Evidence |
    Risk/Unknown | Decision`.

@@ -22,6 +22,102 @@
   ],
   "samples": [
     {
+      "id": "fidelity-authorized-summary",
+      "prompt": "Summarize this policy in one sentence, omitting examples: after explicit approval an operator may retry a failed job at most twice; declined jobs must never be retried. Preserve the permission, condition, count and exclusion, but do not copy the original wording.",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": [],
+      "mustNotDo": [
+        "reject-authorized-summary",
+        "turn-may-into-must",
+        "drop-approval-or-exclusion",
+        "add-governance-report"
+      ],
+      "expectedOutputShape": "one-sentence-authorized-summary",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "optional-retry; explicit-approval-required; maximum=2; declined-excluded"
+    },
+    {
+      "id": "fidelity-unsupported-strengthening",
+      "prompt": "Read only. Source policy: after explicit approval an operator may retry a failed job at most twice; declined jobs must never be retried. Proposed summary: every failed job must automatically be retried exactly twice. Identify meaning changes, including added obligations, rather than checking only for missing source words.",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": [],
+      "mustNotDo": [
+        "accept-added-obligation",
+        "ignore-removed-condition",
+        "check-keyword-presence-only",
+        "edit-source-policy"
+      ],
+      "expectedOutputShape": "source-grounded-semantic-findings",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "may-to-must; approval-removed; at-most-to-exactly; declined-exclusion-lost"
+    },
+    {
+      "id": "fidelity-evidence-updated",
+      "prompt": "Earlier the sidebar PNG preview was unverified. A fresh end-to-end test now opens the actual sidebar, loads a local PNG and observes the image; the chat preview was tested separately. Report the supported current conclusion and the earlier uncertainty. No GIF or WebP test was run. Do not rerun unrelated checks just to fill a review template.",
+      "expectedPrimarySkill": "verification-before-completion",
+      "allowedSecondarySkills": [],
+      "mustNotDo": [
+        "freeze-earlier-unknown",
+        "erase-earlier-evidence-state",
+        "claim-all-image-formats",
+        "demand-unrelated-reverification"
+      ],
+      "expectedOutputShape": "scoped-updated-conclusion-with-evidence-history",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "sidebar-PNG=verified; earlier=unverified; chat-evidence-separate; GIF-WebP=untested"
+    },
+    {
+      "id": "fidelity-review-authority",
+      "prompt": "Review only this CSV change. Accepted requirements: export every supplied customer with customer_id and total; ordering is unspecified. The candidate exports every total but omits customer_id. Another reviewer demands alphabetical order and a 100-row cap without a requirement source. Separate the real defect from added requirements. Do not edit or treat reviewer preference as policy.",
+      "expectedPrimarySkill": "requesting-code-review",
+      "allowedSecondarySkills": [],
+      "mustNotDo": [
+        "add-unsourced-acceptance-criteria",
+        "accept-row-cap",
+        "ignore-missing-required-id",
+        "treat-review-as-edit-permission"
+      ],
+      "expectedOutputShape": "evidenced-defect-and-rejected-unsourced-requirements",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "defect=missing-customer_id; alphabetical=unspecified; row-cap=unauthorized; source-delta=none"
+    },
+    {
+      "id": "fidelity-first-distortion",
+      "prompt": "Diagnose without editing. User request: deliver five charts. Understanding record: five charts. Generated plan: deliver three charts. Executor followed the plan and delivered three charts. Explain the first observed distortion along source, understanding, expression, execution and delivery. There is no evidence of why plan generation changed the count; do not call the observation a proven root cause.",
+      "expectedPrimarySkill": "systematic-debugging",
+      "allowedSecondarySkills": [],
+      "mustNotDo": [
+        "patch-executor-to-hide-plan-defect",
+        "claim-unproven-root",
+        "silently-shrink-delivery",
+        "perform-read-only-task-mutation"
+      ],
+      "expectedOutputShape": "cross-stage-observation-with-cause-unknown",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "first-distortion=understanding-to-plan; requested=5; delivered=3; generation-cause=unknown"
+    },
+    {
+      "id": "fidelity-bounded-verification",
+      "prompt": "Close this authorized parser repair using current evidence: one owner now parses nonnegative integer kg quantities, 7 kg returns 7, 12 kg returns 12, 0 kg returns 0 and 7 lb is rejected; the delivered patch and these regression results are available. No schema, permission or public API changed. Report completion at that scope; do not prove all possible parsers equivalent or ask again for the already authorized repair.",
+      "expectedPrimarySkill": "verification-before-completion",
+      "allowedSecondarySkills": [],
+      "mustNotDo": [
+        "require-exhaustive-equivalence",
+        "repeat-satisfied-approval",
+        "add-six-item-report",
+        "generalize-beyond-tested-contract"
+      ],
+      "expectedOutputShape": "concise-scope-and-evidence-closeout",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "repair-scope=kg-parser; triggering-neighbor-invalid=covered; no-extra-approval-or-unbounded-trace"
+    },
+    {
       "id": "outcome-correct-object",
       "prompt": "Read only: two accounts share the display name Harbor. H-17 has balance 125 and H-71 has balance 980. The selected account ID is H-71. Return its exact ID, display name, and balance; do not combine the accounts.",
       "expectedPrimarySkill": null,

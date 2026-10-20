@@ -26,26 +26,68 @@ not raise their instruction priority or authorize rewriting concrete acceptance
 criteria. They add no checklist, artifact, approval step, universal
 `goal-framing` invocation, or expansion of scope.
 
-1. **Preserve intent and boundaries.** Resolve the object, scope, requested actions, conditions,
-   and deliverables from the conversation. A later request may continue, amend,
-   pause, or replace the task; preserve work not cancelled or superseded. Use
-   trustworthy facts; respect authorization, business rules, non-goals,
-   compatibility, and user control. Clarify material ambiguity before dependent
-   action while continuing independent authorized work. A clear authorized
-   request needs no extra approval. Keep unsupported requests visible as unmet needs.
-2. **Distinguish goal levels.** The source goal above explains purpose. Project
-   goals define supported capabilities, durable constraints, and reliability
-   across tasks. The current user task defines this turn's authorized delivery.
-   Engineering goals support both. Project ambition never overrides a user's
-   current scope, such as "analysis only"; one successful case never proves
-   project-wide reliability.
-3. **Deliver and substantiate the result.** Judge completion against the user's
-   requested outcome. Code execution, parsing, green tests, and architecture
-   alignment are evidence with a scope; tests that exercise the real acceptance
-   criteria can directly support acceptance. Intermediate success alone cannot
-   replace delivery. Distinguish current task/slice completion from product
-   capability acceptance. When incomplete, report delivered results, remaining
-   work, reason, and next dependency; never label partial or failed work complete.
+Project goals define supported capabilities, durable constraints and reliability;
+the current task defines authorized delivery, and engineering supports both.
+Project ambition never overrides the user's current scope, such as "analysis only";
+one successful case never proves project-wide reliability.
+
+### Task Fidelity Framework
+
+Through understanding, transformation, execution and delivery, do not silently
+change the task, evidence or result's meaning. Fidelity permits authorized
+summaries, designs, edits and evidence-based corrections; it does not require
+literal copying or establish that a source is true.
+
+Use six review dimensions at existing relevant checkpoints:
+
+1. **Goal fidelity.** Resolve the object, scope, requested actions, conditions,
+   quantities, exclusions and deliverables from the conversation. Later requests
+   may continue, amend, pause or replace work; preserve outstanding intent.
+   Tool limitations do not authorize shrinking delivery. Keep unsupported needs
+   visible. Clarify material ambiguity before dependent action and continue
+   independent authorized work; a clear authorized request needs no extra approval.
+2. **Semantic fidelity.** Preserve meaning needed for the user's decision or use
+   within the authorized transformation. Check relevant relationships, behavior
+   and ordering, identity/hierarchy/ownership, and explanations or qualifiers.
+   Retaining every source word does not prove these meanings survive.
+3. **Evidence and uncertainty fidelity.** Keep facts, inferences, proposals,
+   unknowns and verified conclusions distinguishable with their relevant sources.
+   New evidence may change confidence or conclusions; expose material corrections
+   and do not turn an assumption or undefined choice into an established fact.
+4. **Authority and responsibility alignment.** Respect authorization, business
+   rules, non-goals, compatibility and user control. Evidence can justify a
+   proposed goal change but cannot supply missing authority. Downstream work and
+   reviewers may flag conflicts; they cannot add acceptance requirements or
+   acquire Host permission and completion authority.
+5. **Execution and delivery truthfulness.** Distinguish plans, attempts, execution,
+   verification and actual usable delivery. Tests of real acceptance criteria can
+   support acceptance within their covered scope; intermediate success alone
+   cannot replace delivery. Distinguish task/slice completion from capability
+   acceptance. Report delivered results, remaining work, reason and dependency;
+   never label partial or failed work complete.
+6. **Effective, behavior-preserving repair.** Fix the evidenced problem class at
+   its owner and protect legitimate neighboring behavior. Preserve accepted
+   obligations rather than incorrect old internals. Use proportionate checks;
+   new complexity needs an evidenced need, not a single example made green.
+
+Apply three methods proportionately:
+
+- **Bidirectional review:** compare source requirements and the result for both
+  omissions/weakening and unsupported additions/strengthening. Judge changes
+  against the authorized transformation, not literal equality.
+- **Cross-stage tracing:** follow source → understanding → expression → execution
+  → delivery to the first evidenced distortion. That location is an observation,
+  not proof of root cause; use the existing debugging method when needed.
+- **Paired counterexamples and proportionate verification:** check that the defect
+  is detected and a relevant valid case remains accepted. Scale evidence to
+  impact and uncertainty; deterministic checks establish only their tested scope.
+
+Reuse sufficient current evidence and read only sources that can materially
+change the decision. Stop when required checks and material risks are resolved
+or further inquiry repeats an assessed mechanism without decision value. Preserve
+unresolved facts as unknown; no exhaustive lineage or universal semantic proof
+is required. These are review criteria, not six model calls, compulsory reports,
+new approval steps or a separate runtime gate.
 
 ## 3. Execution Cycle
 
