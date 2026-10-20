@@ -1,5 +1,47 @@
 # Aegis Release Notes
 
+## v2.14.0 (2026-10-20)
+
+### English
+
+- Integrate task fidelity into the existing process baseline and review methods:
+  preserve goals, meaning, evidence and uncertainty, authority boundaries,
+  truthful delivery, and legitimate behavior during repairs.
+- Check requirements and results in both directions for omissions and unsupported
+  additions. Trace observed meaning changes across understanding, expression,
+  execution, and delivery without mistaking the first divergence for a proven
+  root cause.
+- Update entry guidance, first-principles review, code review, debugging, and
+  completion verification. Authorized summaries and evidence-based corrections
+  remain valid; no extra approval, mandatory six-item report, separate runtime
+  gate, or exhaustive equivalence proof is introduced.
+- Add six workflow-quality scenarios and matrix validation rules covering valid
+  summaries, unsupported strengthening, updated evidence, reviewer authority,
+  first observed distortion, and bounded verification. Evaluate costs across
+  complete tasks; this release makes no measured performance-improvement claim.
+- Synchronize all eight package/plugin versions at `2.14.0`. Upgrade through the
+  existing Git or host plugin route and restart/reload as required. Both manual
+  global routing-prefix mirrors remain compatible and need no re-copy.
+- Retain published host limitations, including pending Antigravity live skill
+  loading, task routing, and session refresh. Aegis remains a method pack without
+  authoritative runtime or completion authority.
+
+### 中文
+
+- 将任务保真融入现有流程基线和审查方法，覆盖目标、语义、证据与不确定性、
+  权限责任、真实交付，以及修复时对合法行为的保护。
+- 双向检查需求与结果，既检查遗漏，也检查未经授权的新增要求。沿理解、表达、
+  执行和交付追踪首次观察到的语义偏差，不将偏差位置直接当成已证实的根因。
+- 更新入口、第一性原理审查、代码审查、系统调试和完成前验证。允许授权范围内
+  的摘要和有证据的纠正，不增加审批、强制六项报告、独立运行时门禁或穷尽证明。
+- 新增六个工作流质量场景及矩阵校验规则，覆盖合法摘要、语义强化、证据更新、
+  审查权限、首次偏差和有边界的验证。成本评估以完整任务为单位，本次不宣称
+  已实测获得性能提升。
+- 同步八处 package/plugin 版本号至 `2.14.0`。沿用现有 Git 或宿主插件方式升级，
+  按宿主要求重启或重新加载；中英文手工全局路由前缀兼容，无需重新复制。
+- 保留已公布的宿主限制，包括 Antigravity 真机技能加载、任务路由和会话刷新
+  仍待验证。Aegis 继续作为方法包，不取得权威运行时或最终完成裁决权。
+
 ## v2.13.1 (2026-10-18)
 
 ### English
