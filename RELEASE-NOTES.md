@@ -1,5 +1,42 @@
 # Aegis Release Notes
 
+## v2.14.1 (2026-10-21)
+
+### English
+
+- Scope verification conclusions to the exact properties, objects, and conditions
+  checked. Preserve known counterexamples and material tool warnings; parsing
+  success alone does not establish schema compliance or answer accuracy.
+- Distinguish requested settings from effective behavior and descriptive results
+  from causal claims. A completed investigation may deliver negative findings
+  without implying that the investigated result passed acceptance.
+- Reuse sufficient current evidence, running fresh checks when evidence is
+  missing or invalidated. Keep simple read-only summaries concise and attribute
+  supplied observations without claiming to have executed their checks.
+- Add eight workflow-quality scenarios covering evidence scope, effective
+  settings, confounded comparisons, and cost/quality tradeoffs. These are test
+  fixtures, not measured performance-improvement claims.
+- Compact verification guidance to remain within the existing context budget.
+- Synchronize all eight package/plugin versions at `2.14.1`. Existing Git and
+  host plugin upgrade routes remain supported; reload/restart as required.
+  Manual global routing prefixes need no re-copy. Published host limitations
+  remain unchanged; Aegis retains its method-pack authority boundary.
+
+### 中文
+
+- 验证结论严格对应实际检查的属性、对象与条件，保留已知反例和工具的重要
+  警告；解析成功不等于字段合规或答案准确。
+- 区分请求设置与实际生效行为、观察结果与因果结论。调查完成可以交付负面
+  发现，不代表被调查对象通过验收。
+- 复用充分且仍有效的证据，在缺失或失效时重新检查；简单只读总结保持简短，
+  明确外部观察的来源，不声称执行过实际未执行的检查。
+- 新增八个工作流质量场景，覆盖证据范围、生效配置、混杂比较及成本与质量
+  的权衡。这些是测试样例，不构成实测性能提升声明。
+- 压缩验证技能表述，使其保持在现有上下文预算内。
+- 同步八处 package/plugin 版本号至 `2.14.1`。沿用现有 Git 或宿主插件升级
+  方式，按需重启或重新加载；手工全局路由前缀无需重新复制。保留已有宿主
+  限制及方法包权限边界。
+
 ## v2.14.0 (2026-10-20)
 
 ### English

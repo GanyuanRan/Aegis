@@ -10,6 +10,15 @@ from typing import Any
 
 
 EXPECTED_IDS = {
+    "fidelity-known-counterexample",
+    "fidelity-syntax-only-valid",
+    "fidelity-omitted-setting-unknown",
+    "fidelity-effective-setting-verified",
+    "fidelity-confounded-comparison",
+    "fidelity-descriptive-comparison-valid",
+    "fidelity-cost-quality-tradeoff",
+    "fidelity-bounded-quality-preserved",
+
     "fidelity-authorized-summary",
     "fidelity-unsupported-strengthening",
     "fidelity-evidence-updated",
