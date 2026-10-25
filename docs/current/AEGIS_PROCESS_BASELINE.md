@@ -122,7 +122,14 @@ Reflect at meaningful standard-path checkpoints using the existing semantic
 slots: `Goal`, `DeeperCause`, `Evidence`, `Risk/Unknown`, `Decision`.
 For debugging, root/recurrence claims and negative-proof quick exits are governed
 by `skills/systematic-debugging/root-cause-claim-contract.md`; a successful
-local intervention alone is not proof of a closed recurrence generator.
+local intervention alone is not proof of a closed recurrence generator. Repairs
+and optimization share a causal-sufficiency standard regardless of apparent
+size or risk: explain relevant influence paths, justify exclusions, and resolve
+unknowns that could change the solution before retaining it. Diagnostic
+experiments may precede closure. Coverage follows actual data, control and state
+relationships, not exhaustive technical dependencies. Minimal intervention must
+cover the evidenced causes or bottlenecks while preserving required behavior;
+independent causes may require separate owner-level repairs.
 
 QA covers Remove/Restore, actual Complexity Delta for non-trivial code changes,
 rollback boundaries, confidence, and reusable evidence. The verification skill

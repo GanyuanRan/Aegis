@@ -237,7 +237,7 @@ assert_contains "skills/systematic-debugging/root-cause-claim-contract.md" 'self
     'causal-proof owner rejects self-judged root closure'
 assert_contains "skills/systematic-debugging/root-cause-claim-contract.md" 'falsifiable checks an agent must satisfy' \
     'causal-proof owner requires falsifiable evidence'
-assert_contains "skills/systematic-debugging/root-cause-claim-contract.md" 'A locally effective intervention proves that the selected point is' \
+assert_contains "skills/systematic-debugging/root-cause-claim-contract.md" 'A controlled intervention can support a causal relationship' \
     'causal-proof owner limits local effectiveness claims'
 assert_contains "skills/systematic-debugging/root-cause-claim-contract.md" 'does not prove that the point is the recurrence generator' \
     'local effectiveness does not prove recurrence closure'
@@ -249,6 +249,17 @@ assert_contains "$debugging_skill" "upstream producer/config/default/contract/sp
     "debugging main routes unexcluded upstream generators to causal proof"
 assert_contains "$debugging_skill" "open recurrence/unsupported root status" \
     "debugging main routes unsupported root closeout signals"
+
+assert_contains "$root_cause_contract" "paths masked by an earlier failure" \
+    "causal coverage includes masked sufficient paths"
+assert_contains "$root_cause_contract" "evidence-backed judgments, not mechanical" \
+    "causal cards do not certify semantic completeness"
+assert_contains "$debugging_skill" "same causal-sufficiency standard to every bug" \
+    "small bugs retain the same causal standard"
+assert_not_contains "$debugging_skill" "Implement one owner fix" \
+    "independent causes are not forced into one owner"
+assert_not_contains "$root_cause_contract" "Five mechanical checks|enumerate alternatives for defense-in-depth" \
+    "retired automatic closure and deferred alternative-path advice stay absent"
 
 assert_not_contains "$debugging_skill" "Drill Down Through Diagnostic Layers|drill down through diagnostic layers|before descending|Continue drilling|Re-drill" \
     "debugging skill retired conflicting downward-drill wording"
