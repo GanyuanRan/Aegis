@@ -112,8 +112,12 @@ assert_contains "$tdd_skill" "configured Aegis workspace support|installed Aegis
     "TDD references configured workspace support"
 assert_contains "$debugging_skill" "fast bug fix|quick bug fix|quick fix" \
     "debugging pressure path covers quick bug fix triage"
-assert_contains "$verification_skill" "configured Aegis workspace support|installed Aegis workspace support" \
-    "verification uses configured workspace support"
+assert_contains "$verification_skill" "Workspace commands belong to the expanded owner" \
+    "verification delegates workspace commands to its expanded owner"
+assert_contains "$verification_skill" "expanded-closeout.md" \
+    "verification identifies its expanded owner"
+assert_contains "skills/verification-before-completion/expanded-closeout.md" "target project's configured Aegis workspace" \
+    "verification expanded owner uses configured project workspace support"
 
 assert_contains "$limitations_doc" "sparse|sufficient project content" \
     "known limitations records sparse baseline boundary"

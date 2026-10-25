@@ -1,5 +1,46 @@
 # Aegis Release Notes
 
+## v2.14.2 (2026-10-25)
+
+### English
+
+- Require scoped causal coverage before retaining repairs or optimizations:
+  trace relevant data, control, and state influences, justify exclusions, and
+  resolve unknowns that could change the solution. Diagnostic experiments may
+  precede closure; small fixes keep the same evidence standard with compact readback.
+- Check sufficient failure paths masked by earlier failures, independent and
+  joint causes, timing, and feedback. Repair each evidenced cause at its owner
+  instead of forcing independent causes into one owner or treating alternative
+  in-scope failure paths as optional defense-in-depth.
+- Distinguish confirmed causes, scoped causal closure, and verified outcomes.
+  Reopen diagnosis when symptoms persist or shift; verify the original outcome,
+  relevant interactions, counterexamples, and preserved behavior. Review cards
+  support evidence-backed judgment rather than mechanical certification.
+- Preserve causal scope, evidence, counterevidence, and consequential unknowns
+  across long-task handoffs. Add five causal-coverage behavior scenarios and
+  update deterministic contracts; these are not measured performance claims.
+- Synchronize all eight package/plugin versions at `2.14.2`. Upgrade through
+  existing Git or host plugin routes and reload/restart as required. Both manual
+  global routing-prefix mirrors remain compatible and need no re-copy.
+  Published host limitations remain unchanged; Aegis remains a method pack
+  without authoritative runtime or completion authority.
+
+### 中文
+
+- 保留修复或优化方案前，要求范围明确的因果覆盖：追踪相关数据、控制与状态
+  影响，用证据排除其他路径，并解决可能改变方案的未知项。诊断实验可以先行；
+  小修改可简短回报，但保持相同的证据标准。
+- 检查被先前故障掩盖的充分失败路径、独立与联合原因，以及时序和反馈。
+  各个已证实原因在对应 owner 修复，不强行合并到单一 owner，也不把范围内
+  的其他失败路径降为可选的额外防护。
+- 区分原因确认、范围内因果闭环和结果验证。症状持续或变化时重新诊断，
+  验证原始目标、相关交互、反例及应保留行为；审查卡辅助证据判断，不是机械认证。
+- 长任务交接保留因果范围、证据、反证与重要未知项。新增五个因果覆盖行为
+  场景并更新确定性契约检查；不构成实测性能提升声明。
+- 同步八处 package/plugin 版本号至 `2.14.2`。沿用现有 Git 或宿主插件升级
+  方式，按需重启或重新加载；中英文手工全局路由前缀无需重新复制。
+  保留已有宿主限制；Aegis 仍是方法包，不具备权威运行时或最终完成权限。
+
 ## v2.14.1 (2026-10-21)
 
 ### English
