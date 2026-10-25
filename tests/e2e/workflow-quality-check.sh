@@ -1146,8 +1146,8 @@ assert_contains "$verification_skill" \
     "verification keeps verify-before-commit ordering explicit"
 assert_contains_all "$verification_skill" \
     "verification ties completion to fresh evidence and authorized acceptance scope" \
-    "run a fresh falsifying" "current authorized request" \
-    "all requested actions/conditions/deliverables" "A slice cannot close the whole task"
+    "run a fresh falsifying" "current authorized" "request; stale plans cannot override it" \
+    "object, requested actions" "conditions, deliverables and usable delivery" "A slice cannot close the whole task"
 assert_contains "$verification_skill" "Key judgment" \
     "verification skill reports key judgment in the unified receipt"
 assert_contains "$verification_skill" "Avoided misfix" \
@@ -1209,7 +1209,7 @@ assert_not_contains "$verification_skill" "Used skills" \
     "verification skill avoids stiff used-skills card by default"
 assert_not_contains "$verification_skill" "Stage handoffs" \
     "verification skill avoids stiff stage-handoffs card by default"
-assert_contains "$verification_skill" "grants no authoritative" \
+assert_contains "$verification_skill" "grants no.*GateDecision.*PolicySnapshot" \
     "verification skill keeps Aegis contribution advisory"
 assert_not_contains "$verification_skill" "grants authoritative.*(GateDecision|PolicySnapshot|completion authority)" \
     "verification skill cannot reverse the advisory authority boundary"
@@ -1624,8 +1624,8 @@ assert_contains_all "skills/systematic-debugging/SKILL.md" \
     "failed outcome on the correct object" "through final delivery" "relevant neighboring case"
 assert_contains_all "skills/verification-before-completion/SKILL.md" \
     "verification reconciles every deliverable before claiming completion" \
-    "correct object, all requested actions/conditions/deliverables" \
-    "actual usable delivery" "Report remaining work and cause explicitly"
+    "object, requested actions" "conditions, deliverables and usable delivery" \
+    "Report remaining work and cause explicitly"
 assert_contains_all "skills/long-task-continuation/SKILL.md" \
     "continuation preserves outstanding intent through later instructions" \
     "replacement" "Preserve outstanding deliverables" "user's delivered result"
