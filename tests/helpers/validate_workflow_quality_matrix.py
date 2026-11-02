@@ -275,6 +275,52 @@ CONDITIONAL_CONTRACT_REQUIREMENTS = {
 }
 
 SAMPLE_RULES: dict[str, dict[str, Any]] = {
+    "evidence-first-capability-conclusion": {
+        "primary": None, "no_artifacts": True, "workspace": "no-workspace",
+        "must_not": ["wait-for-user-challenge", "claim-implementation-from-docs", "add-evidence-form"],
+        "signals": ["source=documentation", "implemented=unknown", "runtime=untested"],
+    },
+    "evidence-search-miss-indirect-registration": {
+        "primary": None, "no_artifacts": True, "workspace": "no-workspace",
+        "must_not": ["infer-absence-from-search-miss", "demand-exhaustive-repository-search"],
+        "signals": ["capability=unknown", "next=registered-adapter"],
+    },
+    "evidence-code-contract-conflict": {
+        "primary": "requesting-code-review", "no_artifacts": True,
+        "must_not": ["let-code-override-approved-requirement", "edit-during-review"],
+        "signals": ["code-runtime=total-only", "assessment=implementation-drift"],
+    },
+    "complexity-cosmetic-line-reduction": {
+        "primary": "requesting-code-review", "no_artifacts": True,
+        "must_not": ["accept-line-reduction-as-structural-improvement", "require-universal-statement-threshold"],
+        "signals": ["structure=unchanged", "improvement=unsupported"],
+    },
+    "complexity-cohesive-extraction-valid": {
+        "primary": "requesting-code-review", "no_artifacts": True,
+        "must_not": ["reject-extraction-for-unchanged-statement-count", "approve-from-new-file-count-alone"],
+        "signals": ["responsibilities=separated", "old-copy=retired", "statements=unchanged-acceptable"],
+    },
+    "complexity-authorized-repair-path": {
+        "primary": "executing-plans", "no_artifacts": True, "workspace": "inline-only",
+        "must_not": ["repeat-satisfied-approval", "silently-shrink-delivery", "introduce-default-growth-allowance"],
+        "signals": ["next=authorized-extraction", "checks=target-and-regression", "required-behavior=preserved"],
+    },
+    "complexity-statement-measurement-unavailable": {
+        "primary": "verification-before-completion", "no_artifacts": True,
+        "must_not": ["treat-unavailable-count-as-zero", "require-code-parser-for-prose"],
+        "signals": ["responsibilities=clearer", "statement-count=inapplicable"],
+    },
+    "evidence-resume-invalidated-check": {
+        "primary": "long-task-continuation", "no_artifacts": True, "workspace": "inline-only",
+        "allowed": ["verification-before-completion"],
+        "must_not": ["reuse-invalidated-success-as-current", "erase-valid-historical-result"],
+        "signals": ["A=passed", "B=unverified", "next=affected-export-check"],
+    },
+    "evidence-resume-corrected-conclusion": {
+        "primary": "verification-before-completion", "no_artifacts": True,
+        "must_not": ["hide-earlier-unsupported-claim", "claim-all-formats-supported", "invent-own-test-execution"],
+        "signals": ["old=unsupported-absence", "supplied-run=PDF-passed", "other-formats=unknown"],
+    },
     'fidelity-authorized-summary': {'primary': None,
                                      'must_not': ['reject-authorized-summary',
                                                   'turn-may-into-must',
