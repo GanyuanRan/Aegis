@@ -1,5 +1,39 @@
 # Aegis Release Notes
 
+## v2.14.3 (2026-11-02)
+
+### English
+
+- Ground material conclusions in their inspected sources when first expressed:
+  distinguish code, executed tests, runtime observations, documentation and
+  inference. A bounded search miss alone does not establish capability absence;
+  implementation facts do not override approved requirements.
+- Assess structural complexity through responsibilities, branches, dependencies
+  and duplication. Joining statements, deleting useful explanation or moving code
+  solely to satisfy line counts is not improvement. Cohesive extraction may help
+  with unchanged statement totals; optional measurements are supporting evidence.
+- Prefer feasible repairs inside existing authorization, with a clear verification
+  boundary and preserved outcomes. Add nine evidence, complexity and continuation
+  scenarios plus deterministic contract checks; these are not measured model
+  performance or live-host improvement claims.
+- Synchronize all eight package/plugin versions at `2.14.3`. Upgrade through the
+  existing Git or host plugin route and reload/restart as required. Both manual
+  global routing-prefix mirrors were reviewed and need no re-copy. Existing host
+  limitations and the method-pack authority boundary remain in place.
+
+### 中文
+
+- 首次表达重要结论时说明实际查阅的证据及其范围，区分代码、已执行测试、
+  运行观察、文档和推断；搜索未命中不能单独证明能力不存在，实现事实也不能
+  覆盖已批准的需求。沿用自然语言表达，不新增必填报告。
+- 复杂度改善以职责、分支、依赖和重复逻辑为依据，压行、删除有用说明或仅为
+  满足行数而搬移代码不算改善；认可语句总数持平但职责更清晰的内聚模块抽取。
+- 优先推进已有授权内、可验证且保留目标行为的修复路径。新增九个证据、
+  复杂度与续接场景及确定性契约检查；不构成实测模型或宿主行为提升声明。
+- 同步八处 package/plugin 版本号至 `2.14.3`。沿用现有 Git 或宿主插件升级
+  方式，按需重启或重新加载；中英文手工全局路由前缀已复核，无需重新复制。
+  保留已有宿主限制和方法包权限边界。
+
 ## v2.14.2 (2026-10-25)
 
 ### English

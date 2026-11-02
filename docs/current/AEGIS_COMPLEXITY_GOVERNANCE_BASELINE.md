@@ -78,6 +78,24 @@ the reason is explicit.
 A new file is not automatically better. Prefer a new file only when owner,
 contract, call path, and retirement story are clearer than add-in-place growth.
 
+### Structural Improvement, Not Count Manipulation
+
+Line counts locate pressure; a lower count alone does not establish structural
+improvement or create growth allowance. Joining statements, compressing imports,
+deleting useful explanation, or moving code solely to satisfy a count does not
+resolve the pressure. Mechanical formatting may be valid work without being a
+complexity repair.
+
+For a structural claim, compare responsibilities, branches, dependency direction,
+duplication and executable statements where available. Explain the dimensions
+that changed and the behavior preserved; not every dimension must decrease.
+Statement counts are supporting evidence, not a new threshold or mandatory tool.
+Unavailable measurements stay unknown or inapplicable, never zero or passed.
+
+A cohesive extraction can improve ownership with unchanged statement totals or
+slightly more wiring. Check the new boundary, callers, dependencies and old-path
+disposition; neither a new file nor a smaller original file proves improvement.
+
 ## 4.1 Pre-Edit Owner-Fit Decision
 
 When the target edit file is already over-budget or mixed-purpose, the
@@ -175,6 +193,16 @@ Completion-Time Complexity Repair Decision:
 - `follow-up-required` reports residual risk and suggested scope without
   expanding the current task.
 - `not-complete` means the overrun blocks the requested completion claim.
+
+Before defaulting to user intervention, choose the smallest feasible repair
+inside the authorized slice: reuse the correct owner or extract a cohesive
+module; separate mixed responsibilities or simplify duplicated branches and
+dependencies; then narrow the change only if the requested outcome remains met.
+Each candidate needs a clear verification boundary. Continue an already
+authorized repair without repeating approval. If none fits, report the limiting
+constraint and concrete follow-up or decision needed; do not silently omit
+required behavior. These are candidate paths, not compulsory refactoring steps,
+permission for destructive work, or a numeric growth allowance.
 
 ## 7. Major Complexity Follow-up
 

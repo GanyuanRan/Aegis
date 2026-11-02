@@ -54,6 +54,12 @@ Use six review dimensions at existing relevant checkpoints:
    unknowns and verified conclusions distinguishable with their relevant sources.
    New evidence may change confidence or conclusions; expose material corrections
    and do not turn an assumption or undefined choice into an established fact.
+   At the first material conclusion, identify the inspected basis and what it
+   supports: code, executed tests, runtime observations, documentation or
+   inference. A bounded search miss is not proof of capability absence. Code
+   and runtime evidence describe implementation; approved requirements define
+   obligations. Expose conflicts rather than letting implementation override
+   the contract. Natural prose suffices; no new report or per-claim form.
 4. **Authority and responsibility alignment.** Respect authorization, business
    rules, non-goals, compatibility and user control. Evidence can justify a
    proposed goal change but cannot supply missing authority. Downstream work and

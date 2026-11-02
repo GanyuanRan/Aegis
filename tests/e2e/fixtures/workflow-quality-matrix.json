@@ -22,6 +22,105 @@
   ],
   "samples": [
     {
+      "id": "evidence-first-capability-conclusion",
+      "prompt": "Read only. Does this project support PDF export? The README says yes, but no implementation, tests or runtime have been inspected. Give the first answer now; the user has not challenged you. Do not invent an inspection or add a report template.",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["claim-implementation-from-docs", "wait-for-user-challenge", "invent-execution", "add-evidence-form"],
+      "expectedOutputShape": "natural-source-scoped-first-conclusion",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "source=documentation; implemented=unknown; runtime=untested"
+    },
+    {
+      "id": "evidence-search-miss-indirect-registration",
+      "prompt": "Read only. A search for exportPdf in src found nothing. The command registry points to an adapter outside src that has not been inspected. Can you conclude PDF export is absent? Give the supported conclusion and smallest useful next check.",
+      "expectedPrimarySkill": null,
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["infer-absence-from-search-miss", "invent-adapter-support", "demand-exhaustive-repository-search"],
+      "expectedOutputShape": "bounded-search-finding-and-targeted-next-check",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "searched=src-exportPdf; capability=unknown; next=registered-adapter"
+    },
+    {
+      "id": "evidence-code-contract-conflict",
+      "prompt": "Review only. The approved requirement says exports include customer_id. Inspected code emits only total; a fresh runtime record confirms that output. An old README also promises customer_id. Explain what runs and whether the requirement is met. Do not rewrite the requirement to match the code.",
+      "expectedPrimarySkill": "requesting-code-review",
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["let-code-override-approved-requirement", "infer-behavior-from-readme", "edit-during-review"],
+      "expectedOutputShape": "implementation-facts-and-requirement-drift",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "code-runtime=total-only; requirement=customer_id; assessment=implementation-drift"
+    },
+    {
+      "id": "complexity-cosmetic-line-reduction",
+      "prompt": "Review only this claimed complexity fix: a 1250-line module becomes 1100 lines by joining statements and removing useful comments. Responsibilities, branches, dependencies and executable statements are unchanged. Tests pass. Assess the improvement without demanding a universal numeric metric.",
+      "expectedPrimarySkill": "requesting-code-review",
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["accept-line-reduction-as-structural-improvement", "treat-green-tests-as-complexity-closure", "require-universal-statement-threshold"],
+      "expectedOutputShape": "structural-assessment-with-cosmetic-change-rejected",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "lines=lower; structure=unchanged; useful-explanation=lost; improvement=unsupported"
+    },
+    {
+      "id": "complexity-cohesive-extraction-valid",
+      "prompt": "Review only. A refactor moves parsing from a mixed-purpose controller into one cohesive parser with a narrow interface. The controller retains orchestration, dependency direction is unchanged, the old parser copy is removed, and target plus regression tests pass. Total executable statements stay equal and total lines rise slightly. Assess this bounded structural claim.",
+      "expectedPrimarySkill": "requesting-code-review",
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["reject-extraction-for-unchanged-statement-count", "approve-from-new-file-count-alone", "claim-all-complexity-eliminated"],
+      "expectedOutputShape": "bounded-owner-and-dependency-improvement",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "responsibilities=separated; dependency-direction=preserved; old-copy=retired; statements=unchanged-acceptable"
+    },
+    {
+      "id": "complexity-authorized-repair-path",
+      "prompt": "An approved implementation task allows extracting parsing into a cohesive module with a narrow interface. The touched controller is already over budget. Target and regression checks are available. Choose the next action within this authorization: extraction, joining lines to lower the count, asking for blanket permission, or silently omitting required export behavior. No external or persistent-state changes are needed.",
+      "expectedPrimarySkill": "executing-plans",
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["compress-to-satisfy-count", "repeat-satisfied-approval", "silently-shrink-delivery", "introduce-default-growth-allowance"],
+      "expectedOutputShape": "authorized-cohesive-extraction-with-verification-boundary",
+      "workspacePolicy": "inline-only",
+      "expectedArtifacts": [],
+      "verificationSignal": "next=authorized-extraction; checks=target-and-regression; new-permission=unnecessary; required-behavior=preserved"
+    },
+    {
+      "id": "complexity-statement-measurement-unavailable",
+      "prompt": "Close a documentation-only correction to a mixed-purpose runbook. Duplicate instructions were removed and recovery responsibilities clarified; executable statement counting is inapplicable. Report only the supported maintenance improvement, without introducing a parser, metric, or numeric growth allowance.",
+      "expectedPrimarySkill": "verification-before-completion",
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["treat-unavailable-count-as-zero", "require-code-parser-for-prose", "invent-growth-allowance"],
+      "expectedOutputShape": "artifact-appropriate-complexity-conclusion",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "duplication=removed; responsibilities=clearer; statement-count=inapplicable"
+    },
+    {
+      "id": "evidence-resume-invalidated-check",
+      "prompt": "Resume a task without editing. The checkpoint says PDF export passed at revision A. The export adapter changed at revision B, which is now checked out; no check covers B. Explain current confidence and the next verification without presenting the old result as false at A or current at B.",
+      "expectedPrimarySkill": "long-task-continuation",
+      "allowedSecondarySkills": ["verification-before-completion"],
+      "mustNotDo": ["reuse-invalidated-success-as-current", "erase-valid-historical-result", "claim-current-export-failure-without-check"],
+      "expectedOutputShape": "revision-scoped-evidence-and-resume-check",
+      "workspacePolicy": "inline-only",
+      "expectedArtifacts": [],
+      "verificationSignal": "A=passed; B=unverified; next=affected-export-check"
+    },
+    {
+      "id": "evidence-resume-corrected-conclusion",
+      "prompt": "On resume, the old report says PDF export is absent because a symbol search missed it. The user supplies a correction: registration uses an adapter, and a fresh export run now passes. Report what was previously claimed, why it was unsupported, and the new bounded conclusion. No other format was tested.",
+      "expectedPrimarySkill": "verification-before-completion",
+      "allowedSecondarySkills": [],
+      "mustNotDo": ["hide-earlier-unsupported-claim", "freeze-old-absence-conclusion", "claim-all-formats-supported", "invent-own-test-execution"],
+      "expectedOutputShape": "corrected-claim-with-attributed-current-evidence",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "old=unsupported-absence; reason=search-miss; supplied-run=PDF-passed; other-formats=unknown"
+    },
+    {
       "id": "fidelity-authorized-summary",
       "prompt": "Summarize this policy in one sentence, omitting examples: after explicit approval an operator may retry a failed job at most twice; declined jobs must never be retried. Preserve the permission, condition, count and exclusion, but do not copy the original wording.",
       "expectedPrimarySkill": null,

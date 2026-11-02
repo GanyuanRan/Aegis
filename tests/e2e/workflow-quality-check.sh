@@ -529,6 +529,31 @@ assert_contains "$complexity_baseline" "maintained test source file" \
     "complexity baseline governs maintained test source files"
 assert_contains "$complexity_baseline" "Retired branches/fallbacks/adapters" \
     "complexity baseline ties complexity delta to retirement"
+
+assert_contains_all "$process_doc" \
+    "first material conclusions preserve evidence and contract boundaries" \
+    'first material conclusion' 'bounded search miss' 'approved requirements' \
+    'no new report or per-claim form'
+assert_contains_all "skills/using-aegis/SKILL.md" \
+    "portable entry grounds first conclusions before user challenge" \
+    'first material conclusion' 'search miss alone' 'approved requirements' \
+    'do not wait for user challenge'
+assert_contains_all "skills/verification-before-completion/SKILL.md" \
+    "verification attributes first claims without treating search misses as absence" \
+    'first material claim' 'executed tests' 'documentation or inference' \
+    'Search misses prove no absence' 'approved requirements'
+assert_contains_all "skills/requesting-code-review/code-reviewer.md" \
+    "review applies evidence boundaries and structural assessment" \
+    'when first stated' 'search miss alone' 'not line reduction alone' \
+    'Unchanged' 'complexity-governance.md'
+for complexity_owner in "$complexity_baseline" \
+    "skills/using-aegis/references/complexity-governance.md"; do
+    assert_contains_all "$complexity_owner" \
+        "$complexity_owner rejects count manipulation and supports authorized repairs" \
+        'Joining statements' 'useful explanation' 'supporting evidence' \
+        'unknown' 'cohesive' 'unchanged statement totals' \
+        'verification' 'boundary' 'required behavior' 'numeric growth allowance'
+done
 assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" 'For the first baseline, use the dual-role bootstrap from brainstorming' \
     "process baseline distinguishes bootstrap baselines from flat repo inventory"
 assert_contains "skills/using-aegis/SKILL.md" 'Aegis Reason Note' \
