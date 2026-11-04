@@ -400,7 +400,7 @@ assert_not_contains "docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md" "ExecutionC
     "artifact schema baseline does not add an execution contract artifact"
 assert_contains "skills/recording-architecture-decisions/SKILL.md" 'Retro / Memory Filter' \
     "canonical owner includes retro memory filter"
-assert_contains "skills/brainstorming/SKILL.md" 'review lens, not persona' \
+assert_contains "skills/brainstorming/expanded-design-guidance.md" 'review lens, not persona' \
     "canonical owner keeps role personas out of strong-opinion lenses"
 assert_contains "$baseline" "Baseline Role Alignment" \
     "workflow quality baseline includes baseline role alignment"
@@ -630,8 +630,8 @@ assert_contains "skills/brainstorming/SKILL.md" "Compact output contract" \
 brainstorming_expanded="skills/brainstorming/expanded-design-guidance.md"
 assert_contains_all "skills/brainstorming/SKILL.md" \
     "brainstorming routes conditional design detail explicitly" \
-    "expanded-design-guidance\.md" "design probe" "scenario profile" \
-    "workspace.*spec.*documentation|documentation.*workspace.*spec"
+    "expanded-design-guidance\.md" "Design Probe" "Software Scenario Profiles" \
+    "Documentation And Workspace Bootstrap"
 assert_not_contains "skills/brainstorming/SKILL.md" \
     '[Cc]ompletely' \
     "brainstorming does not load every expanded section for one conditional trigger"
@@ -664,7 +664,7 @@ assert_contains "skills/brainstorming/SKILL.md" "Grill or normal brainstorming" 
     "soft grilling intent asks the user to confirm the mode"
 assert_contains "skills/brainstorming/SKILL.md" "at most three independent decision questions" \
     "fast grilling mode batches only independent questions"
-assert_contains "skills/brainstorming/SKILL.md" "◆ Grilling Session" \
+assert_contains "skills/brainstorming/grilling-mode-reference.md" "◆ Grilling Session" \
     "grilling mode has a one-time opening card"
 assert_contains "skills/brainstorming/SKILL.md" "PR, diff, or current-code review" \
     "grilling mode routes implementation review to code review"
@@ -680,15 +680,15 @@ assert_contains "skills/brainstorming/SKILL.md" "Plan-Time Complexity Check" \
     "brainstorming includes plan-time complexity check"
 assert_contains "skills/brainstorming/SKILL.md" "Existence Check" \
     "brainstorming includes pre-addition existence check"
-assert_contains "skills/brainstorming/SKILL.md" "AEGIS_MINIMALITY_REFERENCE" \
+assert_contains "$brainstorming_expanded" "AEGIS_MINIMALITY_REFERENCE" \
     "brainstorming points to minimality reference"
-assert_contains "skills/brainstorming/SKILL.md" "Complexity Budget" \
+assert_contains "$brainstorming_expanded" "Complexity Budget" \
     "brainstorming includes complexity budget"
 assert_contains "skills/brainstorming/SKILL.md" "Architecture Integrity Lens" \
     "brainstorming includes architecture integrity lens"
 assert_contains "skills/brainstorming/SKILL.md" "Prior-Art & Reuse Lens" \
     "brainstorming includes prior-art reuse lens"
-assert_contains "skills/brainstorming/SKILL.md" "Adapt with reason|Reject with reason" \
+assert_contains "$brainstorming_expanded" "Adapt with reason|Reject with reason" \
     "prior-art lens binds adapt and reject decisions to project constraints"
 assert_contains "skills/brainstorming/SKILL.md" "Baseline Role Alignment" \
     "brainstorming includes baseline role alignment"
@@ -704,7 +704,7 @@ assert_contains "skills/brainstorming/SKILL.md" "Challenge Result" \
     "brainstorming keeps structured challenge results"
 assert_contains "skills/brainstorming/SKILL.md" "Design Complete is method readiness" \
     "brainstorming keeps the completion authority boundary in handoff"
-assert_contains "skills/brainstorming/SKILL.md" "needs-acceptance-criteria" \
+assert_contains "$brainstorming_expanded" "needs-acceptance-criteria" \
     "brainstorming surfaces missing acceptance criteria"
 assert_contains "$brainstorming_expanded" "Product / Requirement Baseline" \
     "brainstorming template names product requirement baseline role"
@@ -724,11 +724,11 @@ assert_contains "$brainstorming_expanded" "Implementation Drift" \
     "brainstorming template includes implementation drift"
 assert_contains "$brainstorming_expanded" "scope: requirements | architecture | both" \
     "brainstorming template includes defect drift scope taxonomy"
-assert_contains "skills/brainstorming/SKILL.md" "Better file boundary" \
+assert_contains "$brainstorming_expanded" "Better file boundary" \
     "brainstorming checks better file boundary"
-assert_contains "skills/brainstorming/SKILL.md" "review lens, not persona|not a persona" \
+assert_contains "$brainstorming_expanded" "review lens, not persona|not a persona" \
     "brainstorming keeps product lens out of persona roleplay"
-assert_contains "skills/brainstorming/SKILL.md" "does not override baseline evidence" \
+assert_contains "$brainstorming_expanded" "does not override baseline evidence" \
     "brainstorming product lens cannot override baseline evidence"
 assert_not_contains "skills/brainstorming/SKILL.md" "visual companion|Visual Companion|web browser|local URL" \
     "brainstorming does not offer retired browser visual companion"
