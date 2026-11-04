@@ -1,5 +1,45 @@
 # Aegis Release Notes
 
+## v2.15.0 (2026-11-04)
+
+### English
+
+- Keep `brainstorming` inside the compaction ceiling. Its instruction surface
+  dropped from 25,185 to 19,540 bytes by moving the seven conditional design
+  artifacts into the existing on-demand `expanded-design-guidance.md` and the
+  one-time Grilling opening card into `grilling-mode-reference.md`. Every
+  artifact name, routing rule, gate, and handoff condition stays in `SKILL.md`.
+- Add a skill-size guard: any `skills/*/SKILL.md` at or above 20,000 bytes now
+  fails the suite, with a warning from 18,000. `test-driven-development` sits at
+  18,169 and is the next one to watch.
+- Harden the Windows hook launcher. It now probes the per-user Git for Windows
+  install, validates remaining `bash` hits by absolute path and executable name,
+  and rejects both WSL forwarders and any candidate inside the current
+  directory, so a planted `bash.cmd` can no longer run at session start.
+- Add `tests/e2e/hook-launcher-resolution-check.sh`, which drives the real
+  launcher from a directory containing a planted `bash.cmd` and fails if that
+  script runs or the hook stops exiting 0.
+- Synchronize all eight package/plugin versions at `2.15.0`. Upgrade through the
+  existing Git or host plugin route and reload/restart as required. Existing
+  host limitations and the method-pack authority boundary remain in place.
+
+### 中文
+
+- 让 `brainstorming` 回到 compaction 上限之内：把七个条件性设计产物移入按需
+  读取的 `expanded-design-guidance.md`，把一次性的 Grilling 开场卡移入
+  `grilling-mode-reference.md`，主技能文件从 25,185 字节降到 19,540 字节。
+  产物名称、路由规则、闸门与交接条件全部保留在主文件里。
+- 新增技能体积守卫：任一 `skills/*/SKILL.md` 达到 20,000 字节即判定失败，
+  18,000 字节开始预警。`test-driven-development` 当前 18,169 字节，是下一个
+  需要留意的技能。
+- 加固 Windows 钩子启动器：优先探测用户级 Git 安装，其余 `bash` 命中须通过
+  绝对路径与文件名校验，并拒绝两个 WSL 转发入口以及落在当前目录的候选，
+  仓库内投放的 `bash.cmd` 不再可能在会话启动时被执行。
+- 新增 `tests/e2e/hook-launcher-resolution-check.sh`：在含预置 `bash.cmd` 的
+  目录中驱动真实启动器，一旦该脚本被执行或钩子不再返回 0 即失败。
+- 同步八处 package/plugin 版本号至 `2.15.0`。沿用现有 Git 或宿主插件升级
+  方式，按需重启或重新加载。保留已有宿主限制和方法包权限边界。
+
 ## v2.14.3 (2026-11-02)
 
 ### English
