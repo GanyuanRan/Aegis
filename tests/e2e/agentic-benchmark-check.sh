@@ -13,6 +13,34 @@ else
     PYTHON_CMD=(python)
 fi
 
+# The benchmark harness supervises child processes with POSIX-only primitives
+# (`fcntl` for advisory locks, `resource` for RLIMIT hardening). Those modules do
+# not exist on Windows, and `tests/helpers/agentic_benchmark_process_supervisor.py`
+# imports them at module scope, so every suite below that reaches the supervisor
+# would fail with ModuleNotFoundError rather than a benchmark verdict.
+#
+# Probe the capability once, up front, and report it as an explicit skip. Probing
+# here rather than at the first failing case keeps the message truthful: without
+# this, the earlier fixture check aborted with "platform is unsupported" and hid
+# four further POSIX-dependent failures behind it.
+#
+# The suite still runs in full on its supported platforms (CI runs Linux). This
+# check intentionally exits 0 rather than a distinct planned code, because
+# `tests/e2e/layer1-fast-check.sh` treats any non-zero status as a failure.
+if ! "${PYTHON_CMD[@]}" -c 'import fcntl, resource' >/dev/null 2>&1; then
+    echo "=== Agentic Benchmark Policy Check ==="
+    echo "  [SKIP] agentic benchmark harness requires POSIX (fcntl, resource)"
+    echo "         platform: $(uname -s 2>/dev/null || echo unknown) / $(uname -m 2>/dev/null || echo unknown)"
+    echo "         reason: process supervision uses POSIX-only advisory locks and"
+    echo "                 RLIMIT hardening; the modules are imported at module"
+    echo "                 scope, so no benchmark verdict can be produced here."
+    echo "         coverage: runs in full on Linux (CI). For a local verdict on"
+    echo "                   this host, run the suite inside Docker or WSL."
+    echo
+    echo "Agentic benchmark policy check skipped on this platform."
+    exit 0
+fi
+
 failures=0
 
 pass() {
