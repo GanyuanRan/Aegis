@@ -142,6 +142,8 @@ run_check "long-task continuation scenario fixtures" bash "$SCRIPT_DIR/long-task
 run_check "context budget guardrails" bash "$SCRIPT_DIR/context-budget-check.sh"
 run_check "activation mode guardrails" bash "$SCRIPT_DIR/activation-mode-check.sh"
 run_check "TDD policy guardrails" bash "$SCRIPT_DIR/tdd-policy-check.sh"
+run_check "skill instruction surface budget" bash tests/skill-size/test-skill-size.sh
+run_check "hook launcher bash resolution" bash "$SCRIPT_DIR/hook-launcher-resolution-check.sh"
 
 case "$HOST_PROFILE" in
     none)

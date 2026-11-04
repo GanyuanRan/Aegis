@@ -16,26 +16,69 @@ if "%~1"=="" (
 )
 
 set "HOOK_DIR=%~dp0"
+set "PF86=%ProgramFiles(x86)%"
 
-REM Try Git for Windows bash in standard locations
-if exist "C:\Program Files\Git\bin\bash.exe" (
-    "C:\Program Files\Git\bin\bash.exe" "%HOOK_DIR%%~1" %2 %3 %4 %5 %6 %7 %8 %9
-    exit /b %ERRORLEVEL%
-)
-if exist "C:\Program Files (x86)\Git\bin\bash.exe" (
-    "C:\Program Files (x86)\Git\bin\bash.exe" "%HOOK_DIR%%~1" %2 %3 %4 %5 %6 %7 %8 %9
-    exit /b %ERRORLEVEL%
-)
-
-REM Try bash on PATH (e.g. user-installed Git Bash, MSYS2, Cygwin)
-where bash >nul 2>nul
-if %ERRORLEVEL% equ 0 (
-    bash "%HOOK_DIR%%~1" %2 %3 %4 %5 %6 %7 %8 %9
+REM 1. Per-user Git for Windows. The common non-admin install lives here and is
+REM    invisible to a Program Files-only probe.
+if exist "%LOCALAPPDATA%\Programs\Git\bin\bash.exe" (
+    "%LOCALAPPDATA%\Programs\Git\bin\bash.exe" "%HOOK_DIR%%~1" %2 %3 %4 %5 %6 %7 %8 %9
     exit /b %ERRORLEVEL%
 )
 
-REM No bash found - exit silently rather than error
-REM (plugin still works, just without SessionStart context injection)
+REM 2. Machine-wide Git for Windows.
+if exist "%ProgramFiles%\Git\bin\bash.exe" (
+    "%ProgramFiles%\Git\bin\bash.exe" "%HOOK_DIR%%~1" %2 %3 %4 %5 %6 %7 %8 %9
+    exit /b %ERRORLEVEL%
+)
+if exist "%PF86%\Git\bin\bash.exe" (
+    "%PF86%\Git\bin\bash.exe" "%HOOK_DIR%%~1" %2 %3 %4 %5 %6 %7 %8 %9
+    exit /b %ERRORLEVEL%
+)
+
+REM 3. Other bash installs (MSYS2, Cygwin, scoop). Resolve each `where` hit
+REM    through :pick_bash instead of calling bare `bash`: the default search
+REM    order includes the current directory, so a repository could plant
+REM    bash.cmd and have it run at session start.
+set "AEGIS_BASH="
+for /f "delims=" %%B in ('where bash 2^>nul') do (
+    if not defined AEGIS_BASH call :pick_bash "%%B"
+)
+if defined AEGIS_BASH (
+    "%AEGIS_BASH%" "%HOOK_DIR%%~1" %2 %3 %4 %5 %6 %7 %8 %9
+    exit /b %ERRORLEVEL%
+)
+
+REM 4. No usable bash. Stay silent and keep exit success: the plugin still
+REM    works, it just has no SessionStart context injection.
+exit /b 0
+
+:pick_bash
+set "CANDIDATE=%~1"
+if "%CANDIDATE%"=="" exit /b 0
+REM Require an absolute drive-rooted path: bare names and relative hits would be
+REM resolved against the working directory.
+echo.%CANDIDATE%| findstr /r /c:"^[A-Za-z]:\\" >nul || exit /b 0
+REM Skip WSL launchers: the System32 shim and the Store alias both forward to a
+REM Linux distro, which either is absent or reads Windows paths as POSIX paths.
+echo.%CANDIDATE%| findstr /i /c:"\\system32\\bash.exe" /c:"\\WindowsApps\\bash.exe" >nul && exit /b 0
+REM Require the real executable name. `where` reports bash.cmd/bash.bat from PATH
+REM entries ahead of the real one, including the current directory, and cmd.exe
+REM would run that planted script at session start.
+echo.%~nx1| findstr /i /c:"^bash\.exe$" >nul || exit /b 0
+REM Reject anything resolved inside the current directory, even when the name
+REM looks right: that is the path a repository can plant in place.
+for %%D in ("%CANDIDATE%") do set "CAND_DIR=%%~dpD"
+call :normalize_dir "%CAND_DIR%"
+set "CAND_NORM=%NORMALIZED%"
+call :normalize_dir "%CD%\"
+if /i "%CAND_NORM%"=="%NORMALIZED%" exit /b 0
+set "AEGIS_BASH=%CANDIDATE%"
+exit /b 0
+
+:normalize_dir
+REM Strip trailing backslashes so drive-root and nested paths compare equally.
+set "NORMALIZED=%~1"
+if "%NORMALIZED:~-1%"=="\" set "NORMALIZED=%NORMALIZED:~0,-1%"
 exit /b 0
 CMDBLOCK
 
