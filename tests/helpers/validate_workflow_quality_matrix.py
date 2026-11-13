@@ -226,13 +226,12 @@ CONTRACT_REQUIREMENTS = {
     ],
     "brainstorming": [
         "Aegis Visibility",
+        "TaskIntentDraft",
+        "BaselineReadSetHint",
         "BaselineUsageDraft",
-        "Existence Check",
-        "Plan-Time Complexity Check",
-        "Complexity Budget",
-        "Product Risk Lens",
-        "Architecture Integrity Lens",
-        "Baseline Role Alignment",
+        "ImpactStatementDraft",
+        "Options",
+        "Decision Needed",
     ],
     "writing-plans": [
         "Aegis Visibility",
@@ -263,6 +262,16 @@ CONTRACT_REQUIREMENTS = {
 }
 
 CONDITIONAL_CONTRACT_REQUIREMENTS = {
+    "brainstorming": [
+        "Requirement Ready Check",
+        "Product Risk Lens",
+        "Existence Check",
+        "Architecture Integrity Lens",
+        "Baseline Role Alignment",
+        "Complexity Budget",
+        "Plan-Time Complexity Check",
+        "Prior-Art & Reuse Lens",
+    ],
     "writing-plans": [
         "BaselineUsageDraft",
         "Ripple Signal Triage",

@@ -167,13 +167,13 @@ assert_contains "skills/brainstorming/SKILL.md" "## Grilling Mode" \
     "brainstorming defines the explicit grilling mode"
 assert_contains "skills/brainstorming/SKILL.md" "overrides the normal brainstorming execution" \
     "grilling mode overrides the normal brainstorming checklist"
-assert_contains "skills/brainstorming/SKILL.md" 'Suspend `Checklist`, `The Process`, the `Compact output contract`' \
+assert_contains "skills/brainstorming/SKILL.md" 'Default Design Path, compact output contract, and documentation or planning' \
     "grilling mode suspends conflicting normal-flow artifacts"
-assert_contains "skills/brainstorming/SKILL.md" "exactly one decision question" \
+assert_contains "skills/brainstorming/grilling-mode-reference.md" "exactly one decision question" \
     "grilling mode limits each turn to one decision question"
 assert_contains "skills/brainstorming/SKILL.md" "### Grilling Entry Signals" \
     "grilling mode distinguishes direct and soft entry signals"
-assert_contains "skills/brainstorming/SKILL.md" "at most three independent decision questions" \
+assert_contains "skills/brainstorming/grilling-mode-reference.md" "at most three independent decision questions" \
     "fast grilling mode limits batched questions to independent decisions"
 assert_contains "skills/brainstorming/SKILL.md" "PR, diff, or current-code review" \
     "grilling mode keeps implementation review out of the interview"
@@ -187,7 +187,7 @@ assert_contains "skills/brainstorming/SKILL.md" "## Role And Authority Contract"
     "brainstorming separates agent-owned and user-owned decisions"
 assert_contains "skills/brainstorming/SKILL.md" "If the user chooses another answer, which design" \
     "brainstorming gates user questions on decision impact"
-assert_contains "skills/brainstorming/SKILL.md" "Challenge Result" \
+assert_contains "skills/brainstorming/grilling-mode-reference.md" "Challenge Result" \
     "brainstorming returns a structured challenge result"
 assert_contains "skills/brainstorming/expanded-design-guidance.md" "## Software Scenario Profiles" \
     "brainstorming loads scenario profiles instead of every lens"

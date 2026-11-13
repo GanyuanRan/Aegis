@@ -629,6 +629,24 @@ assert_contains "skills/brainstorming/SKILL.md" "Compact output contract" \
     "brainstorming exposes compact output contract"
 brainstorming_expanded="skills/brainstorming/expanded-design-guidance.md"
 assert_contains_all "skills/brainstorming/SKILL.md" \
+    "brainstorming selects a branch before loading its procedure" \
+    'Choose the route before reading references' \
+    'Only after entry, read `grilling-mode-reference.md`' \
+    'soft-intent confirmation, or literal phrase explanations'
+assert_not_contains "skills/brainstorming/SKILL.md" \
+    '^### Pace|^## Checklist|^## The Process|^## After the Design|^## Key Principles|^Challenge Result$' \
+    "brainstorming retires duplicate flows and keeps interview procedure conditional"
+assert_contains_all "skills/brainstorming/grilling-mode-reference.md" \
+    "selected interview procedure preserves pacing, exit and approval boundaries" \
+    'Do not load this file unless Grilling Mode is already active' \
+    'exactly one decision question' 'at most three independent decision questions' \
+    'End when the user says to stop' 'Challenge Result' \
+    'design/spec still needs the required approval'
+assert_contains_all "skills/brainstorming/SKILL.md" \
+    "conditional design slots do not force template loading or empty reports" \
+    'not a mandatory stack of named cards' 'mentioning a lens does not activate its template' \
+    'Do not repeat satisfied checks' 'never the whole file'
+assert_contains_all "skills/brainstorming/SKILL.md" \
     "brainstorming routes conditional design detail explicitly" \
     "expanded-design-guidance\.md" "Design Probe" "Software Scenario Profiles" \
     "Documentation And Workspace Bootstrap"
@@ -654,21 +672,21 @@ assert_contains "skills/brainstorming/SKILL.md" "## Grilling Mode" \
     "brainstorming provides an explicit grilling mode"
 assert_contains "skills/brainstorming/SKILL.md" "overrides the normal brainstorming execution" \
     "grilling mode overrides the normal brainstorming checklist"
-assert_contains "skills/brainstorming/SKILL.md" 'Suspend `Checklist`, `The Process`, the `Compact output contract`' \
+assert_contains "skills/brainstorming/SKILL.md" 'Default Design Path, compact output contract, and documentation or planning' \
     "grilling mode suspends conflicting normal-flow artifacts"
-assert_contains "skills/brainstorming/SKILL.md" "exactly one decision question" \
+assert_contains "skills/brainstorming/grilling-mode-reference.md" "exactly one decision question" \
     "grilling mode asks one decision question per turn"
 assert_contains "skills/brainstorming/SKILL.md" "### Grilling Entry Signals" \
     "grilling mode distinguishes direct and soft entry signals"
 assert_contains "skills/brainstorming/SKILL.md" "Grill or normal brainstorming" \
     "soft grilling intent asks the user to confirm the mode"
-assert_contains "skills/brainstorming/SKILL.md" "at most three independent decision questions" \
+assert_contains "skills/brainstorming/grilling-mode-reference.md" "at most three independent decision questions" \
     "fast grilling mode batches only independent questions"
 assert_contains "skills/brainstorming/grilling-mode-reference.md" "◆ Grilling Session" \
     "grilling mode has a one-time opening card"
 assert_contains "skills/brainstorming/SKILL.md" "PR, diff, or current-code review" \
     "grilling mode routes implementation review to code review"
-assert_contains "skills/brainstorming/SKILL.md" "does not grant completion authority" \
+assert_contains "skills/brainstorming/grilling-mode-reference.md" "does not grant completion authority" \
     "grilling mode preserves the completion authority boundary"
 assert_contains "skills/using-aegis/SKILL.md" "grill me.*brainstorming|brainstorming.*grill me" \
     "using-aegis routes explicit grilling requests without a new skill"
@@ -700,7 +718,7 @@ assert_contains "skills/brainstorming/SKILL.md" "## Role And Authority Contract"
     "brainstorming keeps the agent-owned and user-owned contract"
 assert_contains "skills/brainstorming/SKILL.md" "attach a recommended option" \
     "brainstorming attaches recommendations to user questions"
-assert_contains "skills/brainstorming/SKILL.md" "Challenge Result" \
+assert_contains "skills/brainstorming/grilling-mode-reference.md" "Challenge Result" \
     "brainstorming keeps structured challenge results"
 assert_contains "skills/brainstorming/SKILL.md" "Design Complete is method readiness" \
     "brainstorming keeps the completion authority boundary in handoff"
@@ -1662,6 +1680,15 @@ import re
 from pathlib import Path
 
 root = Path.cwd()
+brainstorming = root / "skills/brainstorming"
+main = (brainstorming / "SKILL.md").read_text(encoding="utf-8")
+conditional = main.split("## Conditional Detailed Guidance", 1)[1].split(
+    "## Design Ready And Design Complete", 1
+)[0]
+expanded = (brainstorming / "expanded-design-guidance.md").read_text(encoding="utf-8")
+for heading in re.findall(r"`(#{2,3} [^`]+)`", conditional):
+    assert heading in expanded.splitlines(), f"missing conditional design section: {heading}"
+
 quality = root / "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md"
 text = quality.read_text(encoding="utf-8")
 owner_rows = text.split("| Workflow |", 1)[1].split("\n\n", 1)[0]
