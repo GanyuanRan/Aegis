@@ -751,6 +751,8 @@ assert_contains "$brainstorming_expanded" "does not override baseline evidence" 
 assert_not_contains "skills/brainstorming/SKILL.md" "visual companion|Visual Companion|web browser|local URL" \
     "brainstorming does not offer retired browser visual companion"
 writing_plans_expanded="skills/writing-plans/expanded-planning-guidance.md"
+assert_contains "skills/writing-plans/SKILL.md" "Do not load references merely to announce a route or describe a Planless slice" \
+    "planning does not expand references just for route selection"
 assert_contains "skills/writing-plans/SKILL.md" "Compact output contract" \
     "writing-plans exposes compact output contract"
 assert_contains_all "skills/writing-plans/SKILL.md" \
@@ -825,9 +827,10 @@ assert_not_contains "skills/writing-plans/SKILL.md" \
     "writing-plans retires the unconditional plan-creation announcement"
 assert_contains_all "skills/writing-plans/SKILL.md" \
     "writing-plans detailed exception supports the no-parent branch" \
-    '^Exception: use `Planless Slice Lane` when an existing parent plan/spec already$' \
-    '^owns the current tiny execution slice, or when the change is mechanical or$' \
-    '^bounded and needs no parent document\. Do not save a new plan\. Emit a compact$' \
+    '^- a parent spec or parent plan already defines the workstream, and the current$' \
+    '^  request is executing or refining one bounded task from that parent$' \
+    '^- the change is mechanical or bounded and needs no parent document' \
+    '^Do not save a new plan\. Emit a compact `Slice Card`:$' \
     '^On the no-parent branch, `Parent plan/spec:` is `none — direct bounded request`\.$'
 assert_contains_all "skills/writing-plans/SKILL.md" \
     "writing-plans keeps both eligibility entries under shared guards" \
@@ -1688,6 +1691,15 @@ conditional = main.split("## Conditional Detailed Guidance", 1)[1].split(
 expanded = (brainstorming / "expanded-design-guidance.md").read_text(encoding="utf-8")
 for heading in re.findall(r"`(#{2,3} [^`]+)`", conditional):
     assert heading in expanded.splitlines(), f"missing conditional design section: {heading}"
+
+planning = root / "skills/writing-plans"
+main = (planning / "SKILL.md").read_text(encoding="utf-8")
+conditional = main.split("## Conditional Detailed Guidance", 1)[1].split(
+    "## Plan And Task Quality", 1
+)[0]
+expanded = (planning / "expanded-planning-guidance.md").read_text(encoding="utf-8")
+for heading in re.findall(r"`(## [^`]+)`", conditional):
+    assert heading in expanded.splitlines(), f"missing conditional planning section: {heading}"
 
 quality = root / "docs/current/AEGIS_WORKFLOW_QUALITY_BASELINE.md"
 text = quality.read_text(encoding="utf-8")
