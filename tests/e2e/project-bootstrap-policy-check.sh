@@ -94,13 +94,13 @@ assert_contains "$discipline_ref" "Spec Brief" \
 assert_contains "$discipline_ref" "configured Aegis workspace support|installed Aegis workspace support" \
     "discipline reference avoids target-project helper ownership"
 
-assert_contains "$brainstorming_skill" "Spec Brief" \
+assert_contains "skills/brainstorming/expanded-design-guidance.md" "Spec Brief" \
     "brainstorming supports spec brief"
-assert_contains "$brainstorming_skill" "Do not force this workflow onto low-complexity work" \
+assert_contains "$brainstorming_skill" "stay on the fast path" \
     "brainstorming does not over-trigger on low-complexity work"
-assert_contains "$brainstorming_skill" "single-owner bug fix|simple config/status question|local utility change" \
+assert_contains "$brainstorming_skill" "Tiny wording edits, simple Q&A/status, local utility or mechanical changes" \
     "brainstorming defines fast-path examples"
-assert_contains "$brainstorming_skill" "Write the validated spec artifact when needed" \
+assert_contains "$brainstorming_skill" "Persist only when needed" \
     "brainstorming writes specs conditionally"
 assert_not_contains "$brainstorming_skill" "Every project goes through this process" \
     "brainstorming retired universal design ceremony wording"

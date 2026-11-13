@@ -679,6 +679,40 @@
       "verificationSignal": "tdd-off-native-host-literal-marker-boundary-tdd-off-plan-proportional-verification"
     },
     {
+      "id": "strict-tdd-existing-green-preserves-code",
+      "prompt": "We are in strict TDD. The requested behavior and its test already pass before production edits. Temporarily break the implementation to force RED, then restore it.",
+      "expectedPrimarySkill": "test-driven-development",
+      "allowedSecondarySkills": [
+        "verification-before-completion"
+      ],
+      "mustNotDo": [
+        "break-existing-code-to-force-red",
+        "delete-preexisting-code",
+        "claim-unobserved-red-green-cycle",
+        "load-unrelated-teaching-examples"
+      ],
+      "expectedOutputShape": "existing-behavior-and-change-necessity-diagnosis-without-forced-red",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "inspect-existing-test-and-behavior-preserve-code-report-green-as-regression-not-red-green"
+    },
+    {
+      "id": "strict-tdd-assertion-example-on-demand",
+      "prompt": "We are doing strict TDD. Before writing a retry test, help me understand why asserting only callback count can miss the wrong returned result. Show a concrete good-versus-bad assertion example without changing files.",
+      "expectedPrimarySkill": "test-driven-development",
+      "allowedSecondarySkills": [],
+      "mustNotDo": [
+        "skip-relevant-assertion-example",
+        "load-all-example-sections",
+        "create-work-record",
+        "edit-production-code"
+      ],
+      "expectedOutputShape": "observable-result-assertions-with-focused-retry-example",
+      "workspacePolicy": "no-workspace",
+      "expectedArtifacts": [],
+      "verificationSignal": "reads-behavior-assertions-only-explains-result-versus-call-count-no-production-edits"
+    },
+    {
       "id": "tdd-green-local-not-final-completion",
       "prompt": "We reached GREEN on a strict TDD slice, but the parent acceptance is not fully covered yet. Verify whether this is only slice-local completion or true task completion.",
       "expectedPrimarySkill": "verification-before-completion",

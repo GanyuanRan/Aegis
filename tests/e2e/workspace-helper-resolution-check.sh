@@ -94,7 +94,7 @@ assert_contains "skills/using-aegis/references/skill-discipline.md" \
     "discipline reference uses installed-helper placeholder"
 
 for file in \
-    skills/brainstorming/SKILL.md \
+    skills/brainstorming/expanded-design-guidance.md \
     skills/writing-plans/SKILL.md \
     skills/test-driven-development/SKILL.md \
     skills/systematic-debugging/SKILL.md \

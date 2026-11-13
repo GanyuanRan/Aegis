@@ -126,6 +126,12 @@ evidence-triggered design sections in `expanded-design-guidance.md`. Conditional
 output slots are not a mandatory stack of reports. Verify both retrieval when
 needed and non-retrieval on unrelated paths; size checks alone prove neither.
 
+`test-driven-development` keeps strict entry, observed RED/GREEN, recovery,
+regression and completion boundaries in its main skill. Teaching examples are
+selected by test-design needs from `examples.md`; workspace commands reuse
+`long-task-continuation/durable-work-guidance.md` only when a project record is
+needed. Neither reference is required to execute an ordinary strict cycle.
+
 Capability gates pass before size gates. Preserve positive/negative routing,
 stop signals, owner/root-cause rules, verification and the smallest examples
 that materially stabilize invocation. A moved paragraph is not an optimization
