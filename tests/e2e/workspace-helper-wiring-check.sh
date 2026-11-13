@@ -28,7 +28,8 @@ require_pattern "skills/brainstorming/expanded-design-guidance.md" "<aegis-works
 require_pattern "skills/writing-plans/expanded-planning-guidance.md" "<aegis-workspace-helper> append-index"
 require_pattern "skills/writing-plans/expanded-planning-guidance.md" "<aegis-workspace-helper> check"
 
-require_pattern "skills/test-driven-development/SKILL.md" "<aegis-workspace-helper> new-work"
+require_pattern "skills/test-driven-development/SKILL.md" "long-task-continuation/durable-work-guidance.md"
+require_pattern "skills/test-driven-development/SKILL.md" "## Create A Durable Work Record"
 
 require_pattern "skills/systematic-debugging/SKILL.md" 'configured workspace support'
 require_pattern "skills/systematic-debugging/SKILL.md" '`<aegis-workspace-helper>` to `init`, `new-work`, `add-evidence`, and `check`'

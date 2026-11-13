@@ -118,6 +118,20 @@ the executable default path, non-omittable constraints and explicit triggers
 for direct references. Triggered detail must be findable in one step; untriggered
 references must not become default payload.
 
+For branching workflows, keep route selection and non-omittable boundaries in
+the main skill; load branch procedures only after selecting that branch.
+`brainstorming` keeps interview entry, mode precedence and design approval in
+its main body, interview procedure in `grilling-mode-reference.md`, and
+evidence-triggered design sections in `expanded-design-guidance.md`. Conditional
+output slots are not a mandatory stack of reports. Verify both retrieval when
+needed and non-retrieval on unrelated paths; size checks alone prove neither.
+
+`test-driven-development` keeps strict entry, observed RED/GREEN, recovery,
+regression and completion boundaries in its main skill. Teaching examples are
+selected by test-design needs from `examples.md`; workspace commands reuse
+`long-task-continuation/durable-work-guidance.md` only when a project record is
+needed. Neither reference is required to execute an ordinary strict cycle.
+
 Capability gates pass before size gates. Preserve positive/negative routing,
 stop signals, owner/root-cause rules, verification and the smallest examples
 that materially stabilize invocation. A moved paragraph is not an optimization

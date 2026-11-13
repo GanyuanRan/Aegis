@@ -1,5 +1,25 @@
 # Aegis Release Notes
 
+## v2.15.1 (2026-11-13)
+
+### English
+
+- Apply progressive disclosure to brainstorming, strict TDD, and planning: load interview procedures and teaching examples only when needed, and select specific reference sections for complex handoffs.
+- Consolidate duplicated planning instructions while retaining approval, stop, test-first, recovery, compatibility, and delivery-evidence boundaries. No new governance gates or required artifacts.
+- Reuse workspace guidance through host-discovered skill locations, including prefixed installations; align navigation and workflow checks with the current owners.
+- Focused before/after Codex task samples covered design, interviews, strict RED/GREEN, accidental TDD entry, existing-green recovery, planning, and handoff. These are bounded observations, not a new benchmark score or general token/performance claim. Existing host limitations remain.
+- Include the explicit POSIX-capability skip for the offline benchmark harness; an environment skip is not a passing benchmark run.
+- Synchronize all eight package/plugin versions to 2.15.1. Update using the existing host installation route and reload/restart as needed; global routing-prefix semantics are unchanged.
+
+### 中文
+
+- 将渐进式披露落实到设计、TDD 和规划技能：盘问流程、教学示例按需加载，复杂交接只读相关章节。
+- 合并重复说明，保留审批、停止、测试优先、安全恢复、兼容性和交付证据要求，不新增治理闸门或必填产物。
+- 共享工作区指导按宿主发现的技能位置定位，兼容带目录前缀的安装；同步修正导航和工作流检查。
+- 已做限定场景的 Codex 前后对照，不将小样本或文件缩短宣称为普遍性能提升；现有宿主限制保持不变。
+- 离线 benchmark 缺少 POSIX 能力时明确标记跳过，不将环境跳过视为评测通过。
+- 同步八处版本号至 2.15.1；按原安装渠道更新并按需重启或重载，统一全局路由前缀无需重新复制。
+
 ## v2.15.0 (2026-11-04)
 
 ### English

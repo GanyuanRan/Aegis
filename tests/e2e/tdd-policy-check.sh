@@ -170,6 +170,34 @@ assert_contains "$tdd_skill" "hotfix|emergency|urgent" \
     "TDD defines emergency hotfix regression follow-up"
 assert_contains "$tdd_skill" "manual verification|manual steps" \
     "TDD defines manual verification when automation is blocked"
+assert_contains "$tdd_skill" 'Do not load all' \
+    "TDD keeps reference loading conditional"
+assert_contains "$tdd_skill" 'host-discovered `long-task-continuation`' \
+    "TDD resolves shared guidance through installed skill discovery"
+assert_contains "$tdd_skill" 'preserving any installed directory prefix' \
+    "TDD preserves prefixed host exposure when resolving references"
+assert_not_contains "$tdd_skill" '\.\./long-task-continuation/' \
+    "TDD does not assume an unprefixed sibling directory"
+assert_not_contains "$tdd_skill" '^```typescript|^docs/aegis/|^## Example: Bug Fix' \
+    "TDD keeps teaching code and workspace layout out of the default body"
+for heading in 'Behavior Assertions' 'Minimal GREEN' 'Worked Bug Fix'; do
+    assert_contains "$tdd_skill" "examples.md.*## $heading" \
+        "TDD names the conditional example destination: $heading"
+    assert_contains "skills/test-driven-development/examples.md" "^## $heading$" \
+        "TDD example destination exists: $heading"
+done
+for heading in 'Create A Durable Work Record' 'Required Artifact Layout'; do
+    assert_contains "$tdd_skill" "durable-work-guidance.md.*## $heading" \
+        "TDD names the shared workspace destination: $heading"
+    assert_contains "skills/long-task-continuation/durable-work-guidance.md" "^## $heading$" \
+        "shared workspace destination exists: $heading"
+done
+assert_contains "$tdd_skill" 'Do not break or delete existing code to force RED' \
+    "TDD keeps existing-green recovery safety in the main body"
+assert_contains "$tdd_skill" 'Preserve pre-existing code and user edits' \
+    "TDD keeps task-owned recovery boundaries in the main body"
+assert_contains "$tdd_skill" 'Missing evidence alone does not authorize a reset' \
+    "TDD retains the reset boundary before any reference load"
 assert_contains "docs/current/AEGIS_PROCESS_BASELINE.md" 'triage ripple signals' \
     'process baseline retains pre-edit ripple triage'
 assert_contains "skills/systematic-debugging/SKILL.md" 'Patch-Shape Triage' \
@@ -188,9 +216,9 @@ assert_contains "$verification_skill" "target test|related regression" \
 assert_contains "$verification_skill" "manual verification|manual steps" \
     "verification asks for manual steps when automation is blocked"
 
-assert_contains "$brainstorming_skill" "Aegis Project Workspace" \
+assert_contains "$brainstorming_skill" "Workspace creation and spec persistence follow project authority" \
     "brainstorming writes specs through the Aegis workspace boundary"
-assert_contains "$brainstorming_skill" "Do not force this workflow onto low-complexity work" \
+assert_contains "$brainstorming_skill" "stay on the fast path" \
     "brainstorming no longer makes every small change a design ceremony"
 assert_contains "$writing_plans_skill" "Aegis Project Workspace" \
     "writing-plans defines the Aegis workspace structure"
