@@ -244,9 +244,8 @@ and Claude-compatible plugins can otherwise expose duplicate Aegis copies.
 
 The deterministic DeepSeek Harness suite validates the official host identity,
 root `dsh.bundle.patch` declaration, thin Cordis adapter, package-owned skill
-root, deferred native lifecycle bootstrap across startup/resume/clear/compact
-(armed at each boundary, injected once after the session's first durable
-promotion signal), subagent and explicit-mode exclusions, explicit direct-child
+root, native runtime-context registration, subagent and explicit-mode exclusions,
+explicit direct-child
 compatibility path, duplicate-exposure guard, developer-preview boundary, and
 public release links without changing the current user's DSH profile:
 
@@ -254,6 +253,24 @@ public release links without changing the current user's DSH profile:
 bash tests/deepseek-harness/run-tests.sh
 python tests/helpers/test_aegis_update.py -k deepseek_harness
 ```
+
+For real loop transport and scheduling checks with a scripted adapter, create
+an isolated host dependency directory (not the user's active profile):
+
+```bash
+npm install --prefix /tmp/aegis-dsh-test --ignore-scripts --no-audit --no-fund \
+  @deepseek-ai/dsh-agent-loop@0.2.2-rc.3 \
+  @deepseek-ai/dsh-tool-executor-native@0.2.2-rc.3 \
+  @deepseek-ai/dsh-tool-testkit@0.2.2-rc.3
+node tests/deepseek-harness/test-runtime-context.mjs /tmp/aegis-dsh-test/package.json
+```
+
+Use an equivalent temporary directory on Windows. These tests cover text-only
+request counts, context deduplication/replacement, retry, cancellation, tool
+continuation, unload/reload, explicit activation, subagents and host suppression.
+They execute the published host loop without a network model; they do not prove
+live routing, Desktop composition, or macOS behavior. Installation requires npm
+registry access; missing host packages are an environment-bound check, not a pass.
 
 The opt-in integration lane requires local `dsh` and `pnpm`. It creates an
 isolated temporary `DSH_HOME`, installs the current checkout into a Web profile,
@@ -277,7 +294,7 @@ without claiming those versions have been run. It does not bypass DSH's
 checker or require a version exemption.
 
 These checks prove method-pack bundle installation, version admission, and
-deterministic lifecycle-entry wiring only. Dump-config and `--help` do not
+deterministic context-registration wiring only. Dump-config and `--help` do not
 establish successful runtime plugin loading. A fresh Standard-mode session must
 still prove catalog discovery, native task-specific `skill` loading,
 representative routing versus `Route: fast-path`, false-positive behavior,

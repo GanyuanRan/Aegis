@@ -166,15 +166,15 @@ installation profile and then `/reload` or open `/new`.
 DeepSeek Harness uses its native plugin lifecycle for the same boundary:
 
 - A bundle-managed install in `auto` mode mounts the package-owned skills and
-  defers the compact `using-aegis` bootstrap until the session's first durable
-  promotion signal (`tool/call` or `assistant/message`) after each native
-  `agent/created` or legacy `agent/session-start` boundary (`startup`, `resume`,
-  `clear`, and `compact`).
+  contributes the compact `using-aegis` router through `systemPrompt.context`.
+  The host admits it into scheduled requests, including ordinary first requests,
+  and owns deduplication/recovery. Aegis does not enqueue work or bypass host
+  runtime-context suppression; subagents receive no Aegis contribution.
 - A bundle-managed install in `explicit` mode keeps the native skill catalog
-  available but does not register that automatic lifecycle injection. Restart
+  available but does not register the automatic context contribution. Restart
   the selected DSH profile after changing the local config or environment.
 - The updater-managed direct-child compatibility profile has no bundle and no
-  Aegis lifecycle injection; it relies on explicit invocation or Harness's
+  Aegis context contribution; it relies on explicit invocation or Harness's
   native semantic matching.
 
 Unlike the Kimi manifest-level profile switch, the DSH bundle reads

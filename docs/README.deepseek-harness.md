@@ -21,15 +21,18 @@ The default DeepSeek Harness installation is the thin Aegis bundle declared by
 the root `package.json` through `dsh.bundle.patch`. The bundle contributes one
 Cordis row named `aegis-method-pack`; that row delegates discovery to Harness's
 native filesystem skill provider and points it at the installed package's
-canonical `skills/` tree. In `auto` activation mode it also listens to Harness's
-native `agent/created` lifecycle and the older `agent/session-start` event,
-then defers a compact `using-aegis` routing bootstrap on
-`startup`, `resume`, `clear`, and `compact`: each boundary only arms the
-injection, which is delivered once after the session's first
-durable promotion signal (`tool/call` or `assistant/message`), so the first
-model request of every gated epoch stays free of injected Aegis context. The
-bootstrap is prepared while the plugin is applied, so the delayed injection
-does not race an asynchronous skill-file read.
+canonical `skills/` tree. In `auto` activation mode it registers a compact
+`using-aegis` router through native `systemPrompt.context`. DSH owns snapshot
+admission, deduplication and restoration after context replacement. Aegis does
+not call `agent.inject`, schedule timers or enqueue another model step.
+
+Ordinary first requests can receive the router, including after startup,
+resume, clear and compact. The previous delayed-delivery rule tried to keep
+these requests free of Aegis context, but could extend a finished turn
+([issue #102](https://github.com/GanyuanRan/Aegis/issues/102)). That
+Aegis-imposed isolation rule is retired. A host preset that disables dynamic
+runtime context still controls admission; Aegis does not bypass that policy.
+Native explicit skill loading remains available in those profiles.
 
 The bundle does not copy skill bodies, replace Harness's model-facing `skill`
 tool, add a daemon, install a hard pre-tool guard, or claim runtime authority.
@@ -202,7 +205,7 @@ compatibility mode. For CLI-managed profiles, confirm pnpm is available and
 verify the profile manifest and dump-config. For Desktop, inspect the same
 bundle through the application or its manifest. Then ask me to restart that
 profile. In the fresh session,
-verify the native Aegis lifecycle bootstrap and a representative task-specific
+verify the native Aegis runtime context and a representative task-specific
 `skill` load. Do not also install Aegis under .dsh/skills, .agents/skills, or
 another custom skill root. Do not modify my project.
 ```
@@ -284,21 +287,20 @@ from deterministic checks using a host double:
 
 | Boundary | Expected observation |
 | --- | --- |
-| Fresh Standard-mode session | No injection while arming; one plugin-sourced bootstrap after the first durable promotion signal |
-| Resume, clear, compact (each separately) | One deferred injection for the new boundary, without duplicate delivery on subsequent turns |
-| Subagent | No Aegis lifecycle bootstrap injected into the subagent session |
-| Explicit activation, after profile restart | No bundle-owned bootstrap; native explicit skill loading remains available |
+| Fresh Standard-mode session | Router present in the first scheduled request; a text-only answer ends the turn without an extra request |
+| Resume, clear, compact (each separately) | Host restores missing context on the next scheduled request; unchanged retained context is not repeatedly appended |
+| Subagent | No Aegis routing contribution for the subagent session |
+| Explicit activation, after profile restart | No bundle-owned context contribution; native explicit skill loading remains available |
+| Host runtime-context suppression | No bypass through an inbox message; native skills remain discoverable |
 
-Count injected messages by plugin provenance (`source.kind` beginning with
-`plugin:`), Aegis bootstrap identity, and session/boundary, rather than counting
-marker substrings. Model quotations and recalled text can repeat the marker
-without another injection. Check the model-facing messages for the first
-request; on DSH `0.1.7-rc.2`, `request/header` alone is not a per-request
-message list.
-
-The first route decision may precede deferred injection. Record event ordering
-and assess a task-specific native `skill` load or `Route: fast-path` on a step
-after delivery; do not attribute a preceding skill call to this bootstrap.
+Identify delivery through the host's `runtime-context` snapshot and its
+`aegis-routing` section, not `plugin:aegis` messages or marker counts alone.
+Older supported hosts may retain a combined snapshot without section metadata;
+inspect its model-facing text as well. Quotations are not new delivery.
+Check request messages and counts, not just catalog entries or request headers.
+A routing claim requires a task-specific native `skill` load or `Route: fast-path`
+after the router is visible. Scripted adapters prove scheduling and context
+transport, not live model adherence.
 Report unobserved boundaries explicitly. Retain raw sessions privately and
 share only sanitized source identity, boundary/injection counts, ordering,
 route outcomes, and errors. The current evidence and remaining gaps for
@@ -307,12 +309,10 @@ route outcomes, and errors. The current evidence and remaining gaps for
 
 ## Activation Mode
 
-In `auto` mode, the Aegis bundle defers a compact `using-aegis` bootstrap to the first
-durable promotion signal (`tool/call` or `assistant/message`) after each native
-session start, resume, clear, and compact boundary, keeping the first model
-request of every gated epoch free of injected context. It skips subagent
-sessions. This stabilizes router entry without replacing Harness's
-matcher, native `skill` tool, or execution policy.
+In `auto` mode, the bundle registers the router with `systemPrompt.context`.
+It skips subagents and respects host runtime-context suppression. Guidance is
+available from the first admitted request without replacing Harness's matcher,
+native `skill` tool, or execution policy.
 
 Setting `AEGIS_ACTIVATION_MODE=explicit` or running:
 
@@ -320,7 +320,7 @@ Setting `AEGIS_ACTIVATION_MODE=explicit` or running:
 python scripts/aegis-doctor.py activation-mode explicit
 ```
 
-disables that bundle-owned lifecycle injection after the profile is restarted.
+disables that bundle-owned context contribution after the profile is restarted.
 It does not override DeepSeek Harness's native catalog, matcher, preset, or
 invocation policy, and installed skills remain explicitly invocable. For an
 explicit flow, ask the agent to load `using-aegis` through the native `skill`
@@ -355,6 +355,11 @@ dsh --profile web --dump-config
 Repeat the command with `--profile headless` only when that profile also owns an
 Aegis installation. Restart the updated profile and repeat the native catalog,
 automatic-entry, and task-specific skill-load verification.
+
+The context-delivery change does not rewrite existing session history or
+remove previously queued plugin messages. Use a fresh session when verifying
+the new path; old `plugin:aegis` messages are historical delivery, not evidence
+that the updated bundle still injects inbox work.
 
 Do not use `scripts/aegis-update.py update --host deepseek-harness` for a
 bundle-managed installation. That updater command owns only the explicit
@@ -422,7 +427,7 @@ The host aliases `deepseek-harness` and `dsh` both resolve to
 generated link per Aegis skill and refuses to overwrite an existing non-link
 skill directory. Do not also enable the Aegis profile bundle, project
 `.dsh/skills`, shared `.agents/skills`, or a custom Aegis skill directory.
-This compatibility exposure has no bundle-owned lifecycle bootstrap; router
+This compatibility exposure has no bundle-owned runtime context; router
 entry depends on Harness's native matcher or explicit skill invocation.
 
 Verify this compatibility mode from the canonical checkout:
@@ -456,7 +461,7 @@ shape while the Aegis bundle is active for the same profile.
 ## Runtime Boundary
 
 The DSH bundle is a thin distribution and advisory-bootstrap adapter over
-Harness's native profile, lifecycle, injection, and skill-provider contracts.
+Harness's native profile, runtime-context, and skill-provider contracts.
 It does not normalize Harness events, replace the agent loop, hard-block tool
 execution, grant an authoritative `GateDecision`, provide an authoritative
 `PolicySnapshot`, or provide final completion authority.
