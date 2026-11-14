@@ -285,8 +285,18 @@ package identity `aegis` and Cordis row ID `aegis-method-pack`. The root
 manifest is private to prevent accidental npm registry publication; Git-based
 package-manager installation remains supported.
 
-Aegis does not maintain an official npm registry channel. The public npm
-`aegis-method-pack` package belongs to an external publishing account.
+An official scoped npm distribution may be generated from the same canonical
+source with `scripts/build-npm-package.py`. This retires Git-only as a permanent
+distribution policy, not the supported Git installation path. The root manifest
+stays private; only the generated manifest carries the confirmed scoped name
+and public registry configuration. The DSH module path must use that same name;
+the Cordis row ID remains `aegis-method-pack`. Do not maintain a second skill tree.
+
+Publication is pending until the project owner confirms the npm scope and
+publishing access, and the exact artifact passes installation verification.
+Do not describe a prepared tarball as published, marketplace-listed, or verified
+on Desktop. The public npm `aegis-method-pack` package belongs to an external
+publishing account.
 Repository and author metadata, package-manager installation, and marketplace
 discoverability do not establish an official registry publication.
 
@@ -294,6 +304,14 @@ Do not add npm account access or publication as a prerequisite for a GitHub
 release. A GitHub release also does not repair a marketplace that selects a
 different source: closing that issue requires the marketplace's actual source,
 revision, and installed version readback plus successful profile verification.
+
+For an npm release, pack only tracked public distribution files, review the
+tarball manifest/file list, and verify native bundle registration and skill
+loading from the artifact. Publish that exact tarball under the confirmed
+owner-controlled scope. Read back registry name/version/integrity and ownership;
+then test registry installation, upgrade and removal in an isolated profile.
+Market listing and Desktop installation require separate checks through their
+actual UI. Never infer those results from local packing or Web-profile checks.
 
 A single method-pack release must include at minimum:
 

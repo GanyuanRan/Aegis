@@ -792,7 +792,13 @@ request.
   A GitHub tag does not update npm. Repository
   metadata matching in the marketplace is not package-owner verification.
   The publishing account `zzz-test` is not the Aegis team's account. Aegis
-  does not maintain an official npm registry channel. The marketplace
+  has not yet published its prepared owner-controlled scoped npm distribution.
+  Local scoped-artifact checks on Windows with DSH `0.2.2-rc.3` and pnpm
+  `11.22.0` cover isolated Web profile install, bundle composition and removal.
+  The published host's native filesystem provider discovered and loaded all
+  23 installed skills. These checks used a test scope; they do not prove
+  registry installation, full application/model routing or marketplace/Desktop
+  behavior. The marketplace
   maintainer states that `zzz-test` is not an account they operate and that
   they have no coordinated publication record; the publisher's identity
   remains unknown.

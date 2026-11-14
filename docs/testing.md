@@ -254,6 +254,33 @@ bash tests/deepseek-harness/run-tests.sh
 python tests/helpers/test_aegis_update.py -k deepseek_harness
 ```
 
+The scoped npm artifact regression packs real canonical files, checks the
+tarball allowlist and unchanged skill contents, resolves the scoped DSH entry,
+and runs the installed doctor with an isolated config:
+
+```bash
+python tests/helpers/test_npm_distribution.py
+python scripts/build-npm-package.py --name @your-scope/aegis --output .tmp/npm-release
+```
+
+The package name in this example is a placeholder for a confirmed owner-controlled
+scope. The builder requires Git and npm, reads tracked working-tree files, and
+never publishes. Commit/review the release source before preparing a publishable
+artifact. Existing tarballs are never overwritten. Its output records the exact
+tarball, version and integrity; review `npm publish <tarball> --dry-run --json`
+before publishing that same tarball with `npm publish <tarball> --access public`.
+Keep credentials out of the repository. Publication requires the owner's npm
+login or configured trusted publishing and does not establish marketplace listing.
+
+For channel acceptance, install the tarball into an isolated Web profile,
+verify the scoped dependency and exactly one `aegis-method-pack` row, load native
+skills, then remove the scoped package. After actual publication, repeat using
+the exact registry name/version and test update from the prior supported version.
+For Git-to-npm migration, remove the old Git dependency through that profile's
+manager before installing the scoped package; do not load both copies. Desktop
+requires the application's own manager and separate source/version/skill readback.
+No local packing test substitutes for these environment-bound checks.
+
 For real loop transport and scheduling checks with a scripted adapter, create
 an isolated host dependency directory (not the user's active profile):
 
@@ -279,7 +306,22 @@ removes the bundle:
 
 ```bash
 bash tests/deepseek-harness/run-tests.sh --integration
+bash tests/deepseek-harness/run-tests.sh --integration --artifact <tarball>
 ```
+
+The artifact variant checks native profile install/composition/removal of the
+packed scoped identity; it does not make a model request or prove native skill
+tool execution. Run those checks separately before claiming channel acceptance.
+
+To exercise a published host's native filesystem provider against the installed
+package, without model access:
+
+```bash
+node tests/deepseek-harness/test-installed-skills.mjs <host-package.json> <installed-package-root>
+```
+
+This checks complete catalog discovery and every installed skill body. It does
+not prove full application bootstrap, model tool selection, or Desktop behavior.
 
 For an npm-installed DSH host exposing the compatibility checker, also run
 the version-admission regression against that host's actual app-boot module:

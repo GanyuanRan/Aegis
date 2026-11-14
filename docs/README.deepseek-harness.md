@@ -141,11 +141,21 @@ were not reported, so it is bounded installation-recovery evidence.
 
 ### Official Source and Third-Party npm Packages
 
-Aegis officially supports the Git installation above. Aegis does not maintain
-an official npm registry channel. The public npm `aegis-method-pack` package
-is published by an external account, not the Aegis team. Its repository or
+Aegis currently supports the Git installation above. An owner-controlled scoped
+npm distribution is being prepared from the same canonical source; it is not
+yet a published or verified marketplace installation channel. The public npm
+`aegis-method-pack` package is published by an external account, not the Aegis
+team. Its repository or
 author metadata does not establish official publication. The bundle's Cordis
 row ID `aegis-method-pack` is a plugin identifier, not a registry package name.
+
+The prepared registry artifact keeps the canonical skills and host adapters,
+but derives an owner-controlled scoped package name and matching DSH module
+entry. This is our distribution responsibility; it does not require a Hub
+exception for Aegis. Git installation remains supported. Until publication and
+registry readback are complete, use the Git commands above. See the
+[release procedure](current/AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#official-installation-source)
+and [artifact tests](testing.md#deepseek-harness-bundle-host-tests).
 
 The third-party npm `2.9.2` artifact retains `^0.1.0-rc.6` peers and is rejected
 by DSH `0.2.0-rc.2`. Through Hub `v1.6.5`, marketplace repository searches could
