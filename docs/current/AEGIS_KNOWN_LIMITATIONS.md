@@ -792,13 +792,16 @@ request.
   A GitHub tag does not update npm. Repository
   metadata matching in the marketplace is not package-owner verification.
   The publishing account `zzz-test` is not the Aegis team's account. Aegis
-  has not yet published its prepared owner-controlled scoped npm distribution.
-  Local scoped-artifact checks on Windows with DSH `0.2.2-rc.3` and pnpm
-  `11.22.0` cover isolated Web profile install, bundle composition and removal.
-  The published host's native filesystem provider discovered and loaded all
-  23 installed skills. These checks used a test scope; they do not prove
-  registry installation, full application/model routing or marketplace/Desktop
-  behavior. The marketplace
+  published `@ganyuan_ran/aegis@2.15.1` on 2026-11-14. Registry maintainer and
+  integrity readback match the confirmed owner and verified tarball. Windows
+  checks with DSH `0.2.2-rc.3` and pnpm `11.22.0` cover both tarball and actual
+  registry installation into isolated Web profiles, bundle composition, doctor
+  verification and removal. The host's native filesystem provider discovered
+  and loaded all 23 installed skills. pnpm automatically recorded the explicitly
+  requested new version in `minimumReleaseAgeExclude`; stricter host age policies
+  may defer installation. No prior official npm version exists to test upgrades.
+  Full application/model routing and marketplace/Desktop behavior remain
+  unverified. The marketplace
   maintainer states that `zzz-test` is not an account they operate and that
   they have no coordinated publication record; the publisher's identity
   remains unknown.
@@ -826,10 +829,9 @@ request.
   repository-to-npm substitution path is absent from that version's routing.
   The npm-resolution module still exists in the repository, and no live catalog
   page or Desktop flow was read back, so catalog behavior remains unverified.
-  For Aegis the resulting limitation is discovery rather than substitution:
-  with no npm publication, Aegis is expected to be absent from the marketplace
-  list and detail pages, leaving the documented Git installation as the
-  supported route. Hub `v1.6.6` separately stopped attributing non-plugin
+  Aegis now supplies an official scoped npm package alongside Git installation;
+  its marketplace listing and selected source still need live verification.
+  Hub `v1.6.6` separately stopped attributing non-plugin
   installation failures to plugin repositories
   ([Plugin Hub issue #178](https://github.com/dshplugin/dsh-plugin-hub/issues/178)).
 - DSH `0.2.0-rc.2` rejects terminal management of the Electron-owned `desktop`

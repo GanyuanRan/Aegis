@@ -141,10 +141,11 @@ were not reported, so it is bounded installation-recovery evidence.
 
 ### Official Source and Third-Party npm Packages
 
-Aegis supports the Git installation above and has selected
-`@ganyuan_ran/aegis` as its owner-controlled npm package identity. The scoped
-artifact is generated from the same canonical source. Registry availability
-must be checked before installation; package publication alone does not establish
+Aegis supports the Git installation above and the official npm package
+[`@ganyuan_ran/aegis`](https://www.npmjs.com/package/@ganyuan_ran/aegis).
+Version `2.15.1` was published on 2026-11-14 by `ganyuan_ran`; registry integrity
+matches the verified release tarball. The scoped artifact is generated from the
+same canonical source. Package publication alone does not establish
 marketplace listing or Desktop compatibility. The public npm
 `aegis-method-pack` package is published by an external account, not the Aegis
 team. Its repository or
@@ -154,9 +155,8 @@ row ID `aegis-method-pack` is a plugin identifier, not a registry package name.
 The prepared registry artifact keeps the canonical skills and host adapters,
 but derives an owner-controlled scoped package name and matching DSH module
 entry. This is our distribution responsibility; it does not require a Hub
-exception for Aegis. Git installation remains supported. Until publication and
-registry readback are complete, use the Git commands above. Once the requested
-version is available, CLI-managed profiles can install it explicitly:
+exception for Aegis. Git installation remains supported. CLI-managed profiles
+can install the npm release explicitly:
 
 ```bash
 npm view @ganyuan_ran/aegis version maintainers
@@ -185,9 +185,8 @@ direct Git-repository installation to the DSH command in a terminal, which is
 the route documented above. At tag `v2.0.0`, `src/server/http/routes.ts` no
 longer references `resolveNpmPackage` or `isDshNpmPackageForRepo`, so the
 repository-to-npm substitution this guide previously warned about is gone from
-that path. The consequence for Aegis is discovery, not substitution: because
-Aegis has no npm publication, expect it to be absent from the marketplace list
-and detail pages rather than offered through a catalog entry. We have not
+that path. Aegis now provides its own scoped npm package, but publication does
+not prove that the marketplace has indexed or selected it. We have not
 verified the live catalog pages, and the npm-resolution module still exists in
 the repository, so treat the catalog state as unverified until read back in the
 marketplace you actually use.

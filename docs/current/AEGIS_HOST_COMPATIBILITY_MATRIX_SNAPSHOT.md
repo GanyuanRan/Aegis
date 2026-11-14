@@ -152,10 +152,11 @@ The current snapshot only states:
     The official installation source is this Git repository, whose package
     identity is `aegis`. The Cordis row ID `aegis-method-pack` does not declare
     an npm distribution. The public npm package of that name is published by
-    an external account. A scoped npm artifact can be prepared from canonical
-    source with a matching DSH module entry under the confirmed official identity
-    `@ganyuan_ran/aegis`. Registry availability and marketplace/Desktop behavior
-    require their own verification. Marketplace repository metadata must not override the selected
+    an external account. The official scoped package `@ganyuan_ran/aegis@2.15.1`
+    is published from canonical source with a matching DSH module entry.
+    Registry integrity, isolated Web install/removal, doctor and native skill
+    discovery/body loading were verified; marketplace/Desktop behavior and live
+    model routing remain unverified. Marketplace metadata must not override the selected
     Git source or its pinned revision. Keep exactly one Aegis exposure per
     profile and verify the actual installed source and version.
     Profile management is host-owned: the CLI manages Web and Headless,

@@ -295,6 +295,10 @@ the Cordis row ID remains `aegis-method-pack`. Do not maintain a second skill tr
 The confirmed official npm identity is `@ganyuan_ran/aegis`, controlled by
 `ganyuan_ran`. Before publication, verify login and publishing access and ensure
 the exact artifact passes installation verification.
+The first registry release is `2.15.1`; its registry readback and isolated Web
+installation checks are recorded in the current known limitations. A publish
+command may return success before npm processing makes the version installable;
+wait for registry readback rather than repeating the publish.
 Do not describe a prepared tarball as published, marketplace-listed, or verified
 on Desktop. The public npm `aegis-method-pack` package belongs to an external
 publishing account.
