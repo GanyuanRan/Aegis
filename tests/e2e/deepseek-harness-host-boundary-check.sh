@@ -111,18 +111,14 @@ assert_contains "$dsh_adapter" 'includeDefaultRoots: false' \
     "DSH adapter isolates discovery to the package skills tree"
 assert_contains "$dsh_adapter" 'bundledSkillDir: skillsRoot' \
     "DSH adapter mounts canonical package skills"
-assert_contains "$dsh_adapter" 'createUserMessage' \
-    "DSH adapter uses the native identified-message constructor"
 assert_contains "$dsh_adapter" 'installBootstrap' \
-    "DSH adapter installs the lifecycle bootstrap"
-assert_contains "$dsh_adapter" '"skills", "agents"' \
-    "DSH adapter waits for skill and agent services"
-assert_contains "$dsh_bootstrap" 'agent/created' \
-    "DSH bootstrap uses the current native lifecycle entry"
-assert_contains "$dsh_bootstrap" 'agent/session-start' \
-    "DSH bootstrap retains the older preview lifecycle entry"
-assert_contains "$dsh_bootstrap" 'agent\.inject' \
-    "DSH bootstrap injects model-facing context through the native agent API"
+    "DSH adapter installs the routing contribution"
+assert_contains "$dsh_adapter" '"skills", "agents", "systemPrompt"' \
+    "DSH adapter waits for native discovery, agent and prompt services"
+assert_contains "$dsh_bootstrap" 'systemPrompt.context' \
+    "DSH bootstrap uses the native context registry"
+assert_not_contains "$dsh_bootstrap" 'agent\.inject|setTimeout|agent/session-start|session/event' \
+    "DSH advisory context never schedules work or owns lifecycle delivery"
 assert_contains "$dsh_bootstrap" 'origin === "subagent"' \
     "DSH bootstrap skips subagent sessions"
 assert_contains "$dsh_bootstrap" 'activationMode === "explicit"' \
@@ -156,12 +152,12 @@ assert_contains "$guide" 'dsh\.bundle\.patch|dsh.bundle.patch' \
     "Harness guide documents the bundle identity"
 assert_contains "$guide" 'explicit compatibility mode|Explicit Direct-Child Compatibility' \
     "Harness guide demotes direct-child exposure to compatibility mode"
-assert_contains "$guide" 'agent/created' \
-    "Harness guide documents the current native lifecycle bootstrap"
-assert_contains "$guide" 'agent/session-start' \
-    "Harness guide documents the older preview lifecycle bootstrap"
-assert_contains "$guide" 'startup.*resume.*clear.*compact' \
-    "Harness guide documents every covered session-start source"
+assert_contains "$guide" 'systemPrompt.context' \
+    "Harness guide documents native runtime context"
+assert_contains "$guide" 'startup' \
+    "Harness guide documents context availability at startup"
+assert_contains "$guide" 'suppression|disables dynamic' \
+    "Harness guide respects host context admission policy"
 assert_contains "$guide" '--compatibility-mode' \
     "Harness guide requires explicit compatibility authorization"
 assert_contains "$guide" 'Route: fast-path' \
@@ -218,8 +214,8 @@ assert_contains "$fast_track_zh" 'DeepSeek Harness.*README\.deepseek-harness\.md
     "Chinese Fast-Track Playbook links the Harness guide"
 assert_contains "$testing_doc" 'tests/deepseek-harness/run-tests\.sh' \
     "testing docs name the Harness test suite"
-assert_contains "$testing_doc" 'lifecycle-entry wiring' \
-    "testing docs bound deterministic lifecycle evidence"
+assert_contains "$testing_doc" 'context-registration wiring' \
+    "testing docs bound deterministic context evidence"
 assert_contains "$layer1" 'deepseek-harness-host-boundary-check\.sh' \
     "Layer 1 runs the Harness boundary check"
 assert_contains "$install_check" 'docs/README\.deepseek-harness\.md' \

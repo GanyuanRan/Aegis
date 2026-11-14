@@ -75,6 +75,10 @@ Aegis 是一套方法包，让 AI 编程 agent 像有工程纪律的人一样干
 请阅读 https://github.com/GanyuanRan/Aegis，识别我当前使用的 AI 编程宿主，并按对应宿主说明全局安装 Aegis。如果宿主是官方 DeepSeek Harness（`dsh`），必须把全局/极简安装分流为原生 profile plugin 安装：`dsh plugin --profile <profile> add "git+https://github.com/GanyuanRan/Aegis.git"`；除非 plugin manager 不可用且我明确同意 compatibility mode，否则不要静默改用 direct-child 兼容路径。如果需要重启或重新加载宿主，请明确告诉我；然后从已安装的 Aegis method-pack 根目录运行完整安装验证。不要在目标项目目录中运行 doctor 命令。先定位 `<aegis-method-pack-root>`，再运行 `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`。只有当 JSON 输出包含 `"ok": true`、`"workspaceSupport": "available"` 和 `"configStatus": "configured"` 时，才把安装视为完成；如果宿主有单独的 skill discovery 目录，也要额外用 `--discovery-root <path>` 验证它指向当前版本；如果宿主说明声明了 skill 目录名前缀，也同时传 `--discovery-name-prefix <prefix>`。还必须完成对应宿主说明中的原生激活与自动入口验证；当宿主提供 plugin、hook 或 session-start bootstrap 时，仅通过文件发现或通用 doctor 检查不能视为安装完成。
 ```
 
+DeepSeek Harness 也支持官方 npm 包 `@ganyuan_ran/aegis`。上面的提示词选择
+Git 渠道；npm 安装、更新和渠道迁移请按 [DSH 专用说明](docs/README.deepseek-harness.md#updating)
+操作，同一 profile 只保留一个 Aegis 安装来源。
+
 ## 实测 Agentic Benchmark
 
 本次冻结的 held-out A/B benchmark（Aegis 2.7.6，2026-08-11）在两组中保持 Codex 客户端、prompt、项目、工具策略和请求相同的 `gpt-5.6-sol` / `xhigh` 设置，
@@ -107,6 +111,11 @@ Aegis 是一套方法包，让 AI 编程 agent 像有工程纪律的人一样干
 已安装的 method-pack 根目录，读取本机 host-scoped registry，再调用
 `scripts/aegis-update.py` 默认更新当前宿主。只有用户明确要求 `--all` 时才更新所有
 已登记宿主。Aegis 默认不做后台自动更新。
+
+DSH profile 管理的 bundle 应通过宿主插件管理器更新，不使用
+`scripts/aegis-update.py`：Git 安装的包名为 `aegis`，npm 安装为
+`@ganyuan_ran/aegis`。请按[对应渠道的更新步骤](docs/README.deepseek-harness.md#updating)
+操作，并在重启目标 profile 后核对实际版本。
 
 ## 使用前必须知道
 

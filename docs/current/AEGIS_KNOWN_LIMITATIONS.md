@@ -761,7 +761,7 @@ request.
 - The official DeepSeek Harness (`deepseek-ai/deepseek-harness`) is a structural
   host target, not a release-level fresh smoke verdict
 - DeepSeek Harness and the community DeepSeek-TUI remain separate host surfaces
-- Deterministic tests cover native lifecycle bootstrap wiring, but not live
+- Deterministic tests cover native runtime-context wiring, but not live
   model routing quality in a fresh installed DSH profile
 - DSH peer ranges use `>=0.1.0-rc.6` as an installation admission floor,
   including prereleases under the host's checker. This retires the stale
@@ -792,7 +792,18 @@ request.
   A GitHub tag does not update npm. Repository
   metadata matching in the marketplace is not package-owner verification.
   The publishing account `zzz-test` is not the Aegis team's account. Aegis
-  does not maintain an official npm registry channel. The marketplace
+  published `@ganyuan_ran/aegis@2.15.1` on 2026-11-14. Registry maintainer and
+  integrity readback match the confirmed owner and verified tarball. Windows
+  checks with DSH `0.2.2-rc.3` and pnpm `11.22.0` cover both tarball and actual
+  registry installation into isolated Web profiles, bundle composition, doctor
+  verification and removal. The host's native filesystem provider discovered
+  and loaded all 23 installed skills. pnpm automatically recorded the explicitly
+  requested new version in `minimumReleaseAgeExclude`; stricter host age policies
+  may defer installation. A registry `2.15.1` to `2.15.2` tarball upgrade also
+  passed native skill loading and doctor checks; registry-only upgrades require
+  their own readback after publication.
+  Full application/model routing and marketplace/Desktop behavior remain
+  unverified. The marketplace
   maintainer states that `zzz-test` is not an account they operate and that
   they have no coordinated publication record; the publisher's identity
   remains unknown.
@@ -820,10 +831,9 @@ request.
   repository-to-npm substitution path is absent from that version's routing.
   The npm-resolution module still exists in the repository, and no live catalog
   page or Desktop flow was read back, so catalog behavior remains unverified.
-  For Aegis the resulting limitation is discovery rather than substitution:
-  with no npm publication, Aegis is expected to be absent from the marketplace
-  list and detail pages, leaving the documented Git installation as the
-  supported route. Hub `v1.6.6` separately stopped attributing non-plugin
+  Aegis now supplies an official scoped npm package alongside Git installation;
+  its marketplace listing and selected source still need live verification.
+  Hub `v1.6.6` separately stopped attributing non-plugin
   installation failures to plugin repositories
   ([Plugin Hub issue #178](https://github.com/dshplugin/dsh-plugin-hub/issues/178)).
 - DSH `0.2.0-rc.2` rejects terminal management of the Electron-owned `desktop`
@@ -844,19 +854,28 @@ request.
 
 **Retention Reason**
 - The default DSH path is a thin package bundle declared through
-  `dsh.bundle.patch`. It registers the canonical package-owned `skills/` tree
-  through Harness's native filesystem provider. In `auto` mode it preloads the
-  compact router text while applying the plugin and defers its injection to
-  the session's first durable promotion signal (`tool/call` or
-  `assistant/message`) after each native `agent/created` or legacy
-  `agent/session-start` boundary (`startup`, `resume`, `clear`, `compact`),
-  keeping the first model request of every gated epoch free of injected
-  context while avoiding a first-step asynchronous read race.
+  `dsh.bundle.patch`, mounting the canonical skills through the native provider.
+  Auto activation now contributes the router through `systemPrompt.context`;
+  host projection owns admission and deduplication. This retires Aegis's
+  first-request isolation and delayed inbox injection, which could extend a
+  finished turn ([issue #102](https://github.com/GanyuanRan/Aegis/issues/102)).
+  Ordinary first requests may contain guidance. Presets suppressing runtime
+  context remain in control; explicit native skill loading stays available.
+  Published host packages expose the context registry from the declared
+  admission floor; this is not all-version live routing evidence.
+- Published DSH `0.2.2-rc.3` loop tests with scripted model responses cover
+  text-only request counts, retained-context deduplication, replacement before
+  and after pre-step, retry with/without replacement, cancellation, tool
+  continuation, unload/reload, explicit mode, subagents and host suppression.
+  A bounded `0.2.1-rc.2` transport replay covers the same non-tool scenarios.
+  These checks exercise real host code without a live provider; actual UI
+  resume/clear/compaction commands, Desktop and macOS remain unverified.
 - [Issue #75](https://github.com/GanyuanRan/Aegis/issues/75) reported that DSH
   0.1.7-rc.2 no longer emitted `agent/session-start`, leaving auto-entry
-  inactive while structural checks passed. The dual-event adapter has
-  deterministic coverage, but fresh live activation on an installed profile
-  is still required before a release-level routing claim.
+  inactive while structural checks passed. That historical delivery path has
+  now been replaced by the native context
+  registry; fresh live activation on an installed profile is still required
+  before a release-level routing claim.
 - A [contributor readback of the merged fix](https://github.com/GanyuanRan/Aegis/issues/75#issuecomment-5862159897)
   at `25c0f57`, using DSH `0.1.7-rc.2` on Windows, reports one bootstrap
   injection on startup and one on resume, subsequent model-context presence,
@@ -865,8 +884,8 @@ request.
   first skill call preceded deferred injection, so first-step routing cannot
   be attributed to the bootstrap. Clear and compact were structural-only;
   live subagent behavior remains unverified.
-- The older `agent/session-start` subscription remains a host compatibility
-  exception: published DSH 0.1.5-rc.3 still declares that lifecycle event.
+- The native context contribution replaces both lifecycle subscriptions.
+  Historical lifecycle smoke above does not verify the new delivery path.
 - The bootstrap skips subagents and does not install a hard pre-tool guard:
 - DeepSeek Harness's native filesystem provider discovers direct child skill
   bundles from project `.dsh/skills`, project `.agents/skills`, configured

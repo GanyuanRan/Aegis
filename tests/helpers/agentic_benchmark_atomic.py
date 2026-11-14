@@ -18,7 +18,7 @@ def atomic_text(path: Path, value: str) -> None:
     temporary = Path(temporary_name)
     descriptor_open = True
     try:
-        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+        with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as stream:
             descriptor_open = False
             stream.write(value)
             stream.flush()

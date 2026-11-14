@@ -33,6 +33,9 @@ jobs:
       - name: Validate artifact schema fixtures
         run: bash tests/e2e/artifact-schema-check.sh
 
+      - name: Verify scoped npm distribution artifact
+        run: python tests/helpers/test_npm_distribution.py
+
       - name: Validate method-pack boundary
         run: bash tests/e2e/boundary-compliance-check.sh
 

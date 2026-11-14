@@ -244,9 +244,8 @@ and Claude-compatible plugins can otherwise expose duplicate Aegis copies.
 
 The deterministic DeepSeek Harness suite validates the official host identity,
 root `dsh.bundle.patch` declaration, thin Cordis adapter, package-owned skill
-root, deferred native lifecycle bootstrap across startup/resume/clear/compact
-(armed at each boundary, injected once after the session's first durable
-promotion signal), subagent and explicit-mode exclusions, explicit direct-child
+root, native runtime-context registration, subagent and explicit-mode exclusions,
+explicit direct-child
 compatibility path, duplicate-exposure guard, developer-preview boundary, and
 public release links without changing the current user's DSH profile:
 
@@ -255,6 +254,51 @@ bash tests/deepseek-harness/run-tests.sh
 python tests/helpers/test_aegis_update.py -k deepseek_harness
 ```
 
+The scoped npm artifact regression packs real canonical files, checks the
+tarball allowlist and unchanged skill contents, resolves the scoped DSH entry,
+and runs the installed doctor with an isolated config:
+
+```bash
+python tests/helpers/test_npm_distribution.py
+python scripts/build-npm-package.py --name @your-scope/aegis --output .tmp/npm-release
+```
+
+The package name in this example is a placeholder for a confirmed owner-controlled
+scope. The builder requires Git and npm, reads tracked working-tree files, and
+never publishes. Commit/review the release source before preparing a publishable
+artifact. Existing tarballs are never overwritten. Its output records the exact
+tarball, version and integrity; review `npm publish <tarball> --dry-run --json`
+before publishing that same tarball with `npm publish <tarball> --access public`.
+Keep credentials out of the repository. Publication requires the owner's npm
+login or configured trusted publishing and does not establish marketplace listing.
+
+For channel acceptance, install the tarball into an isolated Web profile,
+verify the scoped dependency and exactly one `aegis-method-pack` row, load native
+skills, then remove the scoped package. After actual publication, repeat using
+the exact registry name/version and test update from the prior supported version.
+For Git-to-npm migration, remove the old Git dependency through that profile's
+manager before installing the scoped package; do not load both copies. Desktop
+requires the application's own manager and separate source/version/skill readback.
+No local packing test substitutes for these environment-bound checks.
+
+For real loop transport and scheduling checks with a scripted adapter, create
+an isolated host dependency directory (not the user's active profile):
+
+```bash
+npm install --prefix /tmp/aegis-dsh-test --ignore-scripts --no-audit --no-fund \
+  @deepseek-ai/dsh-agent-loop@0.2.2-rc.3 \
+  @deepseek-ai/dsh-tool-executor-native@0.2.2-rc.3 \
+  @deepseek-ai/dsh-tool-testkit@0.2.2-rc.3
+node tests/deepseek-harness/test-runtime-context.mjs /tmp/aegis-dsh-test/package.json
+```
+
+Use an equivalent temporary directory on Windows. These tests cover text-only
+request counts, context deduplication/replacement, retry, cancellation, tool
+continuation, unload/reload, explicit activation, subagents and host suppression.
+They execute the published host loop without a network model; they do not prove
+live routing, Desktop composition, or macOS behavior. Installation requires npm
+registry access; missing host packages are an environment-bound check, not a pass.
+
 The opt-in integration lane requires local `dsh` and `pnpm`. It creates an
 isolated temporary `DSH_HOME`, installs the current checkout into a Web profile,
 checks dependency/bundle reconciliation and dump-config composition, then
@@ -262,7 +306,22 @@ removes the bundle:
 
 ```bash
 bash tests/deepseek-harness/run-tests.sh --integration
+bash tests/deepseek-harness/run-tests.sh --integration --artifact <tarball>
 ```
+
+The artifact variant checks native profile install/composition/removal of the
+packed scoped identity; it does not make a model request or prove native skill
+tool execution. Run those checks separately before claiming channel acceptance.
+
+To exercise a published host's native filesystem provider against the installed
+package, without model access:
+
+```bash
+node tests/deepseek-harness/test-installed-skills.mjs <host-package.json> <installed-package-root>
+```
+
+This checks complete catalog discovery and every installed skill body. It does
+not prove full application bootstrap, model tool selection, or Desktop behavior.
 
 For an npm-installed DSH host exposing the compatibility checker, also run
 the version-admission regression against that host's actual app-boot module:
@@ -277,7 +336,7 @@ without claiming those versions have been run. It does not bypass DSH's
 checker or require a version exemption.
 
 These checks prove method-pack bundle installation, version admission, and
-deterministic lifecycle-entry wiring only. Dump-config and `--help` do not
+deterministic context-registration wiring only. Dump-config and `--help` do not
 establish successful runtime plugin loading. A fresh Standard-mode session must
 still prove catalog discovery, native task-specific `skill` loading,
 representative routing versus `Route: fast-path`, false-positive behavior,

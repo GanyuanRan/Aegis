@@ -180,10 +180,10 @@ Confirm:
 - DeepSeek-TUI is still described as manual `SKILL.md` copy install, not a one-click GitHub installer for multi-skill repos
 - DeepSeek Harness is distinct from DeepSeek-TUI and remains a developer-preview
   structural target; its default install uses the thin Aegis `dsh.bundle` and
-  package-owned `skills/` tree plus native `agent/created` or legacy
-  `agent/session-start` router
-  bootstrap; the bootstrap is deferred to the session's first durable
-  promotion signal, skips subagents, honors explicit activation mode, and does
+  package-owned `skills/` tree plus native `systemPrompt.context` routing
+  guidance; host projection owns admission and deduplication, Aegis never queues
+  an extra step, respects host context suppression, skips subagents, honors
+  explicit activation mode, and does
   not add a hard tool guard. Updater-managed direct-child links require
   `--compatibility-mode`; `$DSH_HOME/skills`
   (`~/.dsh/skills` by default), project `.dsh/skills`, shared `.agents/skills`,
@@ -285,8 +285,23 @@ package identity `aegis` and Cordis row ID `aegis-method-pack`. The root
 manifest is private to prevent accidental npm registry publication; Git-based
 package-manager installation remains supported.
 
-Aegis does not maintain an official npm registry channel. The public npm
-`aegis-method-pack` package belongs to an external publishing account.
+An official scoped npm distribution may be generated from the same canonical
+source with `scripts/build-npm-package.py`. This retires Git-only as a permanent
+distribution policy, not the supported Git installation path. The root manifest
+stays private; only the generated manifest carries the confirmed scoped name
+and public registry configuration. The DSH module path must use that same name;
+the Cordis row ID remains `aegis-method-pack`. Do not maintain a second skill tree.
+
+The confirmed official npm identity is `@ganyuan_ran/aegis`, controlled by
+`ganyuan_ran`. Before publication, verify login and publishing access and ensure
+the exact artifact passes installation verification.
+The first registry release is `2.15.1`; its registry readback and isolated Web
+installation checks are recorded in the current known limitations. A publish
+command may return success before npm processing makes the version installable;
+wait for registry readback rather than repeating the publish.
+Do not describe a prepared tarball as published, marketplace-listed, or verified
+on Desktop. The public npm `aegis-method-pack` package belongs to an external
+publishing account.
 Repository and author metadata, package-manager installation, and marketplace
 discoverability do not establish an official registry publication.
 
@@ -294,6 +309,14 @@ Do not add npm account access or publication as a prerequisite for a GitHub
 release. A GitHub release also does not repair a marketplace that selects a
 different source: closing that issue requires the marketplace's actual source,
 revision, and installed version readback plus successful profile verification.
+
+For an npm release, pack only tracked public distribution files, review the
+tarball manifest/file list, and verify native bundle registration and skill
+loading from the artifact. Publish that exact tarball under the confirmed
+owner-controlled scope. Read back registry name/version/integrity and ownership;
+then test registry installation, upgrade and removal in an isolated profile.
+Market listing and Desktop installation require separate checks through their
+actual UI. Never infer those results from local packing or Web-profile checks.
 
 A single method-pack release must include at minimum:
 
