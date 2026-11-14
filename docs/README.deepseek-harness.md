@@ -141,9 +141,11 @@ were not reported, so it is bounded installation-recovery evidence.
 
 ### Official Source and Third-Party npm Packages
 
-Aegis currently supports the Git installation above. An owner-controlled scoped
-npm distribution is being prepared from the same canonical source; it is not
-yet a published or verified marketplace installation channel. The public npm
+Aegis supports the Git installation above and has selected
+`@ganyuan_ran/aegis` as its owner-controlled npm package identity. The scoped
+artifact is generated from the same canonical source. Registry availability
+must be checked before installation; package publication alone does not establish
+marketplace listing or Desktop compatibility. The public npm
 `aegis-method-pack` package is published by an external account, not the Aegis
 team. Its repository or
 author metadata does not establish official publication. The bundle's Cordis
@@ -153,7 +155,19 @@ The prepared registry artifact keeps the canonical skills and host adapters,
 but derives an owner-controlled scoped package name and matching DSH module
 entry. This is our distribution responsibility; it does not require a Hub
 exception for Aegis. Git installation remains supported. Until publication and
-registry readback are complete, use the Git commands above. See the
+registry readback are complete, use the Git commands above. Once the requested
+version is available, CLI-managed profiles can install it explicitly:
+
+```bash
+npm view @ganyuan_ran/aegis version maintainers
+dsh plugin --profile web add @ganyuan_ran/aegis@2.15.1
+```
+
+For migration, inspect the profile and remove its existing `aegis` Git dependency
+through the host manager before installing the scoped package. Keep one Aegis
+bundle per profile. Update or remove the npm installation by its scoped name,
+`@ganyuan_ran/aegis`; the Cordis row remains `aegis-method-pack`. Desktop uses
+its application-owned manager. See the
 [release procedure](current/AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#official-installation-source)
 and [artifact tests](testing.md#deepseek-harness-bundle-host-tests).
 

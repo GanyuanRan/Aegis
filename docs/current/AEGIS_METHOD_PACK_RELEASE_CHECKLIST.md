@@ -292,8 +292,9 @@ stays private; only the generated manifest carries the confirmed scoped name
 and public registry configuration. The DSH module path must use that same name;
 the Cordis row ID remains `aegis-method-pack`. Do not maintain a second skill tree.
 
-Publication is pending until the project owner confirms the npm scope and
-publishing access, and the exact artifact passes installation verification.
+The confirmed official npm identity is `@ganyuan_ran/aegis`, controlled by
+`ganyuan_ran`. Before publication, verify login and publishing access and ensure
+the exact artifact passes installation verification.
 Do not describe a prepared tarball as published, marketplace-listed, or verified
 on Desktop. The public npm `aegis-method-pack` package belongs to an external
 publishing account.
