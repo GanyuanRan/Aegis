@@ -1286,6 +1286,7 @@ def self_test(print_golden: bool = False) -> None:
             output = root / "atomic-output.json"
             output.with_suffix(output.suffix + ".tmp").symlink_to(victim)
             atomic_text(output, "repo-safe\n")
+            require(output.read_bytes() == b"repo-safe\n", "canonical output must retain LF bytes on every host")
             require(victim.read_text(encoding="utf-8") == "outside-safe\n", "fixed temporary symlink overwrote an external victim")
             require(not output.is_symlink() and output.read_text(encoding="utf-8") == "repo-safe\n", "atomic output was not safely replaced")
 

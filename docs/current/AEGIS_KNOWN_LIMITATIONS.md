@@ -799,7 +799,9 @@ request.
   verification and removal. The host's native filesystem provider discovered
   and loaded all 23 installed skills. pnpm automatically recorded the explicitly
   requested new version in `minimumReleaseAgeExclude`; stricter host age policies
-  may defer installation. No prior official npm version exists to test upgrades.
+  may defer installation. A registry `2.15.1` to `2.15.2` tarball upgrade also
+  passed native skill loading and doctor checks; registry-only upgrades require
+  their own readback after publication.
   Full application/model routing and marketplace/Desktop behavior remain
   unverified. The marketplace
   maintainer states that `zzz-test` is not an account they operate and that

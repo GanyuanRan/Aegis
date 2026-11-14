@@ -1,5 +1,23 @@
 # Aegis Release Notes
 
+## v2.15.2 (2026-11-14)
+
+### English
+
+- Fix #102's Aegis delivery mechanism: contribute routing guidance through DSH's existing `systemPrompt.context` registry, without inbox injection or scheduling an extra model step after an answer. Retire the first-request isolation requirement; ordinary first requests may contain guidance. Host suppression, explicit activation and subagent exclusion remain respected.
+- Publish the same release source through Git and the official scoped npm package `@ganyuan_ran/aegis`. GitHub tag `v2.15.1` predates this fix; the initial npm `2.15.1` already includes the new delivery code. Use `2.15.2` as the common upgrade target across channels.
+- Complete channel-specific installation, verification, update, migration and removal guidance. Keep one Aegis installation per profile and restart it after updating. Existing session history is not rewritten; use a fresh session to assess bootstrap behavior.
+- Real DSH `0.2.2-rc.3` loop checks with scripted responses cover text-only turn termination, context replacement, retry, cancellation, tool continuation and exclusions. They make no live model requests; the original macOS/Desktop/compaction UI scenario still needs reporter verification. No upstream API change is required by the new integration.
+- Write benchmark projections with explicit LF bytes so canonical rendering checks also work on Windows. Historical benchmark data and scores are unchanged. Synchronize all eight package/plugin versions; no new global routing-prefix migration is required.
+
+### 中文
+
+- 修复 #102 对应的 Aegis 投递机制：通过 DSH 现有 `systemPrompt.context` 提供路由指导，移除 inbox 注入，不因补发指导而在回答后创建额外模型步骤。取消“首次请求必须隔离 bootstrap”的要求；保留宿主抑制、显式激活和子代理排除边界。
+- 通过 Git 和官方 npm 包 `@ganyuan_ran/aegis` 交付同一版本源码。GitHub `v2.15.1` 标签早于本次修复，首个 npm `2.15.1` 已包含新投递逻辑；统一以 `2.15.2` 作为跨渠道升级目标。
+- 补齐两种渠道的安装、验证、更新、迁移和卸载说明。同一 profile 只保留一份 Aegis，更新后重启；旧会话历史不会被重写，应在新会话中检查 bootstrap 行为。
+- 已用 DSH `0.2.2-rc.3` 真实循环及脚本化响应验证回答结束、上下文替换、重试、取消、工具续步及排除条件，未调用在线模型。报告者原始 macOS/Desktop/压缩 UI 场景仍需复测；新方案不依赖上游新增接口。
+- benchmark 投影显式写入 LF，使 Windows 上的规范渲染检查也可运行；历史数据与分数不变。同步八处版本号，无需迁移统一全局路由前缀。
+
 ## v2.15.1 (2026-11-13)
 
 ### English

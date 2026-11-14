@@ -160,7 +160,7 @@ can install the npm release explicitly:
 
 ```bash
 npm view @ganyuan_ran/aegis version maintainers
-dsh plugin --profile web add @ganyuan_ran/aegis@2.15.1
+dsh plugin --profile web add @ganyuan_ran/aegis@2.15.2
 ```
 
 For migration, inspect the profile and remove its existing `aegis` Git dependency
@@ -251,27 +251,37 @@ First verify that the selected profile owns the installed package:
 dsh plugin --profile web list --depth 0
 ```
 
-The output must list `aegis`. Then inspect the composed profile without starting
+The output must list `aegis` for Git or `@ganyuan_ran/aegis` for npm, with the
+intended source and version. Then inspect the composed profile without starting
 the application:
 
 ```bash
 dsh --profile web --dump-config
 ```
 
-The dump must contain exactly one enabled row with:
+For Git, the dump must contain exactly one enabled row with:
 
 ```text
 id: aegis-method-pack
 name: aegis/extensions/dsh/index.js
 ```
 
+For npm, the same row ID must resolve the scoped entry instead:
+
+```text
+id: aegis-method-pack
+name: '@ganyuan_ran/aegis/extensions/dsh/index.js'
+```
+
 The profile manifest under `$DSH_HOME/profiles/web/package.json` (default
-`~/.dsh/profiles/web/package.json`) must list `aegis` in both `dependencies` and
+`~/.dsh/profiles/web/package.json`) must list the selected package name (`aegis`
+for Git, `@ganyuan_ran/aegis` for npm) in both `dependencies` and
 `dsh.profile.bundles`. A package present only in `dependencies` is not an active
 DSH bundle.
 
 Locate the profile-managed package root (normally
-`$DSH_HOME/profiles/web/node_modules/aegis`), then run the method-pack doctor
+`$DSH_HOME/profiles/web/node_modules/aegis` for Git or
+`$DSH_HOME/profiles/web/node_modules/@ganyuan_ran/aegis` for npm), then run the method-pack doctor
 from that root, not from a target project directory:
 
 ```bash
@@ -357,6 +367,12 @@ Aegis goal: Fix the auth refresh bug without rewriting the auth system.
 
 ## Updating
 
+For issue #102, use `2.15.2` as the common upgrade target. GitHub tag `v2.15.1`
+predates the native-context fix, while the initial npm `2.15.1` already contains
+that code. Version numbers from those two older artifacts alone do not identify
+the same source. The new integration uses the existing host context registry
+and does not depend on a reply to the upstream capability proposal.
+
 For Electron Desktop, update through the application's plugin manager and
 inspect the actual source/ref/version there. The terminal examples in this
 section apply to CLI-managed profiles.
@@ -367,13 +383,42 @@ revision containing the admission-range fix; retrying the same old tag does
 not change its manifest. Version exemptions are not required by the fixed
 manifest.
 
-Update Aegis through the plugin manager of each profile where it is installed:
+First inspect `dsh plugin --profile web list --depth 0` to identify the installed
+channel. Update through the manager of that profile, using its actual package
+name. For a Git installation:
 
 ```bash
 dsh plugin --profile web update aegis
 dsh plugin --profile web list --depth 0
 dsh --profile web --dump-config
 ```
+
+For npm, check the available release and update the scoped dependency:
+
+```bash
+npm view @ganyuan_ran/aegis version
+dsh plugin --profile web update @ganyuan_ran/aegis
+dsh plugin --profile web list --depth 0
+dsh --profile web --dump-config
+```
+
+An update may retain the installed version when its range or a host release-age
+policy prevents moving forward. To select a specific published release, use
+`dsh plugin --profile web add @ganyuan_ran/aegis@<version>` with the actual target
+version, then read back the installed version. Do not bypass host admission or
+release-age policy. Verify the actual version and native skill loading after
+every update; a successful fresh installation does not prove every upgrade path.
+
+To migrate from Git to npm in the same CLI-managed profile:
+
+```bash
+dsh plugin --profile web remove aegis
+dsh plugin --profile web add @ganyuan_ran/aegis@2.15.2
+```
+
+Only remove `aegis` after confirming that it is the intended Git installation.
+Record its source/ref first so it can be reinstalled if migration fails. Repeat
+the installation verification above; do not retain both channels in one profile.
 
 Repeat the command with `--profile headless` only when that profile also owns an
 Aegis installation. Restart the updated profile and repeat the native catalog,
@@ -393,10 +438,18 @@ direct-child compatibility mode.
 For Electron Desktop, remove the intended bundle through the application's
 plugin manager. The terminal example below applies to Web.
 
-Remove Aegis only from the intended profile:
+Remove Aegis only from the intended profile. For Git:
 
 ```bash
 dsh plugin --profile web remove aegis
+dsh plugin --profile web list --depth 0
+dsh --profile web --dump-config
+```
+
+For npm:
+
+```bash
+dsh plugin --profile web remove @ganyuan_ran/aegis
 dsh plugin --profile web list --depth 0
 dsh --profile web --dump-config
 ```
@@ -409,7 +462,8 @@ project skill directories; those locations may contain user-owned content.
 
 Use this mode only when the developer-preview bundle API is unavailable, local
 policy forbids third-party profile plugins, or `pnpm` cannot be provided to the
-DSH plugin manager. Ensure both `aegis` and `aegis-method-pack` dependencies are
+DSH plugin manager. Ensure `aegis`, `@ganyuan_ran/aegis`, and the third-party
+`aegis-method-pack` dependencies are
 absent from the selected profile first.
 
 Keep one local Aegis checkout as the canonical method-pack source and register a
