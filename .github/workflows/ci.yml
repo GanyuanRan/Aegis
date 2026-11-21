@@ -57,5 +57,5 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Check updater on Python 3.10
-        run: python -m unittest tests.helpers.test_aegis_update tests.helpers.test_aegis_copy
+      - name: Check updater and workspace helper on Python 3.10
+        run: python -m unittest tests.helpers.test_aegis_update tests.helpers.test_aegis_copy tests.helpers.test_workspace_text_write_compat tests.helpers.test_workspace_evidence_convergence

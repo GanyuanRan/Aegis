@@ -71,8 +71,8 @@ Supporting assets:
 
 Workspace helper coverage:
 
-- `aegis-workspace-check.sh` verifies `scripts/aegis-workspace.py` against a
-  temporary target project.
+- `aegis-workspace-check.sh` verifies `scripts/aegis-workspace.py` and its
+  `scripts/aegis_workspace_helper/` package against a temporary target project.
 - `aegis-doctor-check.sh` verifies complete-install readiness: key skills,
   method-pack root, and project workspace support through a temporary target
   project.

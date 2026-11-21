@@ -112,6 +112,7 @@ run_check "aegis doctor" bash "$SCRIPT_DIR/aegis-doctor-check.sh"
 run_check "install verification policy" bash "$SCRIPT_DIR/install-verification-policy-check.sh"
 run_check "claude hook permissions" bash "$SCRIPT_DIR/claude-hook-permissions-check.sh"
 run_check "workspace text write compatibility" "${PYTHON_CMD[@]}" tests/helpers/test_workspace_text_write_compat.py
+run_check "workspace evidence convergence" "${PYTHON_CMD[@]}" tests/helpers/test_workspace_evidence_convergence.py
 run_check "Codex re-entry evidence parser" "${PYTHON_CMD[@]}" tests/helpers/test_codex_reentry_evidence.py
 run_check "optional Codex reconciliation callbacks" "${PYTHON_CMD[@]}" tests/codex-reconciliation/test_hooks.py
 run_check "workspace helper skill wiring" bash "$SCRIPT_DIR/workspace-helper-wiring-check.sh"
