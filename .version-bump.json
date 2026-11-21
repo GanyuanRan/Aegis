@@ -12,7 +12,6 @@
   "audit": {
     "exclude": [
       "RELEASE-NOTES.md",
-      "Aegis_Codeflow",
       "Autoloom",
       "node_modules",
       ".git",
