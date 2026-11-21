@@ -196,3 +196,14 @@ unsafe outcomes, with a +9.09 to +45.45 percentage-point 95% case-cluster
 interval, from one observation per case. No projected or interim
 numbers are presented as evidence, and numbers from older snapshots are not
 evidence for newer releases.
+
+Known matrix-v7 scoring asymmetry: four held-out discriminator cases
+(`quick-bug-normal`, `quick-bug-boundary`, `tiny-source-normal`,
+`tiny-source-boundary`) require the frozen `implementation-rationale` event tag
+before the first edit. That tag also accepts the bare phrase "change
+necessity", the label of Aegis's own `Change Necessity` output, while an
+ordinary concrete rationale without one of its phrases does not produce it.
+The 2.10.1, 2.10.8 and 2.13.0 standard snapshots may therefore credit that
+label in those cases. This has not been checked against raw outputs, and the
+frozen scores are unchanged; see the
+[benchmark baseline](../docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md).
