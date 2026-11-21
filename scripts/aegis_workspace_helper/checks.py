@@ -8,7 +8,7 @@ from pathlib import Path
 
 from .adr import validate_adr_file
 from .artifacts import infer_artifact_type, validate_artifact_file
-from .evidence import ATTEMPT_CONVERGENCE_WARNING, evidence_bundle_status
+from .evidence import ATTEMPT_CONVERGENCE_WARNING, classify_evidence_status
 from .index import read_index_paths
 from .inputs import load_json_file
 from .layout import (
@@ -52,7 +52,8 @@ def process_artifact_pressure(ws: Path) -> list[str]:
         superseded = 0
         max_attempts = 0
         for evidence_path in evidence_paths:
-            status = evidence_bundle_status(evidence_path)
+            data = load_json_file(evidence_path)
+            status = classify_evidence_status(data)
             if status == "evidence-finalized":
                 terminal += 1
             elif status in {"blocked", "abandoned"}:
@@ -63,7 +64,6 @@ def process_artifact_pressure(ws: Path) -> list[str]:
                 superseded += 1
             else:
                 legacy += 1
-            data = load_json_file(evidence_path)
             if isinstance(data, dict):
                 attempt_summary = data.get("attemptSummary", {})
                 if isinstance(attempt_summary, dict):

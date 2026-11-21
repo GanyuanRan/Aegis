@@ -1,4 +1,5 @@
 import importlib.util
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -6,6 +7,12 @@ from unittest.mock import patch
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+# Import the helper package from this checkout; write no bytecode under scripts/.
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(REPO_ROOT / "scripts"))
+
+from aegis_workspace_helper.layout import initialize_workspace
+from aegis_workspace_helper.work import command_new_work
 
 
 def load_module(name: str, relative_path: str):
@@ -16,7 +23,6 @@ def load_module(name: str, relative_path: str):
     return module
 
 
-workspace = load_module("aegis_workspace", "scripts/aegis-workspace.py")
 doctor = load_module("aegis_doctor", "scripts/aegis-doctor.py")
 
 
@@ -30,7 +36,7 @@ class WorkspaceTextWriteCompatibilityTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="aegis-compat-") as tmp:
             root = Path(tmp)
             with patch.object(Path, "write_text", old_write_text):
-                workspace.initialize_workspace(root)
+                initialize_workspace(root)
                 args = type(
                     "Args",
                     (),
@@ -58,7 +64,7 @@ class WorkspaceTextWriteCompatibilityTests(unittest.TestCase):
                         "next_step": None,
                     },
                 )()
-                self.assertEqual(workspace.command_new_work(args), 0)
+                self.assertEqual(command_new_work(args), 0)
 
             work_dir = root / "docs" / "aegis" / "work" / "2026-05-09-compat-check"
             self.assertTrue((work_dir / "10-intent.md").is_file())

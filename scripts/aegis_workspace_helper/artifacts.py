@@ -224,6 +224,12 @@ def validate_artifact_file(artifact_type: str, path: Path) -> list[str]:
     return validate_artifact_data(artifact_type, data, path)
 
 
+def require_valid_artifact(artifact_type: str, data: object, source: Path) -> None:
+    failures = validate_artifact_data(artifact_type, data, source)
+    if failures:
+        raise WorkspaceError("; ".join(failures))
+
+
 def command_validate_artifact(args: argparse.Namespace) -> int:
     path = Path(args.file).expanduser().resolve()
     artifact_type = args.type or infer_artifact_type(path)

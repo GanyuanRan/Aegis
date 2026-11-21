@@ -11,9 +11,9 @@ import re
 from datetime import date
 from pathlib import Path
 
-from .artifacts import SCHEMA_VERSION, validate_artifact_data
+from .artifacts import SCHEMA_VERSION, require_valid_artifact
 from .errors import WorkspaceError
-from .index import append_work_file
+from .index import append_index_entry
 from .inputs import arg_value, list_arg, optional_none, read_json_dict
 from .layout import (
     ensure_work_exists,
@@ -207,7 +207,7 @@ def command_new_work(args: argparse.Namespace) -> int:
         ("todo-checkpoint-draft.json", "artifact", f"{args.title} todo checkpoint draft"),
         ("drift-check-draft.json", "artifact", f"{args.title} drift check draft"),
     ):
-        append_work_file(root, target / filename, kind, title, args.date)
+        append_index_entry(root, str(target / filename), kind, title, args.date)
 
     print(f"Created work lifecycle: {target}")
     return 0
@@ -262,7 +262,9 @@ def command_add_checkpoint(args: argparse.Namespace) -> int:
     )
     bounded_checkpoint_markdown(target / "20-checkpoint.md", current_block)
 
-    append_work_file(root, target / "resume-state-hint.json", "artifact", f"{args.work} resume state hint")
+    append_index_entry(
+        root, str(target / "resume-state-hint.json"), "artifact", f"{args.work} resume state hint"
+    )
     print(f"Updated checkpoint: {checkpoint_path}")
     return 0
 
@@ -281,11 +283,9 @@ def command_add_baseline_usage(args: argparse.Namespace) -> int:
         "missingRefs": list_arg(args.missing_ref),
         "decision": args.decision,
     }
-    failures = validate_artifact_data(
+    require_valid_artifact(
         "BaselineUsageDraft", baseline_usage, target / "baseline-usage-draft.json"
     )
-    if failures:
-        raise WorkspaceError("; ".join(failures))
     write_json(target / "baseline-usage-draft.json", baseline_usage)
     body = (
         f"- Required baseline refs:\n{markdown_list(list_arg(args.required_baseline_ref))}"
@@ -296,7 +296,9 @@ def command_add_baseline_usage(args: argparse.Namespace) -> int:
         f"- Advisory decision: {args.decision}\n"
     )
     upsert_markdown_section(target / "10-intent.md", "## BaselineUsageDraft", body)
-    append_work_file(root, target / "baseline-usage-draft.json", "artifact", f"{args.work} baseline usage draft")
+    append_index_entry(
+        root, str(target / "baseline-usage-draft.json"), "artifact", f"{args.work} baseline usage draft"
+    )
     print(f"Updated baseline usage: {target / 'baseline-usage-draft.json'}")
     return 0
 
@@ -316,9 +318,7 @@ def command_add_drift_check(args: argparse.Namespace) -> int:
         "newRiskSignals": list_arg(args.new_risk_signal),
         "decision": args.decision,
     }
-    failures = validate_artifact_data("DriftCheckDraft", drift, target / "drift-check-draft.json")
-    if failures:
-        raise WorkspaceError("; ".join(failures))
+    require_valid_artifact("DriftCheckDraft", drift, target / "drift-check-draft.json")
     write_json(target / "drift-check-draft.json", drift)
     body = (
         f"- Scope status: {args.scope_status}\n"

@@ -88,7 +88,3 @@ def command_append_index(args: argparse.Namespace) -> int:
 
     print(f"Indexed {rel_path}")
     return 0
-
-
-def append_work_file(root: Path, path: Path, kind: str, title: str, entry_date: str | None = None) -> None:
-    append_index_entry(root, str(path), kind, title, entry_date)

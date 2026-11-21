@@ -35,6 +35,69 @@ from .work import (
 )
 
 
+def add_adr_target_arguments(
+    parser: argparse.ArgumentParser,
+    date_help: str,
+    path_help: str | None = None,
+    slug_help: str | None = None,
+) -> None:
+    """Add --root, then --path if given, --date, then --slug if given.
+
+    The order is part of the help output; the three ADR commands differ only
+    in which of these flags they take and in their help strings.
+    """
+    parser.add_argument("--root", required=True, help="target project root")
+    if path_help is not None:
+        parser.add_argument("--path", required=True, help=path_help)
+    parser.add_argument("--date", default=date.today().isoformat(), help=date_help)
+    if slug_help is not None:
+        parser.add_argument("--slug", required=True, help=slug_help)
+
+
+def add_adr_source_evidence_argument(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--source-evidence", action="append", default=[], help="source evidence summary"
+    )
+
+
+def add_adr_decision_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--title", required=True, help="human-readable ADR title")
+    parser.add_argument(
+        "--status", required=True, choices=ADR_SOURCE_STATUSES, help="ADR evidence source status"
+    )
+    add_adr_source_evidence_argument(parser)
+    parser.add_argument("--context", required=True, help="ADR context")
+    parser.add_argument("--decision", required=True, help="ADR decision")
+    parser.add_argument(
+        "--alternative", action="append", default=[], help="alternative considered"
+    )
+    parser.add_argument(
+        "--consequence", action="append", default=[], help="decision consequence"
+    )
+
+
+def add_adr_boundary_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--compat-boundary", required=True, help="compatibility boundary")
+    parser.add_argument("--retirement-impact", required=True, help="retirement impact")
+    parser.add_argument(
+        "--baseline-sync",
+        required=True,
+        choices=ADR_BASELINE_SYNC_STATES,
+        help="baseline sync requirement",
+    )
+    parser.add_argument("--baseline-target", required=True, help="baseline sync target")
+    parser.add_argument(
+        "--baseline-action",
+        required=True,
+        choices=sorted(ADR_BASELINE_SYNC_ACTIONS),
+        help="baseline sync action",
+    )
+    parser.add_argument("--baseline-reason", required=True, help="baseline sync reason")
+    parser.add_argument(
+        "--evidence-ref", action="append", default=[], help="evidence reference"
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Initialize and validate a target project's docs/aegis workspace."
@@ -76,141 +139,37 @@ def build_parser() -> argparse.ArgumentParser:
     new_adr_parser = subparsers.add_parser(
         "new-adr", help="create a helper-backed ADR in a target project workspace"
     )
-    new_adr_parser.add_argument("--root", required=True, help="target project root")
-    new_adr_parser.add_argument("--date", default=date.today().isoformat(), help="ADR date")
-    new_adr_parser.add_argument("--slug", required=True, help="ADR slug without numeric prefix")
-    new_adr_parser.add_argument("--title", required=True, help="human-readable ADR title")
-    new_adr_parser.add_argument(
-        "--status", required=True, choices=ADR_SOURCE_STATUSES, help="ADR evidence source status"
+    add_adr_target_arguments(
+        new_adr_parser, date_help="ADR date", slug_help="ADR slug without numeric prefix"
     )
-    new_adr_parser.add_argument(
-        "--source-evidence", action="append", default=[], help="source evidence summary"
-    )
-    new_adr_parser.add_argument("--context", required=True, help="ADR context")
-    new_adr_parser.add_argument("--decision", required=True, help="ADR decision")
-    new_adr_parser.add_argument(
-        "--alternative", action="append", default=[], help="alternative considered"
-    )
-    new_adr_parser.add_argument(
-        "--consequence", action="append", default=[], help="decision consequence"
-    )
-    new_adr_parser.add_argument(
-        "--compat-boundary", required=True, help="compatibility boundary"
-    )
-    new_adr_parser.add_argument(
-        "--retirement-impact", required=True, help="retirement impact"
-    )
-    new_adr_parser.add_argument(
-        "--baseline-sync",
-        required=True,
-        choices=ADR_BASELINE_SYNC_STATES,
-        help="baseline sync requirement",
-    )
-    new_adr_parser.add_argument(
-        "--baseline-target", required=True, help="baseline sync target"
-    )
-    new_adr_parser.add_argument(
-        "--baseline-action",
-        required=True,
-        choices=sorted(ADR_BASELINE_SYNC_ACTIONS),
-        help="baseline sync action",
-    )
-    new_adr_parser.add_argument(
-        "--baseline-reason", required=True, help="baseline sync reason"
-    )
-    new_adr_parser.add_argument(
-        "--evidence-ref", action="append", default=[], help="evidence reference"
-    )
+    add_adr_decision_arguments(new_adr_parser)
+    add_adr_boundary_arguments(new_adr_parser)
     new_adr_parser.set_defaults(func=command_new_adr)
 
     amend_adr_parser = subparsers.add_parser(
         "amend-adr", help="append an amendment record to an existing workspace ADR"
     )
-    amend_adr_parser.add_argument("--root", required=True, help="target project root")
-    amend_adr_parser.add_argument("--path", required=True, help="existing ADR path inside docs/aegis/adr")
-    amend_adr_parser.add_argument("--date", default=date.today().isoformat(), help="amendment date")
+    add_adr_target_arguments(
+        amend_adr_parser,
+        date_help="amendment date",
+        path_help="existing ADR path inside docs/aegis/adr",
+    )
     amend_adr_parser.add_argument("--summary", required=True, help="amendment summary")
-    amend_adr_parser.add_argument(
-        "--source-evidence", action="append", default=[], help="source evidence summary"
-    )
-    amend_adr_parser.add_argument(
-        "--compat-boundary", required=True, help="compatibility boundary"
-    )
-    amend_adr_parser.add_argument(
-        "--retirement-impact", required=True, help="retirement impact"
-    )
-    amend_adr_parser.add_argument(
-        "--baseline-sync",
-        required=True,
-        choices=ADR_BASELINE_SYNC_STATES,
-        help="baseline sync requirement",
-    )
-    amend_adr_parser.add_argument(
-        "--baseline-target", required=True, help="baseline sync target"
-    )
-    amend_adr_parser.add_argument(
-        "--baseline-action",
-        required=True,
-        choices=sorted(ADR_BASELINE_SYNC_ACTIONS),
-        help="baseline sync action",
-    )
-    amend_adr_parser.add_argument(
-        "--baseline-reason", required=True, help="baseline sync reason"
-    )
-    amend_adr_parser.add_argument(
-        "--evidence-ref", action="append", default=[], help="evidence reference"
-    )
+    add_adr_source_evidence_argument(amend_adr_parser)
+    add_adr_boundary_arguments(amend_adr_parser)
     amend_adr_parser.set_defaults(func=command_amend_adr)
 
     supersede_adr_parser = subparsers.add_parser(
         "supersede-adr", help="create a superseding ADR and mark the prior ADR"
     )
-    supersede_adr_parser.add_argument("--root", required=True, help="target project root")
-    supersede_adr_parser.add_argument("--path", required=True, help="prior ADR path inside docs/aegis/adr")
-    supersede_adr_parser.add_argument("--date", default=date.today().isoformat(), help="ADR date")
-    supersede_adr_parser.add_argument("--slug", required=True, help="new ADR slug without numeric prefix")
-    supersede_adr_parser.add_argument("--title", required=True, help="human-readable ADR title")
-    supersede_adr_parser.add_argument(
-        "--status", required=True, choices=ADR_SOURCE_STATUSES, help="ADR evidence source status"
+    add_adr_target_arguments(
+        supersede_adr_parser,
+        date_help="ADR date",
+        path_help="prior ADR path inside docs/aegis/adr",
+        slug_help="new ADR slug without numeric prefix",
     )
-    supersede_adr_parser.add_argument(
-        "--source-evidence", action="append", default=[], help="source evidence summary"
-    )
-    supersede_adr_parser.add_argument("--context", required=True, help="ADR context")
-    supersede_adr_parser.add_argument("--decision", required=True, help="ADR decision")
-    supersede_adr_parser.add_argument(
-        "--alternative", action="append", default=[], help="alternative considered"
-    )
-    supersede_adr_parser.add_argument(
-        "--consequence", action="append", default=[], help="decision consequence"
-    )
-    supersede_adr_parser.add_argument(
-        "--compat-boundary", required=True, help="compatibility boundary"
-    )
-    supersede_adr_parser.add_argument(
-        "--retirement-impact", required=True, help="retirement impact"
-    )
-    supersede_adr_parser.add_argument(
-        "--baseline-sync",
-        required=True,
-        choices=ADR_BASELINE_SYNC_STATES,
-        help="baseline sync requirement",
-    )
-    supersede_adr_parser.add_argument(
-        "--baseline-target", required=True, help="baseline sync target"
-    )
-    supersede_adr_parser.add_argument(
-        "--baseline-action",
-        required=True,
-        choices=sorted(ADR_BASELINE_SYNC_ACTIONS),
-        help="baseline sync action",
-    )
-    supersede_adr_parser.add_argument(
-        "--baseline-reason", required=True, help="baseline sync reason"
-    )
-    supersede_adr_parser.add_argument(
-        "--evidence-ref", action="append", default=[], help="evidence reference"
-    )
+    add_adr_decision_arguments(supersede_adr_parser)
+    add_adr_boundary_arguments(supersede_adr_parser)
     supersede_adr_parser.add_argument(
         "--supersession-reason", required=True, help="why the prior ADR is superseded"
     )

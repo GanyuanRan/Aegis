@@ -22,23 +22,6 @@ if _SCRIPTS_DIR not in sys.path:
 
 from aegis_workspace_helper.cli import main
 
-# Test-only re-exports: tests/helpers/test_workspace_*.py load this file by
-# path. Remove once those tests import the owning modules.
-from aegis_workspace_helper.checks import command_check
-from aegis_workspace_helper.errors import WorkspaceError
-from aegis_workspace_helper.evidence import (
-    command_add_attempt,
-    command_add_evidence,
-    command_bundle,
-)
-from aegis_workspace_helper.inputs import read_json_dict
-from aegis_workspace_helper.layout import initialize_workspace
-from aegis_workspace_helper.work import (
-    command_add_checkpoint,
-    command_add_drift_check,
-    command_new_work,
-)
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

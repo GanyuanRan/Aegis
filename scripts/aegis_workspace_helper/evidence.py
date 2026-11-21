@@ -12,10 +12,10 @@ from .artifacts import (
     EVIDENCE_STATUSES,
     SCHEMA_VERSION,
     TERMINAL_EVIDENCE_STATUSES,
-    validate_artifact_data,
+    require_valid_artifact,
 )
 from .errors import WorkspaceError
-from .index import append_work_file
+from .index import append_index_entry
 from .inputs import list_arg, load_json_file, read_json_dict, require_text
 from .layout import ensure_work_exists, resolve_root, work_rel
 from .markdown import markdown_list, upsert_markdown_section
@@ -49,8 +49,6 @@ def load_or_create_evidence_bundle(
     path = evidence_bundle_path(target, slice_id)
     if path.exists():
         data = read_json_dict(path)
-        if not isinstance(data, dict):
-            raise WorkspaceError(f"evidence bundle must be a JSON object: {path}")
     else:
         data = {
             "schemaVersion": SCHEMA_VERSION,
@@ -101,8 +99,8 @@ def merge_attempt(data: dict, attempt: dict) -> None:
     data["attemptSummary"] = summary
 
 
-def evidence_bundle_status(path: Path) -> str:
-    data = load_json_file(path)
+def classify_evidence_status(data: object) -> str:
+    """Classify a loaded evidence sidecar for ``bundle`` and ``check --process-pressure``."""
     if not isinstance(data, dict):
         return "invalid"
     status = data.get("evidenceStatus", "legacy-unclassified")
@@ -143,9 +141,7 @@ def command_add_evidence(args: argparse.Namespace) -> int:
             "updatedAt": getattr(args, "date", None) or date.today().isoformat(),
         }
     )
-    failures = validate_artifact_data("EvidenceBundleDraft", evidence, path)
-    if failures:
-        raise WorkspaceError("; ".join(failures))
+    require_valid_artifact("EvidenceBundleDraft", evidence, path)
     write_json(path, evidence)
 
     body = (
@@ -163,7 +159,7 @@ def command_add_evidence(args: argparse.Namespace) -> int:
         evidence_text = evidence_text.replace("No evidence has been recorded yet.\n", "")
         write_text_lf(evidence_markdown, evidence_text)
     upsert_markdown_section(evidence_markdown, f"## EvidenceBundleDraft: {slice_id}", body)
-    append_work_file(root, path, "artifact", f"{args.work} evidence {slice_id}")
+    append_index_entry(root, str(path), "artifact", f"{args.work} evidence {slice_id}")
     print(f"Added evidence bundle: {path}")
     return 0
 
@@ -202,11 +198,9 @@ def command_add_attempt(args: argparse.Namespace) -> int:
             "updatedAt": attempt["updatedAt"],
         }
     )
-    failures = validate_artifact_data("EvidenceBundleDraft", evidence, path)
-    if failures:
-        raise WorkspaceError("; ".join(failures))
+    require_valid_artifact("EvidenceBundleDraft", evidence, path)
     write_json(path, evidence)
-    append_work_file(root, path, "artifact", f"{args.work} evidence {slice_id}")
+    append_index_entry(root, str(path), "artifact", f"{args.work} evidence {slice_id}")
     print(f"Recorded attempt: {path} (attempt {attempt_id})")
 
     attempt_summary = evidence.get("attemptSummary", {})
@@ -237,7 +231,7 @@ def command_bundle(args: argparse.Namespace) -> int:
     superseded_count = 0
     for path in evidence_paths:
         rel = f"{work_rel(target)}/{path.name}"
-        status = evidence_bundle_status(path)
+        status = classify_evidence_status(load_json_file(path))
         if status == "evidence-finalized":
             formal_refs.append(rel)
         elif status in {"blocked", "abandoned"}:
@@ -257,7 +251,9 @@ def command_bundle(args: argparse.Namespace) -> int:
         "evidenceBundle": terminal_refs,
     }
     write_json(target / "gate-input-pack.json", gate_input)
-    append_work_file(root, target / "gate-input-pack.json", "artifact", f"{args.work} gate input pack")
+    append_index_entry(
+        root, str(target / "gate-input-pack.json"), "artifact", f"{args.work} gate input pack"
+    )
 
     proof = (
         f"# Proof Bundle - {args.work}\n\n"
@@ -287,6 +283,6 @@ def command_bundle(args: argparse.Namespace) -> int:
         f"- Advisory decision: {drift.get('decision', '')}\n"
     )
     write_text_lf(target / "proof-bundle.md", proof)
-    append_work_file(root, target / "proof-bundle.md", "work", f"{args.work} proof bundle")
+    append_index_entry(root, str(target / "proof-bundle.md"), "work", f"{args.work} proof bundle")
     print(f"Assembled proof bundle: {target / 'proof-bundle.md'}")
     return 0

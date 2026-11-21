@@ -19,7 +19,6 @@ ADR_SOURCE_STATUSES = (
     "recorded-from-plan",
     "recorded-from-spec",
 )
-ADR_MUTATION_STATUSES = ("amended", "superseded")
 ADR_BASELINE_SYNC_STATES = ("needed", "not-needed", "unknown")
 ADR_BASELINE_SYNC_ACTIONS = {
     "create-snapshot": "create snapshot",
@@ -174,6 +173,75 @@ def render_adr_markdown(
     )
 
 
+def render_adr_from_args(
+    args: argparse.Namespace,
+    adr_id: str,
+    source_evidence: list[str],
+    alternatives: list[str],
+    consequences: list[str],
+    evidence_refs: list[str],
+    extra_sections: list[str] | None = None,
+) -> str:
+    """Render a new-adr or supersede-adr record.
+
+    Callers validate the list flags first. The text flags are validated here,
+    in CLI order, so the first reported error does not change.
+    """
+    return render_adr_markdown(
+        adr_id=adr_id,
+        title=require_text(args.title, "ADR title"),
+        entry_date=args.date,
+        status=args.status,
+        source_evidence=source_evidence,
+        context=require_text(args.context, "ADR context"),
+        decision=require_text(args.decision, "ADR decision"),
+        alternatives=alternatives,
+        consequences=consequences,
+        compat_boundary=require_text(args.compat_boundary, "compatibility boundary"),
+        retirement_impact=require_text(args.retirement_impact, "retirement impact"),
+        baseline_sync_needed=args.baseline_sync,
+        baseline_target=require_text(args.baseline_target, "baseline sync target"),
+        baseline_action=args.baseline_action,
+        baseline_reason=require_text(args.baseline_reason, "baseline sync reason"),
+        evidence_refs=evidence_refs,
+        extra_sections=extra_sections,
+    )
+
+
+def render_adr_amendment(
+    entry_date: str,
+    summary: str,
+    source_evidence: list[str],
+    compat_boundary: str,
+    retirement_impact: str,
+    baseline_sync_needed: str,
+    baseline_target: str,
+    baseline_action: str,
+    baseline_reason: str,
+    evidence_refs: list[str],
+) -> str:
+    return (
+        "\n"
+        f"## Amendment - {entry_date} - {summary}\n\n"
+        "- Status: amended\n\n"
+        "### Source Evidence\n\n"
+        f"{markdown_list(source_evidence)}"
+        "### Change Summary\n\n"
+        f"{summary}\n\n"
+        "### Compatibility Boundary\n\n"
+        f"{compat_boundary}\n\n"
+        "### Retirement Impact\n\n"
+        f"{retirement_impact}\n\n"
+        f"{render_baseline_sync(baseline_sync_needed, baseline_target, baseline_action, baseline_reason, heading_level='###')}\n"
+        "### Evidence References\n\n"
+        f"{markdown_list(evidence_refs)}"
+        "### Boundary\n\n"
+        "This amendment is an advisory Aegis Method Pack record. It does not grant "
+        "completion authority or replace project-authoritative architecture "
+        "sources.\n"
+    )
+
+
 def ensure_adr_indexed(root: Path, path: Path, entry_date: str | None = None) -> None:
     append_index_entry(root, str(path), "adr", adr_title_from_path(path), entry_date)
 
@@ -206,24 +274,8 @@ def command_new_adr(args: argparse.Namespace) -> int:
     alternatives = require_list(args.alternative, "--alternative")
     consequences = require_list(args.consequence, "--consequence")
     evidence_refs = require_list(args.evidence_ref, "--evidence-ref")
-    title = require_text(args.title, "ADR title")
-    content = render_adr_markdown(
-        adr_id=adr_id,
-        title=title,
-        entry_date=args.date,
-        status=args.status,
-        source_evidence=source_evidence,
-        context=require_text(args.context, "ADR context"),
-        decision=require_text(args.decision, "ADR decision"),
-        alternatives=alternatives,
-        consequences=consequences,
-        compat_boundary=require_text(args.compat_boundary, "compatibility boundary"),
-        retirement_impact=require_text(args.retirement_impact, "retirement impact"),
-        baseline_sync_needed=args.baseline_sync,
-        baseline_target=require_text(args.baseline_target, "baseline sync target"),
-        baseline_action=args.baseline_action,
-        baseline_reason=require_text(args.baseline_reason, "baseline sync reason"),
-        evidence_refs=evidence_refs,
+    content = render_adr_from_args(
+        args, adr_id, source_evidence, alternatives, consequences, evidence_refs
     )
     write_text_lf(target, content)
     ensure_adr_indexed(root, target, args.date)
@@ -239,28 +291,19 @@ def command_amend_adr(args: argparse.Namespace) -> int:
     source_evidence = require_list(args.source_evidence, "--source-evidence")
     evidence_refs = require_list(args.evidence_ref, "--evidence-ref")
     summary = require_text(args.summary, "amendment summary")
-
-    append_text_lf(
-        target,
-        "\n"
-        f"## Amendment - {args.date} - {summary}\n\n"
-        "- Status: amended\n\n"
-        "### Source Evidence\n\n"
-        f"{markdown_list(source_evidence)}"
-        "### Change Summary\n\n"
-        f"{summary}\n\n"
-        "### Compatibility Boundary\n\n"
-        f"{require_text(args.compat_boundary, 'compatibility boundary')}\n\n"
-        "### Retirement Impact\n\n"
-        f"{require_text(args.retirement_impact, 'retirement impact')}\n\n"
-        f"{render_baseline_sync(args.baseline_sync, require_text(args.baseline_target, 'baseline sync target'), args.baseline_action, require_text(args.baseline_reason, 'baseline sync reason'), heading_level='###')}\n"
-        "### Evidence References\n\n"
-        f"{markdown_list(evidence_refs)}"
-        "### Boundary\n\n"
-        "This amendment is an advisory Aegis Method Pack record. It does not grant "
-        "completion authority or replace project-authoritative architecture "
-        "sources.\n",
+    amendment = render_adr_amendment(
+        entry_date=args.date,
+        summary=summary,
+        source_evidence=source_evidence,
+        compat_boundary=require_text(args.compat_boundary, "compatibility boundary"),
+        retirement_impact=require_text(args.retirement_impact, "retirement impact"),
+        baseline_sync_needed=args.baseline_sync,
+        baseline_target=require_text(args.baseline_target, "baseline sync target"),
+        baseline_action=args.baseline_action,
+        baseline_reason=require_text(args.baseline_reason, "baseline sync reason"),
+        evidence_refs=evidence_refs,
     )
+    append_text_lf(target, amendment)
 
     ensure_adr_indexed(root, target, args.date)
     print(f"Amended ADR: {rel_path}")
@@ -285,23 +328,13 @@ def command_supersede_adr(args: argparse.Namespace) -> int:
     consequences = require_list(args.consequence, "--consequence")
     evidence_refs = require_list(args.evidence_ref, "--evidence-ref")
     supersession_reason = require_text(args.supersession_reason, "supersession reason")
-    content = render_adr_markdown(
-        adr_id=adr_id,
-        title=require_text(args.title, "ADR title"),
-        entry_date=args.date,
-        status=args.status,
-        source_evidence=source_evidence,
-        context=require_text(args.context, "ADR context"),
-        decision=require_text(args.decision, "ADR decision"),
-        alternatives=alternatives,
-        consequences=consequences,
-        compat_boundary=require_text(args.compat_boundary, "compatibility boundary"),
-        retirement_impact=require_text(args.retirement_impact, "retirement impact"),
-        baseline_sync_needed=args.baseline_sync,
-        baseline_target=require_text(args.baseline_target, "baseline sync target"),
-        baseline_action=args.baseline_action,
-        baseline_reason=require_text(args.baseline_reason, "baseline sync reason"),
-        evidence_refs=evidence_refs,
+    content = render_adr_from_args(
+        args,
+        adr_id,
+        source_evidence,
+        alternatives,
+        consequences,
+        evidence_refs,
         extra_sections=[
             "## Supersedes\n\n"
             f"- ADR: {prior_rel}\n"
