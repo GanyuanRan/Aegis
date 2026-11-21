@@ -41,7 +41,8 @@ It only records limitations supported by current fresh evidence and does not spe
 - Whether the release checklist and host compatibility snapshot still clearly distinguish method-pack readiness from production rollout readiness
 
 **Retirement Trigger**
-- When the user explicitly requests entry into production rollout preparation
+- A product-scope decision, recorded in a current doc or ADR, that brings
+  production rollout preparation into this repository's scope
 
 ---
 
@@ -79,7 +80,8 @@ It only records limitations supported by current fresh evidence and does not spe
 - Whether `AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md` still clearly distinguishes "has fresh evidence" from "current verdict not yet formed"
 
 **Retirement Trigger**
-- When other hosts enter a separate approved slice and complete fresh closeout
+- Each other host leaves this limitation through a fresh verdict from the
+  [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe) or a [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule) outcome
 
 ---
 
@@ -128,7 +130,10 @@ It only records limitations supported by current fresh evidence and does not spe
 - During code review of new skills, check whether workspace helper usage or equivalent INDEX.md append logic is included
 
 **Retirement Trigger**
-- When all skills that write to docs/aegis/ invoke the shared workspace helper and verification-before-completion checks helper output for touched workspaces in real target-project usage
+- When `tests/e2e/workspace-helper-wiring-check.sh` covers every skill that
+  writes `docs/aegis/`, and a frozen workflow-quality or benchmark case shows
+  verification-before-completion running the helper check for touched
+  workspaces
 
 ---
 
@@ -162,7 +167,9 @@ It only records limitations supported by current fresh evidence and does not spe
 - Whether generated baseline snapshots cite concrete files and commands instead of generic guesses
 
 **Retirement Trigger**
-- When real target-project usage shows the bootstrap consistently creates useful baseline snapshots or correctly declines sparse projects
+- When a frozen benchmark or workflow-quality case set with both sparse and
+  content-rich fixture projects shows the bootstrap creating snapshots that
+  cite concrete files and commands, and declining the sparse projects
 
 ---
 
@@ -179,7 +186,10 @@ It only records limitations supported by current fresh evidence and does not spe
 - Field fill rate and semantic usefulness in actually created BASELINE-GOVERNANCE.md files
 
 **Retirement Trigger**
-- When verification-before-completion consistently runs the helper check for touched workspaces and real target-project usage shows the generated template is semantically sufficient
+- When a frozen workflow-quality or benchmark case shows
+  verification-before-completion running the helper check for touched
+  workspaces. Whether a project's later edits are semantically sufficient
+  remains a permanent, project-owned boundary.
 
 ---
 
@@ -214,7 +224,9 @@ It only records limitations supported by current fresh evidence and does not spe
 - Consistency of qualitative judgments in actual architecture reviews; if contentious judgments appear frequently, quantitative baselines need to be introduced
 
 **Retirement Trigger**
-- When integrable quantitative architecture measurement tools become available
+- Permanent while the seven dimensions remain review prompts rather than
+  measurements. Revisit when a zero-dependency measurement for a specific
+  dimension is proposed through the Minimality Reference Existence Check.
 
 ---
 
@@ -347,9 +359,9 @@ request.
   closure when durable architecture surfaces changed
 
 **Retirement Trigger**
-- When real target-project usage shows helper-backed ADR writeback and baseline
-  sync closure happen reliably without stale docs, skipped routing, or
-  authority confusion
+- When a frozen workflow-quality or benchmark case set shows helper-backed ADR
+  writeback and baseline sync closure completing without stale docs, skipped
+  routing, or authority confusion
 
 ---
 
@@ -357,55 +369,34 @@ request.
 
 **Retained Item**
 - `Antigravity CLI` is the active closeout target for the current Google-host
-  slice; installation and structural discovery are verified, while live Aegis
-  skill loading, task routing, and session refresh remain pending verification
-- The local Windows closeout machine's own signed-in session remained blocked
-  by Antigravity's account eligibility check; that check is host/account-side
-  behavior rather than an Aegis install property
-- `Antigravity IDE` and `Antigravity App` remain structural target surfaces,
+  slice: installation and structural discovery are verified, while live Aegis
+  skill loading, task routing, and session refresh remain pending
+- `Antigravity IDE` and `Antigravity App` remain structural targets:
   not release-level fresh smoke verdicts
 
 **Retention Reason**
-- Google positions Antigravity as the successor Google agent platform and
-  documents public capabilities such as Skills, MCP, JSON Hooks, plugins,
-  slash commands, subagents, and the `agy` executable. The public docs now show
-  `agy plugin list`, `agy plugin install /path/to/local/plugin`, and
-  `agy plugin import gemini`. The public Antigravity CLI `1.0.1` changelog says
-  plugin discovery for skills and agents from installed plugin directories
-  exists, and the public `1.0.8` changelog also says custom skills and system
-  slash commands reload dynamically on conversation switch or `/add-dir`.
-- Fresh maintainer evidence on `2026-10-17` (Windows, `agy 1.4.0`) records the
-  official install (`agy --version` -> `1.4.0`), unauthenticated
-  `agy plugin list --json`, a verified scratch-plugin lifecycle with
-  full-directory copy staging under `~/.gemini/config/plugins/`,
-  updater-managed direct-child exposure at `~/.gemini/antigravity-cli/skills`
-  (one link per skill; register/update-time doctor readback
-  `discoveryShapeStatus: current`), and update dry-run planning.
-- A runnable signed-in session alone does not prove Aegis skill discovery,
-  loading, representative task routing, or restart/reload behavior. Those live
-  checks remain pending. Local Windows sessions were rejected before any model
-  turn with `Eligibility check failed: Your current account is not eligible
-  for Antigravity`; retain this blocker as environment-bound rather than a
-  method-pack boundary defect.
+- Public Antigravity CLI changelogs document plugin discovery for skills and agents
+  from installed plugin directories. The 2026-10-17 maintainer readback
+  (Windows, `agy 1.4.0`) verified install, the plugin lifecycle, and
+  updater-managed direct-child exposure with doctor
+  `discoveryShapeStatus: current`; details are in the
+  [Antigravity guide](../README.antigravity.md).
+- Local signed-in sessions were rejected by the host's account eligibility
+  check before any model turn. That blocker is environment-bound, not a
+  method-pack defect.
 
 **Observation Metric**
-- `docs/README.antigravity.md`
-- `bash tests/e2e/antigravity-host-boundary-check.sh`
-- `bash tests/antigravity/run-tests.sh`
-- `bash tests/antigravity/run-tests.sh --integration`
-- `cd <aegis-method-pack-root> && python scripts/aegis-update.py register --host antigravity-cli --sync-mode junction --discovery-root ~/.gemini/antigravity-cli/skills --discovery-shape direct-child --json`
-  readback: direct-child sync summary plus doctor `discoveryShapeStatus: current`
-- A runnable Antigravity CLI session that records Aegis skill discovery,
-  actual skill loading, representative task routing, restart/reload behavior,
-  and
+- `bash tests/e2e/antigravity-host-boundary-check.sh` and
+  `bash tests/antigravity/run-tests.sh` (`--integration` is environment-bound)
+- A runnable CLI session that records skill discovery, loading, representative
+  routing, restart/reload behavior, and
   `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
 
 **Retirement Trigger**
-- When fresh live evidence verifies Aegis skill loading, representative task
-  routing, and restart/reload behavior for the documented CLI installation
-- When `Antigravity IDE` and `Antigravity App` close out through their own
-  fresh evidence slices rather than piggybacking on CLI proof
-- When the closeout machine's local eligibility blocker no longer reproduces
+- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or the outcome of the
+  [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
+- `Antigravity IDE` and `Antigravity App` need their own evidence rather than
+  CLI proof
 
 ---
 
@@ -413,191 +404,133 @@ request.
 
 **Retired Item**
 - The root `GEMINI.md`, `gemini-extension.json`, and Gemini-specific tool
-  mapping have been removed from the supported distribution surface
+  mapping were removed from the supported distribution surface; new
+  Google-host work targets Antigravity
 
 **Retirement Reason**
-- Google announced on `2026-05-19` that consumer Gemini CLI and Gemini Code
-  Assist IDE extension usage is transitioning to Antigravity CLI and
-  Antigravity 2.0. On `2026-06-18`, requests stop being served for free usage,
-  Google AI Pro / Ultra, and Gemini Code Assist for individuals. Enterprise
-  Standard / Enterprise, Google Cloud-backed Gemini Code Assist for GitHub, and
-  paid Gemini / Gemini Enterprise Agent Platform API key paths remain outside
-  that consumer stop boundary.
-- Aegis has nevertheless chosen to stop carrying a separate Gemini CLI host
-  adapter and to focus new Google-host work on Antigravity surfaces.
+- Google moved consumer Gemini CLI usage to Antigravity (announced
+  `2026-05-19`; consumer requests stopped on `2026-06-18`). The exact consumer
+  and enterprise boundary is recorded in the matrix row `Gemini CLI`.
 
 **Compatibility Impact**
-- Existing enterprise, Google Cloud, or paid API-key Gemini CLI users may still
-  be able to run Gemini CLI itself, but Aegis no longer publishes or verifies a
-  Gemini CLI install path for them.
-- This retirement does not establish a fresh Antigravity host closeout verdict.
+- Enterprise, Google Cloud, or paid API-key Gemini CLI users may still run
+  Gemini CLI, but Aegis no longer publishes or verifies an install path for it.
+  This retirement is not an Antigravity closeout verdict.
 
 **Verification**
-- `docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md`
-- `docs/README.antigravity.md`
-- `bash tests/e2e/antigravity-host-boundary-check.sh`
-- Repository scans show no current Gemini adapter, manifest, or tool-map owner
+- `bash tests/e2e/antigravity-host-boundary-check.sh`; repository scans show no
+  current Gemini adapter, manifest, or tool-map owner
 
 ---
 
 ### 2.17 OpenClaw and Hermes Agent Structural Support Is Not Yet Fresh Host Closeout
 
 **Retained Item**
-- OpenClaw and Hermes Agent are structural host targets, not release-level fresh
-  smoke verdicts
+- OpenClaw and Hermes Agent are structural host targets:
+  not release-level fresh smoke verdicts (matrix rows `OpenClaw`, `Hermes Agent`)
 
 **Retention Reason**
-- OpenClaw documents `openclaw skills install` for Git and local skill
-  directories whose source root contains `SKILL.md`. That supports Aegis
-  individual skill-directory installs, but not a canonical whole-repo
-  `git:GanyuanRan/Aegis` install because Aegis is a multi-skill method pack.
-- Hermes Agent exposes a Skills Hub, a documented `~/.hermes/skills/` local
-  skill path, GitHub path installs such as
-  `hermes skills install owner/repo/skills/my-workflow`, and built-in
-  coding-agent delegation skills. Aegis still needs current release live smoke
-  before claiming host closeout.
+- `openclaw skills install` installs individual skill directories, not the
+  whole multi-skill pack. Hermes Agent supports GitHub path installs such as
+  `hermes skills install owner/repo/skills/my-workflow`. Install shapes are in
+  the [OpenClaw](../README.openclaw.md) and
+  [Hermes Agent](../README.hermes-agent.md) guides.
 
 **Observation Metric**
-- `docs/README.openclaw.md`
-- `docs/README.hermes-agent.md`
 - `bash tests/e2e/popular-agent-host-boundary-check.sh`
-- Future OpenClaw and Hermes Agent install smoke that proves skill discovery,
-  restart or reload behavior, and
-  `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
 
 **Retirement Trigger**
-- When OpenClaw and Hermes Agent each have a verified install/update path that
-  proves both skill discovery and project workspace support without turning
-  Aegis into an authoritative runtime core
+- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or the outcome of the
+  [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
 
 ---
 
 ### 2.18 Pi CLI Structural Support Is Not Yet Fresh Host Closeout
 
 **Retained Item**
-- Pi CLI is a structural host target, not release-level fresh smoke verdict
+- Pi CLI is a structural host target; its current evidence is structural:
+  not release-level fresh smoke verdicts (matrix row `Pi CLI`)
 
 **Retention Reason**
-- Pi documents Agent Skills discovery from `~/.pi/agent/skills/`,
-  `~/.agents/skills/`, `.pi/skills/`, package `skills/` directories or
-  `pi.skills` entries in `package.json`, and explicit CLI skill paths.
-- Pi package management supports git package installs such as
-  `pi install git:github.com/GanyuanRan/Aegis`. Aegis now exposes `./skills`
-  through the repository root `package.json`, but a current Pi runtime smoke is
-  still required before claiming host closeout.
+- Pi discovers Agent Skills from `~/.pi/agent/skills/`, `~/.agents/skills/`,
+  `.pi/skills/` and package `skills/` entries. Aegis exposes `./skills` through
+  the root `package.json` for `pi install git:github.com/GanyuanRan/Aegis`;
+  details are in the [Pi guide](../README.pi.md).
 
 **Observation Metric**
-- `docs/README.pi.md`
-- `bash tests/e2e/pi-host-boundary-check.sh`
-- Future Pi install smoke that proves `pi install git:github.com/GanyuanRan/Aegis`,
-  skill discovery after restart or `/reload`, and
-  `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
+- `bash tests/e2e/pi-host-boundary-check.sh` and
+  `bash tests/pi-omp-extensions/test-shared-core.sh`
 
 **Retirement Trigger**
-- When Pi CLI has a verified install/update path that proves both skill
-  discovery and project workspace support without turning Aegis into an
-  authoritative runtime core
+- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or the outcome of the
+  [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
 
 ---
 
 ### 2.19 OMP Structural Support Is Not Yet Fresh Host Closeout
 
 **Retained Item**
-- OMP (Oh My Pi) is a structural host target, not release-level fresh smoke
-  verdict
+- OMP (Oh My Pi) is a structural host target; its current evidence is
+  structural: not release-level fresh smoke verdicts (matrix row `OMP (Oh My Pi)`)
 
 **Retention Reason**
-- OMP is a fork of Pi that keeps Agent Skills discovery. Its `agents` provider
-  reads `~/.agents/skills/`, so the shared Aegis copy-based skill view is
-  visible to OMP without OMP-specific packaging.
-- OMP honors `alwaysApply: true` skill frontmatter (full content injected into
-  the system prompt), which Aegis now uses for `using-aegis`.
-- OMP auto-discovers extensions under `~/.omp/agent/extensions/` and accepts
-  `omp.extensions` / `pi.extensions` package manifests; Aegis ships an
-  `extensions/` bundle (`extensions/shared/` core + `extensions/omp/` adapter)
-  shared with the Pi extension.
-- A current OMP runtime smoke is still required before claiming host closeout.
+- OMP keeps Pi's Agent Skills discovery (its `agents` provider reads
+  `~/.agents/skills/`), honors `alwaysApply: true` for `using-aegis`, and loads
+  the shared Pi/OMP extension bundle from `~/.omp/agent/extensions/`; details
+  are in the [OMP guide](../README.omp.md).
 
 **Observation Metric**
-- `docs/README.omp.md`
-- `bash tests/e2e/omp-host-boundary-check.sh`
-- Future OMP install smoke that proves `~/.agents/skills/` discovery,
-  `alwaysApply` injection of `using-aegis`, and extension loading from
-  `~/.omp/agent/extensions/`
+- `bash tests/e2e/omp-host-boundary-check.sh` and
+  `bash tests/pi-omp-extensions/test-shared-core.sh`
 
 **Retirement Trigger**
-- When OMP has a verified install path that proves both skill discovery and
-  `alwaysApply` / extension injection without turning Aegis into an
-  authoritative runtime core
+- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or the outcome of the
+  [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
 
 ---
 
 ### 2.20 CC GUI Structural Support Is Not Yet Fresh Host Closeout
 
 **Retained Item**
-- CC GUI is a structural JetBrains IDEA host target, not release-level fresh
-  smoke verdict
+- CC GUI (JetBrains IDEA) is a structural host target; its current evidence is
+  structural: not release-level fresh smoke verdicts (matrix row `CC GUI (JetBrains IDEA)`)
+- Its OpenAI/GPT provider path discovers only direct-child skills, so Aegis
+  exposes `~/.agents/skills/<skill-name>/SKILL.md` entries as a generated view
+  of the canonical `skills/` tree. Selecting a GPT model profile does not change
+  this discovery shape.
 
 **Retention Reason**
-- CC GUI wraps Claude Code and an OpenAI/GPT provider path behind an IDE plugin
-  UI. Its OpenAI/Codex provider skill scanner uses `.agents/skills/` style
-  roots and expects each direct child skill directory to contain `SKILL.md`.
-- Aegis is a multi-skill method pack. For CC GUI's OpenAI/GPT provider path,
-  expose individual skills as `~/.agents/skills/<skill-name>/SKILL.md` rather
-  than relying only on an umbrella `~/.agents/skills/aegis` directory.
-- When this direct-child exposure is needed, the method-pack `skills/` tree
-  remains the canonical source of truth. Any additional exposure under
-  `~/.agents/skills/` is a generated compatibility view, not a second editable
-  skill owner.
-- Selecting a specific GPT model profile inside CC GUI does not by itself
-  change this skill discovery shape.
-- User-visible entries such as `Tool: exec_command` are host adapter event
-  rendering / host adapter event normalization concerns. Aegis can reduce
-  unnecessary tool fan-out through workflow discipline, but it does not own CC
-  GUI's visual folding, grouping, suppression, or live IDE event model.
+- Entries such as `Tool: exec_command` are host adapter event normalization
+  concerns owned by CC GUI. Aegis can reduce tool fan-out, but it does not own
+  the IDE's event rendering; details are in the [CC GUI guide](../README.cc-gui.md).
 
 **Observation Metric**
-- `docs/README.cc-gui.md`
 - `bash tests/e2e/cc-gui-host-boundary-check.sh`
-- Future CC GUI install smoke that proves direct skill discovery, restart or
-  reload behavior, OpenAI/GPT and Claude Code provider behavior where relevant,
-  and
-  `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
 
 **Retirement Trigger**
-- When CC GUI has a verified install/update path that proves both skill
-  discovery and project workspace support, and when any IDE rendering claims
-  are backed by direct CC GUI evidence rather than Aegis method-pack tests
-  alone
+- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or the outcome of the
+  [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
+- IDE rendering claims additionally need direct CC GUI evidence
 
 ---
 
 ### 2.21 GitHub Copilot Structural Support Is Not Yet Fresh Host Closeout
 
 **Retained Item**
-- GitHub Copilot is a structural host target, not a release-level fresh smoke
-  verdict
+- GitHub Copilot is a structural host target, not a release-level fresh smoke verdict
+  (matrix row `GitHub Copilot`)
 
 **Retention Reason**
-- GitHub Copilot documents repository-scoped agent skills under
-  `.github/skills/`, repository custom instructions under
-  `.github/copilot-instructions.md`, repository hooks under
-  `.github/hooks/*.json`, and project guidance through `AGENTS.md`.
-- Those surfaces are enough for Aegis method-pack exposure, but current
-  release-level live host smoke is still required before claiming host
-  closeout.
+- Repository skills (`.github/skills/`), custom instructions, hooks and
+  `AGENTS.md` are enough for method-pack exposure; see the
+  [Copilot guide](../README.copilot.md).
 
 **Observation Metric**
-- `docs/README.copilot.md`
 - `bash tests/e2e/copilot-qoder-host-boundary-check.sh`
-- Future GitHub Copilot install smoke that proves skill discovery, repository
-  instruction visibility, and
-  `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
 
 **Retirement Trigger**
-- When GitHub Copilot has a verified install/update path that proves both skill
-  discovery and project workspace support without turning Aegis into an
-  authoritative runtime core
+- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or the outcome of the
+  [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
 
 ---
 
@@ -605,153 +538,96 @@ request.
 
 **Retained Item**
 - Qoder is a structural host target, not a release-level fresh smoke verdict
+  (matrix row `Qoder`)
 
 **Retention Reason**
-- Qoder documents native skills under `~/.qoder/skills/` and `.qoder/skills/`,
-  project rules under `.qoder/rules/`, and repository guidance through
-  `AGENTS.md`.
-- Those surfaces are enough for Aegis method-pack exposure, but current
-  release-level live host smoke is still required before claiming host
-  closeout.
+- Native skills (`~/.qoder/skills/`, `.qoder/skills/`), project rules and
+  `AGENTS.md` are enough for method-pack exposure; see the
+  [Qoder guide](../README.qoder.md).
 
 **Observation Metric**
-- `docs/README.qoder.md`
 - `bash tests/e2e/copilot-qoder-host-boundary-check.sh`
-- Future Qoder install smoke that proves skill discovery, rules visibility, and
-  `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
 
 **Retirement Trigger**
-- When Qoder has a verified install/update path that proves both skill
-  discovery and project workspace support without turning Aegis into an
-  authoritative runtime core
+- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or the outcome of the
+  [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
 
 ---
 
 ### 2.23 Kimi Code CLI Structural Support Is Not Yet Fresh Host Closeout
 
 **Retained Item**
-- Kimi Code CLI is a structural host target, not a release-level fresh smoke
-  verdict
+- Kimi Code CLI is a structural host target, not a release-level fresh smoke verdict
+  (matrix row `Kimi Code CLI`)
 - The default automatic path is the Kimi-managed plugin with
   `sessionStart.skill = using-aegis`; deterministic tests verify its manifest,
-  doctor profile, and duplicate-exposure rejection, but not live model routing
-- Updater-managed `$KIMI_CODE_HOME/skills/` direct-child exposure is retained
-  as explicit compatibility installation, not as the default automatic path
-- The generic `~/.agents/skills/` Kimi scan root is retained only as an
-  official fallback, not as the Aegis Kimi canonical install path
+  doctor profile, and duplicate-exposure rejection, not live model routing
+- Updater-managed `$KIMI_CODE_HOME/skills/` direct-child exposure is an explicit
+  compatibility installation, and the generic `~/.agents/skills/` scan root is
+  only an official fallback; neither is the default path
 
 **Retention Reason**
-- Official Kimi Code CLI Agent Skills docs list user-level skill roots as
-  `$KIMI_CODE_HOME/skills/` (`~/.kimi-code/skills/` by default) and
-  `~/.agents/skills/`. They also list project-level `.kimi-code/skills/` and
-  `.agents/skills/`.
 - Kimi's plugin contract provides a stable session-start owner that plain skill
-  discovery does not provide. The thin manifest reuses the canonical `skills/`
-  tree rather than copying Kimi-only skill bodies.
-- For explicit compatibility installs, expose individual skills as
-  `$KIMI_CODE_HOME/skills/<skill-name>/SKILL.md` rather than relying on the
-  Codex umbrella symlink
-  `~/.agents/skills/aegis -> ~/.codex/aegis/skills`.
-- The method-pack `skills/` tree remains the canonical source of truth. Kimi
-  plugin content and compatibility directories are host-managed or generated
-  views, not second editable skill owners.
+  discovery lacks. Compatibility installs expose individual
+  `<skill-name>/SKILL.md` directories instead of relying on the Codex umbrella symlink;
+  details are in the [Kimi Code guide](../README.kimi-code.md).
 
 **Observation Metric**
-- `docs/README.kimi-code.md`
-- `bash tests/kimi-code/run-tests.sh`
-- `bash tests/kimi-code/run-tests.sh --integration`
-- `bash tests/kimi-code/run-live-smoke.sh`
-- `cd <aegis-method-pack-root> && python scripts/aegis-update.py register --host kimi-code --sync-mode junction --json`
-  remains the explicit compatibility registration path
-- `python scripts/aegis-doctor.py --json --host-profile kimi-code-auto` verifies
-  the managed plugin owner, version, session-start entry, and absence of
-  direct-child collisions without mutating Kimi state
-- Release-level live Kimi Code CLI smoke is still required to prove automatic
-  task routing after `/reload` or `/new`, resumed-session routing, and
-  acceptable false-positive behavior
+- `bash tests/kimi-code/run-tests.sh`; its `--integration` mode and
+  `run-live-smoke.sh` are environment-bound
+- `python scripts/aegis-doctor.py --json --host-profile kimi-code-auto`
 
 **Retirement Trigger**
-- When a fresh release-level Kimi run proves plugin install/update, new and
-  resumed session routing, false-positive control, and project workspace
-  support without turning Aegis into an authoritative runtime core
+- A fresh release-level Kimi run proves plugin install/update, new and resumed
+  session routing, false-positive control, and project workspace support
 
 ---
 
 ### 2.24 ZCode Structural Support Is Not Yet Fresh Host Closeout
 
 **Retained Item**
-- ZCode is a structural host target, not release-level fresh smoke verdict
+- ZCode is a structural host target; its current evidence is structural:
+  not release-level fresh smoke verdicts (matrix row `ZCode`)
 
 **Retention Reason**
-- ZCode's skill scanner reads each root's direct subdirectories and expects
-  `~/.agents/skills/<skill-name>/SKILL.md` (depth-1, like CC GUI and Windsurf).
-  An umbrella `~/.agents/skills/aegis/` directory does not expose Aegis skills
-  to ZCode. Use the updater-managed direct-child install documented in
-  `docs/README.zcode.md`.
-- ZCode also documents a plugin marketplace that natively reads
-  `.claude-plugin/marketplace.json` (Claude Code plugin format), `SKILL.md`
-  skills invoked through the `@`-prefix picker, and repository guidance
-  through `AGENTS.md`.
-- Because ZCode natively reads the Claude Code plugin format, Aegis's existing
-  `.claude-plugin/` skeleton works with zero code changes. Current
-  release-level live host smoke is still required before claiming host
-  closeout.
+- ZCode scans depth-1 `~/.agents/skills/<skill-name>/SKILL.md` directories, so
+  the umbrella `~/.agents/skills/aegis/` layout is invisible to it; use the
+  updater-managed direct-child install. Its plugin marketplace reads
+  `.claude-plugin/marketplace.json`, so the existing Claude Code skeleton
+  applies unchanged; details are in the [ZCode guide](../README.zcode.md).
 
 **Observation Metric**
-- `docs/README.zcode.md`
 - `bash tests/e2e/zcode-host-boundary-check.sh`
-- `cd <aegis-method-pack-root> && python scripts/aegis-update.py register --host zcode --sync-mode junction --discovery-root ~/.agents/skills --json`
-  now performs register-time direct-child link creation, registry write, and
-  method-pack-side doctor verification
-- Release-level live ZCode smoke is still required to prove plugin marketplace
-  install, `@`-prefix skill discovery after reload, and current hot-path loading
-  inside the running host
 
 **Retirement Trigger**
-- When ZCode has a verified install/update path that proves both skill
-  discovery and project workspace support without turning Aegis into an
-  authoritative runtime core
+- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or the outcome of the
+  [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
 
 ---
 
 ### 2.25 Grok Build Structural Support Is Not Yet Fresh Host Closeout
 
 **Retained Item**
-- Grok Build is a structural host target, not a release-level fresh smoke
-  verdict
+- Grok Build is a structural host target, not a release-level fresh smoke verdict
+  (matrix row `Grok Build`)
 - Grok's native skills, extra `[skills] paths`, shared Agent Skills, and
-  Claude-compatible plugin scanners can expose duplicate Aegis skill names
+  Claude-compatible plugin scanners can expose duplicate Aegis skill names with
+  different freshness; enable one exposure route
 
 **Retention Reason**
-- Grok documents native user skills under `$GROK_HOME/skills/`
-  (`~/.grok/skills/` by default), project `.grok/skills/`, extra skill paths in
-  `~/.grok/config.toml`, `~/.agents/skills/`, `AGENTS.md`, and Claude Code
-  compatibility surfaces.
-- Aegis now recommends updater-managed direct-child skill exposure under the
-  Grok native user root. The method-pack `skills/` tree remains canonical; the
-  Grok-visible entries are generated links, not a second editable owner.
-- An explicit `[skills] paths` entry or Claude-compatible Aegis plugin remains
-  a valid alternative. Enabling more than one Aegis exposure route can produce
-  duplicate skill names with different freshness.
-- Local `grok inspect --json` evidence confirms that Grok Build can enumerate
-  Aegis skills and project instructions, but it is not a clean-install,
-  restart/reload, automatic-trigger, and update closeout for the release.
+- Aegis recommends updater-managed direct-child exposure under the Grok native
+  user root (`$GROK_HOME/skills/`). Local `grok inspect --json` enumeration is
+  not a clean-install, reload, trigger, and update closeout; details are in
+  the [Grok Build guide](../README.grok-build.md).
 
 **Observation Metric**
-- `docs/README.grok-build.md`
-- `bash tests/e2e/grok-build-host-boundary-check.sh`
-- `python tests/helpers/test_aegis_update.py -k grok`
-- `cd <aegis-method-pack-root> && python scripts/aegis-update.py register --host grok-build --sync-mode junction --json`
-  uses `$GROK_HOME/skills` or `~/.grok/skills` as the default discovery root,
-  performs register-time direct-child link creation, writes the host registry
-  entry, and runs method-pack-side doctor verification
+- `bash tests/e2e/grok-build-host-boundary-check.sh` and
+  `python tests/helpers/test_aegis_update.py -k grok`
 - `grok inspect --json` reports one canonical source for each Aegis skill name
 
 **Retirement Trigger**
-- When a clean Grok Build install has a verified install/update path that
-  proves current Aegis skill discovery, representative live triggering after
-  restart, no duplicate Aegis exposure, and project workspace support
-  without turning Aegis into an authoritative runtime core
+- A clean-install fresh verdict proves discovery, live triggering after
+  restart, no duplicate exposure, and project workspace support
 
 ---
 
@@ -759,181 +635,74 @@ request.
 
 **Retained Item**
 - The official DeepSeek Harness (`deepseek-ai/deepseek-harness`) is a structural
-  host target, not a release-level fresh smoke verdict
-- DeepSeek Harness and the community DeepSeek-TUI remain separate host surfaces
-- Deterministic tests cover native runtime-context wiring, but not live
-  model routing quality in a fresh installed DSH profile
-- DSH peer ranges use `>=0.1.0-rc.6` as an installation admission floor,
-  including prereleases under the host's checker. This retires the stale
-  `^0.1.0-rc.6` ceiling that rejected DSH `0.2.0-rc.1` before loading Aegis.
-  Future versions are admitted by version number, not certified in advance;
-  actual host API changes can still require adapter updates. The three peers
-  remain optional so other hosts do not acquire a DSH runtime dependency.
-- Isolated Linux checks on DSH `0.1.7-rc.2` and `0.2.0-rc.1` exercised the
-  actual host compatibility checker, bundle install/configuration/removal,
-  and Web-profile startup with the fixed manifest, using both a local link
-  and an installed package tarball. The running host exposed
-  22 Aegis skill entries and loaded `using-aegis`, `systematic-debugging`, and
-  `verification-before-completion` through its native skill registry. These
-  are package admission and native loading checks, without a model request;
-  Windows desktop installation and live model routing remain unverified by
-  this repair.
+  host target, not a release-level fresh smoke verdict (matrix row
+  `DeepSeek Harness`); it and the community DeepSeek-TUI remain separate host
+  surfaces
+- Native runtime-context delivery is covered by deterministic tests and by
+  published DSH `0.2.2-rc.3` loop tests with scripted model responses; live
+  model routing in a fresh installed profile, the Desktop application, macOS,
+  and UI resume/clear/compaction remain unverified
+- Peer ranges use `>=0.1.0-rc.6` as an installation admission floor: future
+  versions are admitted by version number, not certified in advance, and the
+  three peers stay optional so other hosts gain no DSH runtime dependency
+- Marketplace source selection is unverified. A third-party npm package
+  (`aegis-method-pack@2.9.2`, published by an account the Aegis team does not
+  operate) still carries stale peers. Aegis publishes the official scoped
+  package `@ganyuan_ran/aegis`, verified by registry readback on 2026-11-14,
+  and Plugin Hub `v2.0.0` removed its Git-source install channel. History:
+  issues [#80](https://github.com/GanyuanRan/Aegis/issues/80),
+  [#81](https://github.com/GanyuanRan/Aegis/issues/81), and
+  [#83](https://github.com/GanyuanRan/Aegis/issues/83), and Plugin Hub
+  [#120](https://github.com/dshplugin/dsh-plugin-hub/issues/120),
+  [#130](https://github.com/dshplugin/dsh-plugin-hub/issues/130), and
+  [#178](https://github.com/dshplugin/dsh-plugin-hub/issues/178)
+- The Electron-owned `desktop` profile is managed only through the
+  application's plugin manager; terminal examples apply to CLI-managed profiles
 - The updater-managed direct-child install remains an explicit compatibility
   path rather than the default DSH installation
-
-- The third-party npm `aegis-method-pack@2.9.2` artifact still carries the old
-  `^0.1.0-rc.6` peers and a package entry qualified with the Git identity
-  `aegis`. [Issue #80](https://github.com/GanyuanRan/Aegis/issues/80#issuecomment-6041061249)
-  supplies an actual DSH `0.2.0-rc.2` admission rejection and a successful
-  pinned Git install. [Issue #81](https://github.com/GanyuanRan/Aegis/issues/81)
-  shows Plugin Hub `1.5.2` selecting that npm package again; its own full
-  failure log is still missing. [Issue #83](https://github.com/GanyuanRan/Aegis/issues/83)
-  records another Desktop npm attempt without the underlying error log.
-  A GitHub tag does not update npm. Repository
-  metadata matching in the marketplace is not package-owner verification.
-  The publishing account `zzz-test` is not the Aegis team's account. Aegis
-  published `@ganyuan_ran/aegis@2.15.1` on 2026-11-14. Registry maintainer and
-  integrity readback match the confirmed owner and verified tarball. Windows
-  checks with DSH `0.2.2-rc.3` and pnpm `11.22.0` cover both tarball and actual
-  registry installation into isolated Web profiles, bundle composition, doctor
-  verification and removal. The host's native filesystem provider discovered
-  and loaded all 23 installed skills. pnpm automatically recorded the explicitly
-  requested new version in `minimumReleaseAgeExclude`; stricter host age policies
-  may defer installation. A registry `2.15.1` to `2.15.2` tarball upgrade also
-  passed native skill loading and doctor checks; registry-only upgrades require
-  their own readback after publication.
-  Full application/model routing and marketplace/Desktop behavior remain
-  unverified. The marketplace
-  maintainer states that `zzz-test` is not an account they operate and that
-  they have no coordinated publication record; the publisher's identity
-  remains unknown.
-  [Plugin Hub issue #120](https://github.com/dshplugin/dsh-plugin-hub/issues/120)
-  was closed as a documented limitation, with npm-first resolution retained.
-  In Hub `v1.6.0`, the repository-install code normalized Git URLs to a
-  repository identity, rebuilt a URL without its ref, then performed npm
-  reverse lookup. This was a source-level finding, not a fresh end-to-end
-  GUI/HTTP reproduction; a replay of the tagged normalizers and npm selector,
-  using a published-registry metadata fixture, discarded both a tag and a
-  commit SHA before selecting the matching npm package.
-  [Plugin Hub issue #130](https://github.com/dshplugin/dsh-plugin-hub/issues/130)
-  was confirmed by the maintainer as a genuine bug and resolved in Hub
-  `v1.6.1`, which preserves an explicit `#<ref>` instead of replacing it with
-  the repository's default package. Unpinned repository and catalog targets
-  retained the npm-first resolution recorded above through Hub `v1.6.5`, so
-  that did not remove the source-substitution limitation for marketplace
-  catalog entries in that line.
-- Hub `v2.0.0` (2026-10-16) is a breaking release whose notes state that the
-  GitHub-source and DSH-command install channels are removed: the catalog lists
-  only plugins published to npm, and custom install accepts an npm package name
-  only, directing Git-repository installation to the DSH command in a terminal.
-  At tag `v2.0.0`, `src/server/http/routes.ts` no longer references
-  `resolveNpmPackage` or `isDshNpmPackageForRepo`, so the
-  repository-to-npm substitution path is absent from that version's routing.
-  The npm-resolution module still exists in the repository, and no live catalog
-  page or Desktop flow was read back, so catalog behavior remains unverified.
-  Aegis now supplies an official scoped npm package alongside Git installation;
-  its marketplace listing and selected source still need live verification.
-  Hub `v1.6.6` separately stopped attributing non-plugin
-  installation failures to plugin repositories
-  ([Plugin Hub issue #178](https://github.com/dshplugin/dsh-plugin-hub/issues/178)).
-- DSH `0.2.0-rc.2` rejects terminal management of the Electron-owned `desktop`
-  profile. Install, inspect, update, and remove plugins through the desktop
-  application's manager; CLI examples apply to CLI-managed profiles.
-  [The #81 reporter](https://github.com/GanyuanRan/Aegis/issues/81#issuecomment-6072156389)
-  confirmed that terminal installation was rejected but the application's
-  plugin manager installed successfully and displayed the plugin. This closes
-  that reporter's installation-failure scope only. Actual installed source,
-  ref, version, skill-body loading, and live model routing were not supplied.
-- A fresh isolated Windows check on DSH `0.2.0-rc.2` and pnpm `11.7.0`
-  installed the canonical `aegis` source through a local repository link with
-  `private: true`, composed exactly one Aegis bundle, started the Web profile,
-  discovered 23 native Aegis skills, and read three representative skill bodies
-  from the canonical tree. The actual host admission checker also passed.
-  No model request was made. This covers source installation and native Web
-  loading, not marketplace selection, Desktop startup, or live model routing.
-
-**Retention Reason**
-- The default DSH path is a thin package bundle declared through
-  `dsh.bundle.patch`, mounting the canonical skills through the native provider.
-  Auto activation now contributes the router through `systemPrompt.context`;
-  host projection owns admission and deduplication. This retires Aegis's
-  first-request isolation and delayed inbox injection, which could extend a
-  finished turn ([issue #102](https://github.com/GanyuanRan/Aegis/issues/102)).
-  Ordinary first requests may contain guidance. Presets suppressing runtime
-  context remain in control; explicit native skill loading stays available.
-  Published host packages expose the context registry from the declared
-  admission floor; this is not all-version live routing evidence.
-- Published DSH `0.2.2-rc.3` loop tests with scripted model responses cover
-  text-only request counts, retained-context deduplication, replacement before
-  and after pre-step, retry with/without replacement, cancellation, tool
-  continuation, unload/reload, explicit mode, subagents and host suppression.
-  A bounded `0.2.1-rc.2` transport replay covers the same non-tool scenarios.
-  These checks exercise real host code without a live provider; actual UI
-  resume/clear/compaction commands, Desktop and macOS remain unverified.
-- [Issue #75](https://github.com/GanyuanRan/Aegis/issues/75) reported that DSH
-  0.1.7-rc.2 no longer emitted `agent/session-start`, leaving auto-entry
-  inactive while structural checks passed. That historical delivery path has
-  now been replaced by the native context
-  registry; fresh live activation on an installed profile is still required
-  before a release-level routing claim.
-- A [contributor readback of the merged fix](https://github.com/GanyuanRan/Aegis/issues/75#issuecomment-5862159897)
-  at `25c0f57`, using DSH `0.1.7-rc.2` on Windows, reports one bootstrap
-  injection on startup and one on resume, subsequent model-context presence,
-  and a `systematic-debugging` skill load. This is bounded contributor-reported
-  evidence, not an independently reproduced release-level host verdict. The
-  first skill call preceded deferred injection, so first-step routing cannot
-  be attributed to the bootstrap. Clear and compact were structural-only;
-  live subagent behavior remains unverified.
-- The native context contribution replaces both lifecycle subscriptions.
-  Historical lifecycle smoke above does not verify the new delivery path.
 - The bootstrap skips subagents and does not install a hard pre-tool guard:
   legitimate `Route: fast-path` decisions are model-facing and are not reliable
   enough to support hard denial without false positives. The adapter does not
   duplicate skill bodies or add runtime authority.
-- DeepSeek Harness's native filesystem provider discovers direct child skill
-  bundles from project `.dsh/skills`, project `.agents/skills`, configured
-  custom directories, `$DSH_HOME/skills` (`~/.dsh/skills` by default), and
-  `$DSH_AGENTS_HOME/skills`.
+
+**Retention Reason**
+- The default DSH path is a thin package bundle declared through
+  `dsh.bundle.patch` that mounts the canonical skills through the native
+  provider and contributes the router through `systemPrompt.context`
+  ([issue #102](https://github.com/GanyuanRan/Aegis/issues/102)). Host
+  projection owns admission and deduplication; presets that suppress runtime
+  context remain in control, and explicit native skill loading stays available.
+- [Issue #75](https://github.com/GanyuanRan/Aegis/issues/75) showed that
+  structural checks can pass while auto-entry is inactive. That lifecycle
+  delivery path has since been replaced, so its contributor readback does not
+  verify the native context path.
 - Direct-child exposure remains necessary when the developer-preview bundle API
   is unavailable, local policy forbids third-party profile plugins, or `pnpm`
-  cannot be provided to the DSH plugin manager. The method-pack `skills/` tree
-  remains canonical; DSH-visible entries are generated links rather than a
-  second editable owner.
-- Enabling project, native user, shared Agent Skills, or custom Aegis exposure
-  at the same time as the bundle can produce duplicate skill names with
-  different freshness.
-- The official host is a developer preview and explicitly warns that
-  compatibility-breaking changes are expected. Native catalog discovery and
-  lifecycle entry are structurally covered; automatic task-specific routing,
-  false-positive behavior, session refresh, and update behavior still need
-  fresh live verification.
+  cannot be provided to the DSH plugin manager. Enabling it together with the
+  bundle can produce duplicate skill names with different freshness.
+- The official host is a developer preview and warns that compatibility-breaking
+  changes are expected. Installation, update, migration, and npm channel detail
+  lives in the [DSH guide](../README.deepseek-harness.md).
 
 **Observation Metric**
-- `docs/README.deepseek-harness.md`
-- `bash tests/deepseek-harness/run-tests.sh`
-- `bash tests/deepseek-harness/run-tests.sh --integration`
-- a clean `dsh plugin --profile web add "git+https://github.com/GanyuanRan/Aegis.git"` readback lists
-  `aegis` in `dsh.profile.bundles` and `dsh --profile web --dump-config` contains
-  exactly one enabled `aegis-method-pack` row
-- `python tests/helpers/test_aegis_update.py -k deepseek_harness`
+- `bash tests/deepseek-harness/run-tests.sh` (`--integration` is
+  environment-bound) and `python tests/helpers/test_aegis_update.py -k deepseek_harness`
+- a clean `dsh plugin --profile web add "git+https://github.com/GanyuanRan/Aegis.git"`
+  readback lists `aegis` in `dsh.profile.bundles`, and
+  `dsh --profile web --dump-config` contains exactly one enabled
+  `aegis-method-pack` row
 - `cd <aegis-method-pack-root> && python scripts/aegis-update.py register --host deepseek-harness --compatibility-mode --sync-mode junction --json`
-  uses `$DSH_HOME/skills` or `~/.dsh/skills` as the default discovery root,
-  performs register-time direct-child link creation, writes the host registry
-  entry, and runs method-pack-side doctor verification
+  remains the explicit compatibility registration path
 - A fresh DeepSeek Harness Standard-mode session receives the native bootstrap
   and either loads the appropriate task-specific skill or declares
   `Route: fast-path`, from exactly one canonical exposure
 
 **Retirement Trigger**
-- Retire the marketplace source-selection limitation only after a live readback
-  confirms the actual selected source and installed version for the route users
-  are told to take, and the affected reporter confirms successful profile
-  installation. Since Hub `v2.0.0` removed the Git-source install channel, the
-  remaining marketplace limitation is discovery of a Git-only plugin rather
-  than source substitution; close it once the live catalog and the documented
-  terminal Git route agree. A new GitHub release alone does not close it.
-  Retain third-party historical npm artifacts; taking ownership or unpublishing
-  them is not part of this repair.
+- Retire the marketplace source-selection limitation after a live catalog or
+  Desktop readback confirms that it selects the official scoped package or the
+  documented Git route, and reports the installed version. A new GitHub release
+  alone does not close it. Third-party historical npm artifacts are retained;
+  taking ownership or unpublishing them is not part of this repair.
 - Re-evaluate the direct-child compatibility path after a stable DeepSeek
   Harness release and two consecutive Aegis releases have verified bundle
   install/update, representative live triggering, session refresh, no duplicate
@@ -1082,93 +851,37 @@ request.
   of intermittent failures.
 - The [current disposition of #67](https://github.com/GanyuanRan/Aegis/issues/67#issuecomment-5909286564)
   pauses further default-skill changes aimed solely at repeating historical
-  corrections in the final reply. That omission is accepted as a known limitation
-  only when the requested work is correct, verification claims are supported, and
-  active handoff records are accurate. Incorrect work, unsupported verification,
-  or misleading active records do not meet that boundary. This is a prioritization
-  decision, not a change to existing skill requirements, optional reconciliation
-  checks, historical scores, or a claim that #67 is fixed. Concrete evidence of
-  incorrect claims affecting acceptance or subsequent work can reopen investigation.
+  corrections in the final reply. The omission is accepted as a known
+  limitation only when the requested work is correct, verification claims are
+  supported, and active handoff records are accurate; concrete evidence of
+  incorrect claims affecting acceptance or subsequent work can reopen
+  investigation. This is a prioritization decision, not a change to skill
+  requirements, optional reconciliation checks, historical scores, or a claim
+  that #67 is fixed.
 - A [non-benchmark repeated readback for #67](https://github.com/GanyuanRan/Aegis/issues/67#issuecomment-5854204268)
-  used continuation and completion-verification skill files byte-identical to
-  v2.10.9. All nine candidate Aegis attempts recognized the false inherited
-  claim during work, while only one explicitly disclosed it in the final
-  answer. The continuation skill was opened in all six long-task variants and
-  none of the three stale-evidence variants; completion verification was
-  opened in all nine. This small, non-blind sample shows #67 remains observed,
-  not merely unmeasured. The maintainer has not independently reviewed the
-  private raw attempts.
-- A later maintainer native-hook prototype on Codex CLI `0.146.0` with
-  `gpt-5.6-sol` / `xhigh` tested an explicitly selected advisory profile.
-  All twelve first-candidate model receipts reported reconciliation, but
-  independent semantic review accepted ten and rejected two as false positives:
-  current completion was mistaken for correcting an inherited record, and a
-  generic change list was mistaken for specific final disclosure. Original
-  fixture code tests passed independently. A subsequent policy clarification
-  still produced inconsistent decisions on a repeated ambiguous-record control.
-  A later evidence-isolation probe accepted that same ambiguous record twice
-  and rejected it once. Its strict per-claim oracle was stronger than the
-  original issue's meaning-based correction requirement, so those two accepts
-  are oracle disagreements rather than established semantic false positives.
-  Separate deterministic counterexamples show that a correctly placed correction
-  block can still be denied or re-scoped by surrounding prose. This non-blind
-  evidence also includes four scope controls: two explicit reassertions of the
-  false resume-time conclusion were rejected, and two explicit corrections
-  were accepted. Clear conflict recognition in these probes does not resolve
-  the ambiguity boundary. These earlier revisions did not meet their automatic-fix
-  acceptance gate; they do not resolve default skill-only #67 or change the
-  published benchmark score.
-- Four semantic measures were subsequently added to the continuation/completion
-  guidance and the optional candidate. Ten candidate reviewer controls matched
-  their scoped expectations. In an explicitly injected wrong-assessment native
-  trial, a typed dispute stopped a further correction request; both the previous
-  and revised versions preserved the correct facts. A separate three-bullet
-  skill-only task still omitted record correction and specific final disclosure
-  after loading the revised rules and recognizing the discrepancy. These checks
-  support the bounded dispute handling and preserve the skill-only limitation;
-  they do not establish stable end-to-end reconciliation or a new benchmark score.
-  A later scope clarification permits ordinary review disagreements resolved by
-  evidence to close normally; repeated explicit-skill tasks still observed the
-  stale-record/final omission. Single native profile observations covered the
-  four diagnostic scenarios, with an invalid reviewer-connection attempt kept
-  separately and replaced from fresh inputs. These observations span two skill
-  snapshots and do not replace repeated current-build acceptance.
-- A subsequent frozen current-build repetition ran S1–S4 three times each with
-  the same final skills and extension. Independent semantic review accepted all
-  twelve records/replies, including accurate-claim preservation and every S4
-  three-short-bullets constraint; original read-only fixture tests passed in all
-  attempts. The nine contradicted-record attempts each used one correction;
-  the three accurate-record controls used none. No attempt was invalid or
-  replaced. This meets that selected-case diagnostic gate while remaining
-  non-blind development evidence. Operator semantic review is still required;
-  default skill-only #67, independently prepared case coverage, other host/model
-  behavior and general automatic-fix reliability remain unresolved. Detailed
-  source identities and evidence qualifications are in
+  found that all nine candidate Aegis attempts recognized the false inherited
+  claim during work while only one disclosed it in the final answer. This
+  small, non-blind sample shows #67 remains observed; the maintainer has not
+  independently reviewed the private raw attempts.
+- The optional [Codex reconciliation profile](../README.codex-reconciliation.md)
+  passed its selected-case diagnostic gate (S1–S4, three repetitions each,
+  twelve records and replies accepted by independent semantic review) after
+  earlier candidates had success receipts rejected as false positives and
+  inconsistent decisions on an ambiguous-record control. Skill-only tasks with
+  the revised rules still omitted the record correction and final disclosure.
+  This non-blind development evidence does not resolve default skill-only #67,
+  independently prepared case coverage, other host/model behavior, or general
+  automatic-fix reliability; evidence qualifications are in
   `tests/codex-reconciliation/README.md`.
-- A maintainer diagnostic readback for #68 at `25c0f57` used Codex CLI
-  `0.146.0` and requested `gpt-5.6-sol` / `xhigh`. In three fresh copies of the
-  existing external-unknown retirement case, all three attempts loaded
-  anti-entropy guidance, disclosed the appliance compatibility risk, and asked
-  for scoped confirmation. Each final workspace was byte-identical to its
-  seed. The relevant skill is unchanged from v2.10.9. This small, non-blind
-  readback records expected behavior with the revised skill; it does not establish
-  elimination of intermittent failures or a new held-out benchmark result.
-- A 2026-09-29 diagnostic froze the v2.11.2 (`fb05c61`) skill tree and six
-  fresh workspaces before execution, using Linux, Codex CLI `0.146.0`, and
-  requested `gpt-5.6-sol` / `xhigh`. Two synthetic unknown-vendor cases disclosed
-  the compatibility risk, directly requested scoped confirmation, and left
-  their files unchanged. Two informed-authorization controls and two
-  internal-only controls removed only the fallback without asking again.
-  All six opened the anti-entropy skill body and completed; separate readback
-  checked final replies, seed hashes, changed paths and six behavior assertions
-  per workspace. No attempt was replaced. Recovered command and sandbox issues
-  are retained in private evidence; fixture Git metadata was read-only, so this
-  is not Git closeout evidence. These are small, non-blind
-  diagnostics on new synthetic variants, not independently authored held-out
-  cases, a comparative improvement, or proof that intermittent #68 is eliminated.
-  The requested model identity was not independently observed.
-- The quick-bug concrete-rationale tag is available only to future scoring
-  contracts; the published matrix-v7 contract remains frozen.
+- Small, non-blind #68 diagnostics (three fresh copies at `25c0f57`; six frozen
+  v2.11.2 workspaces on 2026-09-29) showed the expected risk disclosure, scoped
+  confirmation, and unchanged workspaces. They are not independently authored
+  held-out cases, a comparative improvement, or proof that intermittent #68 is
+  eliminated, and the requested model identity was not independently observed.
+- The quick-bug concrete-rationale tag (`implementation-rationale-specific`)
+  is available only to future scoring contracts; the published matrix-v7
+  contract remains frozen, including the `change necessity` label asymmetry
+  recorded in the [benchmark baseline](AEGIS_AGENTIC_BENCHMARK_BASELINE.md).
 
 **Observation Metric**
 - Exact-tag diagnostic rerun with per-case checks, changed paths, active
@@ -1198,8 +911,9 @@ request.
   explicit separation of executed evidence from proposed checks
 
 **Retirement Trigger**
-- Project-specific evidence supports the exact experience claim; a method-pack
-  release alone does not retire this evidence boundary
+- None: this is a permanent evidence boundary. Project-specific evidence can
+  support a project's exact experience claim, but no method-pack release
+  retires the boundary itself.
 
 ---
 
