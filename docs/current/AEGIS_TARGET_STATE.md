@@ -127,18 +127,17 @@ The correct development direction at present is:
 3. Then progressively upgrade high-leverage skills
 4. First complete the open-source release baseline for the method pack and non-live rollout strengthening work
 5. Only then proceed to adapter-facing contracts
-6. Only finally proceed to independent construction of runtime core / adapters
+6. Leave independent construction of the runtime core to a separate product rather than this repository
 
 The recommended productization sequence is:
 
 1. First make `Aegis Method Pack` a stable method pack that is open-sourceable, distributable, and cross-host installable
 2. First use real user feedback, real task samples, and open-source reception to validate whether it is worth continuing to grow into a complete platform
-3. If the method pack proves to have sustained value in real usage, then proceed to independent construction of the full `Aegis`
-4. At that point, `OpenCode + installed Aegis Method Pack` can serve as one of the priority host shell candidates for carrying future host-side secondary development optimization
+3. The runtime-core direction is now carried by Autoloom, the team's independent AI coding desktop product; see the [product relationship](AEGIS_PRODUCT_BASELINE.md#current-product-relationship-autoloom). This repository continues as the independently usable method pack and does not gain runtime authority from Autoloom's releases
 
 The key boundaries here are:
 
-- `OpenCode` may be a host shell candidate in the future, but it is not the authority source for this repository
+- No host shell, including `OpenCode`, is the authority source for this repository
 - `Aegis Method Pack` can stand independently first, without the runtime core being landed as a prerequisite
 - Full platform construction must occur after the method pack's value has been validated, not the other way around by preemptively over-implementing
 

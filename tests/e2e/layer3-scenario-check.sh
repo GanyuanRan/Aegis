@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PLANNED_EXIT=90
+SKIPPED_EXIT=90
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 TMP_DIR="$SCRIPT_DIR/../../.tmp/e2e-layer3"
 
@@ -11,8 +11,8 @@ case "${1:-}" in
         exit 0
         ;;
     --bootstrap-status)
-        echo "PLANNED: Layer 3 scenario validation remains outside the bootstrap-only boundary."
-        exit $PLANNED_EXIT
+        echo "SKIPPED: Layer 3 scenario validation runs with run-all.sh --full."
+        exit $SKIPPED_EXIT
         ;;
 esac
 

@@ -1,10 +1,9 @@
-# Aegis E2E Bootstrap
+# Aegis E2E Verification
 
-This directory hosts the Phase 5 E2E verification suite for the Aegis fork.
+This directory hosts the Aegis end-to-end verification suite.
 
 Current status:
 
-- `Phase 5 E2E verification slice` is complete within approved scope
 - `layer1-fast-check.sh` is runnable now and defaults to a fast host profile
 - `layer2-behavior-check.sh` is runnable now with fixture-backed transcript analysis and with/without Aegis comparison
 - `layer3-scenario-check.sh` is runnable now with fixture-backed scenario orchestration and cross-host comparison
@@ -16,7 +15,7 @@ Current public baselines:
 - `docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md`
 - `docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md`
 
-Bootstrap entrypoints:
+Entrypoints:
 
 - `run-all.sh`
 - `layer1-fast-check.sh`
@@ -33,6 +32,8 @@ Bootstrap entrypoints:
 - `context-semantic-infrastructure-live-check.sh`
 - `workflow-quality-check.sh`
 - `agentic-benchmark-check.sh`
+- `agentic-benchmark-outcome-check.sh`
+- `agentic-benchmark-isolation-check.sh`
 - `controlled-replay-check.sh`
 - `live-replay-capture-check.sh`
 - `live-replay-capture.sh`
@@ -45,19 +46,20 @@ Bootstrap entrypoints:
 - `first-principles-review-check.sh`
 - `long-task-continuation-check.sh`
 - `grok-build-host-boundary-check.sh`
+- `omp-host-boundary-check.sh`
 - `analyze-transcript.sh`
 
 Layer 1 host profiles:
 
-- `fast` (default): representative Codex natural + explicit smoke, OpenCode base suite, plugin sync
-- `matrix`: full Codex matrices plus OpenCode base suite and plugin sync
+- `fast` (default): representative Codex natural + explicit smoke, OpenCode base suite, plugin sync, Codex benchmark isolation audit
+- `matrix`: full Codex matrices plus OpenCode base suite, plugin sync, and the Codex benchmark isolation audit
 - `none`: host-independent contracts and local behavioral checks; no live host smoke
 
 Layer 1 requires Node.js 22.13+ for the executable TypeScript debugging
 examples, alongside Python and Bash. Copy ownership and polluter regressions
 use isolated temporary fixtures and do not update installed skills.
 
-Supporting bootstrap assets:
+Supporting assets:
 
 - `fixtures/artifacts/`
 - `fixtures/replay-projects/`
@@ -95,6 +97,14 @@ Workspace helper coverage:
 - `agentic-benchmark-check.sh` verifies the benchmark design fixture for
   with/without Aegis scenario coverage, isolation controls, metric boundaries,
   and no authority overclaim.
+- `agentic-benchmark-outcome-check.sh` exercises the arm-neutral observable
+  outcome scorer, including network-isolated verification commands. It needs
+  bubblewrap and reports an explicit environment-bound skip without it.
+- `agentic-benchmark-isolation-check.sh` runs the no-model Codex prompt and
+  mount audit plus its refusal cases. It needs POSIX Python, bubblewrap, and
+  the Codex CLI, so it runs with the Layer 1 Codex host-smoke profiles.
+- `../pi-omp-extensions/test-shared-core.sh` verifies the host-neutral Pi/OMP
+  bootstrap, routing guard, and adapter wiring in `extensions/shared/`.
 - `controlled-replay-check.sh` verifies benchmark-ready controlled replay
   samples by copying seeded fixture projects into per-arm temporary workspaces,
   analyzing captured transcripts through `analyze-transcript.sh`, and checking

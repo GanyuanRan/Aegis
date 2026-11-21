@@ -48,7 +48,7 @@ jobs:
       - name: Validate benchmark rendering and README installation flow
         run: bash tests/e2e/agentic-benchmark-render-check.sh
 
-      - name: Run Phase 5 static aggregate
+      - name: Run static E2E aggregate
         # Live Codex host smoke requires a configured Codex CLI; keep default CI host-neutral.
         run: bash tests/e2e/run-all.sh --full --host-profile none
 

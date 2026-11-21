@@ -361,7 +361,7 @@ Notes:
 - It also preserves the repository boundary that the Aegis method-pack
   checkout itself must not ship a live `docs/aegis/` workspace.
 
-### Phase 5 E2E Verification
+### E2E Verification
 
 Layer 1 includes isolated behavioral checks for copied-skill ownership and the
 polluter diagnostic, plus execution of the TypeScript debugging examples.
@@ -374,7 +374,7 @@ python tests/helpers/test_find_polluter.py
 node --test tests/systematic-debugging/test-examples.mjs
 ```
 
-The current Phase 5 E2E work adds a new `tests/e2e/` owner path:
+The `tests/e2e/` suite is run with:
 
 ```bash
 bash tests/e2e/layer1-fast-check.sh --skip-host-smoke
@@ -386,15 +386,16 @@ bash tests/e2e/run-all.sh --full --host-profile fast
 
 Notes:
 
-- `--bootstrap` verifies the completed Slice 1 boundary: authority alignment, boundary compliance, artifact-schema fixtures, and planned owner entrypoints.
-- `layer1-fast-check.sh` now owns the active Slice 2 fast profile: boundary compliance, artifact schema fixtures, representative Codex natural + explicit smoke, OpenCode base suite, and plugin sync regression.
-- `layer2-behavior-check.sh` now owns the active Slice 3 behavior check: fixture-backed transcript analysis, scenario contract matching, and with/without Aegis comparison.
-- `layer3-scenario-check.sh` now owns the active Slice 4b scenario check: fixture-backed scenario orchestration plus cross-host consistency comparison.
-- `run-all.sh --full --host-profile fast` is the current aggregate closeout command for the completed Phase 5 E2E verification slice.
+- `run-all.sh --bootstrap` (the default) runs Layer 1 without host smoke plus the governance completion contract, and reports Layers 2 and 3 as skipped.
+- `layer1-fast-check.sh` runs the deterministic policy, boundary, artifact-schema, and host-structure checks; its default `fast` host profile adds representative Codex natural + explicit smoke, the OpenCode base suite, plugin sync regression, and the Codex benchmark isolation audit.
+- Checks that need an unavailable environment (POSIX, bubblewrap, a host CLI) print an explicit `[SKIP]` line, and Layer 1 repeats it under the passing check instead of reporting a silent pass.
+- `layer2-behavior-check.sh` runs fixture-backed transcript analysis, scenario contract matching, and with/without Aegis comparison.
+- `layer3-scenario-check.sh` runs fixture-backed scenario orchestration plus cross-host consistency comparison.
+- `run-all.sh --full --host-profile fast` is the aggregate closeout command; CI runs `run-all.sh --full --host-profile none` on Linux with bubblewrap installed.
 - `goal-framing-check.sh` is part of Layer 1 and guards the opt-in goal entry,
   optional `TaskIntentDraft` goal fields, `SubagentContextPacket` shape, and
   no-file default policy.
-- Full host smoke remains owned by the existing Codex / OpenCode suites and can be pulled into later E2E slices after the fast profile is stable.
+- Full host smoke beyond the representative profile remains owned by the existing Codex / OpenCode suites.
 
 ### Controlled Replay And Live Capture
 

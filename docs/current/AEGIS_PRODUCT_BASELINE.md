@@ -186,9 +186,10 @@ The current phase adopts the following convergence order:
 - Finalize artifact shapes for the future runtime core
 - Form stable method-pack output contracts
 
-### Phase 4: Repo Split
+### Phase 4: Independent Runtime Product
 
-- After the single-repo method layer stabilizes, split out independent runtime core and adapters
+- The runtime-core direction proceeds in Autoloom, a separate product outside this repository (see §5)
+- This repository remains the method pack and does not absorb runtime authority
 
 ---
 

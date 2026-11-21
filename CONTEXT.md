@@ -19,10 +19,13 @@ _Avoid_: Method Pack, Runtime Core
 _Authority_: docs/current/AEGIS_TARGET_STATE.md
 
 **Runtime Core**:
-The future independent authority layer for baseline truth, policy snapshots,
-gate decisions, evidence sufficiency, and completion authority.
+The independent authority layer reserved for baseline truth, policy snapshots,
+gate decisions, evidence sufficiency, and completion authority. Autoloom, a
+separate product, carries this direction; that does not mean every reserved
+responsibility is implemented there, and the method pack gains no authority
+from it.
 _Avoid_: Method Pack, host plugin
-_Authority_: docs/current/AEGIS_TARGET_STATE.md; docs/adr/ADR-0001-aegis-method-pack-is-not-runtime-core.md
+_Authority_: docs/current/AEGIS_TARGET_STATE.md; docs/adr/ADR-0001-aegis-method-pack-is-not-runtime-core.md; docs/current/AEGIS_PRODUCT_BASELINE.md
 
 **runtime-ready artifact**:
 An advisory draft, hint, projection, or evidence bundle shaped for possible
