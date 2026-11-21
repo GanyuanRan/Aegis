@@ -1,5 +1,31 @@
 # Aegis Release Notes
 
+## v2.16.0 (2026-11-21)
+
+### English
+
+- Retire the three deprecated command stubs `/brainstorm`, `/write-plan` and `/execute-plan`. They only redirected to the matching skills and had promised removal since before v2.0. The `brainstorming`, `writing-plans` and `executing-plans` skills are unchanged, and the Cursor manifest no longer exposes a commands directory.
+- Retire the unused Deferred Ledger convention, including `scripts/aegis-deferred-ledger.py`; Known Limitations is now the single owner for retained items and deferred follow-ups. Test runners accept only `AEGIS_TEST_CLI`; the upstream `SUPERPOWERS_TEST_CLI` fallback is removed.
+- Hosts: a structural target without new host-specific evidence for three consecutive minor releases is now reviewed at the next release, with one recorded outcome: add evidence, move to documentation-only, or retire. The review clock starts with this release. The fresh-evidence tier remains Codex and OpenCode.
+- Benchmarks: disclose a matrix-v7 scoring asymmetry. The frozen `implementation-rationale` tag that four held-out discriminator cases require also accepts the bare phrase "change necessity", the label of Aegis's own output. Frozen scores are unchanged, and whether any published pass depends on it has not been checked against raw outputs. The benchmark baseline was corrected and marked Reviewed, and the live runner now records an attempt that exceeds its artifact limit as one invalid attempt instead of failing validation.
+- Define a hot-path behavioral gate: a release that changes `using-aegis`, a byte-budgeted skill, or routing, verification or completion semantics needs three repeated runs of the 11 frozen development cases, or must mark that change `needs-verification`. This release changes no skill text, so the gate does not apply.
+- Split `scripts/aegis-workspace.py` (1942 lines) into the `scripts/aegis_workspace_helper/` package with the same command line, paths and output; a 202-record golden transcript is identical before and after. The package must ship next to the script, which every supported channel already does.
+- Testing: four previously unexercised checks now run (Pi/OMP shared core, OMP host boundary, benchmark outcome scoring and the Codex isolation audit). Checks skipped for a missing environment are reported as skips rather than silent passes, shell checks share one helper file, and the workspace helper tests also run on Python 3.10 in CI.
+- Documentation: Known Limitations shrinks from 1245 to 959 lines without dropping retained items, and retirement triggers that could never fire now name an observable check or are marked permanent. The v1.x release notes move to `RELEASE-NOTES-v1.md`. README points at the latest 2.13.0 standard snapshot, and CLAUDE.md, AGENTS.md and the target-state documents match the current host list and the Autoloom product relationship.
+- Publish the same release source through Git and the official scoped npm package `@ganyuan_ran/aegis`. Synchronize all eight package/plugin versions; no global routing-prefix migration is required.
+
+### 中文
+
+- 退役三个废弃命令桩 `/brainstorm`、`/write-plan` 和 `/execute-plan`。它们只会提示改用对应技能，早在 v2.0 之前就承诺过移除。`brainstorming`、`writing-plans`、`executing-plans` 技能本身没有变化，Cursor 清单也不再暴露 commands 目录。
+- 退役从未被使用的 Deferred Ledger 约定（包括 `scripts/aegis-deferred-ledger.py`），保留项和延期事项统一由 Known Limitations 管理。测试运行器只认 `AEGIS_TEST_CLI`，移除上游遗留的 `SUPERPOWERS_TEST_CLI` 回退。
+- 宿主：结构目标如果连续三个 minor 版本都没有新的宿主证据，就在下一个版本复审，并记录一个结果：补充证据、降为仅文档，或退役。复审计时从本版本开始。有新鲜证据的一档仍然只有 Codex 和 OpenCode。
+- Benchmark：如实披露 matrix-v7 的一处评分不对称。四个 held-out 区分性用例要求的冻结标签 `implementation-rationale`，也接受 Aegis 自身输出所用的标签 "change necessity"。冻结分数不变；已发布的通过结果是否依赖于此，尚未用原始输出核对。Benchmark 基线已修订并标为 Reviewed；实时运行器现在会把超出产物上限的尝试记为一次无效尝试，而不再让校验失败。
+- 定义热路径行为门禁：改动 `using-aegis`、有字节预算的技能，或路由、验证、完成语义的版本，需要把 11 个冻结开发用例各跑三次，否则必须把该改动标为 `needs-verification`。本版本没有改动任何技能文本，门禁不适用。
+- 将 `scripts/aegis-workspace.py`（1942 行）拆分为 `scripts/aegis_workspace_helper/` 包，命令行、路径和输出都保持不变；拆分前后的 202 条黄金记录完全一致。安装时脚本旁边必须带上这个包，现有各渠道都已满足。
+- 测试：四个此前从未运行的检查已经接入（Pi/OMP 共享核心、OMP 宿主边界、benchmark 结果评分、Codex 隔离审计）。因环境缺失而跳过的检查会如实显示为跳过，不再当作通过；shell 检查改用同一个共享 helper；workspace helper 测试也会在 CI 的 Python 3.10 上运行。
+- 文档：Known Limitations 从 1245 行压缩到 959 行，保留项没有减少；永远无法触发的退役条件改为可观察的条件，或标为永久边界。v1.x 的发布说明移到 `RELEASE-NOTES-v1.md`。README 指向最新的 2.13.0 standard 快照；CLAUDE.md、AGENTS.md 和目标状态文档已与当前宿主清单及 Autoloom 产品关系同步。
+- 通过 Git 和官方 npm 包 `@ganyuan_ran/aegis` 交付同一版本源码。八个包和插件的版本号已同步；不需要迁移全局路由前缀。
+
 ## v2.15.2 (2026-11-14)
 
 ### English
