@@ -15,6 +15,17 @@ fi
 
 echo "=== Agentic Benchmark Observable Outcome Check ==="
 
+# The scorer runs every verification command inside bubblewrap with networking
+# unshared (`tests/helpers/score_agentic_benchmark_outcome.py`). Without `bwrap`
+# each verification check is reported as `network-isolator-unavailable`, so the
+# verdicts asserted below cannot be produced. Report that as an explicit skip;
+# CI installs bubblewrap and runs this check in full.
+if ! command -v bwrap >/dev/null 2>&1; then
+    echo "  [SKIP] environment-bound: observable outcome scoring requires bubblewrap (bwrap)"
+    echo "         coverage: runs in full on Linux CI; locally use Docker or WSL with bubblewrap."
+    exit 0
+fi
+
 "${PYTHON_CMD[@]}" - "$REPO_ROOT" <<'PY'
 import hashlib
 import json

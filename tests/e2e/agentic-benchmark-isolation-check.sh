@@ -7,6 +7,20 @@ cd "$REPO_ROOT"
 
 echo "=== Agentic Benchmark Isolation Check ==="
 
+# The audit launches the real Codex CLI (no model call) inside bubblewrap and
+# uses the POSIX-only process supervisor, mirroring `resolve_tool` in
+# `tests/helpers/run_agentic_benchmark.py`. Report missing prerequisites as an
+# explicit environment-bound skip instead of an unexplained failure.
+missing=()
+python3 -c 'import fcntl, resource' >/dev/null 2>&1 || missing+=("POSIX python3 (fcntl, resource)")
+[[ -n "${AEGIS_BENCHMARK_BWRAP:-}" ]] || command -v bwrap >/dev/null 2>&1 || missing+=("bubblewrap (bwrap)")
+[[ -n "${AEGIS_BENCHMARK_CODEX:-}" ]] || command -v codex >/dev/null 2>&1 || missing+=("Codex CLI (codex)")
+if [[ ${#missing[@]} -gt 0 ]]; then
+    joined="$(printf '%s; ' "${missing[@]}")"
+    echo "  [SKIP] environment-bound: isolation audit requires ${joined%; }"
+    exit 0
+fi
+
 test_root=".tmp/agentic-benchmark-isolation-check"
 auth_file="$test_root/auth.json"
 report_file="$test_root/audit/report.json"
