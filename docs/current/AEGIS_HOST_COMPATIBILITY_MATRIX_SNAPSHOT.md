@@ -91,6 +91,26 @@ This vocabulary is advisory and diagnostic only. It does **not** replace
 host-specific docs as the canonical owner for install roots, reload behavior,
 or supported discovery shapes.
 
+### 3.5 Structural Target Review Rule
+
+A host listed in §3.2 keeps that status only while it keeps earning it:
+
+- The review clock for every current §3.2 host starts with the first release
+  that includes this rule. It restarts when the host gains new host-specific
+  evidence: a closeout run, a guide or test update driven by an observed host
+  change, or a dated readback recorded in its guide. Wording-only edits do not
+  restart it.
+- A host without new host-specific evidence across three consecutive minor
+  releases is reviewed at the next release (release checklist §2).
+- The review records one outcome: add evidence through the Host Closeout
+  Recipe, move the host to documentation-only, or retire it to §3.2a with a
+  retirement boundary.
+- Documentation-only means the host guide remains, marked unverified, while
+  host-specific structural checks and adapters are no longer maintained. It is
+  not a support claim.
+- The fresh-evidence tier in §3.1 remains `Codex` and `OpenCode`; this rule
+  adds no release-time live smoke for other hosts.
+
 ---
 
 ## 4. What This Snapshot Means

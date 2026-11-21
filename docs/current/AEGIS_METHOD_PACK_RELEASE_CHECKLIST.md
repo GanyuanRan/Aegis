@@ -30,6 +30,9 @@ Before executing any formal release, the following must be confirmed item by ite
 5. If activation, TDD, routing, priority, verification, or authority semantics
    changed, both language mirrors of the unified global routing prefix were
    reviewed and any manual-copy migration was documented
+6. Every structural target due under the
+   [structural target review rule](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
+   has a recorded outcome: evidence added, documentation-only, or retired
 
 ---
 
