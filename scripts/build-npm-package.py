@@ -26,7 +26,7 @@ DIRECTORIES = {
 ROOT_FILES = {
     "AGENTS.md", "CLAUDE.md", "CONTEXT.md", "LICENSE", "package.json",
     "README.md", "README.en.md", "README.zh-CN.md", "RELEASE-NOTES.md",
-    "GLOBAL_USER_RULES_TEMPLATE.md", "GLOBAL_USER_RULES_TEMPLATE.zh-CN.md",
+    "RELEASE-NOTES-v1.md", "GLOBAL_USER_RULES_TEMPLATE.md", "GLOBAL_USER_RULES_TEMPLATE.zh-CN.md",
     "kimi.plugin.json", "SUPPORT.md", "SECURITY.md", "CONTRIBUTING.md",
     "CODE_OF_CONDUCT.md",
 }

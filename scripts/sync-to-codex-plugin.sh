@@ -63,6 +63,7 @@ EXCLUDES=(
   "/CHANGELOG.md"
   "/CLAUDE.md"
   "/RELEASE-NOTES.md"
+  "/RELEASE-NOTES-v1.md"
   "/package.json"
 
   # Directories not shipped by canonical Codex plugins
