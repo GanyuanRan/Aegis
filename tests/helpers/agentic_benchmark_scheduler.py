@@ -27,6 +27,7 @@ TRANSPORT_INVALID_REASONS = {
     "proxy-exposure",
 }
 INFRASTRUCTURE_ERROR_TYPES = {
+    "attempt-artifact-limit",
     "attempt-host-events-invalid",
     "attempt-host-exit",
     "attempt-output-limit",
