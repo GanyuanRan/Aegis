@@ -1,6 +1,6 @@
 # Aegis Minimality Reference
 
-Status: `Draft`
+Status: `Reviewed`
 
 ## 1. Purpose
 
