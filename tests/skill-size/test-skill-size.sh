@@ -13,17 +13,13 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
+source "$REPO_ROOT/tests/helpers/check-lib.sh"
 
 HARD_LIMIT=20000
 WARN_AT=18000
 
 failures=0
 warnings=0
-
-fail() {
-    echo "  [FAIL] $1"
-    failures=$((failures + 1))
-}
 
 warn() {
     echo "  [WARN] $1"
@@ -56,7 +52,7 @@ done
 # instead of trusting a green run that never exercises the branch.
 tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/aegis-skill-size.XXXXXX")"
 trap 'rm -rf -- "$tmp_dir"' EXIT
-python - "$tmp_dir/oversize.md" <<'PY'
+"${PYTHON_CMD[@]}" - "$tmp_dir/oversize.md" <<'PY'
 import sys
 from pathlib import Path
 Path(sys.argv[1]).write_text("x" * 20001, encoding="utf-8")
