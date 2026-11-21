@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parent.parent
 DIRECTORIES = {
     ".claude-plugin", ".codebuddy-plugin", ".codex", ".codex-plugin",
     ".cursor", ".cursor-plugin", ".opencode", ".windsurf", "assets",
-    "commands", "docs", "extensions", "hooks", "scripts", "skills",
+    "docs", "extensions", "hooks", "scripts", "skills",
 }
 ROOT_FILES = {
     "AGENTS.md", "CLAUDE.md", "CONTEXT.md", "LICENSE", "package.json",

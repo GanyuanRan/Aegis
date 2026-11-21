@@ -101,7 +101,7 @@ def validate_cursor_manifest(root: Path) -> None:
     manifest = load_json(root / ".cursor-plugin" / "plugin.json")
     require(manifest.get("skills") == "./skills/", "Cursor manifest must expose skills")
     require("agents" not in manifest, "Cursor manifest must not expose retired root agents")
-    require(manifest.get("commands") == "./commands/", "Cursor manifest must expose commands")
+    require("commands" not in manifest, "Cursor manifest must not expose retired root commands")
     require(manifest.get("hooks") == "./hooks/hooks-cursor.json", "Cursor manifest must point at hooks-cursor.json")
     require((root / "hooks" / "hooks-cursor.json").exists(), "Cursor hook file must exist")
 

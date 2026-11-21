@@ -62,7 +62,6 @@ For Claude Code installation and plugin behavior, also read:
 ```text
 .
 ├── skills/<name>/SKILL.md        # composable agent skills
-├── commands/<name>.md            # host command prompts
 ├── hooks/                        # Claude Code hooks
 ├── extensions/                   # host extensions (DSH, Pi, OMP, optional Codex reconciliation)
 ├── scripts/                      # maintenance scripts
