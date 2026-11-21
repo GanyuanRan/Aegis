@@ -887,6 +887,9 @@ request.
 - The native context contribution replaces both lifecycle subscriptions.
   Historical lifecycle smoke above does not verify the new delivery path.
 - The bootstrap skips subagents and does not install a hard pre-tool guard:
+  legitimate `Route: fast-path` decisions are model-facing and are not reliable
+  enough to support hard denial without false positives. The adapter does not
+  duplicate skill bodies or add runtime authority.
 - DeepSeek Harness's native filesystem provider discovers direct child skill
   bundles from project `.dsh/skills`, project `.agents/skills`, configured
   custom directories, `$DSH_HOME/skills` (`~/.dsh/skills` by default), and
@@ -936,9 +939,10 @@ request.
   install/update, representative live triggering, session refresh, no duplicate
   exposure, and project workspace support. Until then it remains an explicit
   compatibility path, not a co-active fallback.
-- Retire the legacy lifecycle subscription only after the supported DSH version
-  floor excludes it and live installed-profile evidence confirms that
-  `agent/created` covers `startup`, `resume`, `clear`, and `compact`.
+- Retire the live-routing limitation of the native context contribution only
+  after fresh installed-profile evidence confirms router delivery on `startup`,
+  `resume`, `clear`, and `compact`; deterministic host loop tests alone do not
+  close it.
 
 ### 2.27 Six-Topology Diagnosis Assumes Acyclic Convergence On Discrete Mechanisms
 
@@ -1066,11 +1070,16 @@ request.
   claim and external-unknown retirement cases tracked in issues #67 and #68
 
 **Retention Reason**
-- The published 2.10.8 standard snapshot has one observation per case and arm.
-  The later skill revisions have isolated non-benchmark checks, but no published
-  held-out batch on the revised method pack. Its original failing cases also
-  informed the revisions and cannot serve as independent evidence of a new
-  version's performance or complete elimination of intermittent failures.
+- The latest published standard snapshot covers Aegis 2.13.0 (2026-10-11),
+  after the September revisions recorded below, with one observation per case
+  and arm. Its `long-task-preservation-boundary` case failed the same response
+  check in both arms; the contributor reports that both attempts noted the
+  stale handoff claim in progress messages but neither final response restated
+  the correction ([snapshot notes](../../benchmarks/README.md#aegis-2130-standard-snapshot)).
+  Revisions after 2.13.0 have only isolated non-benchmark checks. Earlier
+  snapshots' failing cases also informed the revisions and cannot serve as
+  independent evidence of a new version's performance or complete elimination
+  of intermittent failures.
 - The [current disposition of #67](https://github.com/GanyuanRan/Aegis/issues/67#issuecomment-5909286564)
   pauses further default-skill changes aimed solely at repeating historical
   corrections in the final reply. That omission is accepted as a known limitation
