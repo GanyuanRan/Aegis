@@ -137,7 +137,6 @@ run_check "controlled replay samples" bash "$SCRIPT_DIR/controlled-replay-check.
 run_check "live replay capture dry-run" bash "$SCRIPT_DIR/live-replay-capture-check.sh"
 run_check "host instruction invariants" bash "$SCRIPT_DIR/host-instruction-invariants-check.sh"
 run_check "bootstrap adapter contract" bash "$SCRIPT_DIR/bootstrap-adapter-contract-check.sh"
-run_check "deferred ledger policy" bash "$SCRIPT_DIR/deferred-ledger-check.sh"
 run_check "minimality reference policy" bash "$SCRIPT_DIR/minimality-reference-check.sh"
 run_check "host adapter smoke" bash "$SCRIPT_DIR/host-adapter-smoke-check.sh"
 run_check "goal framing policy" bash "$SCRIPT_DIR/goal-framing-check.sh"

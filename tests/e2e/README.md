@@ -39,7 +39,6 @@ Entrypoints:
 - `live-replay-capture.sh`
 - `host-instruction-invariants-check.sh`
 - `bootstrap-adapter-contract-check.sh`
-- `deferred-ledger-check.sh`
 - `minimality-reference-check.sh`
 - `host-adapter-smoke-check.sh`
 - `goal-framing-check.sh`
@@ -126,9 +125,6 @@ Workspace helper coverage:
   the canonical `using-aegis` hot path or host-native references while keeping
   host-specific activation, TDD mode, JSON, discovery, warning, and tool
   mapping logic outside the portable method body.
-- `deferred-ledger-check.sh` verifies the deferred marker convention, parser,
-  and current repository scan for malformed retained follow-up / retirement
-  entries.
 - `minimality-reference-check.sh` verifies the Aegis-specific reference for
   checking before adding new skills, artifacts, adapters, fallbacks, or
   benchmark metrics.
