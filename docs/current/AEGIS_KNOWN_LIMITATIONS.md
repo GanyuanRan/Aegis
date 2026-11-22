@@ -441,8 +441,9 @@ request.
 - `bash tests/e2e/popular-agent-host-boundary-check.sh`
 
 **Retirement Trigger**
-- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or a documentation-only or
-  retirement outcome of the [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
+- For each host separately: a fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or a
+  documentation-only or retirement outcome of the [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule).
+  The limitation stays for whichever host has not met one.
 
 ---
 
