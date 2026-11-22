@@ -176,6 +176,14 @@ for the deterministic command and repeatable native inputs.
 Re-evaluate this optional path when a verified native host/skill flow meets
 the same correction, disclosure and false-accusation checks with less cost.
 
+The profile stays experimental and opt-in until all of these hold: it passes
+independently prepared blind cases that did not inform its development; the
+result reproduces on at least one additional model or host; and the operator
+review cost per task is recorded and acceptable for routine use. Meeting them
+supports a scoped recommendation for this profile only. It does not change the
+default skill-only Codex verdict, the benchmark scores, or the advisory
+boundary above.
+
 ## Host contracts
 
 - [Codex hooks](https://learn.chatgpt.com/docs/hooks)

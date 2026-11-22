@@ -65,6 +65,9 @@ run_check() {
     echo "Running: $label"
     if output="$("$@" 2>&1)"; then
         echo "  [PASS] $label"
+        # A passing check may still have skipped environment-bound coverage;
+        # surface those lines so a skip is never reported as a silent pass.
+        grep -F '[SKIP]' <<<"$output" | sed 's/^ */    /' || true
         passed=$((passed + 1))
     else
         echo "  [FAIL] $label"
@@ -87,6 +90,7 @@ run_host_smoke_fast_profile() {
 
     run_check "opencode base suite" bash tests/opencode/run-tests.sh
     run_check "codex plugin sync regression" bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh
+    run_check "codex benchmark isolation audit" bash "$SCRIPT_DIR/agentic-benchmark-isolation-check.sh"
 }
 
 run_host_smoke_full_matrix() {
@@ -98,6 +102,7 @@ run_host_smoke_full_matrix() {
 
     run_check "opencode base suite" bash tests/opencode/run-tests.sh
     run_check "codex plugin sync regression" bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh
+    run_check "codex benchmark isolation audit" bash "$SCRIPT_DIR/agentic-benchmark-isolation-check.sh"
 }
 
 run_check "boundary compliance" bash "$SCRIPT_DIR/boundary-compliance-check.sh"
@@ -107,6 +112,7 @@ run_check "aegis doctor" bash "$SCRIPT_DIR/aegis-doctor-check.sh"
 run_check "install verification policy" bash "$SCRIPT_DIR/install-verification-policy-check.sh"
 run_check "claude hook permissions" bash "$SCRIPT_DIR/claude-hook-permissions-check.sh"
 run_check "workspace text write compatibility" "${PYTHON_CMD[@]}" tests/helpers/test_workspace_text_write_compat.py
+run_check "workspace evidence convergence" "${PYTHON_CMD[@]}" tests/helpers/test_workspace_evidence_convergence.py
 run_check "Codex re-entry evidence parser" "${PYTHON_CMD[@]}" tests/helpers/test_codex_reentry_evidence.py
 run_check "optional Codex reconciliation callbacks" "${PYTHON_CMD[@]}" tests/codex-reconciliation/test_hooks.py
 run_check "workspace helper skill wiring" bash "$SCRIPT_DIR/workspace-helper-wiring-check.sh"
@@ -117,6 +123,8 @@ run_check "context semantic infrastructure" bash "$SCRIPT_DIR/context-semantic-i
 run_check "Antigravity host boundary" bash "$SCRIPT_DIR/antigravity-host-boundary-check.sh"
 run_check "CC GUI host boundary" bash "$SCRIPT_DIR/cc-gui-host-boundary-check.sh"
 run_check "Pi host boundary" bash "$SCRIPT_DIR/pi-host-boundary-check.sh"
+run_check "OMP host boundary" bash "$SCRIPT_DIR/omp-host-boundary-check.sh"
+run_check "Pi/OMP shared extension core" bash tests/pi-omp-extensions/test-shared-core.sh
 run_check "popular agent host boundary" bash "$SCRIPT_DIR/popular-agent-host-boundary-check.sh"
 run_check "Kimi Code CLI deterministic" bash tests/kimi-code/run-tests.sh
 run_check "ZCode host boundary" bash "$SCRIPT_DIR/zcode-host-boundary-check.sh"
@@ -125,11 +133,11 @@ run_check "DeepSeek Harness host boundary" bash "$SCRIPT_DIR/deepseek-harness-ho
 run_check "Copilot + Qoder host boundary" bash "$SCRIPT_DIR/copilot-qoder-host-boundary-check.sh"
 run_check "workflow quality policy" bash "$SCRIPT_DIR/workflow-quality-check.sh"
 run_check "agentic benchmark policy" bash "$SCRIPT_DIR/agentic-benchmark-check.sh"
+run_check "agentic benchmark observable outcome scoring" bash "$SCRIPT_DIR/agentic-benchmark-outcome-check.sh"
 run_check "controlled replay samples" bash "$SCRIPT_DIR/controlled-replay-check.sh"
 run_check "live replay capture dry-run" bash "$SCRIPT_DIR/live-replay-capture-check.sh"
 run_check "host instruction invariants" bash "$SCRIPT_DIR/host-instruction-invariants-check.sh"
 run_check "bootstrap adapter contract" bash "$SCRIPT_DIR/bootstrap-adapter-contract-check.sh"
-run_check "deferred ledger policy" bash "$SCRIPT_DIR/deferred-ledger-check.sh"
 run_check "minimality reference policy" bash "$SCRIPT_DIR/minimality-reference-check.sh"
 run_check "host adapter smoke" bash "$SCRIPT_DIR/host-adapter-smoke-check.sh"
 run_check "goal framing policy" bash "$SCRIPT_DIR/goal-framing-check.sh"

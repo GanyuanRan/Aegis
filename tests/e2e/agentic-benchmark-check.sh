@@ -4,14 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
-
-if command -v python3 >/dev/null 2>&1 && python3 -V >/dev/null 2>&1; then
-    PYTHON_CMD=(python3)
-elif command -v py >/dev/null 2>&1 && py -3 -V >/dev/null 2>&1; then
-    PYTHON_CMD=(py -3)
-else
-    PYTHON_CMD=(python)
-fi
+source "$REPO_ROOT/tests/helpers/check-lib.sh"
 
 # The benchmark harness supervises child processes with POSIX-only primitives
 # (`fcntl` for advisory locks, `resource` for RLIMIT hardening). Those modules do
@@ -42,39 +35,6 @@ if ! "${PYTHON_CMD[@]}" -c 'import fcntl, resource' >/dev/null 2>&1; then
 fi
 
 failures=0
-
-pass() {
-    echo "  [PASS] $1"
-}
-
-fail() {
-    echo "  [FAIL] $1"
-    failures=$((failures + 1))
-}
-
-assert_contains() {
-    local file="$1"
-    local pattern="$2"
-    local label="$3"
-
-    if grep -qE "$pattern" "$file"; then
-        pass "$label"
-    else
-        fail "$label"
-    fi
-}
-
-assert_not_contains() {
-    local file="$1"
-    local pattern="$2"
-    local label="$3"
-
-    if grep -qE "$pattern" "$file"; then
-        fail "$label"
-    else
-        pass "$label"
-    fi
-}
 
 make_negative_coverage_case() {
     local mutation="$1"

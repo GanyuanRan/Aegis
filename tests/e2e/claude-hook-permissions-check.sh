@@ -3,14 +3,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$REPO_ROOT"
-
-if command -v python3 >/dev/null 2>&1 && python3 -V >/dev/null 2>&1; then
-    PYTHON_CMD=(python3)
-elif command -v py >/dev/null 2>&1 && py -3 -V >/dev/null 2>&1; then
-    PYTHON_CMD=(py -3)
-else
-    PYTHON_CMD=(python)
-fi
+source "$REPO_ROOT/tests/helpers/check-lib.sh"
 
 mode_for() {
     local path="$1"

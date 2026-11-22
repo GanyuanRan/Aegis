@@ -6,7 +6,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROMPTS_DIR="$SCRIPT_DIR/prompts"
-TEST_CLI="${AEGIS_TEST_CLI:-${SUPERPOWERS_TEST_CLI:-claude}}"
+TEST_CLI="${AEGIS_TEST_CLI:-claude}"
 
 if [ "$TEST_CLI" = "codex" ]; then
     # Codex currently provides the lightweight active Wave 1 + Wave 2 smoke matrix.

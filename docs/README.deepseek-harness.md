@@ -160,7 +160,7 @@ can install the npm release explicitly:
 
 ```bash
 npm view @ganyuan_ran/aegis version maintainers
-dsh plugin --profile web add @ganyuan_ran/aegis@2.15.2
+dsh plugin --profile web add @ganyuan_ran/aegis@2.16.0
 ```
 
 For migration, inspect the profile and remove its existing `aegis` Git dependency
@@ -367,7 +367,7 @@ Aegis goal: Fix the auth refresh bug without rewriting the auth system.
 
 ## Updating
 
-For issue #102, use `2.15.2` as the common upgrade target. GitHub tag `v2.15.1`
+For issue #102, use `2.15.2` or later as the common upgrade target. GitHub tag `v2.15.1`
 predates the native-context fix, while the initial npm `2.15.1` already contains
 that code. Version numbers from those two older artifacts alone do not identify
 the same source. The new integration uses the existing host context registry
@@ -413,7 +413,7 @@ To migrate from Git to npm in the same CLI-managed profile:
 
 ```bash
 dsh plugin --profile web remove aegis
-dsh plugin --profile web add @ganyuan_ran/aegis@2.15.2
+dsh plugin --profile web add @ganyuan_ran/aegis@2.16.0
 ```
 
 Only remove `aegis` after confirming that it is the intended Git installation.

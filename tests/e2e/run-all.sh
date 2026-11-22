@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
-PLANNED_EXIT=90
+SKIPPED_EXIT=90
 MODE="bootstrap"
 HOST_PROFILE="${AEGIS_E2E_HOST_PROFILE:-fast}"
 
@@ -25,8 +25,8 @@ while [[ $# -gt 0 ]]; do
         --help|-h)
             echo "Usage: $0 [--bootstrap|--full] [--host-profile fast|matrix|none]"
             echo ""
-            echo "  --bootstrap  Run the currently active bootstrap slice (default)"
-            echo "  --full       Attempt every layer entrypoint; planned skeletons return as planned"
+            echo "  --bootstrap  Run Layer 1 (no host smoke) and the governance contract; skip Layers 2 and 3 (default)"
+            echo "  --full       Run every layer"
             exit 0
             ;;
         *)
@@ -46,7 +46,7 @@ echo "Directory: $SCRIPT_DIR"
 echo ""
 
 passed=0
-planned=0
+skipped=0
 failed=0
 
 run_step() {
@@ -75,9 +75,9 @@ run_step() {
 
     echo "$output"
     echo ""
-    if [[ $exit_code -eq $PLANNED_EXIT ]]; then
-        echo "  [PLAN] $label"
-        planned=$((planned + 1))
+    if [[ $exit_code -eq $SKIPPED_EXIT ]]; then
+        echo "  [SKIP] $label"
+        skipped=$((skipped + 1))
     else
         echo "  [FAIL] $label"
         failed=$((failed + 1))
@@ -89,8 +89,8 @@ run_step() {
 if [[ "$MODE" == "bootstrap" ]]; then
     run_step "Layer 1 Fast Check" bash "$SCRIPT_DIR/layer1-fast-check.sh" --host-profile none
     run_step "Governance Completion Contract Check" bash "$SCRIPT_DIR/governance-completion-contract-check.sh"
-    run_step "Layer 2 Behavior Check Skeleton" bash "$SCRIPT_DIR/layer2-behavior-check.sh" --bootstrap-status
-    run_step "Layer 3 Scenario Check Skeleton" bash "$SCRIPT_DIR/layer3-scenario-check.sh" --bootstrap-status
+    run_step "Layer 2 Behavior Check" bash "$SCRIPT_DIR/layer2-behavior-check.sh" --bootstrap-status
+    run_step "Layer 3 Scenario Check" bash "$SCRIPT_DIR/layer3-scenario-check.sh" --bootstrap-status
 else
     run_step "Layer 1 Fast Check" bash "$SCRIPT_DIR/layer1-fast-check.sh" --host-profile "$HOST_PROFILE"
     run_step "Governance Completion Contract Check" bash "$SCRIPT_DIR/governance-completion-contract-check.sh"
@@ -103,7 +103,7 @@ echo " E2E Verification Summary"
 echo "========================================"
 echo ""
 echo "  Passed:  $passed"
-echo "  Planned: $planned"
+echo "  Skipped: $skipped"
 echo "  Failed:  $failed"
 echo ""
 

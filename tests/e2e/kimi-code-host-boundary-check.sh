@@ -4,41 +4,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
+source "$REPO_ROOT/tests/helpers/check-lib.sh"
 
 failures=0
-
-pass() {
-    echo "  [PASS] $1"
-}
-
-fail() {
-    echo "  [FAIL] $1"
-    failures=$((failures + 1))
-}
-
-assert_contains() {
-    local file="$1"
-    local pattern="$2"
-    local label="$3"
-
-    if grep -qE -- "$pattern" "$file"; then
-        pass "$label"
-    else
-        fail "$label"
-    fi
-}
-
-assert_not_contains() {
-    local file="$1"
-    local pattern="$2"
-    local label="$3"
-
-    if grep -qE -- "$pattern" "$file"; then
-        fail "$label"
-    else
-        pass "$label"
-    fi
-}
 
 echo "=== Kimi Code CLI Host Boundary Check ==="
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import copy
 import json
+import re
 import sys
 import tempfile
 import threading
@@ -200,6 +201,22 @@ class SchedulerTest(unittest.TestCase):
         }
         with self.assertRaises(SystemExit):
             scheduler._validate_result(mismatched_recovery, allow_recovery=True)
+
+    def test_every_emitted_infrastructure_error_type_is_allowlisted(self):
+        # A producer that emits an errorType the scheduler does not allowlist makes
+        # _validate_result raise instead of recording one invalid attempt.
+        helpers = Path(__file__).resolve().parent
+        emitted = set()
+        for name in (
+            "run_agentic_benchmark.py",
+            "agentic_benchmark_scheduler.py",
+            "agentic_benchmark_process_supervisor.py",
+        ):
+            text = (helpers / name).read_text(encoding="utf-8")
+            emitted.update(re.findall(r'"errorType": "([a-z0-9-]+)"', text))
+            emitted.update(re.findall(r'"(supervisor-[a-z0-9-]+)"', text))
+        self.assertIn("attempt-artifact-limit", emitted)
+        self.assertEqual(sorted(emitted - scheduler.INFRASTRUCTURE_ERROR_TYPES), [])
 
     def test_executor_exception_uses_a_stable_code_not_the_exception_class(self):
         class PrivateProviderException(Exception):

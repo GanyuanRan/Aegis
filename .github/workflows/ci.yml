@@ -48,7 +48,7 @@ jobs:
       - name: Validate benchmark rendering and README installation flow
         run: bash tests/e2e/agentic-benchmark-render-check.sh
 
-      - name: Run Phase 5 static aggregate
+      - name: Run static E2E aggregate
         # Live Codex host smoke requires a configured Codex CLI; keep default CI host-neutral.
         run: bash tests/e2e/run-all.sh --full --host-profile none
 
@@ -57,5 +57,5 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Check updater on Python 3.10
-        run: python -m unittest tests.helpers.test_aegis_update tests.helpers.test_aegis_copy
+      - name: Check updater and workspace helper on Python 3.10
+        run: python -m unittest tests.helpers.test_aegis_update tests.helpers.test_aegis_copy tests.helpers.test_workspace_text_write_compat tests.helpers.test_workspace_evidence_convergence

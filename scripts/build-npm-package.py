@@ -21,12 +21,12 @@ ROOT = Path(__file__).resolve().parent.parent
 DIRECTORIES = {
     ".claude-plugin", ".codebuddy-plugin", ".codex", ".codex-plugin",
     ".cursor", ".cursor-plugin", ".opencode", ".windsurf", "assets",
-    "commands", "docs", "extensions", "hooks", "scripts", "skills",
+    "docs", "extensions", "hooks", "scripts", "skills",
 }
 ROOT_FILES = {
     "AGENTS.md", "CLAUDE.md", "CONTEXT.md", "LICENSE", "package.json",
     "README.md", "README.en.md", "README.zh-CN.md", "RELEASE-NOTES.md",
-    "GLOBAL_USER_RULES_TEMPLATE.md", "GLOBAL_USER_RULES_TEMPLATE.zh-CN.md",
+    "RELEASE-NOTES-v1.md", "GLOBAL_USER_RULES_TEMPLATE.md", "GLOBAL_USER_RULES_TEMPLATE.zh-CN.md",
     "kimi.plugin.json", "SUPPORT.md", "SECURITY.md", "CONTRIBUTING.md",
     "CODE_OF_CONDUCT.md",
 }

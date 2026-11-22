@@ -6,6 +6,13 @@ Status: `Approved`
 
 This document defines the minimum schema baseline for the current runtime-ready artifacts of the `Aegis Method Pack`.
 
+No external consumption contract is currently published for these artifacts.
+Autoloom carries the runtime-core direction as a separate product (see the
+[product relationship](AEGIS_PRODUCT_BASELINE.md#current-product-relationship-autoloom)),
+but which artifacts it reads, and how a consumer contract would be versioned,
+is not defined here. Until a consumer contract is published, this baseline
+alone governs artifact shape changes.
+
 ---
 
 ## 2. General Constraints
@@ -222,7 +229,8 @@ Required fields:
 Current owner:
 
 - method pack assembles
-- future runtime core consumes
+- an independent runtime product may consume it; no consumption contract is
+  published (see §1)
 
 Human-readable projection:
 

@@ -1,23 +1,26 @@
 import contextlib
-import importlib.util
 import io
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+# Import the helper package from this checkout; write no bytecode under scripts/.
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-
-def load_module(name: str, relative_path: str):
-    spec = importlib.util.spec_from_file_location(name, REPO_ROOT / relative_path)
-    module = importlib.util.module_from_spec(spec)
-    assert spec.loader is not None
-    spec.loader.exec_module(module)
-    return module
-
-
-workspace = load_module("aegis_workspace", "scripts/aegis-workspace.py")
+from aegis_workspace_helper.checks import command_check
+from aegis_workspace_helper.errors import WorkspaceError
+from aegis_workspace_helper.evidence import command_add_attempt, command_add_evidence, command_bundle
+from aegis_workspace_helper.inputs import read_json_dict
+from aegis_workspace_helper.layout import initialize_workspace
+from aegis_workspace_helper.work import (
+    command_add_checkpoint,
+    command_add_drift_check,
+    command_new_work,
+)
 
 
 def args(**values):
@@ -25,8 +28,8 @@ def args(**values):
 
 
 def new_work_record(root: Path) -> Path:
-    workspace.initialize_workspace(root)
-    result = workspace.command_new_work(
+    initialize_workspace(root)
+    result = command_new_work(
         args(
             root=str(root),
             date="2026-09-01",
@@ -65,7 +68,7 @@ class EvidenceConvergenceTests(unittest.TestCase):
             work = new_work_record(root)
             for attempt_id in ("attempt-1", "attempt-2", "attempt-3"):
                 self.assertEqual(
-                    workspace.command_add_attempt(
+                    command_add_attempt(
                         args(
                             root=str(root),
                             work=work.name,
@@ -85,25 +88,70 @@ class EvidenceConvergenceTests(unittest.TestCase):
 
             drafts = sorted(work.glob("evidence-bundle-draft-slice-1*.json"))
             self.assertEqual(len(drafts), 1)
-            data = workspace.read_json_dict(drafts[0])
+            data = read_json_dict(drafts[0])
             self.assertEqual(data["evidenceStatus"], "attempted")
             self.assertEqual(len(data["attempts"]), 3)
             self.assertEqual(data["attemptSummary"]["total"], 3)
             self.assertNotIn("EvidenceBundleDraft: slice-1", (work / "90-evidence.md").read_text(encoding="utf-8"))
 
-            self.assertEqual(workspace.command_bundle(args(root=str(root), work=work.name)), 0)
-            pack = workspace.read_json_dict(work / "gate-input-pack.json")
+            self.assertEqual(command_bundle(args(root=str(root), work=work.name)), 0)
+            pack = read_json_dict(work / "gate-input-pack.json")
             self.assertNotIn(
                 "docs/aegis/work/2026-09-01-evidence-convergence/evidence-bundle-draft-slice-1.json",
                 pack["evidenceBundle"],
             )
+
+    def test_evidence_update_keeps_backslashes_in_summary(self):
+        # Updating an existing evidence section used the summary as an re
+        # replacement template, so a Windows path such as C:\logs raised
+        # "bad escape" after the JSON sidecar had already been written.
+        with tempfile.TemporaryDirectory(prefix="aegis-backslash-") as tmp:
+            root = Path(tmp)
+            work = new_work_record(root)
+            summary = "Logs saved under C:\\logs\\run.txt"
+            terminal = args(
+                root=str(root),
+                work=work.name,
+                artifact_key="slice-1",
+                slice_id="slice-1",
+                evidence_status="evidence-finalized",
+                type="test",
+                source="unit test",
+                summary=summary,
+                verifier="test_workspace_evidence_convergence",
+                date="2026-09-01",
+            )
+            self.assertEqual(command_add_evidence(terminal), 0)
+            self.assertEqual(command_add_evidence(terminal), 0)
+            evidence_markdown = (work / "90-evidence.md").read_text(encoding="utf-8")
+            self.assertEqual(evidence_markdown.count(summary), 1)
+
+    def test_bundle_lists_status_less_sidecar_as_legacy(self):
+        # A sidecar without evidenceStatus is valid legacy evidence; it used to
+        # be classified invalid, leaving the proof bundle's legacy list empty.
+        with tempfile.TemporaryDirectory(prefix="aegis-legacy-") as tmp:
+            root = Path(tmp)
+            work = new_work_record(root)
+            (work / "evidence-bundle-draft-legacy.json").write_text(
+                '{"summary": "recorded before evidenceStatus existed"}\n', encoding="utf-8"
+            )
+            (work / "evidence-bundle-draft-unknown.json").write_text(
+                '{"evidenceStatus": "unknown-status"}\n', encoding="utf-8"
+            )
+            self.assertEqual(command_bundle(args(root=str(root), work=work.name)), 0)
+            proof = (work / "proof-bundle.md").read_text(encoding="utf-8")
+            legacy_section = proof.split("## Legacy Unclassified Evidence\n\n", 1)[1].split("\n## ", 1)[0]
+            self.assertIn("evidence-bundle-draft-legacy.json", legacy_section)
+            self.assertNotIn("evidence-bundle-draft-unknown.json", legacy_section)
+            pack = read_json_dict(work / "gate-input-pack.json")
+            self.assertEqual(pack["evidenceBundle"], [])
 
     def test_terminal_evidence_is_idempotent_and_closes_slice(self):
         with tempfile.TemporaryDirectory(prefix="aegis-terminal-") as tmp:
             root = Path(tmp)
             work = new_work_record(root)
             for attempt_id in ("attempt-1", "attempt-2"):
-                workspace.command_add_attempt(
+                command_add_attempt(
                     args(
                         root=str(root),
                         work=work.name,
@@ -131,8 +179,8 @@ class EvidenceConvergenceTests(unittest.TestCase):
                 verifier="test_workspace_evidence_convergence",
                 date="2026-09-01",
             )
-            self.assertEqual(workspace.command_add_evidence(terminal), 0)
-            self.assertEqual(workspace.command_add_evidence(terminal), 0)
+            self.assertEqual(command_add_evidence(terminal), 0)
+            self.assertEqual(command_add_evidence(terminal), 0)
 
             drafts = sorted(work.glob("evidence-bundle-draft-slice-1*.json"))
             self.assertEqual(len(drafts), 1)
@@ -140,15 +188,15 @@ class EvidenceConvergenceTests(unittest.TestCase):
             self.assertEqual(evidence_markdown.count("## EvidenceBundleDraft: slice-1"), 1)
             self.assertNotIn("No evidence has been recorded yet.", evidence_markdown)
 
-            self.assertEqual(workspace.command_bundle(args(root=str(root), work=work.name)), 0)
-            pack = workspace.read_json_dict(work / "gate-input-pack.json")
+            self.assertEqual(command_bundle(args(root=str(root), work=work.name)), 0)
+            pack = read_json_dict(work / "gate-input-pack.json")
             self.assertIn(
                 "docs/aegis/work/2026-09-01-evidence-convergence/evidence-bundle-draft-slice-1.json",
                 pack["evidenceBundle"],
             )
 
-            with self.assertRaises(workspace.WorkspaceError):
-                workspace.command_add_attempt(
+            with self.assertRaises(WorkspaceError):
+                command_add_attempt(
                     args(
                         root=str(root),
                         work=work.name,
@@ -169,7 +217,7 @@ class EvidenceConvergenceTests(unittest.TestCase):
             root = Path(tmp)
             work = new_work_record(root)
             for attempt_id in ("attempt-1", "attempt-2", "attempt-3"):
-                workspace.command_add_attempt(
+                command_add_attempt(
                     args(
                         root=str(root),
                         work=work.name,
@@ -188,7 +236,7 @@ class EvidenceConvergenceTests(unittest.TestCase):
             stdout = io.StringIO()
             with contextlib.redirect_stdout(stdout):
                 self.assertEqual(
-                    workspace.command_check(
+                    command_check(
                         args(root=str(root), process_pressure=True)
                     ),
                     0,
@@ -201,7 +249,7 @@ class EvidenceConvergenceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="aegis-checkpoint-drift-") as tmp:
             root = Path(tmp)
             work = new_work_record(root)
-            workspace.command_add_drift_check(
+            command_add_drift_check(
                 args(
                     root=str(root),
                     work=work.name,
@@ -213,7 +261,7 @@ class EvidenceConvergenceTests(unittest.TestCase):
                     new_risk_signal=[],
                 )
             )
-            workspace.command_add_checkpoint(
+            command_add_checkpoint(
                 args(
                     root=str(root),
                     work=work.name,
@@ -237,7 +285,7 @@ class EvidenceConvergenceTests(unittest.TestCase):
             root = Path(tmp)
             work = new_work_record(root)
             for index in range(8):
-                workspace.command_add_checkpoint(
+                command_add_checkpoint(
                     args(
                         root=str(root),
                         work=work.name,
@@ -262,7 +310,7 @@ class EvidenceConvergenceTests(unittest.TestCase):
             root = Path(tmp)
             work = new_work_record(root)
             for index in range(8):
-                workspace.command_add_checkpoint(
+                command_add_checkpoint(
                     args(
                         root=str(root),
                         work=work.name,

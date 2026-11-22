@@ -18,7 +18,6 @@ Aegis has a Claude Code plugin distribution skeleton:
 - `.claude-plugin/plugin.json`
 - `.claude-plugin/marketplace.json`
 - `skills/`
-- `commands/`
 - `hooks/`
 
 This means Claude Code is a supported product target. It does **not** mean

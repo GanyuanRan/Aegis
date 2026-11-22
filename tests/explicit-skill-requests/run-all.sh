@@ -6,7 +6,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROMPTS_DIR="$SCRIPT_DIR/prompts"
-TEST_CLI="${AEGIS_TEST_CLI:-${SUPERPOWERS_TEST_CLI:-claude}}"
+TEST_CLI="${AEGIS_TEST_CLI:-claude}"
 
 echo "=== Running All Explicit Skill Request Tests ==="
 echo ""

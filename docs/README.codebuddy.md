@@ -27,7 +27,6 @@ Aegis now ships a CodeBuddy plugin skeleton:
 - `.codebuddy-plugin/plugin.json`
 - `.codebuddy-plugin/marketplace.json`
 - `skills/`
-- `commands/`
 - `hooks/`
 
 This means CodeBuddy is a supported product target. It does **not** mean

@@ -65,14 +65,13 @@ semantics remain at their named owner.
 | Portable versus host/repo rules | `docs/current/AEGIS_RULE_LAYERING.md`: ownership and projections. |
 | Installed skill fails to trigger / overtriggers | `docs/current/AEGIS_TRIGGER_HEALTH_BASELINE.md`: classify failed layer, then its diagnostic section. |
 | Agentic behavior or performance claims | `docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md`: evidence/claim scope and selected evaluation lane. |
-| Deferred follow-up / retirement marker | `docs/current/AEGIS_DEFERRED_LEDGER.md`: marker convention. |
 | Proposing a new owner, skill, artifact, adapter, fallback or metric | `docs/current/AEGIS_MINIMALITY_REFERENCE.md`: pre-addition check. |
 | Repair plus retirement / source-of-truth cleanup | `docs/current/AEGIS_DUAL_TRACK_GOVERNANCE.md`: repair/retirement and authorization boundary. |
 | Executed architecture decision / baseline sync | `docs/current/AEGIS_ADR_AUTO_BACKFILL.md`: triggers and current-state sync. |
 | Draft/hint/projection structure | `docs/current/AEGIS_ARTIFACT_SCHEMA_BASELINE.md`: relevant artifact only. |
 | Runtime-ready versus runtime authority | `docs/current/AEGIS_RUNTIME_READY_BOUNDARY.md`: relevant boundary. |
 | Release or supported-host readiness | `docs/current/AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md`: applicable gates; `docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md`: selected host and evidence scope. |
-| Known limitation / retained compatibility | `docs/current/AEGIS_KNOWN_LIMITATIONS.md`: search headings for the affected surface; do not load the whole catalogue by default. |
+| Known limitation / retained compatibility / deferred follow-up | `docs/current/AEGIS_KNOWN_LIMITATIONS.md`: search headings for the affected surface; do not load the whole catalogue by default. |
 | Fundamental product boundary | `docs/adr/ADR-0001-aegis-method-pack-is-not-runtime-core.md`. |
 | Kimi automatic entry | `docs/adr/ADR-0002-kimi-native-plugin-is-the-automatic-entry.md`. |
 | Branch/worktree/commit/integration lifecycle | `docs/adr/ADR-0003-current-branch-first-git-lifecycle.md`: relevant lifecycle section. |

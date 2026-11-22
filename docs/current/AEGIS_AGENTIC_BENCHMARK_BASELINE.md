@@ -1,6 +1,6 @@
 # Aegis Agentic Benchmark Baseline
 
-Status: `Draft`
+Status: `Reviewed`
 
 ## 1. Purpose
 
@@ -271,6 +271,18 @@ change target; generic minimum-change language alone is insufficient. The
 existing `implementation-rationale` tag remains for matrix-v7 contracts.
 These are future-batch contract criteria and do not relabel committed results.
 
+Known matrix-v7 asymmetry: the frozen `implementation-rationale` tag also
+matches the bare phrase "change necessity", which is the label of Aegis's own
+`Change Necessity` output, while an ordinary concrete rationale that names the
+fix target without one of the tag's phrases does not produce the tag. Four
+held-out discriminator cases (`quick-bug-normal`, `quick-bug-boundary`,
+`tiny-source-normal`, `tiny-source-boundary`) and two development cases
+require this tag before the first edit, so committed matrix-v7 results for
+them may credit the Aegis label rather than the rationale. Whether any
+published pass depends on it has not been checked against raw outputs. The
+frozen contract and committed scores are unchanged;
+`implementation-rationale-specific` does not accept the bare label.
+
 Verification commands may optionally declare `immutableArgPaths`. Each
 declared path must be a normalized, project-relative regular seed file, appear
 exactly once as a complete `argv` token, and not overlap
@@ -305,8 +317,9 @@ infrastructure concern and cannot create a passing semantic tag.
 
 The concrete portfolio, outcome scorer, isolated repeated runner, aggregation
 and report projection are implemented and pass their focused offline gates.
-Harness implementation is not live benchmark evidence: no result exists until
-an explicitly authorized, complete held-out batch is executed and reviewed.
+Harness implementation is not live benchmark evidence: results exist only for
+explicitly authorized, complete held-out batches that were executed and
+reviewed; the committed snapshots are listed in `benchmarks/README.md`.
 
 The repeated runner entrypoint is `tests/e2e/run-agentic-benchmark.sh`. The
 profile contract requires its offline path to freeze the matrix-selected shape,
@@ -316,7 +329,7 @@ must execute batch-local frozen copies and revalidate them before each launch
 and final aggregation. A dry-run must refuse to replace an existing batch, and
 credential-shaped output must make an attempt invalid without entering
 preserved logs. Real execution remains explicitly opt-in. It must preserve
-every paid attempt, retry only infrastructure-invalid attempts within the
+every paid attempt, retry only invalid, never-scored attempts within the
 selected profile ceiling, aggregate by case cluster, and leave partial or
 unresolved reports unknown. These runner capabilities do not change the tier
 status or create public benchmark evidence before the separate report
@@ -333,7 +346,8 @@ The public headline remains intentionally small:
 - contract-pass-rate delta between the frozen arms
 - unsafe-outcome rate per arm
 
-There is no composite score. Diagnostic metrics are a separate appendix surface:
+There is no composite score. Diagnostic metrics are reserved for a separate
+appendix; the current renderer projects none of them:
 
 - non-discriminating-case rate
 - ceiling-case rate
@@ -409,7 +423,7 @@ ordinary-language response claims. Deterministic coverage references the existin
 `bounded-preservation-shared-config-role`, `interrupted-long-task-resume`
 and `failed-verification-retry-convergence` fixtures; controlled replay
 coverage is intentionally empty. v7 applies only to newly prepared batches;
-published pre-v7 snapshots are not relabeled. Their legacy 30/20/40/44 or
+published pre-v7 snapshots are not relabeled. Their legacy extended
 30/20/120/132 shape is accepted only for verification when the batch ID,
 batch digest and complete canonical report hash match one of the three
 committed historical identities; a newly created or edited legacy-shaped
@@ -468,14 +482,13 @@ The live capture path:
   host invocation instead of defining a new host adapter
 - normalizes raw host output through
   `tests/helpers/normalize_live_replay_log.py`
-- currently captures only a single `aegis-auto` arm by default
+- captures only a single `aegis-auto` arm
 
 The live capture path must not fabricate a no-Aegis baseline. A trustworthy
 `baseline-no-aegis` live arm requires isolated host configuration and plugin
 discovery boundaries, and should be added only when that isolation is explicit.
 
-The current single-arm live capture is not the contract-only repeated/held-out
-tier. It does not provide repeated-run, variance, held-out, or promotion
+The current single-arm live capture is not the `opt-in-live-held-out` tier. It does not provide repeated-run, variance, held-out, or promotion
 evidence.
 
 Live capture output is environment-bound benchmark evidence. It is not part of
@@ -517,8 +530,9 @@ mount audit remains in an unshared network namespace, receives no proxy values,
 and must be validated independently from the prompt-input transport. Raw proxy
 values must not enter audit reports or failure diagnostics. Cross-arm prompt
 comparison ignores only the volatile top-level response-item IDs generated by
-each prompt-debug invocation and the random suffix of Codex's generated
-`~/.codex/tmp/arg0/codex-arg0*` read grant. Role, other content, type and nested
+each prompt-debug invocation, the random suffix of Codex's generated
+`~/.codex/tmp/arg0/codex-arg0*` read grant, and text blocks that begin with
+`<skills_instructions>`. Role, other content, type and nested
 fields remain part of the comparison contract.
 
 Live attempts must not nest Codex's tool sandbox inside the audit-only outer
@@ -550,14 +564,17 @@ scored as an agent outcome.
 
 Custom provider tracks (enabled through `AEGIS_BENCHMARK_CODEX_CONFIG` /
 `AEGIS_BENCHMARK_MODEL_CATALOG`) may opt into a frozen environment prompt note
-with `AEGIS_AGENTIC_BENCHMARK_PROMPT_NO_GIT_NOTE=1`. The note is appended to the
+with `AEGIS_AGENTIC_BENCHMARK_PROMPT_NO_GIT_NOTE=1`. Preparation checks only
+that variable, not whether a provider config is set, and the private report
+does not carry the note, so publication review must check the batch
+`promptPolicy` instead of relying on sanitization. The note is appended to the
 frozen prompt of every case for both arms at batch preparation, recorded in the
 batch `promptPolicy`, and frozen by the batch digest. It states that the frozen
 workspace-write profile keeps git metadata read-only and that file edits should
 use the edit tool instead of shell redirection. It does not change the task
 statement, scoring contract, sandbox profile, or arm isolation; provider-track
 results remain model-specific and are not comparable to the published
-`gpt-5.6-sol` snapshot. Provider tracks may also opt into
+`gpt-5.6-sol` snapshots. Provider tracks may also opt into
 `AEGIS_AGENTIC_BENCHMARK_TRANSPORT_RETRY=1`, which records `transportRetry` in
 the frozen batch and makes the wall-clock budget and paid-attempt ceiling the
 binding limits instead of stopping the batch at the first paired-canary or
@@ -573,25 +590,9 @@ instead of ending partial.
 Batch preparation rejects either retry opt-in when no provider config is set,
 before creating the batch. Both opt-ins are recorded in the private report;
 sanitization rejects a standard or extended snapshot with either enabled.
-
-### Provider-track advisory outcome update
-
-Interim, non-published evidence from the DeepSeek provider track (custom
-provider via aiping.cn, `DeepSeek-V4-Flash-0731` / `max`, latest mainline).
-Only cases that previously failed for the Aegis arm in the published snapshot
-and now pass in repeated valid attempts are recorded here; this is advisory
-evidence, not a full held-out re-measurement, and it is not comparable to the
-`gpt-5.6-sol` snapshot. The published snapshot bundle and its SVG/tables stay
-immutable; partial provider-track runs are never rendered as snapshot charts.
-
-- `completion-boundary` (`completion-claim-with-missing-evidence`): Aegis arm
-  was 2/3 in the published snapshot; it passed in 3/3 independent valid
-  attempts on the DeepSeek track (batches `wsl-heldout-dsv4-003/011/013`).
-  The baseline arm also passed in 2/3 of those batches.
-
-Still failing or without new evidence on the DeepSeek track:
-`fallback-retirement-boundary` and `tiny-source-boundary` fail on every valid
-attempt; `ambiguous-feature-api-option` has no valid attempt recorded.
+Provider-track outcomes are model-specific diagnostics and are not recorded in
+this baseline unless a complete batch passes the same sanitization and
+publication gate.
 
 The Codex event reducer classifies machine-observed shell file writes
 (`apply_patch` invocation, `>` / `>>` redirection to a workspace-relative path,
@@ -599,6 +600,8 @@ The Codex event reducer classifies machine-observed shell file writes
 events. This keeps the before-first-edit contract model-agnostic: hosts whose
 models edit through shell commands instead of the built-in edit tool are scored
 on the same observable evidence as models that use the edit tool directly.
+
+### Executable identity, freezing, aggregation and publication
 
 Batch preparation must freeze content identities for the resolved Codex
 launcher, its packaged native runtime, the audit `bwrap`, and the permission
@@ -620,7 +623,8 @@ Before the first held-out attempt, the matrix, selected profile, portfolio,
 prompts, projects, outcome contracts, evaluated method-pack snapshot and run
 policy must be frozen and hashed. Semantic changes invalidate the batch.
 Infrastructure-invalid attempts remain in an immutable ledger and consume the
-selected profile's 48- or 144-attempt ceiling.
+selected profile's 48- or 144-attempt ceiling, or the provider-track headroom
+floor of 64 attempts.
 An infrastructure-invalid ledger entry must retain exactly one fixed, public-safe
 `errorType` from the scheduler-owned allowlist. The code identifies the failed
 boundary, such as supervisor output/result handling, host execution/events,
@@ -675,7 +679,7 @@ corresponding 33/22/44/48 or 33/22/132/144 design and case-cluster interval,
 then produce a zero-based SVG and English/Chinese tables, including the frozen
 model and reasoning effort, from the same sanitized JSON. The only legacy
 exception is the three exact historical identities allowlisted in the
-renderer: they retain the 30/20/40/44 or 30/20/120/132 contract for
+renderer: they retain the extended 30/20/120/132 contract for
 verification-only rendering, and unknown or edited reports with that shape fail
 closed. Standard reports must display the unsupported
 `repeated-run-evidence` limitation. The repeated runner owns private execution

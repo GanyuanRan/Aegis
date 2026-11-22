@@ -4,16 +4,20 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
-
-if command -v python3 >/dev/null 2>&1 && python3 -V >/dev/null 2>&1; then
-    PYTHON_CMD=(python3)
-elif command -v py >/dev/null 2>&1 && py -3 -V >/dev/null 2>&1; then
-    PYTHON_CMD=(py -3)
-else
-    PYTHON_CMD=(python)
-fi
+source "$REPO_ROOT/tests/helpers/check-lib.sh"
 
 echo "=== Agentic Benchmark Observable Outcome Check ==="
+
+# The scorer runs every verification command inside bubblewrap with networking
+# unshared (`tests/helpers/score_agentic_benchmark_outcome.py`). Without `bwrap`
+# each verification check is reported as `network-isolator-unavailable`, so the
+# verdicts asserted below cannot be produced. Report that as an explicit skip;
+# CI installs bubblewrap and runs this check in full.
+if ! command -v bwrap >/dev/null 2>&1; then
+    echo "  [SKIP] environment-bound: observable outcome scoring requires bubblewrap (bwrap)"
+    echo "         coverage: runs in full on Linux CI; locally use Docker or WSL with bubblewrap."
+    exit 0
+fi
 
 "${PYTHON_CMD[@]}" - "$REPO_ROOT" <<'PY'
 import hashlib

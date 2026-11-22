@@ -216,5 +216,37 @@ stay inline; written plans use the planned-execution owner. Bound child context
 to live host capability; child results are evidence/proposals. The coordinator
 owns Git, synthesis, conflict resolution and integrated verification.
 
+### Hot-Path Behavioral Gate
+
+Changing rule text is cheap and its behavioral effect is easy to overestimate,
+so hot-path changes need repeated behavior evidence before a release claims
+they work. The gate applies when a release changes `skills/using-aegis/SKILL.md`,
+a skill with a §4 byte budget, or routing, verification or completion
+semantics:
+
+- Frozen case set: the 11 `development`-partition cases of the frozen
+  matrix-v7 manifest (`tests/e2e/fixtures/agentic-benchmark-cases.json`).
+  Held-out cases are excluded so repeated gating cannot contaminate published
+  measurement; the manifest validator already fixes the partition.
+- Runs: each case three times on the primary host, Codex, as separate batches
+  with the same model and reasoning effort and a new batch ID each time
+  (66 attempts in total):
+  `AEGIS_AGENTIC_BENCHMARK_LIVE=1 bash tests/e2e/run-agentic-benchmark.sh --profile development-pilot --case <id> --batch-id <new-id> --model <model> --reasoning-effort <effort>`.
+- Record the `aegis-auto` and `baseline-no-aegis` contract-pass counts per case
+  (0-3) in the release pull request as development diagnostics. Development
+  publication stays disabled: these counts are not benchmark results, and the
+  release notes state only whether the gate passed or the change is
+  `needs-verification`.
+- Decision: a case whose `aegis-auto` count falls below the previous gated
+  release's count needs a stated reason, or the change is revised. The first
+  gated release sets the reference. When the gate cannot run, for example
+  without host credentials, the release notes mark the hot-path change
+  `needs-verification` instead of claiming improvement.
+
+The gate is advisory release evidence for the maintainer. It is not held-out
+measurement, candidate promotion under the
+[Agentic Benchmark](AEGIS_AGENTIC_BENCHMARK_BASELINE.md) baseline, or a
+runtime gate, and it does not use the not-yet-eligible `previous-aegis` arm.
+
 Keep evaluation proportional: no new universal score, workflow, artifact, or
 runtime gate is created by these criteria.

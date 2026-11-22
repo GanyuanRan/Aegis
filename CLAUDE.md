@@ -12,18 +12,10 @@ map, read `docs/current/README.md`.
 provides composable skills, workflow discipline, and host-installable guidance
 for software development work.
 
-Aegis is structured as a multi-harness plugin:
-
-- Claude Code
-- OpenAI Codex
-- OpenCode
-- Cursor
-- Windsurf
-- CodeBuddy
-- DeepSeek-TUI
-- Trae
-- Kimi Code CLI
-- Warp (terminal host, no adapter needed)
+Aegis is structured as a multi-harness plugin. The current list of verified,
+structural, retired, and adapter-free hosts, with their evidence scope, lives
+only in `docs/current/AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md`; do not
+infer host support from this file.
 
 Current product boundary:
 
@@ -70,11 +62,11 @@ For Claude Code installation and plugin behavior, also read:
 ```text
 .
 ├── skills/<name>/SKILL.md        # composable agent skills
-├── commands/<name>.md            # host command prompts
-├── agents/                       # agent definition prompts
 ├── hooks/                        # Claude Code hooks
+├── extensions/                   # host extensions (DSH, Pi, OMP, optional Codex reconciliation)
 ├── scripts/                      # maintenance scripts
 ├── tests/                        # host and workflow tests
+├── benchmarks/                   # published agentic benchmark results
 ├── .claude-plugin/               # Claude Code plugin manifest
 ├── .codex-plugin/                # Codex plugin manifest
 ├── .opencode/                    # OpenCode integration

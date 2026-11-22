@@ -5,7 +5,9 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-SHARED_CORE="$REPO_ROOT/extensions/shared/aegis-bootstrap.ts"
+# The Node heredoc below reads both paths from process.env, so they must be exported.
+export SHARED_CORE="$REPO_ROOT/extensions/shared/aegis-bootstrap.ts"
+export USING_AEGIS_SKILL="$REPO_ROOT/skills/using-aegis/SKILL.md"
 
 echo "=== Test: Shared Pi/OMP Extension Core ==="
 

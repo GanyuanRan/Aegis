@@ -88,7 +88,7 @@ Git 渠道；npm 安装、更新和渠道迁移请按 [DSH 专用说明](docs/RE
 
 [脱敏 JSON](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6.json) · [中文表格](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6.zh-CN.md) · [English table](benchmarks/results/gpt-5-6-sol-xhigh-extended-20260811-v2-7-6.en.md) · [方法说明](docs/current/AEGIS_AGENTIC_BENCHMARK_BASELINE.md)
 
-较新的 [Aegis 2.10.8 matrix-v7 standard 快照](benchmarks/results/gpt-5-6-sol-xhigh-standard-20260925-v2-10-8.zh-CN.md)
+最新的 [Aegis 2.13.0 matrix-v7 standard 快照](benchmarks/results/gpt-5-6-sol-xhigh-standard-20261011-v2-13-0.zh-CN.md)
 覆盖 22 个案例，每个案例在两组各有一次观察。它与上方 extended 快照使用不同的
 运行 profile，也没有测量本次发布中的改动。
 

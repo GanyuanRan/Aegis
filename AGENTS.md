@@ -133,10 +133,15 @@ Changes must not silently break supported host distribution surfaces, including:
 - `.claude-plugin/`
 - `.codebuddy-plugin/`
 - `.codex-plugin/`
+- `.codex/`
 - `.opencode/`
 - `.cursor-plugin/`
 - `.cursor/`
 - `.windsurf/`
+- `kimi.plugin.json`
+- root `package.json`, which declares the OpenCode, Pi, OMP, and DeepSeek
+  Harness package entry points
+- `extensions/`
 - host install docs
 - host compatibility tests
 
