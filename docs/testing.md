@@ -388,7 +388,7 @@ Notes:
 
 - `run-all.sh --bootstrap` (the default) runs Layer 1 without host smoke plus the governance completion contract, and reports Layers 2 and 3 as skipped.
 - `layer1-fast-check.sh` runs the deterministic policy, boundary, artifact-schema, and host-structure checks; its default `fast` host profile adds representative Codex natural + explicit smoke, the OpenCode base suite, plugin sync regression, and the Codex benchmark isolation audit.
-- Checks that need an unavailable environment (POSIX, bubblewrap, a host CLI) print an explicit `[SKIP]` line, and Layer 1 repeats it under the passing check instead of reporting a silent pass.
+- The agentic benchmark, outcome-scoring and isolation-audit checks print an explicit `[SKIP]` line when POSIX, bubblewrap or (for the audit) the Codex CLI is missing, and Layer 1 repeats it under the passing check instead of reporting a silent pass. The Codex host smoke in the `fast` and `matrix` profiles needs the Codex CLI and fails without it; use `--host-profile none` where Codex is unavailable.
 - `layer2-behavior-check.sh` runs fixture-backed transcript analysis, scenario contract matching, and with/without Aegis comparison.
 - `layer3-scenario-check.sh` runs fixture-backed scenario orchestration plus cross-host consistency comparison.
 - `run-all.sh --full --host-profile fast` is the aggregate closeout command; CI runs `run-all.sh --full --host-profile none` on Linux with bubblewrap installed.

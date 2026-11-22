@@ -80,8 +80,9 @@ It only records limitations supported by current fresh evidence and does not spe
 - Whether `AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md` still clearly distinguishes "has fresh evidence" from "current verdict not yet formed"
 
 **Retirement Trigger**
-- Each other host leaves this limitation through a fresh verdict from the
-  [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe) or a [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule) outcome
+- Each other host leaves this limitation only through a fresh verdict from the
+  [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or through a documentation-only or retirement outcome of the
+  [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
 
 ---
 
@@ -393,8 +394,8 @@ request.
   `cd <aegis-method-pack-root> && python scripts/aegis-doctor.py --write-config --json`
 
 **Retirement Trigger**
-- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or the outcome of the
-  [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
+- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or a documentation-only or
+  retirement outcome of the [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
 - `Antigravity IDE` and `Antigravity App` need their own evidence rather than
   CLI proof
 
@@ -440,8 +441,8 @@ request.
 - `bash tests/e2e/popular-agent-host-boundary-check.sh`
 
 **Retirement Trigger**
-- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or the outcome of the
-  [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
+- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or a documentation-only or
+  retirement outcome of the [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
 
 ---
 
@@ -462,8 +463,8 @@ request.
   `bash tests/pi-omp-extensions/test-shared-core.sh`
 
 **Retirement Trigger**
-- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or the outcome of the
-  [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
+- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or a documentation-only or
+  retirement outcome of the [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
 
 ---
 
@@ -484,8 +485,8 @@ request.
   `bash tests/pi-omp-extensions/test-shared-core.sh`
 
 **Retirement Trigger**
-- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or the outcome of the
-  [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
+- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or a documentation-only or
+  retirement outcome of the [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
 
 ---
 
@@ -508,8 +509,8 @@ request.
 - `bash tests/e2e/cc-gui-host-boundary-check.sh`
 
 **Retirement Trigger**
-- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or the outcome of the
-  [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
+- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or a documentation-only or
+  retirement outcome of the [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
 - IDE rendering claims additionally need direct CC GUI evidence
 
 ---
@@ -529,8 +530,8 @@ request.
 - `bash tests/e2e/copilot-qoder-host-boundary-check.sh`
 
 **Retirement Trigger**
-- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or the outcome of the
-  [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
+- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or a documentation-only or
+  retirement outcome of the [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
 
 ---
 
@@ -549,8 +550,8 @@ request.
 - `bash tests/e2e/copilot-qoder-host-boundary-check.sh`
 
 **Retirement Trigger**
-- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or the outcome of the
-  [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
+- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or a documentation-only or
+  retirement outcome of the [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
 
 ---
 
@@ -600,8 +601,8 @@ request.
 - `bash tests/e2e/zcode-host-boundary-check.sh`
 
 **Retirement Trigger**
-- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or the outcome of the
-  [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
+- A fresh verdict through the [Host Closeout Recipe](AEGIS_METHOD_PACK_RELEASE_CHECKLIST.md#host-closeout-recipe), or a documentation-only or
+  retirement outcome of the [structural target review](AEGIS_HOST_COMPATIBILITY_MATRIX_SNAPSHOT.md#35-structural-target-review-rule)
 
 ---
 

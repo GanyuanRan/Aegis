@@ -17,7 +17,9 @@ from pathlib import Path
 # under the --root it is given.
 sys.dont_write_bytecode = True
 _SCRIPTS_DIR = str(Path(__file__).resolve().parent)
-if _SCRIPTS_DIR not in sys.path:
+# Keep this checkout first even if an equal path appears later in sys.path,
+# so another checkout's package earlier on PYTHONPATH cannot shadow it.
+if not sys.path or sys.path[0] != _SCRIPTS_DIR:
     sys.path.insert(0, _SCRIPTS_DIR)
 
 from aegis_workspace_helper.cli import main

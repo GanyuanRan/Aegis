@@ -228,10 +228,15 @@ semantics:
   matrix-v7 manifest (`tests/e2e/fixtures/agentic-benchmark-cases.json`).
   Held-out cases are excluded so repeated gating cannot contaminate published
   measurement; the manifest validator already fixes the partition.
-- Runs: each case three times on the primary host, Codex, as separate
-  `tests/e2e/run-agentic-benchmark.sh --profile development-pilot --case <id>`
-  batches (66 attempts in total). Record the `aegis-auto` and
-  `baseline-no-aegis` contract-pass counts per case (0-3) in the release notes.
+- Runs: each case three times on the primary host, Codex, as separate batches
+  with the same model and reasoning effort and a new batch ID each time
+  (66 attempts in total):
+  `AEGIS_AGENTIC_BENCHMARK_LIVE=1 bash tests/e2e/run-agentic-benchmark.sh --profile development-pilot --case <id> --batch-id <new-id> --model <model> --reasoning-effort <effort>`.
+- Record the `aegis-auto` and `baseline-no-aegis` contract-pass counts per case
+  (0-3) in the release pull request as development diagnostics. Development
+  publication stays disabled: these counts are not benchmark results, and the
+  release notes state only whether the gate passed or the change is
+  `needs-verification`.
 - Decision: a case whose `aegis-auto` count falls below the previous gated
   release's count needs a stated reason, or the change is revised. The first
   gated release sets the reference. When the gate cannot run, for example
