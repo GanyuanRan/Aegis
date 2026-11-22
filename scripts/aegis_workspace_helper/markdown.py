@@ -23,7 +23,9 @@ def upsert_markdown_section(path: Path, heading: str, body: str) -> None:
     )
     replacement = marker + body.rstrip("\n") + "\n"
     if pattern.search(text):
-        text = pattern.sub(replacement, text, count=1)
+        # A callable keeps the replacement literal; a template string would
+        # treat backslashes in the body (for example Windows paths) as escapes.
+        text = pattern.sub(lambda _match: replacement, text, count=1)
     else:
         if text and not text.endswith("\n"):
             text += "\n"

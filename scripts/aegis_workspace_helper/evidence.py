@@ -103,7 +103,10 @@ def classify_evidence_status(data: object) -> str:
     """Classify a loaded evidence sidecar for ``bundle`` and ``check --process-pressure``."""
     if not isinstance(data, dict):
         return "invalid"
-    status = data.get("evidenceStatus", "legacy-unclassified")
+    status = data.get("evidenceStatus")
+    if status is None:
+        # Artifact validation accepts an absent or null status as legacy evidence.
+        return "legacy-unclassified"
     return status if status in EVIDENCE_STATUSES else "invalid"
 
 

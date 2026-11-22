@@ -101,6 +101,51 @@ class EvidenceConvergenceTests(unittest.TestCase):
                 pack["evidenceBundle"],
             )
 
+    def test_evidence_update_keeps_backslashes_in_summary(self):
+        # Updating an existing evidence section used the summary as an re
+        # replacement template, so a Windows path such as C:\logs raised
+        # "bad escape" after the JSON sidecar had already been written.
+        with tempfile.TemporaryDirectory(prefix="aegis-backslash-") as tmp:
+            root = Path(tmp)
+            work = new_work_record(root)
+            summary = "Logs saved under C:\\logs\\run.txt"
+            terminal = args(
+                root=str(root),
+                work=work.name,
+                artifact_key="slice-1",
+                slice_id="slice-1",
+                evidence_status="evidence-finalized",
+                type="test",
+                source="unit test",
+                summary=summary,
+                verifier="test_workspace_evidence_convergence",
+                date="2026-09-01",
+            )
+            self.assertEqual(command_add_evidence(terminal), 0)
+            self.assertEqual(command_add_evidence(terminal), 0)
+            evidence_markdown = (work / "90-evidence.md").read_text(encoding="utf-8")
+            self.assertEqual(evidence_markdown.count(summary), 1)
+
+    def test_bundle_lists_status_less_sidecar_as_legacy(self):
+        # A sidecar without evidenceStatus is valid legacy evidence; it used to
+        # be classified invalid, leaving the proof bundle's legacy list empty.
+        with tempfile.TemporaryDirectory(prefix="aegis-legacy-") as tmp:
+            root = Path(tmp)
+            work = new_work_record(root)
+            (work / "evidence-bundle-draft-legacy.json").write_text(
+                '{"summary": "recorded before evidenceStatus existed"}\n', encoding="utf-8"
+            )
+            (work / "evidence-bundle-draft-unknown.json").write_text(
+                '{"evidenceStatus": "unknown-status"}\n', encoding="utf-8"
+            )
+            self.assertEqual(command_bundle(args(root=str(root), work=work.name)), 0)
+            proof = (work / "proof-bundle.md").read_text(encoding="utf-8")
+            legacy_section = proof.split("## Legacy Unclassified Evidence\n\n", 1)[1].split("\n## ", 1)[0]
+            self.assertIn("evidence-bundle-draft-legacy.json", legacy_section)
+            self.assertNotIn("evidence-bundle-draft-unknown.json", legacy_section)
+            pack = read_json_dict(work / "gate-input-pack.json")
+            self.assertEqual(pack["evidenceBundle"], [])
+
     def test_terminal_evidence_is_idempotent_and_closes_slice(self):
         with tempfile.TemporaryDirectory(prefix="aegis-terminal-") as tmp:
             root = Path(tmp)
